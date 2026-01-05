@@ -4,8 +4,7 @@ Create a concise conventional commit message and description for the current cha
 
 ## Steps
 
-1. Take into account the context of the current chat
-1. If you're unsure, use `git status` and `git diff` to analyze the nature of changes
+1. Take into account the current changes in Git.
 1. Present the commit message, and (optional, concise) description to the user
 1. Ask: "If this looks good, say 'yes'. If you'd like to adjust the message or description, let me
    know what to change."
