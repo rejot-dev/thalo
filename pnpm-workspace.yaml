@@ -1,0 +1,8 @@
+packages:
+  - "packages/*"
+
+catalog:
+  "@types/node": ^22
+  typescript: ^5.7.3
+  tsdown: ^0.15.12
+  vitest: ^3.2.4

@@ -1,0 +1,30 @@
+{
+  "name": "@wilco/",
+  "private": true,
+  "author": "Wilco Kruijer",
+  "packageManager": "pnpm@10.18.2",
+  "type": "module",
+  "devDependencies": {
+    "lefthook": "^1.13.6",
+    "oxlint": "^1.36.0",
+    "prettier": "3.6.2",
+    "tsdown": "catalog:",
+    "tsx": "^4.21.0",
+    "turbo": "^2.7.2",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "scripts": {
+    "dev": "turbo watch --ui tui dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:changed": "prettier -u --write $(git ls-files --others --exclude-standard && git diff --name-only --diff-filter=d HEAD | sort -u | xargs)",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "build": "turbo run build",
+    "build:watch": "turbo watch build --filter='./packages/**'",
+    "types:check": "turbo run types:check",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch"
+  }
+}

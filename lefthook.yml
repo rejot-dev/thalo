@@ -1,0 +1,15 @@
+#   Refer for explanation to following link:
+#   https://lefthook.dev/configuration/
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: prettier
+      run:
+        sh -c 'pnpm exec prettier --ignore-unknown --check "{staged_files}"; code=$?; pnpm exec
+        prettier --ignore-unknown --write "{staged_files}"; exit $code'
+    - name: lint
+      run: pnpm exec oxlint --fix "{staged_files}"
+    - name: "turbo: build + test + type-check"
+      run: pnpm exec turbo run --output-logs new-only --no-daemon build types:check test
+      glob: "{*.ts,*.tsx,tsconfig.json}"
