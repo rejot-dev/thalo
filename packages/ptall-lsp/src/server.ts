@@ -15,7 +15,7 @@ import { handleReferences } from "./handlers/references.js";
 import { handleSemanticTokens } from "./handlers/semantic-tokens.js";
 import { getDiagnostics } from "./handlers/diagnostics.js";
 import { handleHover } from "./handlers/hover.js";
-import { handleCompletion, handleCompletionResolve } from "./handlers/completions.js";
+import { handleCompletion, handleCompletionResolve } from "./handlers/completions/index.js";
 
 /**
  * Server state

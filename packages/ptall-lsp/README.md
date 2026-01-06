@@ -35,7 +35,9 @@ The language server uses `@wilco/ptall` for parsing and semantic analysis:
 │  │   semantic-tokens.ts - Syntax highlighting         │ │
 │  │   diagnostics.ts  - Validation errors              │ │
 │  │   hover.ts        - Hover information              │ │
-│  │   completions.ts  - Autocomplete suggestions       │ │
+│  │   completions/    - Autocomplete suggestions       │ │
+│  │     context.ts    - Context detection              │ │
+│  │     providers/    - Modular completion providers   │ │
 │  └────────────────────────────────────────────────────┘ │
 │  ┌────────────────────────────────────────────────────┐ │
 │  │ capabilities.ts - LSP capability configuration     │ │
@@ -107,10 +109,30 @@ Shows entry details when hovering over:
 
 ### Completions
 
-Trigger completions with:
+Context-aware completions throughout the entry lifecycle:
 
-- `^` - suggests link IDs from all entries
-- `#` - suggests existing tags
+| Context         | Trigger                    | Suggests                                            |
+| --------------- | -------------------------- | --------------------------------------------------- |
+| Empty line      | Start typing               | Current timestamp (`2026-01-06T14:30`)              |
+| After timestamp | Space                      | Directives (`create`, `update`, `define-entity`)    |
+| After directive | Space                      | Entity types (`lore`, `opinion`, `reference`, etc.) |
+| After title     | `^` or `#`                 | Link IDs or tags                                    |
+| Metadata key    | Indented line              | Field names from entity schema                      |
+| Metadata value  | After `key:`               | Valid values (literals, `^self`, etc.)              |
+| Content section | `#` in content area        | Section names from schema (`Claim`, `Reasoning`)    |
+| Schema block    | `#` in schema entry        | `# Metadata`, `# Sections`, etc.                    |
+| Field type      | After field name in schema | `string`, `date`, `link`, `date-range`              |
+| Link reference  | `^`                        | All link IDs from workspace                         |
+| Tag             | `#`                        | Existing tags with usage counts                     |
+
+**Schema-aware**: Metadata keys, values, and sections are pulled from entity schemas defined via
+`define-entity`.
+
+**Smart filtering**:
+
+- Already-used metadata keys are excluded
+- Required fields/sections sorted before optional
+- Partial text filtering on all completions
 
 ### Diagnostics
 

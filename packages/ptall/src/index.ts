@@ -15,10 +15,15 @@ export type {
   ModelEntry,
   ModelInstanceEntry,
   ModelSchemaEntry,
+  ModelTypeExpression,
   LinkDefinition,
   LinkReference,
   LinkIndex,
 } from "./model/types.js";
+
+// Schema
+export { TypeExpr } from "./schema/types.js";
+export type { EntitySchema, FieldSchema, SectionSchema } from "./schema/types.js";
 
 // AST types
 export type { Location } from "./ast/types.js";
@@ -30,3 +35,6 @@ export type { Diagnostic, Severity, CheckConfig, CheckContext, Rule } from "./ch
 
 // Services
 export * from "./services/index.js";
+
+// Constants
+export * from "./constants.js";

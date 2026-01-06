@@ -1,0 +1,70 @@
+import type { CompletionItem, CompletionItemKind } from "vscode-languageserver";
+import type { Workspace } from "@wilco/ptall";
+import { PRIMITIVE_TYPES, type PrimitiveType } from "@wilco/ptall";
+import type { CompletionContext } from "../context.js";
+import type { CompletionProvider } from "../types.js";
+
+/**
+ * Get description for a primitive type.
+ */
+function getPrimitiveTypeDescription(type: PrimitiveType): string {
+  switch (type) {
+    case "string":
+      return "Any text value";
+    case "date":
+      return "Date value (YYYY, YYYY-MM, or YYYY-MM-DD)";
+    case "date-range":
+      return "Date range (YYYY ~ YYYY or similar)";
+    case "link":
+      return "Reference to another entry (^link-id)";
+  }
+}
+
+/**
+ * Provider for type expression completion in schema field definitions.
+ */
+export const typeExprProvider: CompletionProvider = {
+  name: "type-expr",
+  contextKinds: ["field_type"],
+
+  getCompletions(ctx: CompletionContext, _workspace: Workspace): CompletionItem[] {
+    const partial = ctx.partial.toLowerCase();
+    const items: CompletionItem[] = [];
+
+    // Suggest primitive types
+    for (const type of PRIMITIVE_TYPES) {
+      if (partial && !type.toLowerCase().startsWith(partial)) {
+        continue;
+      }
+
+      items.push({
+        label: type,
+        kind: 25 as CompletionItemKind, // TypeParameter
+        detail: "Primitive type",
+        documentation: {
+          kind: "markdown",
+          value: getPrimitiveTypeDescription(type),
+        },
+        insertText: type,
+        filterText: type,
+      });
+    }
+
+    // Suggest starting a literal type with quote
+    if (!partial || '"'.startsWith(partial)) {
+      items.push({
+        label: '"..."',
+        kind: 12 as CompletionItemKind, // Value
+        detail: "Literal type",
+        documentation: {
+          kind: "markdown",
+          value: 'Define a literal value type (e.g., "article" | "video")',
+        },
+        insertText: '"',
+        filterText: '"',
+      });
+    }
+
+    return items;
+  },
+};
