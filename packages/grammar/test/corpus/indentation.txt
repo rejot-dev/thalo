@@ -129,6 +129,31 @@ tab indentation for markdown header
           (content_text))))))
 
 ==================
+3-space indentation for metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with 3-space indent"
+   type: fact
+   subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
+
+==================
 mixed 4-space indent throughout
 ==================
 
@@ -169,3 +194,29 @@ mixed 4-space indent throughout
           (md_heading_text))
         (content_line
           (content_text))))))
+
+==================
+Empty Whitespace
+==================
+
+2026-01-05T18:11 create lore "Entry with extra whitespace"
+   type: fact
+   subject: acme
+  
+  
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))

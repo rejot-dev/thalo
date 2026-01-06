@@ -3,7 +3,14 @@ export default grammar({
 
   extras: ($) => [" ", $.comment],
 
-  conflicts: ($) => [[$.instance_entry]],
+  // conflicts: ($) => [[$.instance_entry]], // No longer needed with external scanner
+
+  // External scanner handles indentation-sensitive tokens
+  externals: ($) => [
+    $["_indent"], // Newline + proper indentation (2+ spaces or tab)
+    $["_content_blank"], // Blank line in content (may have whitespace)
+    $["error_sentinel"], // Sentinel for error recovery detection
+  ],
 
   rules: {
     source_file: ($) => repeat(choice($.entry, $._nl)),
@@ -18,7 +25,9 @@ export default grammar({
     // Instance entries (create/update lore, opinion, etc.)
     // ===================
 
-    instance_entry: ($) => seq($.instance_header, $._eol, repeat($.metadata), optional($.content)),
+    // Instance entry: header followed by optional metadata and content
+    // _indent tokens handle the newline + indentation at start of each line
+    instance_entry: ($) => seq($.instance_header, repeat($.metadata), optional($.content)),
 
     instance_header: ($) =>
       seq(
@@ -33,7 +42,9 @@ export default grammar({
 
     entity: (_) => choice("lore", "opinion", "reference", "journal"),
 
-    metadata: ($) => seq($._indent, field("key", $.key), ":", field("value", $.value), $._eol),
+    // Metadata line: external _indent includes newline + indentation
+    // Higher precedence than content_line to prefer metadata when we see key:value pattern
+    metadata: ($) => prec(2, seq($["_indent"], field("key", $.key), ":", field("value", $.value))),
 
     // ===================
     // Schema entries (define-entity/alter-entity)
@@ -153,33 +164,24 @@ export default grammar({
     // ===================
 
     // Content block: starts after metadata (or header if no metadata)
-    // Must contain at least one actual content element (not just blank lines)
-    // Each content element includes its preceding newline to prevent extras interference
+    // MUST start with at least one blank line to distinguish from metadata
+    // External _content_blank handles blank/whitespace-only lines properly
     content: ($) =>
       prec.right(
         seq(
-          repeat($._content_blank),
+          repeat1($["_content_blank"]),
           choice($.markdown_header, $.content_line),
-          repeat(choice($.markdown_header, $.content_line, $._content_blank)),
+          repeat(choice($.markdown_header, $.content_line, $["_content_blank"])),
         ),
       ),
 
-    _content_blank: (_) => /\r?\n/,
+    // _content_blank is external - matches newline + optional whitespace-only content
 
-    // Content section lines - use separate tokens that parse the indent and content separately
-    // This forces the lexer to use the more specific pattern first
-    markdown_header: ($) =>
-      prec.right(
-        2,
-        seq($._content_line_start, $.md_indicator, $.md_heading_text, optional($._eol)),
-      ),
+    // Markdown header in content section
+    markdown_header: ($) => prec.right(2, seq($["_indent"], $.md_indicator, $.md_heading_text)),
 
-    content_line: ($) =>
-      prec.right(1, seq($._content_line_start, $.content_text, optional($._eol))),
-
-    // Matches newline + indent - shared by both header and content
-    // Using + after the quantifier group to ensure greedy matching of all spaces
-    _content_line_start: (_) => token(/\r?\n(?:\t|[ \t][ \t])+/),
+    // Regular content line
+    content_line: ($) => prec.right(1, seq($["_indent"], $.content_text)),
 
     // Markdown header indicator (one or more #)
     md_indicator: (_) => token.immediate(/#+/),
@@ -196,7 +198,7 @@ export default grammar({
 
     _nl: (_) => /\r?\n/,
 
-    _indent: (_) => token.immediate(/\t+|[ \t]{2,}/),
+    // _indent is external - matches newline + proper indentation
 
     _eol: (_) => /\r?\n/,
 

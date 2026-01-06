@@ -55,10 +55,6 @@
           "name": "instance_header"
         },
         {
-          "type": "SYMBOL",
-          "name": "_eol"
-        },
-        {
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
@@ -167,37 +163,37 @@
       ]
     },
     "metadata": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "_indent"
-        },
-        {
-          "type": "FIELD",
-          "name": "key",
-          "content": {
+      "type": "PREC",
+      "value": 2,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
             "type": "SYMBOL",
-            "name": "key"
+            "name": "_indent"
+          },
+          {
+            "type": "FIELD",
+            "name": "key",
+            "content": {
+              "type": "SYMBOL",
+              "name": "key"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": ":"
+          },
+          {
+            "type": "FIELD",
+            "name": "value",
+            "content": {
+              "type": "SYMBOL",
+              "name": "value"
+            }
           }
-        },
-        {
-          "type": "STRING",
-          "value": ":"
-        },
-        {
-          "type": "FIELD",
-          "name": "value",
-          "content": {
-            "type": "SYMBOL",
-            "name": "value"
-          }
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_eol"
-        }
-      ]
+        ]
+      }
     },
     "schema_entry": {
       "type": "SEQ",
@@ -804,7 +800,7 @@
         "type": "SEQ",
         "members": [
           {
-            "type": "REPEAT",
+            "type": "REPEAT1",
             "content": {
               "type": "SYMBOL",
               "name": "_content_blank"
@@ -846,10 +842,6 @@
         ]
       }
     },
-    "_content_blank": {
-      "type": "PATTERN",
-      "value": "\\r?\\n"
-    },
     "markdown_header": {
       "type": "PREC_RIGHT",
       "value": 2,
@@ -858,7 +850,7 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "_content_line_start"
+            "name": "_indent"
           },
           {
             "type": "SYMBOL",
@@ -867,18 +859,6 @@
           {
             "type": "SYMBOL",
             "name": "md_heading_text"
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_eol"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
           }
         ]
       }
@@ -891,32 +871,13 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "_content_line_start"
+            "name": "_indent"
           },
           {
             "type": "SYMBOL",
             "name": "content_text"
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_eol"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
           }
         ]
-      }
-    },
-    "_content_line_start": {
-      "type": "TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "\\r?\\n(?:\\t|[ \\t][ \\t])+"
       }
     },
     "md_indicator": {
@@ -943,13 +904,6 @@
     "_nl": {
       "type": "PATTERN",
       "value": "\\r?\\n"
-    },
-    "_indent": {
-      "type": "IMMEDIATE_TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "\\t+|[ \\t]{2,}"
-      }
     },
     "_eol": {
       "type": "PATTERN",
@@ -1036,9 +990,22 @@
       "name": "comment"
     }
   ],
-  "conflicts": [["instance_entry"]],
+  "conflicts": [],
   "precedences": [],
-  "externals": [],
+  "externals": [
+    {
+      "type": "SYMBOL",
+      "name": "_indent"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_content_blank"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "error_sentinel"
+    }
+  ],
   "inline": [],
   "supertypes": [],
   "reserved": {}
