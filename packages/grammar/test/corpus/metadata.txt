@@ -9,14 +9,15 @@ single metadata
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))
 
 ==================
 multiple metadata
@@ -30,17 +31,18 @@ multiple metadata
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
 
 ==================
 metadata with quoted value
@@ -54,18 +56,19 @@ metadata with quoted value
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title)
-      (tag))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)
+        (tag))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
 
 ==================
 metadata with reference value
@@ -80,21 +83,22 @@ metadata with reference value
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value
-        (link)))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value
+          (link))))))
 
 ==================
 metadata with date range
@@ -109,20 +113,21 @@ metadata with date range
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
 
 ==================
 metadata with hyphenated key
@@ -136,14 +141,15 @@ metadata with hyphenated key
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))

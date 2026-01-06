@@ -1,0 +1,461 @@
+==================
+simple define-entity with metadata
+==================
+
+2026-01-05T18:12 define-entity reference "Collected resources"
+  # Metadata
+  url: string
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type)))))))
+
+==================
+define-entity with optional field
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  url?: string
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type)))))))
+
+==================
+field with description
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  url?: string ; "the url to the resource"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type))
+          (description))))))
+
+==================
+literal union type
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  ref-type: "article" | "video" | "tweet"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (union_type
+              (literal_type)
+              (literal_type)
+              (literal_type))))))))
+
+==================
+primitive union type
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  author: string | link
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (union_type
+              (primitive_type)
+              (primitive_type))))))))
+
+==================
+array type
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  related: link[]
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (array_type
+              (primitive_type))))))))
+
+==================
+default value with literal
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  status?: "unread" | "read" = "unread"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (union_type
+              (literal_type)
+              (literal_type)))
+          (default_value
+            (literal_type)))))))
+
+==================
+sections block
+==================
+
+2026-01-05T18:12 define-entity opinion "Stances"
+  # Sections
+  Claim
+  Reasoning
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (sections_block
+        (section_definition (section_name))
+        (section_definition (section_name))))))
+
+==================
+optional section with description
+==================
+
+2026-01-05T18:12 define-entity opinion "Stances"
+  # Sections
+  Claim ; "Core opinion"
+  Caveats? ; "Edge cases"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (sections_block
+        (section_definition
+          (section_name)
+          (description))
+        (section_definition
+          (section_name)
+          (optional_marker)
+          (description))))))
+
+==================
+complete define-entity
+==================
+
+2026-01-05T18:12 define-entity reference "Collected resources" #schema
+  # Metadata
+  url?: string ; "the url"
+  ref-type: "article" | "video"
+  author?: string | link
+  status?: "unread" | "read" = "unread"
+  related?: link[]
+  # Sections
+  Summary ; "Brief summary"
+  KeyTakeaways?
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title)
+        (tag))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type))
+          (description))
+        (field_definition
+          (field_name)
+          (type_expression
+            (union_type
+              (literal_type)
+              (literal_type))))
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (union_type
+              (primitive_type)
+              (primitive_type))))
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (union_type
+              (literal_type)
+              (literal_type)))
+          (default_value
+            (literal_type)))
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (array_type
+              (primitive_type)))))
+      (sections_block
+        (section_definition
+          (section_name)
+          (description))
+        (section_definition
+          (section_name)
+          (optional_marker))))))
+
+==================
+alter-entity adding metadata
+==================
+
+2026-01-10T14:00 alter-entity reference "Add published field"
+  # Metadata
+  published: date ; "publication date"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type))
+          (description))))))
+
+==================
+alter-entity removing metadata
+==================
+
+2026-01-10T14:00 alter-entity reference "Remove legacy field"
+  # Remove Metadata
+  legacy-field ; "deprecated in favor of new-field"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (remove_metadata_block
+        (field_removal
+          (field_name)
+          (description))))))
+
+==================
+alter-entity adding sections
+==================
+
+2026-01-10T14:00 alter-entity reference "Add new section"
+  # Sections
+  NewSection? ; "added section"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (sections_block
+        (section_definition
+          (section_name)
+          (optional_marker)
+          (description))))))
+
+==================
+alter-entity removing sections
+==================
+
+2026-01-10T14:00 alter-entity reference "Remove old section"
+  # Remove Sections
+  OldSection ; "no longer needed"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (remove_sections_block
+        (section_removal
+          (section_name)
+          (description))))))
+
+==================
+alter-entity all block types
+==================
+
+2026-01-10T14:00 alter-entity reference "Major update"
+  # Metadata
+  published: date
+  # Remove Metadata
+  legacy-field
+  # Sections
+  NewSection?
+  # Remove Sections
+  OldSection
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type))))
+      (remove_metadata_block
+        (field_removal
+          (field_name)))
+      (sections_block
+        (section_definition
+          (section_name)
+          (optional_marker)))
+      (remove_sections_block
+        (section_removal
+          (section_name))))))
+
+==================
+date-range type
+==================
+
+2026-01-05T18:12 define-entity lore "Facts"
+  # Metadata
+  date?: date-range
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type)))))))

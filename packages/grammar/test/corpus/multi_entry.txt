@@ -12,23 +12,25 @@ two simple entries
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value)))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))))
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))
 
 ==================
 entries with content
@@ -50,33 +52,35 @@ entries with content
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))
-    (content
-      (content_line)))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value))
+      (content
+        (content_line))))
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))
-    (content
-      (content_line))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value))
+      (content
+        (content_line)))))
 
 ==================
 three entries mixed
@@ -99,41 +103,44 @@ three entries mixed
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title)
-      (link)
-      (tag))
-    (metadata
-      (key)
-      (value)))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)
+        (link)
+        (tag))
+      (metadata
+        (key)
+        (value))))
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title)
-      (tag))
-    (metadata
-      (key)
-      (value))
-    (content
-      (markdown_header)
-      (content_line)))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)
+        (tag))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header)
+        (content_line))))
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
 
 ==================
 entry with blank lines between
@@ -150,20 +157,22 @@ entry with blank lines between
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value)))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))))
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))

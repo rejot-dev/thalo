@@ -8,11 +8,12 @@ simple lore entry
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
 
 ==================
 simple opinion entry
@@ -24,11 +25,12 @@ simple opinion entry
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
 
 ==================
 simple reference entry
@@ -40,11 +42,12 @@ simple reference entry
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
 
 ==================
 simple journal entry
@@ -56,11 +59,12 @@ simple journal entry
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
 
 ==================
 update directive
@@ -72,11 +76,12 @@ update directive
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
 
 ==================
 title with special characters
@@ -88,8 +93,9 @@ title with special characters
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))

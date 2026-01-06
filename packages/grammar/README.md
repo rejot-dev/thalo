@@ -6,9 +6,12 @@ Knowledge Center.
 ## Overview
 
 Ptall is a Beancount-inspired syntax for recording structured knowledge entries including lore,
-opinions, references, and journal entries.
+opinions, references, and journal entries. It also supports a meta-layer for defining entity
+schemas.
 
-## Syntax
+## Instance Entries
+
+Create or update instances of entities (lore, opinion, reference, journal):
 
 ```
 {timestamp} {directive} {entity} "Title" [^link-id] [#tags...]
@@ -29,8 +32,6 @@ opinions, references, and journal entries.
   The company built a custom event streaming system on top of Postgres
   before Kafka became widely adopted.
 ```
-
-## Supported Elements
 
 ### Header Line
 
@@ -74,24 +75,127 @@ Indented content after a blank line separator:
 - Markdown headers (`#`, `##`, etc.) are recognized
 - Blank lines within content are preserved
 
+## Schema Entries
+
+Define or alter entity schemas using `define-entity` and `alter-entity` directives:
+
+```
+{timestamp} define-entity {entity-name} "Description" [#tags...]
+  # Metadata
+  {field-name}?: {type} [= {default}] [; "description"]
+  ...
+  # Sections
+  {SectionName}? [; "description"]
+  ...
+```
+
+### Example
+
+```ptall
+2026-01-05T18:12 define-entity reference "Collected resources"
+  # Metadata
+  url?: string ; "the url to the resource"
+  ref-type: "article" | "video" | "tweet"
+  author?: string | link
+  status?: "unread" | "read" = "unread"
+  related?: link[]
+  # Sections
+  Summary ; "Brief summary of the content"
+  KeyTakeaways?
+```
+
+### alter-entity
+
+Modify existing entity schemas by adding or removing fields/sections:
+
+```ptall
+2026-01-10T14:00 alter-entity reference "Add published field, remove legacy"
+  # Metadata
+  published: date ; "publication date"
+  # Remove Metadata
+  legacy-field ; "deprecated in favor of new-field"
+  # Sections
+  NewSection? ; "added section"
+  # Remove Sections
+  OldSection ; "no longer needed"
+```
+
+### Type System
+
+| Type         | Example              | Description              |
+| ------------ | -------------------- | ------------------------ |
+| `string`     | `name: string`       | Free-form text           |
+| `date`       | `published: date`    | Single date              |
+| `date-range` | `period: date-range` | Date range (2022 ~ 2024) |
+| `link`       | `related: link`      | Reference to entry       |
+| Literal      | `status: "read"`     | Exact string value       |
+| Union        | `type: "a" \| "b"`   | One of multiple types    |
+| Array        | `tags: string[]`     | Array of type            |
+| Default      | `status?: "a" = "a"` | Default value            |
+
+### Field Syntax
+
+- **Required by default**: Fields without `?` are required
+- **Optional marker**: `?` after field name makes it optional
+- **Description**: `; "text"` adds documentation
+
+### Section Names
+
+- Must start with uppercase letter (PascalCase)
+- Examples: `Summary`, `KeyTakeaways`, `Reasoning`
+
 ## AST Structure
+
+### Instance Entry
 
 ```
 source_file
 └── entry
-    ├── header
-    │   ├── timestamp
-    │   ├── directive
-    │   ├── entity
-    │   ├── title
-    │   ├── link?
-    │   └── tag*
-    ├── metadata*
-    │   ├── key
-    │   └── value
-    └── content?
-        ├── markdown_header*
-        └── content_line*
+    └── instance_entry
+        ├── instance_header
+        │   ├── timestamp
+        │   ├── instance_directive
+        │   ├── entity
+        │   ├── title
+        │   ├── link?
+        │   └── tag*
+        ├── metadata*
+        │   ├── key
+        │   └── value
+        └── content?
+            ├── markdown_header*
+            └── content_line*
+```
+
+### Schema Entry
+
+```
+source_file
+└── entry
+    └── schema_entry
+        ├── schema_header
+        │   ├── timestamp
+        │   ├── schema_directive
+        │   ├── identifier
+        │   ├── title
+        │   ├── link?
+        │   └── tag*
+        ├── metadata_block?
+        │   └── field_definition*
+        │       ├── field_name
+        │       ├── optional_marker?
+        │       ├── type_expression
+        │       ├── default_value?
+        │       └── description?
+        ├── sections_block?
+        │   └── section_definition*
+        │       ├── section_name
+        │       ├── optional_marker?
+        │       └── description?
+        ├── remove_metadata_block?
+        │   └── field_removal*
+        └── remove_sections_block?
+            └── section_removal*
 ```
 
 ## Usage
@@ -112,3 +216,5 @@ pnpm exec tree-sitter parse path/to/file.ptall
 - Titles cannot contain unescaped quotes
 - Content text starting with `#` is always parsed as a markdown header
 - Only 2-space indentation is supported
+- Section names must be PascalCase
+- Field names must be lowercase (kebab-case or camelCase)

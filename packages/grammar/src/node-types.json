@@ -1,5 +1,24 @@
 [
   {
+    "type": "array_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "literal_type",
+          "named": true
+        },
+        {
+          "type": "primitive_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "content",
     "named": true,
     "fields": {},
@@ -24,7 +43,22 @@
     "fields": {}
   },
   {
-    "type": "directive",
+    "type": "default_value",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "literal_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "description",
     "named": true,
     "fields": {}
   },
@@ -38,6 +72,111 @@
     "named": true,
     "fields": {},
     "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "instance_entry",
+          "named": true
+        },
+        {
+          "type": "schema_entry",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "field_definition",
+    "named": true,
+    "fields": {
+      "default": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "default_value",
+            "named": true
+          }
+        ]
+      },
+      "description": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "description",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "type_expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "field_name",
+          "named": true
+        },
+        {
+          "type": "optional_marker",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "field_removal",
+    "named": true,
+    "fields": {
+      "reason": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "description",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "field_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "identifier",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "instance_directive",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "instance_entry",
+    "named": true,
+    "fields": {},
+    "children": {
       "multiple": true,
       "required": true,
       "types": [
@@ -46,7 +185,7 @@
           "named": true
         },
         {
-          "type": "header",
+          "type": "instance_header",
           "named": true
         },
         {
@@ -57,7 +196,7 @@
     }
   },
   {
-    "type": "header",
+    "type": "instance_header",
     "named": true,
     "fields": {
       "directive": {
@@ -65,7 +204,7 @@
         "required": true,
         "types": [
           {
-            "type": "directive",
+            "type": "instance_directive",
             "named": true
           }
         ]
@@ -117,6 +256,16 @@
     }
   },
   {
+    "type": "key",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "literal_type",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "markdown_header",
     "named": true,
     "fields": {}
@@ -148,6 +297,223 @@
     }
   },
   {
+    "type": "metadata_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "field_definition",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "primitive_type",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "remove_metadata_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "field_removal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "remove_sections_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "section_removal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_directive",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "schema_entry",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "metadata_block",
+          "named": true
+        },
+        {
+          "type": "remove_metadata_block",
+          "named": true
+        },
+        {
+          "type": "remove_sections_block",
+          "named": true
+        },
+        {
+          "type": "schema_header",
+          "named": true
+        },
+        {
+          "type": "sections_block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "schema_header",
+    "named": true,
+    "fields": {
+      "directive": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "schema_directive",
+            "named": true
+          }
+        ]
+      },
+      "entity_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "timestamp": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "timestamp",
+            "named": true
+          }
+        ]
+      },
+      "title": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "title",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "tag",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "section_definition",
+    "named": true,
+    "fields": {
+      "description": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "description",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "optional_marker",
+          "named": true
+        },
+        {
+          "type": "section_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "section_removal",
+    "named": true,
+    "fields": {
+      "reason": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "description",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "section_name",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "sections_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "section_definition",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "source_file",
     "named": true,
     "root": true,
@@ -169,6 +535,56 @@
     "fields": {}
   },
   {
+    "type": "type_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "array_type",
+          "named": true
+        },
+        {
+          "type": "literal_type",
+          "named": true
+        },
+        {
+          "type": "primitive_type",
+          "named": true
+        },
+        {
+          "type": "union_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "union_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "array_type",
+          "named": true
+        },
+        {
+          "type": "literal_type",
+          "named": true
+        },
+        {
+          "type": "primitive_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "value",
     "named": true,
     "fields": {},
@@ -188,16 +604,48 @@
     "named": false
   },
   {
+    "type": ";",
+    "named": false
+  },
+  {
+    "type": "=",
+    "named": false
+  },
+  {
+    "type": "[]",
+    "named": false
+  },
+  {
+    "type": "alter-entity",
+    "named": false
+  },
+  {
     "type": "create",
     "named": false
+  },
+  {
+    "type": "date",
+    "named": false
+  },
+  {
+    "type": "date-range",
+    "named": false
+  },
+  {
+    "type": "define-entity",
+    "named": false
+  },
+  {
+    "type": "field_name",
+    "named": true
   },
   {
     "type": "journal",
     "named": false
   },
   {
-    "type": "key",
-    "named": true
+    "type": "link",
+    "named": false
   },
   {
     "type": "link",
@@ -212,7 +660,19 @@
     "named": false
   },
   {
+    "type": "optional_marker",
+    "named": true
+  },
+  {
     "type": "reference",
+    "named": false
+  },
+  {
+    "type": "section_name",
+    "named": true
+  },
+  {
+    "type": "string",
     "named": false
   },
   {
@@ -225,6 +685,10 @@
   },
   {
     "type": "update",
+    "named": false
+  },
+  {
+    "type": "|",
     "named": false
   }
 ]

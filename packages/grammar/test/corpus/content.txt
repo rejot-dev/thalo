@@ -12,19 +12,20 @@ simple content
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (metadata
-      (key)
-      (value))
-    (content
-      (content_line))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value))
+      (content
+        (content_line)))))
 
 ==================
 multi-line content
@@ -41,18 +42,19 @@ multi-line content
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (content
-      (content_line)
-      (content_line)
-      (content_line))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (content_line)
+        (content_line)
+        (content_line)))))
 
 ==================
 content with markdown header
@@ -68,17 +70,18 @@ content with markdown header
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (content
-      (markdown_header)
-      (content_line))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header)
+        (content_line)))))
 
 ==================
 content with multiple sections
@@ -97,19 +100,20 @@ content with multiple sections
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (metadata
-      (key)
-      (value))
-    (content
-      (markdown_header)
-      (content_line)
-      (markdown_header)
-      (content_line))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header)
+        (content_line)
+        (markdown_header)
+        (content_line)))))
 
 ==================
 content without metadata
@@ -123,10 +127,11 @@ content without metadata
 
 (source_file
   (entry
-    (header
-      (timestamp)
-      (directive)
-      (entity)
-      (title))
-    (content
-      (content_line))))
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (content_line)))))
