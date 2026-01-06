@@ -1,12 +1,15 @@
 export default grammar({
   name: "ptall",
 
-  extras: (_) => [" "],
+  extras: ($) => [" ", $.comment],
 
   conflicts: ($) => [[$.instance_entry], [$.content]],
 
   rules: {
     source_file: ($) => repeat(choice($.entry, $._nl)),
+
+    // Comments (primarily for highlight tests, but useful for documentation)
+    comment: (_) => token(seq("//", /[^\r\n]*/)),
 
     // Entry can be either an instance (create/update) or schema (define-entity/alter-entity)
     entry: ($) => choice($.instance_entry, $.schema_entry),

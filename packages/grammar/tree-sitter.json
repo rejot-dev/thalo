@@ -8,7 +8,8 @@
       "scope": "source.ptall",
       "file-types": ["ptall"],
       "injection-regex": "^ptall$",
-      "class-name": "TreeSitterPtall"
+      "class-name": "TreeSitterPtall",
+      "highlights": "queries/highlights.scm"
     }
   ],
   "metadata": {

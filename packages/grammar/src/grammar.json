@@ -18,6 +18,22 @@
         ]
       }
     },
+    "comment": {
+      "type": "TOKEN",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "//"
+          },
+          {
+            "type": "PATTERN",
+            "value": "[^\\r\\n]*"
+          }
+        ]
+      }
+    },
     "entry": {
       "type": "CHOICE",
       "members": [
@@ -1011,6 +1027,10 @@
     {
       "type": "STRING",
       "value": " "
+    },
+    {
+      "type": "SYMBOL",
+      "name": "comment"
     }
   ],
   "conflicts": [["instance_entry"], ["content"]],
