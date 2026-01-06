@@ -1,55 +1,67 @@
 import type { Position, Location } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
+import { findDefinitionAtPosition, type Workspace } from "@wilco/ptall";
 
-// TODO: Import and use @wilco/ptall services
-// import { findDefinitionAtPosition } from "@wilco/ptall/services";
+/**
+ * Convert a file path to a URI
+ */
+function pathToUri(path: string): string {
+  // Add file:// prefix if not present
+  if (!path.startsWith("file://")) {
+    return `file://${encodeURIComponent(path).replace(/%2F/g, "/")}`;
+  }
+  return path;
+}
+
+/**
+ * Convert a URI to a file path
+ */
+function uriToPath(uri: string): string {
+  if (uri.startsWith("file://")) {
+    return decodeURIComponent(uri.slice(7));
+  }
+  return uri;
+}
 
 /**
  * Handle textDocument/definition request
  *
  * Finds the definition location for a ^link-id at the given position.
  *
+ * @param workspace - The ptall workspace
  * @param document - The text document
  * @param position - The position in the document (line/character)
  * @returns The definition location, or null if not found
- *
- * ## Implementation Notes
- *
- * The current @wilco/ptall services use character offsets:
- * - findDefinitionAtPosition(workspace, file, offset)
- *
- * To integrate with LSP, we need to:
- * 1. Convert LSP Position (line/character) to character offset
- * 2. Call the ptall service
- * 3. Convert the result Location (startOffset/endOffset) back to LSP Location
- *
- * Additionally, the ptall services require a Workspace object that tracks
- * all documents and their link definitions/references. We need to:
- * - Create/maintain a Workspace instance
- * - Update it when documents are opened/changed/closed
- * - Use it for cross-file lookups
  */
-export function handleDefinition(document: TextDocument, position: Position): Location | null {
-  // Convert LSP position to offset
-  const _offset = document.offsetAt(position);
+export function handleDefinition(
+  workspace: Workspace,
+  document: TextDocument,
+  position: Position,
+): Location | null {
+  const path = uriToPath(document.uri);
 
-  // TODO: Implement using @wilco/ptall
-  //
-  // Steps:
-  // 1. Get or create workspace (needs to track all open documents)
-  // 2. const result = findDefinitionAtPosition(workspace, document.uri, offset);
-  // 3. if (!result) return null;
-  // 4. Convert result.location to LSP Location:
-  //    return {
-  //      uri: result.file,
-  //      range: {
-  //        start: offsetToPosition(result.location.startOffset),
-  //        end: offsetToPosition(result.location.endOffset),
-  //      },
-  //    };
+  // Convert LSP Position (line/character) to character offset
+  const offset = document.offsetAt(position);
 
-  console.error(
-    `[ptall-lsp] Definition request at ${position.line}:${position.character} (not implemented)`,
-  );
-  return null;
+  // Use ptall service to find definition
+  const result = findDefinitionAtPosition(workspace, path, offset);
+
+  if (!result) {
+    return null;
+  }
+
+  // Convert ptall Location to LSP Location
+  return {
+    uri: pathToUri(result.file),
+    range: {
+      start: {
+        line: result.location.startPosition.row,
+        character: result.location.startPosition.column,
+      },
+      end: {
+        line: result.location.endPosition.row,
+        character: result.location.endPosition.column,
+      },
+    },
+  };
 }

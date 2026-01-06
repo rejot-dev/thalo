@@ -1,4 +1,14 @@
-import type { ServerCapabilities } from "vscode-languageserver";
+import type { ServerCapabilities, SemanticTokensLegend } from "vscode-languageserver";
+import { tokenTypes, tokenModifiers } from "@wilco/ptall";
+
+/**
+ * Semantic tokens legend for LSP
+ * Maps the token types and modifiers from @wilco/ptall
+ */
+export const tokenLegend: SemanticTokensLegend = {
+  tokenTypes: [...tokenTypes],
+  tokenModifiers: [...tokenModifiers],
+};
 
 /**
  * LSP server capabilities for ptall
@@ -6,7 +16,7 @@ import type { ServerCapabilities } from "vscode-languageserver";
  * Defines which LSP features are supported by this server.
  */
 export const serverCapabilities: ServerCapabilities = {
-  // Document sync - full document sync for now
+  // Document sync - full document sync for simplicity
   textDocumentSync: {
     openClose: true,
     change: 2, // Full sync
@@ -15,24 +25,25 @@ export const serverCapabilities: ServerCapabilities = {
     },
   },
 
-  // Go to Definition
-  // TODO: Implement - requires adapting findDefinition/findDefinitionAtPosition
-  // to work with LSP's Position (line/character) instead of offset
+  // Go to Definition - navigate to ^link-id definitions
   definitionProvider: true,
 
-  // Find All References
-  // TODO: Implement - requires adapting findReferences/findReferencesAtPosition
-  // to work with LSP's Position (line/character) instead of offset
+  // Find All References - find all usages of a ^link-id
   referencesProvider: true,
 
-  // Hover information
-  // TODO: Implement - show details about link target on hover
-  hoverProvider: false,
+  // Hover - show link target details
+  hoverProvider: true,
 
-  // Completions
-  // TODO: Implement - suggest ^link-ids from workspace
-  completionProvider: undefined,
+  // Completions - suggest ^link-ids and #tags
+  completionProvider: {
+    triggerCharacters: ["^", "#"],
+    resolveProvider: true,
+  },
 
-  // Diagnostics are pushed, not pulled
-  // Implemented via textDocument/publishDiagnostics notifications
+  // Semantic tokens - syntax highlighting based on semantics
+  semanticTokensProvider: {
+    legend: tokenLegend,
+    full: true,
+    range: false,
+  },
 };
