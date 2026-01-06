@@ -32,6 +32,7 @@ import { emptySectionRule } from "./empty-section.js";
 
 // Instance entry rules
 import { updateWithoutCreateRule } from "./update-without-create.js";
+import { timestampOutOfOrderRule } from "./timestamp-out-of-order.js";
 
 // Style rules
 import { missingTitleRule } from "./missing-title.js";
@@ -72,6 +73,7 @@ export const allRules: Rule[] = [
 
   // Instance entry rules
   updateWithoutCreateRule,
+  timestampOutOfOrderRule,
 
   // Style rules
   missingTitleRule,

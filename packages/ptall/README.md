@@ -94,7 +94,7 @@ const diagnostics = check(workspace, {
 
 ## Validation Rules
 
-The checker includes 23 fully implemented validation rules, plus 2 placeholder rules:
+The checker includes 24 fully implemented validation rules, plus 2 placeholder rules:
 
 ### Instance Entry Rules
 
@@ -108,6 +108,7 @@ The checker includes 23 fully implemented validation rules, plus 2 placeholder r
 | `unknown-section`          | warning  | Section not defined in entity schema                  |
 | `missing-title`            | error    | Entry has empty or missing title                      |
 | `update-without-create`    | warning  | `update` entry supersedes wrong directive/entity type |
+| `timestamp-out-of-order`   | warning  | Entry timestamp is earlier than the previous entry    |
 
 ### Link Rules
 
