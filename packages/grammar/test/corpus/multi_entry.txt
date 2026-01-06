@@ -1,0 +1,169 @@
+==================
+two simple entries
+==================
+
+2026-01-05T18:11 create lore "First entry"
+  type: fact
+
+2026-01-05T18:12 create lore "Second entry"
+  type: insight
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value)))
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))))
+
+==================
+entries with content
+==================
+
+2026-01-05T18:11 create lore "First entry with content"
+  type: fact
+  subject: acme
+
+  This is the first entry content.
+
+2026-01-05T18:12 create lore "Second entry with content"
+  type: fact
+  subject: acme
+
+  This is the second entry content.
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (metadata
+      (key)
+      (value))
+    (content
+      (content_line)))
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (metadata
+      (key)
+      (value))
+    (content
+      (content_line))))
+
+==================
+three entries mixed
+==================
+
+2026-01-05T18:11 create lore "Fact entry" ^fact-one #architecture
+  type: fact
+
+2026-01-05T18:12 create opinion "Opinion entry" #opinions
+  confidence: high
+
+  # Claim
+  This is my claim.
+
+2026-01-05T18:13 create reference "Reference entry"
+  ref-type: article
+  url: "https://example.com"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (link)
+      (tag))
+    (metadata
+      (key)
+      (value)))
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (tag))
+    (metadata
+      (key)
+      (value))
+    (content
+      (markdown_header)
+      (content_line)))
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (metadata
+      (key)
+      (value))))
+
+==================
+entry with blank lines between
+==================
+
+2026-01-05T18:11 create lore "Entry one"
+  type: fact
+
+
+2026-01-05T18:12 create lore "Entry two"
+  type: fact
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value)))
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))))

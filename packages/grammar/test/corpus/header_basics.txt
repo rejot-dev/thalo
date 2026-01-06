@@ -1,0 +1,95 @@
+==================
+simple lore entry
+==================
+
+2026-01-05T18:11 create lore "My first lore entry"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))))
+
+==================
+simple opinion entry
+==================
+
+2026-01-05T18:11 create opinion "My opinion on something"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))))
+
+==================
+simple reference entry
+==================
+
+2026-01-05T18:11 create reference "A useful reference"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))))
+
+==================
+simple journal entry
+==================
+
+2026-01-05T18:11 create journal "A journal thought"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))))
+
+==================
+update directive
+==================
+
+2026-01-10T14:00 update opinion "Revised stance on something"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))))
+
+==================
+title with special characters
+==================
+
+2026-01-05T18:11 create lore "Adyen's accounting system is a custom double-entry bookkeeping system"
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))))

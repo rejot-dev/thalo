@@ -1,0 +1,125 @@
+==================
+single tag
+==================
+
+2026-01-05T18:11 create lore "Entry with one tag" #architecture
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (tag))))
+
+==================
+multiple tags
+==================
+
+2026-01-05T18:11 create lore "Entry with multiple tags" #accounting #architecture #payments
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (tag)
+      (tag)
+      (tag))))
+
+==================
+single link
+==================
+
+2026-01-05T18:11 create lore "Entry with link" ^my-linked-entry
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (link))))
+
+==================
+link and tags
+==================
+
+2026-01-05T18:11 create lore "Entry with link and tags" ^data-stream #streaming #postgres
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (link)
+      (tag)
+      (tag))))
+
+==================
+tags before link
+==================
+
+2026-01-05T18:11 create opinion "Tags then link" #typescript #enums ^opinion-ts-enums
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (tag)
+      (tag)
+      (link))))
+
+==================
+tag with dashes and dots
+==================
+
+2026-01-05T18:11 create lore "Special tag chars" #web-services #version.1.2
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (tag)
+      (tag))))
+
+==================
+link with dashes
+==================
+
+2026-01-05T18:11 create lore "Link with dashes" ^my-account-framework
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title)
+      (link))))

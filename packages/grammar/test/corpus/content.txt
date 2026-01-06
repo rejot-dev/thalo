@@ -1,0 +1,132 @@
+==================
+simple content
+==================
+
+2026-01-05T18:11 create lore "Entry with content"
+  type: fact
+  subject: acme
+
+  This is the content paragraph.
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (metadata
+      (key)
+      (value))
+    (content
+      (content_line))))
+
+==================
+multi-line content
+==================
+
+2026-01-05T18:11 create lore "Entry with multi-line content"
+  type: fact
+
+  First line of content.
+  Second line of content.
+  Third line continues.
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (content
+      (content_line)
+      (content_line)
+      (content_line))))
+
+==================
+content with markdown header
+==================
+
+2026-01-05T18:11 create opinion "Opinion with sections"
+  confidence: high
+
+  # Claim
+  This is the claim text.
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (content
+      (markdown_header)
+      (content_line))))
+
+==================
+content with multiple sections
+==================
+
+2026-01-05T18:11 create opinion "Opinion with multiple sections"
+  confidence: high
+
+  # Claim
+  This is the claim.
+
+  # Reasoning
+  Here is the reasoning.
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (metadata
+      (key)
+      (value))
+    (content
+      (markdown_header)
+      (content_line)
+      (markdown_header)
+      (content_line))))
+
+==================
+content without metadata
+==================
+
+2026-01-05T18:11 create journal "Journal entry"
+
+  Just some thoughts I wanted to write down.
+
+---
+
+(source_file
+  (entry
+    (header
+      (timestamp)
+      (directive)
+      (entity)
+      (title))
+    (content
+      (content_line))))
