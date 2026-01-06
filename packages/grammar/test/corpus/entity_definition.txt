@@ -204,6 +204,57 @@ sections block
         (section_definition (section_name))))))
 
 ==================
+section names with spaces
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Sections
+  Key Takeaways
+  Related Entries? ; "Links to related entries"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (sections_block
+        (section_definition (section_name))
+        (section_definition
+          (section_name)
+          (optional_marker)
+          (description))))))
+
+==================
+section names with mixed case words
+==================
+
+2026-01-05T18:12 define-entity opinion "Stances"
+  # Sections
+  Core Argument
+  Supporting evidence?
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (sections_block
+        (section_definition (section_name))
+        (section_definition
+          (section_name)
+          (optional_marker))))))
+
+==================
 optional section with description
 ==================
 

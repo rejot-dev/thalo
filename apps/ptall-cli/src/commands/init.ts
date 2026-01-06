@@ -34,7 +34,7 @@ const ENTITIES_PTALL = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   status?: "unread" | "read" | "processed" = "unread"
   # Sections
   Summary? ; "Brief summary of the content"
-  KeyTakeaways? ; "Bullet points of main insights"
+  Key Takeaways? ; "Bullet points of main insights"
   Related? ; "Links to related entries"
 
 {{TIMESTAMP}} define-entity lore "Facts and insights about subjects or yourself"

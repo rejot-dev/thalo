@@ -590,7 +590,7 @@
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\r?\\n(?:\\t|[ \\t][ \\t])+[A-Z][a-zA-Z0-9]*"
+        "value": "\\r?\\n(?:\\t|[ \\t][ \\t])+[A-Z][a-zA-Z0-9]*( [a-zA-Z0-9]+)*"
       }
     },
     "field_removal": {
