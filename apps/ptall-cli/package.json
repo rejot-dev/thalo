@@ -24,7 +24,8 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "@wilco/ptall": "workspace:*"
+    "@wilco/ptall": "workspace:*",
+    "picocolors": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",
