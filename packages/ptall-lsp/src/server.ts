@@ -1,3 +1,5 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
 import {
   createConnection as createLspConnection,
   ProposedFeatures,
@@ -27,6 +29,8 @@ interface ServerState {
   documents: Map<string, TextDocument>;
   /** The LSP connection */
   connection: Connection;
+  /** Workspace folder paths (file system paths, not URIs) */
+  workspaceFolders: string[];
 }
 
 /**
@@ -37,6 +41,7 @@ function createServerState(connection: Connection): ServerState {
     workspace: new Workspace(),
     documents: new Map(),
     connection,
+    workspaceFolders: [],
   };
 }
 
@@ -63,6 +68,69 @@ function uriToPath(uri: string): string {
     return decodeURIComponent(uri.slice(7));
   }
   return uri;
+}
+
+/**
+ * Collect all .ptall and .md files from a directory recursively
+ */
+function collectPtallFiles(dir: string): string[] {
+  const files: string[] = [];
+
+  function walk(currentDir: string): void {
+    let entries;
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+
+      if (entry.isDirectory()) {
+        // Skip hidden directories and node_modules
+        if (!entry.name.startsWith(".") && entry.name !== "node_modules") {
+          walk(fullPath);
+        }
+      } else if (entry.isFile()) {
+        if (entry.name.endsWith(".ptall") || entry.name.endsWith(".md")) {
+          files.push(fullPath);
+        }
+      }
+    }
+  }
+
+  walk(dir);
+  return files;
+}
+
+/**
+ * Load all ptall files from the workspace folders into the workspace.
+ * This ensures cross-file features work correctly even for files not yet opened.
+ */
+function loadWorkspaceFiles(state: ServerState): void {
+  for (const folder of state.workspaceFolders) {
+    const files = collectPtallFiles(folder);
+
+    for (const file of files) {
+      // Skip if already loaded (e.g., from an open document)
+      if (state.workspace.getDocument(file)) {
+        continue;
+      }
+
+      try {
+        const source = fs.readFileSync(file, "utf-8");
+        const fileType = getFileType(file);
+        state.workspace.addDocument(source, { filename: file, fileType });
+      } catch (err) {
+        console.error(
+          `[ptall-lsp] Error loading ${file}: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
+    console.error(`[ptall-lsp] Loaded ${files.length} files from ${folder}`);
+  }
 }
 
 /**
@@ -125,6 +193,13 @@ export function startServer(connection: Connection = createConnection()): void {
   connection.onInitialize((params: InitializeParams): InitializeResult => {
     console.error(`[ptall-lsp] Initializing with workspace: ${params.workspaceFolders?.[0]?.uri}`);
 
+    // Store workspace folders for later file scanning
+    if (params.workspaceFolders) {
+      state.workspaceFolders = params.workspaceFolders.map((folder) => uriToPath(folder.uri));
+    } else if (params.rootUri) {
+      state.workspaceFolders = [uriToPath(params.rootUri)];
+    }
+
     return {
       capabilities: serverCapabilities,
       serverInfo: {
@@ -139,6 +214,9 @@ export function startServer(connection: Connection = createConnection()): void {
 
     // Register for configuration changes
     connection.client.register(DidChangeConfigurationNotification.type, undefined);
+
+    // Load all workspace files for cross-file features (entity definitions, links, etc.)
+    loadWorkspaceFiles(state);
   });
 
   // Document lifecycle
@@ -166,10 +244,24 @@ export function startServer(connection: Connection = createConnection()): void {
 
   connection.onDidCloseTextDocument((params) => {
     state.documents.delete(params.textDocument.uri);
-    const path = uriToPath(params.textDocument.uri);
-    state.workspace.removeDocument(path);
+    const filePath = uriToPath(params.textDocument.uri);
 
-    // Clear diagnostics for closed document
+    // Reload from disk to pick up saved changes and keep cross-file features working
+    try {
+      if (fs.existsSync(filePath)) {
+        const source = fs.readFileSync(filePath, "utf-8");
+        const fileType = getFileType(params.textDocument.uri);
+        state.workspace.addDocument(source, { filename: filePath, fileType });
+      } else {
+        // File was deleted, remove from workspace
+        state.workspace.removeDocument(filePath);
+      }
+    } catch {
+      // If we can't read the file, remove it from the workspace
+      state.workspace.removeDocument(filePath);
+    }
+
+    // Clear diagnostics for closed document (not actively editing it)
     connection.sendDiagnostics({
       uri: params.textDocument.uri,
       diagnostics: [],
