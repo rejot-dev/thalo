@@ -28,17 +28,28 @@ describe("invalid-default-value rule", () => {
   });
 
   it("accepts valid default value for enum type", () => {
-    // Note: The parser includes leading space before default value
-    // So the default captures as ' "fact"' not '"fact"'
-    // The rule strips quotes for comparison, so this should work
     workspace.addDocument(
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
-  type: "fact" | "insight" ="fact"
+  type: "fact" | "insight" = "fact"
 `,
       { filename: "schema.ptall" },
     );
-    // Note: No space after = to avoid leading space in default value
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-default-value");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("accepts valid default value with union type", () => {
+    workspace.addDocument(
+      `2026-01-01T00:00 define-entity lore "Lore entries"
+  # Metadata
+  status: "unread" | "read" | "processed" = "unread"
+`,
+      { filename: "schema.ptall" },
+    );
 
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-default-value");

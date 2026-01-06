@@ -158,7 +158,7 @@ export default grammar({
 
     default_value: ($) => choice($.literal_type, $._plain_default),
 
-    _plain_default: (_) => token(/[^;\r\n]+/),
+    _plain_default: (_) => token(/[^\s;][^;\r\n]*/),
 
     // ===================
     // Content (for instance entries)
