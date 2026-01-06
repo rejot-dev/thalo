@@ -19,20 +19,32 @@ const severityColor = {
   info: pc.cyan,
 } as const;
 
+function relativePath(filePath: string): string {
+  const cwd = process.cwd();
+  if (filePath.startsWith(cwd)) {
+    const rel = filePath.slice(cwd.length + 1);
+    return rel || filePath;
+  }
+  return filePath;
+}
+
 function formatDiagnosticDefault(diagnostic: Diagnostic): string {
-  const { file, location, severity, code, message } = diagnostic;
+  const { location, severity, code, message } = diagnostic;
   const color = severityColor[severity];
 
-  const loc = `${file}:${location.startPosition.row + 1}:${location.startPosition.column + 1}`;
-  const severityLabel = color(severity.toUpperCase());
-  const codeLabel = pc.dim(`[${code}]`);
+  const line = String(location.startPosition.row + 1);
+  const col = String(location.startPosition.column + 1);
+  const loc = `${line}:${col}`.padEnd(8);
+  const severityLabel = color(severity.padEnd(7));
+  const codeLabel = pc.dim(code);
 
-  return `${pc.bold(loc)} ${severityLabel} ${codeLabel} ${message}`;
+  return `  ${pc.dim(loc)} ${severityLabel} ${message}  ${codeLabel}`;
 }
 
 function formatDiagnosticCompact(diagnostic: Diagnostic): string {
   const { file, location, severity, code, message } = diagnostic;
-  const loc = `${file}:${location.startPosition.row + 1}:${location.startPosition.column + 1}`;
+  const rel = relativePath(file);
+  const loc = `${rel}:${location.startPosition.row + 1}:${location.startPosition.column + 1}`;
   return `${loc}: ${severity[0].toUpperCase()} [${code}] ${message}`;
 }
 
@@ -181,18 +193,43 @@ function outputResults(result: RunResult, options: OutputOptions): void {
     return;
   }
 
-  for (const diagnostic of filtered) {
-    console.log(formatDiagnostic(diagnostic, options.format));
+  if (options.format === "default") {
+    // Group diagnostics by file for cleaner output
+    const byFile = new Map<string, Diagnostic[]>();
+    for (const d of filtered) {
+      const existing = byFile.get(d.file) || [];
+      existing.push(d);
+      byFile.set(d.file, existing);
+    }
+
+    for (const [file, fileDiagnostics] of byFile) {
+      console.log();
+      console.log(pc.underline(relativePath(file)));
+      for (const diagnostic of fileDiagnostics) {
+        console.log(formatDiagnosticDefault(diagnostic));
+      }
+    }
+  } else {
+    for (const diagnostic of filtered) {
+      console.log(formatDiagnostic(diagnostic, options.format));
+    }
   }
 
   if (options.format !== "github") {
     console.log();
-    console.log(
-      `${pc.bold("Found")} ${files.length} files, ${filtered.length} issues ` +
-        `(${pc.red(String(errorCount))} errors, ` +
-        `${pc.yellow(String(warningCount))} warnings, ` +
-        `${pc.cyan(String(infoCount))} info)`,
-    );
+    const parts: string[] = [];
+    if (errorCount > 0) {
+      parts.push(pc.red(`${errorCount} error${errorCount !== 1 ? "s" : ""}`));
+    }
+    if (warningCount > 0) {
+      parts.push(pc.yellow(`${warningCount} warning${warningCount !== 1 ? "s" : ""}`));
+    }
+    if (infoCount > 0) {
+      parts.push(pc.cyan(`${infoCount} info`));
+    }
+
+    const summary = parts.length > 0 ? parts.join(", ") : pc.green("no issues");
+    console.log(`${pc.bold(String(files.length))} files checked, ${summary}`);
   }
 }
 
