@@ -385,16 +385,31 @@ const printSchemaEntry = (node: SyntaxNode): Doc => {
     parts.push(printSchemaHeader(header));
   }
 
+  // Track whether we've printed a block (for adding blank lines between blocks)
+  let hasBlockBefore = false;
+
   // Print blocks in order they appear
   for (const child of node.children) {
     if (child.type === "metadata_block") {
       parts.push(printMetadataBlock(child));
+      hasBlockBefore = true;
     } else if (child.type === "sections_block") {
+      // Add blank line before # Sections if there's a preceding block
+      if (hasBlockBefore) {
+        parts.push(hardline);
+      }
       parts.push(printSectionsBlock(child));
+      hasBlockBefore = true;
     } else if (child.type === "remove_metadata_block") {
       parts.push(printRemoveMetadataBlock(child));
+      hasBlockBefore = true;
     } else if (child.type === "remove_sections_block") {
+      // Add blank line before # Remove Sections if there's a preceding block
+      if (hasBlockBefore) {
+        parts.push(hardline);
+      }
       parts.push(printRemoveSectionsBlock(child));
+      hasBlockBefore = true;
     }
   }
 

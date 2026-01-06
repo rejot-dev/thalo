@@ -54,6 +54,7 @@ tab indentation for metadata
 
 2026-01-05T18:11 create journal "Entry with 4-space content"
 
+    # Notes
     This is content with 4-space indent.
     Second line also 4-space.
 
@@ -68,6 +69,9 @@ tab indentation for metadata
         (entity)
         (title))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))
         (content_line
@@ -79,6 +83,7 @@ tab indentation for content
 
 2026-01-05T18:11 create journal "Entry with tab content"
 
+	# Notes
 	This is content with tab indent.
 	Second line also tab.
 
@@ -93,6 +98,9 @@ tab indentation for content
         (entity)
         (title))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))
         (content_line
@@ -277,6 +285,7 @@ Content-only entry (no metadata)
 
 2026-01-05T18:11 create journal "Just content, no metadata"
 
+  # Thoughts
   This entry has no metadata fields.
   Just content directly after blank line.
 
@@ -291,6 +300,9 @@ Content-only entry (no metadata)
         (entity)
         (title))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))
         (content_line
@@ -302,6 +314,7 @@ Multiple consecutive blank lines in content
 
 2026-01-05T18:11 create journal "Multiple blank lines"
 
+  # Notes
   First paragraph.
 
 
@@ -318,6 +331,9 @@ Multiple consecutive blank lines in content
         (entity)
         (title))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))
         (content_line
@@ -385,6 +401,7 @@ Content line that looks like metadata
 
 2026-01-05T18:11 create journal "Content with colon"
 
+  # Notes
   This line has key: value syntax but is content.
   url: https://example.com is also just content.
 
@@ -399,6 +416,9 @@ Content line that looks like metadata
         (entity)
         (title))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))
         (content_line
@@ -444,4 +464,56 @@ Deeply nested markdown headers
         (content_line
           (content_text))))))
 
+==================
+Content directly after header (no blank line)
+==================
 
+2026-01-05T18:11 create journal "Direct after header"
+  # Summary
+  Content starts right after header, no blank line needed.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+Content directly after metadata (no blank line)
+==================
+
+2026-01-05T18:11 create lore "Direct after metadata"
+  type: fact
+  # Description
+  Content section starts right after metadata, no blank line needed.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))

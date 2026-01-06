@@ -352,6 +352,36 @@ complete define-entity
           (optional_marker))))))
 
 ==================
+blank line between metadata and sections
+==================
+
+2026-01-05T18:12 define-entity reference "Resources with spacing"
+  # Metadata
+  url: string
+
+  # Sections
+  Summary
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type))))
+      (sections_block
+        (section_definition
+          (section_name))))))
+
+==================
 alter-entity adding metadata
 ==================
 

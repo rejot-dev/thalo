@@ -1,11 +1,12 @@
 ==================
-simple content
+content with section header
 ==================
 
 2026-01-05T18:11 create lore "Entry with content"
   type: fact
   subject: acme
 
+  # Description
   This is the content paragraph.
 
 ---
@@ -25,16 +26,20 @@ simple content
         (key)
         (value))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))))))
 
 ==================
-multi-line content
+multi-line content under section
 ==================
 
 2026-01-05T18:11 create lore "Entry with multi-line content"
   type: fact
 
+  # Details
   First line of content.
   Second line of content.
   Third line continues.
@@ -53,40 +58,13 @@ multi-line content
         (key)
         (value))
       (content
-        (content_line
-          (content_text))
-        (content_line
-          (content_text))
-        (content_line
-          (content_text))))))
-
-==================
-content with markdown header
-==================
-
-2026-01-05T18:11 create opinion "Opinion with sections"
-  confidence: high
-
-  # Claim
-  This is the claim text.
-
----
-
-(source_file
-  (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
-      (metadata
-        (key)
-        (value))
-      (content
         (markdown_header
           (md_indicator)
           (md_heading_text))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))
         (content_line
           (content_text))))))
 
@@ -134,6 +112,7 @@ content without metadata
 
 2026-01-05T18:11 create journal "Journal entry"
 
+  # Thoughts
   Just some thoughts I wanted to write down.
 
 ---
@@ -147,6 +126,9 @@ content without metadata
         (entity)
         (title))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))))))
 
@@ -157,6 +139,7 @@ content at EOF without trailing newline
 2026-01-05T18:11 create lore "Entry at EOF"
   type: fact
 
+  # Notes
   First line.
   Last line without newline.
 ---
@@ -173,6 +156,9 @@ content at EOF without trailing newline
         (key)
         (value))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))
         (content_line
@@ -203,3 +189,57 @@ markdown header at EOF without trailing newline
         (markdown_header
           (md_indicator)
           (md_heading_text))))))
+
+==================
+content directly after header (no blank line)
+==================
+
+2026-01-05T18:11 create journal "Direct content"
+  # Summary
+  No blank line needed before content section.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+content directly after metadata (no blank line)
+==================
+
+2026-01-05T18:11 create lore "Direct after metadata"
+  type: fact
+  # Description
+  Section starts right after metadata.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))

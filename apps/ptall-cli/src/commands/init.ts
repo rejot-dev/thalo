@@ -13,6 +13,8 @@ const ENTITIES_PTALL = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   type: string ; "idea, reflection, experience, doubt, question, etc."
   mood?: string ; "Free text mood"
   context?: string ; "What prompted this entry"
+  # Sections
+  Entry ; "The journal entry content"
 
 {{TIMESTAMP}} define-entity opinion "Formed stances on topics"
   # Metadata
@@ -42,6 +44,8 @@ const ENTITIES_PTALL = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   type: "fact" | "insight" ; "fact = verifiable info, insight = learned wisdom"
   subject: string | link ; "Subject name/slug (use ^self for personal lore)"
   date?: date-range ; "Relevant date or date range"
+  # Sections
+  Description ; "The lore content"
 `;
 
 const AGENTS_MD = `# PTALL - Personal Thought And Lore Language
@@ -78,8 +82,8 @@ fields per entity. Values can be:
 
 ## Sections
 
-Content sections start with \`# SectionName\` (indented). Each entity type defines
-which sections are required/optional in \`entities.ptall\`.
+Content sections start with \`# SectionName\` (indented). **All content must be within a section.**
+Each entity type defines which sections are required/optional in \`entities.ptall\`.
 
 ## Example
 

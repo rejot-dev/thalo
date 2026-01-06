@@ -85,10 +85,13 @@ export default grammar({
 
     // Block headers include newline+indent to avoid extras interference
     // Using flexible indent (2+ spaces or tabs)
-    _metadata_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Metadata */),
-    _sections_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Sections */),
-    _remove_metadata_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Remove Metadata */),
-    _remove_sections_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Remove Sections */),
+    // Allow optional blank lines before each header for lenient whitespace
+    _metadata_header: (_) => token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Metadata */),
+    _sections_header: (_) => token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Sections */),
+    _remove_metadata_header: (_) =>
+      token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Remove Metadata */),
+    _remove_sections_header: (_) =>
+      token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Remove Sections */),
 
     // ===================
     // Field definitions
@@ -165,13 +168,14 @@ export default grammar({
     // ===================
 
     // Content block: starts after metadata (or header if no metadata)
-    // MUST start with at least one blank line to distinguish from metadata
+    // Content MUST start with a section header (# Section Name)
+    // Blank lines before content are optional (more lenient whitespace)
     // External _content_blank handles blank/whitespace-only lines properly
     content: ($) =>
       prec.right(
         seq(
-          repeat1($["_content_blank"]),
-          choice($.markdown_header, $.content_line),
+          repeat($["_content_blank"]),
+          $.markdown_header,
           repeat(choice($.markdown_header, $.content_line, $["_content_blank"])),
         ),
       ),

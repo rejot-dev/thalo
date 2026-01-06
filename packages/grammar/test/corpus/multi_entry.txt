@@ -40,12 +40,14 @@ entries with content
   type: fact
   subject: acme
 
+  # Description
   This is the first entry content.
 
 2026-01-05T18:12 create lore "Second entry with content"
   type: fact
   subject: acme
 
+  # Description
   This is the second entry content.
 
 ---
@@ -65,6 +67,9 @@ entries with content
         (key)
         (value))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text)))))
   (entry
@@ -81,6 +86,9 @@ entries with content
         (key)
         (value))
       (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
         (content_line
           (content_text))))))
 

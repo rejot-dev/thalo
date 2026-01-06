@@ -16,6 +16,7 @@ describe("ptall-prettier", () => {
   type: fact
   subject: ^self
 
+  # Description
   Completed MSc Software Engineering at the University of Amsterdam.
 `;
 
@@ -25,6 +26,7 @@ describe("ptall-prettier", () => {
   type: fact
   subject: ^self
 
+  # Description
   Completed MSc Software Engineering at the University of Amsterdam.
 `);
     });
@@ -190,6 +192,7 @@ describe("ptall-prettier", () => {
       const input = `2026-01-05T18:00 create journal "Thoughts" #reflection
   mood: contemplative
 
+  # Reflection
   This is the first line of a longer paragraph
   that continues across multiple lines
   to express a complete thought.
@@ -203,6 +206,7 @@ describe("ptall-prettier", () => {
       expect(output).toBe(`2026-01-05T18:00 create journal "Thoughts" #reflection
   mood: contemplative
 
+  # Reflection
   This is the first line of a longer paragraph
   that continues across multiple lines
   to express a complete thought.
@@ -216,6 +220,7 @@ describe("ptall-prettier", () => {
       const input = `2026-01-05T18:00 create journal "Spaced thoughts" #test
   type: reflection
 
+  # Notes
   First thought.
 
 
@@ -227,6 +232,7 @@ describe("ptall-prettier", () => {
       expect(output).toBe(`2026-01-05T18:00 create journal "Spaced thoughts" #test
   type: reflection
 
+  # Notes
   First thought.
 
 
@@ -240,11 +246,13 @@ describe("ptall-prettier", () => {
       const input = `2026-01-05T15:00 create journal "First entry" #test
   type: reflection
 
+  # Thoughts
   Some thoughts.
 
 2026-01-05T16:00 create journal "Second entry" #test
   type: reflection
 
+  # Thoughts
   More thoughts.
 `;
 
@@ -253,11 +261,13 @@ describe("ptall-prettier", () => {
       expect(output).toBe(`2026-01-05T15:00 create journal "First entry" #test
   type: reflection
 
+  # Thoughts
   Some thoughts.
 
 2026-01-05T16:00 create journal "Second entry" #test
   type: reflection
 
+  # Thoughts
   More thoughts.
 `);
     });
@@ -331,6 +341,38 @@ describe("ptall-prettier", () => {
       const output = await format(input);
 
       expect(output).toBe(``);
+    });
+
+    it("should handle content directly after header (no blank line)", async () => {
+      const input = `2026-01-05T18:00 create journal "Direct content"
+  # Summary
+  Content starts right after header.
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create journal "Direct content"
+
+  # Summary
+  Content starts right after header.
+`);
+    });
+
+    it("should handle content directly after metadata (no blank line)", async () => {
+      const input = `2026-01-05T18:00 create lore "Direct after metadata"
+  type: fact
+  # Description
+  Section starts right after metadata.
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create lore "Direct after metadata"
+  type: fact
+
+  # Description
+  Section starts right after metadata.
+`);
     });
   });
 
@@ -522,6 +564,7 @@ describe("ptall-prettier", () => {
   author?: string | link
   status?: "unread" | "read" = "unread"
   related?: link[]
+
   # Sections
   Summary ; "Brief summary"
   KeyTakeaways?
@@ -621,10 +664,51 @@ describe("ptall-prettier", () => {
   published: date
   # Remove Metadata
   legacy-field
+
   # Sections
   NewSection?
+
   # Remove Sections
   OldSection
+`);
+    });
+
+    it("should add blank line before # Sections when preceded by metadata", async () => {
+      const input = `2026-01-05T18:12 define-entity lore "Simple entity"
+  # Metadata
+  type: string
+  # Sections
+  Description
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:12 define-entity lore "Simple entity"
+  # Metadata
+  type: string
+
+  # Sections
+  Description
+`);
+    });
+
+    it("should preserve blank line when input already has it", async () => {
+      const input = `2026-01-05T18:12 define-entity lore "Simple entity"
+  # Metadata
+  type: string
+
+  # Sections
+  Description
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:12 define-entity lore "Simple entity"
+  # Metadata
+  type: string
+
+  # Sections
+  Description
 `);
     });
   });
