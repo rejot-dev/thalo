@@ -134,7 +134,48 @@ function loadWorkspaceFiles(state: ServerState): void {
 }
 
 /**
- * Update a document in the workspace and publish diagnostics
+ * Publish diagnostics for a single document
+ */
+function publishDiagnosticsForDocument(state: ServerState, doc: TextDocument): void {
+  try {
+    const diagnostics = getDiagnostics(state.workspace, doc);
+    state.connection.sendDiagnostics({
+      uri: doc.uri,
+      diagnostics,
+    });
+  } catch (error) {
+    const path = uriToPath(doc.uri);
+    console.error(`[ptall-lsp] Error getting diagnostics for ${path}:`, error);
+    state.connection.sendDiagnostics({
+      uri: doc.uri,
+      diagnostics: [
+        {
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: 0, character: 0 },
+          },
+          severity: 1, // Error
+          source: "ptall",
+          message: `Diagnostic error: ${error instanceof Error ? error.message : String(error)}`,
+        },
+      ],
+    });
+  }
+}
+
+/**
+ * Refresh diagnostics for all open documents.
+ * This is needed because changes in one file (e.g., removing a define-entity)
+ * can affect diagnostics in other files that depend on it.
+ */
+function refreshAllDiagnostics(state: ServerState): void {
+  for (const doc of state.documents.values()) {
+    publishDiagnosticsForDocument(state, doc);
+  }
+}
+
+/**
+ * Update a document in the workspace and publish diagnostics for all open documents
  */
 function updateDocument(state: ServerState, doc: TextDocument): void {
   const path = uriToPath(doc.uri);
@@ -146,17 +187,14 @@ function updateDocument(state: ServerState, doc: TextDocument): void {
       fileType,
     });
 
-    // Publish diagnostics after successful parse
-    const diagnostics = getDiagnostics(state.workspace, doc);
-    state.connection.sendDiagnostics({
-      uri: doc.uri,
-      diagnostics,
-    });
+    // Refresh diagnostics for all open documents since changes in one file
+    // can affect diagnostics in other files (e.g., entity definitions, links)
+    refreshAllDiagnostics(state);
   } catch (error) {
     // Log parse errors but don't crash
     console.error(`[ptall-lsp] Parse error in ${path}:`, error);
 
-    // Send a parse error diagnostic
+    // Send a parse error diagnostic for the changed document
     state.connection.sendDiagnostics({
       uri: doc.uri,
       diagnostics: [
