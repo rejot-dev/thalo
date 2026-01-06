@@ -1,0 +1,58 @@
+{
+  "name": "@wilco/ptall",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./ast": {
+      "development": "./src/ast/index.ts",
+      "types": "./dist/ast/index.d.ts",
+      "default": "./dist/ast/index.js"
+    },
+    "./model": {
+      "development": "./src/model/index.ts",
+      "types": "./dist/model/index.d.ts",
+      "default": "./dist/model/index.js"
+    },
+    "./schema": {
+      "development": "./src/schema/index.ts",
+      "types": "./dist/schema/index.d.ts",
+      "default": "./dist/schema/index.js"
+    },
+    "./checker": {
+      "development": "./src/checker/index.ts",
+      "types": "./dist/checker/index.d.ts",
+      "default": "./dist/checker/index.js"
+    },
+    "./services": {
+      "development": "./src/services/index.ts",
+      "types": "./dist/services/index.d.ts",
+      "default": "./dist/services/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "types:check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "@wilco/grammar": "workspace:*",
+    "tree-sitter": "^0.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@wilco/typescript-config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
