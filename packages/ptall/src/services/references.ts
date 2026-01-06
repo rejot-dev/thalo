@@ -106,7 +106,7 @@ export function findReferencesAtPosition(
  */
 function findLinkAtOffset(source: string, offset: number): string | undefined {
   // Look for ^link-id pattern at or around the offset
-  const linkRegex = /\^[A-Za-z0-9\-_/.]+/g;
+  const linkRegex = /\^[A-Za-z0-9\-_/.:]+/g;
   let match: RegExpExecArray | null;
 
   while ((match = linkRegex.exec(source)) !== null) {
