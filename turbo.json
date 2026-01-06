@@ -5,7 +5,9 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "types:check": {},
+    "types:check": {
+      "dependsOn": ["^build"]
+    },
     "test": {},
     "dev": {
       "persistent": true,
