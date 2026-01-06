@@ -135,3 +135,53 @@ content without metadata
         (title))
       (content
         (content_line)))))
+
+==================
+content at EOF without trailing newline
+==================
+
+2026-01-05T18:11 create lore "Entry at EOF"
+  type: fact
+
+  First line.
+  Last line without newline.
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (content_line)
+        (content_line)))))
+
+==================
+markdown header at EOF without trailing newline
+==================
+
+2026-01-05T18:11 create opinion "Opinion at EOF"
+  confidence: high
+
+  # Final Section
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header)))))

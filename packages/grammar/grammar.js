@@ -159,12 +159,17 @@ export default grammar({
 
     _content_blank: ($) => $._nl,
 
-    markdown_header: ($) => prec(2, seq($._indent, $._md_hashes, $._md_text, $._eol)),
+    // Note: _eol is optional to handle content at EOF without trailing newline
+    // prec.right ensures we consume the newline when present (prefer shift over reduce)
+    markdown_header: ($) =>
+      prec.right(2, seq($._indent, $._md_hashes, $._md_text, optional($._eol))),
 
     _md_hashes: (_) => token.immediate(/#+/),
     _md_text: (_) => token(/ [^\r\n]+/),
 
-    content_line: ($) => prec(1, seq($._indent, $._content_text, $._eol)),
+    // Note: _eol is optional to handle content at EOF without trailing newline
+    // prec.right ensures we consume the newline when present (prefer shift over reduce)
+    content_line: ($) => prec.right(1, seq($._indent, $._content_text, optional($._eol))),
 
     _content_text: (_) => token(/[^#\r\n][^\r\n]*/),
 

@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "bindings/node",
-  "types": "bindings/node",
+  "main": "bindings/node/index.js",
+  "types": "bindings/node/index.d.ts",
   "files": [
     "grammar.js",
     "binding.gyp",

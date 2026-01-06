@@ -23,6 +23,9 @@ importers:
 
   .:
     devDependencies:
+      '@wilco/ptall-prettier':
+        specifier: workspace:*
+        version: link:packages/ptall-prettier
       lefthook:
         specifier: ^1.13.6
         version: 1.13.6

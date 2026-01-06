@@ -9,6 +9,31 @@ Ptall is a Beancount-inspired syntax for recording structured knowledge entries 
 opinions, references, and journal entries. It also supports a meta-layer for defining entity
 schemas.
 
+## Markdown Integration
+
+Ptall is designed to coexist with markdown. You can embed ptall code blocks inside markdown files
+using fenced code blocks with the `ptall` language identifier:
+
+````markdown
+# My Document
+
+Some markdown content here.
+
+```ptall
+2026-01-05T18:00 create lore "An insight" #example
+  type: insight
+  subject: ^self
+
+  This ptall entry lives inside a markdown file.
+```
+
+More markdown content.
+````
+
+When using the `@wilco/ptall-prettier` plugin, Prettier automatically formats ptall code blocks
+embedded in markdown files. This enables documentation files to include properly formatted ptall
+examples.
+
 ## Instance Entries
 
 Create or update instances of entities (lore, opinion, reference, journal):

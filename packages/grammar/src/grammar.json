@@ -839,7 +839,7 @@
       "name": "_nl"
     },
     "markdown_header": {
-      "type": "PREC",
+      "type": "PREC_RIGHT",
       "value": 2,
       "content": {
         "type": "SEQ",
@@ -857,8 +857,16 @@
             "name": "_md_text"
           },
           {
-            "type": "SYMBOL",
-            "name": "_eol"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_eol"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           }
         ]
       }
@@ -878,7 +886,7 @@
       }
     },
     "content_line": {
-      "type": "PREC",
+      "type": "PREC_RIGHT",
       "value": 1,
       "content": {
         "type": "SEQ",
@@ -892,8 +900,16 @@
             "name": "_content_text"
           },
           {
-            "type": "SYMBOL",
-            "name": "_eol"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_eol"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           }
         ]
       }
