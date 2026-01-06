@@ -1,0 +1,74 @@
+{
+  "name": "ptall-vscode",
+  "displayName": "Ptall",
+  "description": "Syntax highlighting and formatting for ptall (Personal Thought And Lore Language) files",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "wilco",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "main": "./dist/index.js",
+  "activationEvents": [
+    "onLanguage:ptall"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "ptall",
+        "aliases": [
+          "Ptall",
+          "ptall"
+        ],
+        "extensions": [
+          ".ptall"
+        ],
+        "firstLine": "^[12]\\d{3}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d\\s+(create|update|define-entity|alter-entity)",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ptall",
+        "scopeName": "source.ptall",
+        "path": "./syntaxes/ptall.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.ptall.codeblock",
+        "path": "./syntaxes/ptall-markdown.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.ptall": "ptall"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "types:check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "package": "vsce package",
+    "publish": "vsce publish --no-dependencies"
+  },
+  "dependencies": {
+    "@wilco/ptall-prettier": "workspace:*",
+    "prettier": "^3.5.3"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.2",
+    "@wilco/typescript-config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
