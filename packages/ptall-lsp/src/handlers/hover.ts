@@ -86,13 +86,11 @@ function formatInstanceEntry(entry: ModelInstanceEntry): string {
     lines.push(`Tags: ${entry.tags.map((t) => `\`#${t}\``).join(" ")}`);
   }
 
-  // Link IDs
-  const linkIds: string[] = [`\`^${entry.timestamp}\``];
+  // Link ID
   if (entry.linkId) {
-    linkIds.push(`\`^${entry.linkId}\``);
+    lines.push("");
+    lines.push(`Link: \`^${entry.linkId}\``);
   }
-  lines.push("");
-  lines.push(`Links: ${linkIds.join(", ")}`);
 
   // Key metadata
   const metadataToShow = ["subject", "type", "confidence", "status", "ref-type"];
@@ -175,7 +173,7 @@ function getDirectiveDocumentation(directive: string): string | null {
         "  ...",
         "```",
         "",
-        "The timestamp serves as an implicit link ID. You can add an explicit `^link-id` for easier referencing.",
+        "Add an explicit `^link-id` for cross-referencing.",
         "",
         "**Entities:** `journal`, `lore`, `opinion`, `reference`",
       ].join("\n");
@@ -482,10 +480,9 @@ function formatTimestampHover(timestamp: string, entry: ModelEntry | undefined):
     lines.push("");
     lines.push(`Reference with: \`^${timestamp}\``);
   } else {
-    lines.push("Entry timestamp / implicit link ID.");
+    lines.push("Entry timestamp.");
     lines.push("");
-    lines.push("Other entries can reference this using:");
-    lines.push(`\`^${timestamp}\``);
+    lines.push("Add an explicit `^link-id` after the title to enable cross-referencing.");
   }
 
   return lines.join("\n");

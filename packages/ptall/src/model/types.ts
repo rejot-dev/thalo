@@ -55,7 +55,7 @@ export type ModelEntry = ModelInstanceEntry | ModelSchemaEntry;
  */
 export interface ModelInstanceEntry {
   kind: "instance";
-  /** The timestamp from the header (also serves as implicit link ID) */
+  /** The timestamp from the header */
   timestamp: string;
   /** The directive (create or update) */
   directive: "create" | "update";

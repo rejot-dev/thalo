@@ -97,8 +97,8 @@ describe("Document", () => {
 `;
     const doc = Document.parse(source, { filename: "test.ptall" });
 
-    // Timestamp and explicit link ID are both definitions
-    expect(doc.linkIndex.definitions.has("2026-01-05T18:00")).toBe(true);
+    // Only explicit link ID creates a definition (timestamps are not link IDs)
+    expect(doc.linkIndex.definitions.has("2026-01-05T18:00")).toBe(false);
     expect(doc.linkIndex.definitions.has("my-lore")).toBe(true);
 
     // Related is a reference

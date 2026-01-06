@@ -33,11 +33,11 @@ describe("findDefinition", () => {
     expect(result!.definition.entry.timestamp).toBe("2026-01-05T18:00");
   });
 
-  it("finds definition by timestamp", () => {
+  it("returns undefined for timestamp (timestamps are not link IDs)", () => {
+    // Timestamps are not link IDs - only explicit ^link-id creates links
     const result = findDefinition(workspace, "2026-01-05T19:00");
 
-    expect(result).toBeDefined();
-    expect(result!.file).toBe("file2.ptall");
+    expect(result).toBeUndefined();
   });
 
   it("returns undefined for nonexistent link", () => {

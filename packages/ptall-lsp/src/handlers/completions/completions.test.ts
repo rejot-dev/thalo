@@ -538,10 +538,11 @@ describe("LinkProvider", () => {
     const items = linkProvider.getCompletions(ctx, workspace);
 
     const labels = items.map((i) => i.label);
+    // Only explicit link IDs should be suggested (timestamps are not link IDs)
     expect(labels).toContain("^my-lore");
     expect(labels).toContain("^my-opinion");
-    expect(labels).toContain("^2026-01-05T18:00");
-    expect(labels).toContain("^2026-01-05T19:00");
+    expect(labels).not.toContain("^2026-01-05T18:00");
+    expect(labels).not.toContain("^2026-01-05T19:00");
   });
 
   it("filters by partial text", () => {

@@ -295,16 +295,7 @@ function convertTypeExpression(ast: TypeExpression): ModelTypeExpression {
  * Index an entry's links (definitions and references)
  */
 function indexEntry(entry: ModelEntry, index: LinkIndex): void {
-  // Timestamp always acts as an implicit link definition
-  const timestampDef: LinkDefinition = {
-    id: entry.timestamp,
-    file: entry.file,
-    location: entry.location,
-    entry,
-  };
-  index.definitions.set(entry.timestamp, timestampDef);
-
-  // Explicit link ID also creates a definition
+  // Explicit link ID creates a definition
   if (entry.linkId) {
     const linkDef: LinkDefinition = {
       id: entry.linkId,

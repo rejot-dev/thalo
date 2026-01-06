@@ -56,8 +56,8 @@ describe("handleDefinition", () => {
       expect(result!.range.start.line).toBe(0);
     });
 
-    it("should return definition location for timestamp link", () => {
-      // Timestamp links like "^2026-01-05T18:00" should be fully matched
+    it("should return null for timestamp link (timestamps are not link IDs)", () => {
+      // Timestamps are not link IDs - only explicit ^link-id creates links
       const source = `2026-01-06T10:00 create lore "New entry" #test
   type: fact
   related: ^2026-01-05T18:00
@@ -70,8 +70,8 @@ describe("handleDefinition", () => {
 
       const result = handleDefinition(workspace, doc, position);
 
-      expect(result).not.toBeNull();
-      expect(result!.uri).toBe("file:///test.ptall");
+      // Should return null because timestamps are not valid link targets
+      expect(result).toBeNull();
     });
 
     it("should return null when cursor is not on a link", () => {

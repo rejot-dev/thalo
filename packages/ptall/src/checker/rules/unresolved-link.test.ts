@@ -56,7 +56,11 @@ describe("unresolved-link rule", () => {
     expect(warning).toBeUndefined();
   });
 
-  it("does not report resolved link by timestamp", () => {
+  it("requires explicit link IDs for cross-referencing (timestamps cannot be used)", () => {
+    // Timestamps cannot be used as link IDs because:
+    // 1. The grammar doesn't allow colons in link IDs (^[A-Za-z0-9\-_/.]+)
+    // 2. Even without colons, timestamps are not registered as link definitions
+    // Use explicit ^link-id for cross-referencing
     workspace.addDocument(
       `2026-01-05T17:00 create lore "First entry" #test
   type: fact
@@ -65,7 +69,7 @@ describe("unresolved-link rule", () => {
 2026-01-05T18:00 create lore "Second entry" #test
   type: fact
   subject: test
-  related: ^2026-01-05T17:00
+  related: ^first-entry
 `,
       { filename: "test.ptall" },
     );
@@ -73,7 +77,9 @@ describe("unresolved-link rule", () => {
     const diagnostics = check(workspace);
     const warning = diagnostics.find((d) => d.code === "unresolved-link");
 
-    expect(warning).toBeUndefined();
+    // Should report because ^first-entry is not defined
+    expect(warning).toBeDefined();
+    expect(warning?.message).toContain("first-entry");
   });
 
   it("reports multiple unresolved links", () => {

@@ -72,7 +72,7 @@ Metadata fields are indented key-value pairs. See \`entities.ptall\` for require
 fields per entity. Values can be:
 
 - Strings: \`author: "Jane Doe"\` or unquoted \`author: Jane Doe\`
-- Links: \`subject: ^self\` or \`related: ^2026-01-05T15:30\`
+- Links: \`subject: ^self\` or \`related: ^my-other-entry\`
 - Dates: \`published: 2023-03-16\`
 - Date ranges: \`date: 2020 ~ 2021\`
 

@@ -125,7 +125,7 @@ Context-aware hover information for various syntax elements:
 | Directive      | Documentation with syntax and examples                        |
 | Entity name    | Full schema: fields (with types), sections, and where defined |
 | Metadata key   | Field type, required/optional, default value, and description |
-| Timestamp      | Entry info if exists, or link reference hint                  |
+| Timestamp      | Entry info and hint to add explicit link ID for referencing   |
 | Type expr      | Documentation for `string`, `date`, `date-range`, `link`      |
 | Section header | Section description and required/optional status from schema  |
 

@@ -41,7 +41,7 @@ describe("handleHover", () => {
     workspace.addDocument(source, { filename: "/test.ptall" });
 
     // Add a schema definition
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries" #schema
+    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries" ^entity-lore #schema
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -68,7 +68,8 @@ describe("handleHover", () => {
       expect(content).toContain("2026-01-05T18:00");
     });
 
-    it("should show hover info for timestamp link", () => {
+    it("should show unresolved link warning for timestamp link (timestamps are not link IDs)", () => {
+      // Timestamps are not link IDs - only explicit ^link-id creates links
       const doc = createDocument(`  related: ^2026-01-05T18:00`);
 
       const position: Position = { line: 0, character: 20 };
@@ -77,7 +78,8 @@ describe("handleHover", () => {
 
       expect(result).not.toBeNull();
       const content = (result!.contents as { value: string }).value;
-      expect(content).toContain("Test entry about TypeScript");
+      // Should show unresolved link warning
+      expect(content).toContain("Unknown link");
     });
 
     it("should show warning for unresolved link", () => {
@@ -106,7 +108,7 @@ describe("handleHover", () => {
       expect(content).toContain("#testing");
     });
 
-    it("should include link IDs in hover info", () => {
+    it("should include explicit link ID in hover info", () => {
       const doc = createDocument(`  related: ^ts-lore`);
 
       const position: Position = { line: 0, character: 15 };
@@ -115,8 +117,7 @@ describe("handleHover", () => {
 
       expect(result).not.toBeNull();
       const content = (result!.contents as { value: string }).value;
-      // Should show both timestamp and explicit link ID
-      expect(content).toContain("^2026-01-05T18:00");
+      // Should show explicit link ID only (timestamps are not link IDs)
       expect(content).toContain("^ts-lore");
     });
 
@@ -203,7 +204,7 @@ describe("handleHover", () => {
 
   describe("schema entry hover", () => {
     it("should show hover info for schema definition link", () => {
-      const doc = createDocument(`  entity: ^2026-01-01T00:00`);
+      const doc = createDocument(`  entity: ^entity-lore`);
 
       const position: Position = { line: 0, character: 15 };
 
@@ -328,7 +329,7 @@ describe("handleHover", () => {
       expect(content).toContain("Test entry about TypeScript");
     });
 
-    it("should show reference hint for new timestamp", () => {
+    it("should show hint to add explicit link-id for new timestamp", () => {
       const doc = createDocument(`2026-01-07T12:00 create lore "New"`);
 
       // Position cursor on timestamp
@@ -339,7 +340,9 @@ describe("handleHover", () => {
       expect(result).not.toBeNull();
       const content = (result!.contents as { value: string }).value;
       expect(content).toContain("Timestamp:");
-      expect(content).toContain("^2026-01-07T12:00");
+      // Timestamps are not link IDs - should show hint to add explicit link-id
+      expect(content).toContain("explicit");
+      expect(content).toContain("link-id");
     });
   });
 

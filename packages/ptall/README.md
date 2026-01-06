@@ -111,11 +111,10 @@ The checker includes 23 fully implemented validation rules, plus 2 placeholder r
 
 ### Link Rules
 
-| Code                  | Severity | Description                                     |
-| --------------------- | -------- | ----------------------------------------------- |
-| `unresolved-link`     | warning  | Link reference (`^id`) has no definition        |
-| `duplicate-link-id`   | error    | Same explicit `^link-id` defined multiple times |
-| `duplicate-timestamp` | warning  | Multiple entries share the same timestamp       |
+| Code                | Severity | Description                                     |
+| ------------------- | -------- | ----------------------------------------------- |
+| `unresolved-link`   | warning  | Link reference (`^id`) has no definition        |
+| `duplicate-link-id` | error    | Same explicit `^link-id` defined multiple times |
 
 ### Schema Definition Rules
 

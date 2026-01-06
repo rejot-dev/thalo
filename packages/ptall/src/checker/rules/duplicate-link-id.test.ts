@@ -80,9 +80,8 @@ describe("duplicate-link-id rule", () => {
     expect(errors).toHaveLength(0);
   });
 
-  it("does not report duplicate timestamps (implicit IDs)", () => {
-    // Duplicate timestamps are handled by duplicate-timestamp rule
-    // This rule only handles explicit ^link-id duplicates
+  it("does not report duplicate timestamps (not link IDs)", () => {
+    // Timestamps are not link IDs - only explicit ^link-id creates links
     workspace.addDocument(
       `2026-01-05T18:00 create lore "First entry" #test
   type: fact
@@ -96,7 +95,7 @@ describe("duplicate-link-id rule", () => {
     const diagnostics = check(workspace);
     const errors = diagnostics.filter((d) => d.code === "duplicate-link-id");
 
-    // Should not report, since timestamps aren't explicit link IDs
+    // Should not report, since timestamps aren't link IDs
     expect(errors).toHaveLength(0);
   });
 

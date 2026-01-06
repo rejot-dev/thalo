@@ -20,9 +20,6 @@ import { removeUndefinedFieldRule } from "./remove-undefined-field.js";
 import { removeUndefinedSectionRule } from "./remove-undefined-section.js";
 import { invalidDefaultValueRule } from "./invalid-default-value.js";
 
-// Timestamp rules
-import { duplicateTimestampRule } from "./duplicate-timestamp.js";
-
 // Metadata value rules
 import { duplicateMetadataKeyRule } from "./duplicate-metadata-key.js";
 import { emptyRequiredValueRule } from "./empty-required-value.js";
@@ -62,9 +59,6 @@ export const allRules: Rule[] = [
   removeUndefinedFieldRule,
   removeUndefinedSectionRule,
   invalidDefaultValueRule,
-
-  // Timestamp rules
-  duplicateTimestampRule,
 
   // Metadata value rules
   duplicateMetadataKeyRule,
