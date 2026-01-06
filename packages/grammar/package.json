@@ -18,6 +18,7 @@
     "test": "tree-sitter test"
   },
   "devDependencies": {
+    "@wilco/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "node-gyp": "^10.2.0",
     "tree-sitter-cli": "^0.26.3",

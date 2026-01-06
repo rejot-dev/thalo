@@ -8,4 +8,5 @@ catalog:
   vitest: ^3.2.4
 
 onlyBuiltDependencies:
+  - tree-sitter
   - tree-sitter-cli

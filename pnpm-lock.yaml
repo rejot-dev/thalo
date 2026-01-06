@@ -53,6 +53,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
+      '@wilco/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       node-addon-api:
         specifier: ^8.5.0
         version: 8.5.0
@@ -67,6 +70,13 @@ importers:
         version: 0.26.3
 
   packages/scripts:
+    dependencies:
+      '@wilco/grammar':
+        specifier: workspace:*
+        version: link:../grammar
+      tree-sitter:
+        specifier: ^0.25.0
+        version: 0.25.0
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1210,6 +1220,9 @@ packages:
     resolution: {integrity: sha512-1VHpmjnTsYJk03HDqzLGn9dmJaLsJ7YeGsnnSudC6XOZu5oasz0GEVOIVCTe6hA01YZJgHd1XGO6XJZe0Sj7tw==}
     engines: {node: '>=12.0.0'}
     hasBin: true
+
+  tree-sitter@0.25.0:
+    resolution: {integrity: sha512-PGZZzFW63eElZJDe/b/R/LbsjDDYJa5UEjLZJB59RQsMX+fo0j54fqBPn1MGKav/QNa0JR0zBiVaikYDWCj5KQ==}
 
   tsdown@0.15.12:
     resolution: {integrity: sha512-c8VLlQm8/lFrOAg5VMVeN4NAbejZyVQkzd+ErjuaQgJFI/9MhR9ivr0H/CM7UlOF1+ELlF6YaI7sU/4itgGQ8w==}
@@ -2367,6 +2380,11 @@ snapshots:
   tree-kill@1.2.2: {}
 
   tree-sitter-cli@0.26.3: {}
+
+  tree-sitter@0.25.0:
+    dependencies:
+      node-addon-api: 8.5.0
+      node-gyp-build: 4.8.4
 
   tsdown@0.15.12(typescript@5.9.3):
     dependencies:

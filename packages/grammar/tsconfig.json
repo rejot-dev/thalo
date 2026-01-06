@@ -1,0 +1,11 @@
+{
+  "extends": "@wilco/typescript-config/tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["tree-sitter-cli/dsl"]
+  },
+  "include": ["grammar.js"]
+}

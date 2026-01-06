@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { hello } from "./index";
+import { hello, parsePtall } from "./index";
 
 describe("hello", () => {
   it("should log the correct message", () => {
@@ -14,5 +14,14 @@ describe("hello", () => {
 
     // Restore the original console.log
     consoleLogSpy.mockRestore();
+  });
+});
+
+describe("parsePtall", () => {
+  it("should parse 'hello' as a source_file", () => {
+    const tree = parsePtall("hello");
+
+    expect(tree.rootNode.type).toBe("source_file");
+    expect(tree.rootNode.text).toBe("hello");
   });
 });
