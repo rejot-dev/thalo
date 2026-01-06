@@ -1,0 +1,27 @@
+{
+  "name": "@wilco/grammar",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "files": [
+    "grammar.js",
+    "binding.gyp",
+    "prebuilds/**",
+    "bindings/node/*",
+    "queries/*",
+    "src/**"
+  ],
+  "scripts": {
+    "build": "tree-sitter build",
+    "test": "tree-sitter test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "node-gyp": "^10.2.0",
+    "tree-sitter-cli": "^0.26.3",
+    "node-addon-api": "^8.5.0",
+    "node-gyp-build": "^4.8.4"
+  }
+}

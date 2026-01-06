@@ -1,0 +1,36 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "ptall",
+      "camelcase": "ptAll",
+      "title": "Plain-text All",
+      "scope": "source.ptall",
+      "file-types": ["ptall"],
+      "injection-regex": "^ptall$",
+      "class-name": "TreeSitterPtall"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Ptall grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Wilco Kruijer",
+        "email": "wilco@rejot.dev",
+        "url": "rejot.dev"
+      }
+    ]
+  },
+  "bindings": {
+    "c": true,
+    "go": false,
+    "java": false,
+    "node": true,
+    "python": false,
+    "rust": false,
+    "swift": false,
+    "zig": false
+  }
+}
