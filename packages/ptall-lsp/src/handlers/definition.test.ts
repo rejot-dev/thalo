@@ -143,6 +143,113 @@ describe("handleDefinition", () => {
     });
   });
 
+  describe("entity navigation", () => {
+    it("should navigate from entity name to define-entity", () => {
+      // Add a schema with entity definition
+      const schemaSource = `2026-01-05T10:00 define-entity custom "Custom entity"
+  # Metadata
+  name: string
+`;
+      workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
+
+      const instanceSource = `2026-01-06T10:00 create custom "Test custom entry"
+  name: test
+`;
+      const doc = createDocument(instanceSource, "file:///instance.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/instance.ptall" });
+
+      // Position cursor on "custom" entity name in create line
+      // "2026-01-06T10:00 create custom" - custom starts at character 24
+      const position: Position = { line: 0, character: 24 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///schema.ptall");
+      expect(result!.range.start.line).toBe(0);
+    });
+
+    it("should navigate from alter-entity to define-entity", () => {
+      const schemaSource = `2026-01-05T10:00 define-entity lore "Facts and insights"
+  # Metadata
+  type: string
+`;
+      workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
+
+      const alterSource = `2026-01-06T10:00 alter-entity lore "Add subject field"
+  # Metadata
+  subject: string
+`;
+      const doc = createDocument(alterSource, "file:///alter.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/alter.ptall" });
+
+      // Position cursor on "lore" entity name in alter-entity line
+      // "2026-01-06T10:00 alter-entity lore" - lore starts around character 30
+      const position: Position = { line: 0, character: 30 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///schema.ptall");
+    });
+  });
+
+  describe("metadata key navigation", () => {
+    it("should navigate from metadata key to field definition", () => {
+      const schemaSource = `2026-01-05T10:00 define-entity opinion "Stances"
+  # Metadata
+  confidence: "high" | "medium" | "low"
+`;
+      workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
+
+      const instanceSource = `2026-01-06T10:00 create opinion "Test opinion"
+  confidence: high
+`;
+      const doc = createDocument(instanceSource, "file:///instance.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/instance.ptall" });
+
+      // Position cursor on "confidence" metadata key
+      // "  confidence: high" - confidence starts at character 2
+      const position: Position = { line: 1, character: 5 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///schema.ptall");
+    });
+  });
+
+  describe("section header navigation", () => {
+    it("should navigate from section header to section definition", () => {
+      const schemaSource = `2026-01-05T10:00 define-entity opinion "Stances"
+  # Metadata
+  confidence: string
+  # Sections
+  Claim
+  Reasoning
+`;
+      workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
+
+      const instanceSource = `2026-01-06T10:00 create opinion "Test opinion"
+  confidence: high
+
+  # Claim
+  This is my claim.
+`;
+      const doc = createDocument(instanceSource, "file:///instance.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/instance.ptall" });
+
+      // Position cursor on "Claim" section header
+      // "  # Claim" - Claim starts at character 4
+      const position: Position = { line: 3, character: 5 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///schema.ptall");
+    });
+  });
+
   describe("edge cases", () => {
     it("should handle cursor inside link text", () => {
       // "  related: ^ts-lore" - ^ at 11, ts-lore is 12-18

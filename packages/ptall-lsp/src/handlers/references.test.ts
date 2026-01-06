@@ -108,15 +108,97 @@ describe("handleReferences", () => {
     });
   });
 
-  describe("edge cases", () => {
-    it("should return null when cursor is not on a link", () => {
+  describe("tag references", () => {
+    it("should find all entries with a tag", () => {
       const doc = createDocument(
         workspace.getDocument("/file1.ptall")!.source,
         "file:///file1.ptall",
       );
 
-      // Position cursor on "type: fact" (no link)
-      const position: Position = { line: 1, character: 5 };
+      // Position cursor on #typescript tag
+      // '2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript'
+      // #typescript starts at character 72
+      const position: Position = { line: 0, character: 75 };
+      const context: ReferenceContext = { includeDeclaration: true };
+
+      const result = handleReferences(workspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find entries with #typescript: file1 entry and file2's opinion entry
+      expect(result!.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe("entity references", () => {
+    it("should find all entries using an entity type", () => {
+      const schemaSource = `2026-01-05T10:00 define-entity lore "Facts and insights"
+  # Metadata
+  type: string
+`;
+      workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
+
+      const doc = createDocument(schemaSource, "file:///schema.ptall");
+
+      // Position cursor on "lore" in define-entity
+      // "2026-01-05T10:00 define-entity lore" - lore starts at character 31
+      const position: Position = { line: 0, character: 31 };
+      const context: ReferenceContext = { includeDeclaration: true };
+
+      const result = handleReferences(workspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find the definition plus all lore entries in file1/file2
+      expect(result!.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("should find entity references from instance entry", () => {
+      const doc = createDocument(
+        workspace.getDocument("/file1.ptall")!.source,
+        "file:///file1.ptall",
+      );
+
+      // Position cursor on "lore" entity name in create line
+      // "2026-01-05T18:00 create lore" - lore is at position after "create "
+      const position: Position = { line: 0, character: 24 };
+      const context: ReferenceContext = { includeDeclaration: true };
+
+      const result = handleReferences(workspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find all lore entries
+      expect(result!.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("metadata key references", () => {
+    it("should find all entries using a metadata key", () => {
+      const doc = createDocument(
+        workspace.getDocument("/file1.ptall")!.source,
+        "file:///file1.ptall",
+      );
+
+      // Position cursor on "type" metadata key
+      // "  type: fact" - type starts at character 2
+      const position: Position = { line: 1, character: 3 };
+      const context: ReferenceContext = { includeDeclaration: true };
+
+      const result = handleReferences(workspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find entries using "type" field (file1 lore, file2 journal)
+      expect(result!.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should return null when cursor is not on a navigable element", () => {
+      const doc = createDocument(
+        workspace.getDocument("/file1.ptall")!.source,
+        "file:///file1.ptall",
+      );
+
+      // Position cursor in whitespace at start of line (not on any element)
+      const position: Position = { line: 1, character: 0 };
       const context: ReferenceContext = { includeDeclaration: true };
 
       const result = handleReferences(workspace, doc, position, context);

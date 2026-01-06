@@ -4,14 +4,14 @@ Language Server Protocol (LSP) implementation for **ptall** (Personal Thought An
 
 ## Features
 
-| Feature             | Status | Description                                 |
-| ------------------- | ------ | ------------------------------------------- |
-| Go to Definition    | ✅     | Navigate to `^link-id` definitions          |
-| Find All References | ✅     | Find all usages of a `^link-id`             |
-| Semantic Tokens     | ✅     | Syntax highlighting via LSP                 |
-| Diagnostics         | ✅     | Validation errors and warnings              |
-| Hover               | ✅     | Context-aware info for all syntax elements  |
-| Completions         | ✅     | Schema-aware suggestions throughout entries |
+| Feature             | Status | Description                                      |
+| ------------------- | ------ | ------------------------------------------------ |
+| Go to Definition    | ✅     | Navigate to definitions (links, entities, etc.)  |
+| Find All References | ✅     | Find usages of links, tags, entities, and fields |
+| Semantic Tokens     | ✅     | Syntax highlighting via LSP                      |
+| Diagnostics         | ✅     | Validation errors and warnings                   |
+| Hover               | ✅     | Context-aware info for all syntax elements       |
+| Completions         | ✅     | Schema-aware suggestions throughout entries      |
 
 ## Architecture
 
@@ -91,14 +91,28 @@ The server can be integrated with any editor that supports LSP:
 
 ### Go to Definition
 
-Navigate to where a `^link-id` is defined. Supports:
+Navigate to the definition of various syntax elements:
 
-- Explicit link IDs: `^my-link-id`
-- Timestamp links: `^2026-01-05T15:30`
+| Element                      | Navigates to                        |
+| ---------------------------- | ----------------------------------- |
+| `^link-id`                   | Entry where the link is defined     |
+| Entity name (`create lore`)  | `define-entity` for that entity     |
+| Metadata key (`confidence:`) | Field definition in entity schema   |
+| Section header (`# Claim`)   | Section definition in entity schema |
+| `alter-entity` entity name   | Original `define-entity`            |
 
 ### Find All References
 
-Find all places where a link ID is used across the workspace.
+Find all usages of various syntax elements across the workspace:
+
+| Element                     | Finds                              |
+| --------------------------- | ---------------------------------- |
+| `^link-id`                  | All references to that link        |
+| `#tag`                      | All entries with that tag          |
+| Entity name                 | All entries using that entity type |
+| Metadata key                | All entries using that field       |
+| Section header              | All entries with that section      |
+| `define-entity` entity name | All usages + alter-entity entries  |
 
 ### Hover
 
