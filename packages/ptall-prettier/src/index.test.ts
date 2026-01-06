@@ -188,6 +188,30 @@ describe("ptall-prettier", () => {
 `);
     });
 
+    it("should normalize multiple spaces in content section headers", async () => {
+      const input = `2026-01-05T16:00 create opinion "Test" #test
+  confidence: high
+
+  # Key  Takeaways
+  Some content.
+
+  ## Related   Items
+  More content.
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T16:00 create opinion "Test" #test
+  confidence: high
+
+  # Key Takeaways
+  Some content.
+
+  ## Related Items
+  More content.
+`);
+    });
+
     it("should format multi-line content paragraphs", async () => {
       const input = `2026-01-05T18:00 create journal "Thoughts" #reflection
   mood: contemplative
@@ -571,6 +595,38 @@ describe("ptall-prettier", () => {
 `);
     });
 
+    it("should format section names with spaces", async () => {
+      const input = `2026-01-05T18:12 define-entity reference "Resources"
+  # Sections
+  Key Takeaways? ; "main points"
+  Related Items
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:12 define-entity reference "Resources"
+  # Sections
+  Key Takeaways? ; "main points"
+  Related Items
+`);
+    });
+
+    it("should normalize multiple spaces in section names to single space", async () => {
+      const input = `2026-01-05T18:12 define-entity reference "Resources"
+  # Sections
+  Key  Takeaways? ; "main points"
+  Related   Items
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:12 define-entity reference "Resources"
+  # Sections
+  Key Takeaways? ; "main points"
+  Related Items
+`);
+    });
+
     it("should format alter-entity adding metadata", async () => {
       const input = `2026-01-10T14:00 alter-entity reference "Add published field"
   # Metadata
@@ -624,6 +680,20 @@ describe("ptall-prettier", () => {
       expect(output).toBe(`2026-01-10T14:00 alter-entity reference "Remove section"
   # Remove Sections
   OldSection ; "no longer needed"
+`);
+    });
+
+    it("should format alter-entity removing sections with spaces in name", async () => {
+      const input = `2026-01-10T14:00 alter-entity reference "Remove section"
+  # Remove Sections
+  Old Section Name ; "deprecated section"
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-10T14:00 alter-entity reference "Remove section"
+  # Remove Sections
+  Old Section Name ; "deprecated section"
 `);
     });
 

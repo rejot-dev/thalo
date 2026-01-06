@@ -129,9 +129,9 @@ export default grammar({
 
     // Match section name with preceding newline and indent
     // Section names: start with uppercase, can contain spaces between words
-    // Pattern: [A-Z][a-zA-Z0-9]*( [a-zA-Z0-9]+)* - no leading/trailing spaces
+    // Pattern: [A-Z][a-zA-Z0-9]*( +[a-zA-Z0-9]+)* - allows 1+ spaces (formatter normalizes to 1)
     _section_line_start: ($) => alias($._section_name_token, $["section_name"]),
-    _section_name_token: (_) => token(/\r?\n(?:\t|[ \t][ \t])+[A-Z][a-zA-Z0-9]*( [a-zA-Z0-9]+)*/),
+    _section_name_token: (_) => token(/\r?\n(?:\t|[ \t][ \t])+[A-Z][a-zA-Z0-9]*( +[a-zA-Z0-9]+)*/),
 
     // ===================
     // Removals (for alter-entity)

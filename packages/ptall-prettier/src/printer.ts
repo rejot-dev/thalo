@@ -70,6 +70,9 @@ const printMarkdownHeader = (node: SyntaxNode): Doc => {
     }
   }
 
+  // Normalize multiple spaces to single space in header text
+  text = text.replace(/ +/g, " ");
+
   return ["  ", hashes, text];
 };
 
@@ -270,9 +273,12 @@ const printSectionDefinition = (node: SyntaxNode): Doc => {
   const sectionName = node.children.find((c) => c.type === "section_name");
   if (sectionName) {
     // Extract just the section name from the token (which includes \n and indent)
-    const nameMatch = sectionName.text.match(/[A-Z][a-zA-Z0-9]*/);
+    // Section names can have spaces: "Key Takeaways", "Related Items", etc.
+    // Match allows 1+ spaces between words, then normalize to single space
+    const nameMatch = sectionName.text.match(/[A-Z][a-zA-Z0-9]*(?: +[a-zA-Z0-9]+)*/);
     if (nameMatch) {
-      parts.push(nameMatch[0]);
+      // Normalize multiple spaces to single space
+      parts.push(nameMatch[0].replace(/ +/g, " "));
     }
   }
 
@@ -318,9 +324,12 @@ const printSectionRemoval = (node: SyntaxNode): Doc => {
   // Section name
   const sectionName = node.children.find((c) => c.type === "section_name");
   if (sectionName) {
-    const nameMatch = sectionName.text.match(/[A-Z][a-zA-Z0-9]*/);
+    // Section names can have spaces: "Key Takeaways", "Related Items", etc.
+    // Match allows 1+ spaces between words, then normalize to single space
+    const nameMatch = sectionName.text.match(/[A-Z][a-zA-Z0-9]*(?: +[a-zA-Z0-9]+)*/);
     if (nameMatch) {
-      parts.push(nameMatch[0]);
+      // Normalize multiple spaces to single space
+      parts.push(nameMatch[0].replace(/ +/g, " "));
     }
   }
 

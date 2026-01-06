@@ -20,6 +20,7 @@
       },
       "end": "^(?=[12]\\d{3}-[01]\\d-[0-3]\\dT|$(?!\\s))",
       "patterns": [
+        { "include": "#comment" },
         { "include": "#title" },
         { "include": "#link" },
         { "include": "#tag" },
@@ -36,6 +37,7 @@
       },
       "end": "^(?=[12]\\d{3}-[01]\\d-[0-3]\\dT|$(?!\\s))",
       "patterns": [
+        { "include": "#comment" },
         { "include": "#title" },
         { "include": "#link" },
         { "include": "#tag" },
@@ -78,6 +80,7 @@
     },
     "schema-block": {
       "patterns": [
+        { "include": "#comment" },
         { "include": "#schema-header" },
         { "include": "#field-definition" },
         { "include": "#section-definition" }
@@ -106,7 +109,7 @@
       }
     },
     "section-definition": {
-      "match": "^(  )([A-Z][a-zA-Z0-9]*)(\\?)?(?:(;)\\s*(\"[^\"]*\"))?",
+      "match": "^(  )([A-Z][a-zA-Z0-9]*(?: +[a-zA-Z0-9]+)*)(\\?)?(?:(;)\\s*(\"[^\"]*\"))?",
       "captures": {
         "2": { "name": "markup.heading.section.ptall" },
         "3": { "name": "keyword.operator.optional.ptall" },
@@ -139,7 +142,11 @@
       "match": "\\|"
     },
     "content": {
-      "patterns": [{ "include": "#markdown-header" }, { "include": "#content-line" }]
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#markdown-header" },
+        { "include": "#content-line" }
+      ]
     },
     "markdown-header": {
       "match": "^(  )(#+)(.*)$",

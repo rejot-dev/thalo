@@ -34,8 +34,9 @@
   (description)? @comment)
 
 ; Section definitions in schema
+; Using @variable instead of @label since @label isn't in most themes
 (section_definition
-  (section_name) @label
+  (section_name) @variable
   (optional_marker)? @punctuation.special
   (description)? @comment)
 
@@ -63,7 +64,7 @@
   (description)? @comment)
 
 (section_removal
-  (section_name) @label
+  (section_name) @variable
   (description)? @comment)
 
 ; Description strings (in schema definitions)
