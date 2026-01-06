@@ -1,6 +1,6 @@
 {
   "name": "ptall-vscode",
-  "displayName": "Ptall",
+  "displayName": "Personal Thought And Lore Language",
   "description": "Syntax highlighting and formatting for ptall (Personal Thought And Lore Language) files",
   "version": "0.0.1",
   "private": true,

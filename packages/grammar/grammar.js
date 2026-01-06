@@ -3,7 +3,7 @@ export default grammar({
 
   extras: ($) => [" ", $.comment],
 
-  conflicts: ($) => [[$.instance_entry], [$.content]],
+  conflicts: ($) => [[$.instance_entry]],
 
   rules: {
     source_file: ($) => repeat(choice($.entry, $._nl)),
@@ -73,10 +73,11 @@ export default grammar({
       prec(2, seq($._remove_sections_header, repeat1($.section_removal))),
 
     // Block headers include newline+indent to avoid extras interference
-    _metadata_header: (_) => token(/\r?\n {2}# Metadata */),
-    _sections_header: (_) => token(/\r?\n {2}# Sections */),
-    _remove_metadata_header: (_) => token(/\r?\n {2}# Remove Metadata */),
-    _remove_sections_header: (_) => token(/\r?\n {2}# Remove Sections */),
+    // Using flexible indent (2+ spaces or tabs)
+    _metadata_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Metadata */),
+    _sections_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Sections */),
+    _remove_metadata_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Remove Metadata */),
+    _remove_sections_header: (_) => token(/\r?\n(?:\t|[ \t][ \t])+# Remove Sections */),
 
     // ===================
     // Field definitions
@@ -92,9 +93,9 @@ export default grammar({
         optional(seq(";", field("description", $.description))),
       ),
 
-    // Match field name with preceding newline and indent
+    // Match field name with preceding newline and indent (flexible indent)
     _field_line_start: ($) => alias($._field_name_token, $["field_name"]),
-    _field_name_token: (_) => token(/\r?\n {2}[a-z][a-zA-Z0-9\-_]*/),
+    _field_name_token: (_) => token(/\r?\n(?:\t|[ \t][ \t])+[a-z][a-zA-Z0-9\-_]*/),
 
     optional_marker: (_) => "?",
 
@@ -113,8 +114,9 @@ export default grammar({
       ),
 
     // Match section name with preceding newline and indent
+    // Match section name with preceding newline and indent (flexible indent)
     _section_line_start: ($) => alias($._section_name_token, $["section_name"]),
-    _section_name_token: (_) => token(/\r?\n {2}[A-Z][a-zA-Z0-9]*/),
+    _section_name_token: (_) => token(/\r?\n(?:\t|[ \t][ \t])+[A-Z][a-zA-Z0-9]*/),
 
     // ===================
     // Removals (for alter-entity)
@@ -150,31 +152,43 @@ export default grammar({
     // Content (for instance entries)
     // ===================
 
+    // Content block: starts after metadata (or header if no metadata)
+    // Must contain at least one actual content element (not just blank lines)
+    // Each content element includes its preceding newline to prevent extras interference
     content: ($) =>
-      seq(
-        $._nl,
-        repeat($._content_blank),
-        $._content_first,
-        repeat(choice($.markdown_header, $.content_line, $._content_blank)),
+      prec.right(
+        seq(
+          repeat($._content_blank),
+          choice($.markdown_header, $.content_line),
+          repeat(choice($.markdown_header, $.content_line, $._content_blank)),
+        ),
       ),
 
-    _content_first: ($) => choice($.markdown_header, $.content_line),
+    _content_blank: (_) => /\r?\n/,
 
-    _content_blank: ($) => $._nl,
-
-    // Note: _eol is optional to handle content at EOF without trailing newline
-    // prec.right ensures we consume the newline when present (prefer shift over reduce)
+    // Content section lines - use separate tokens that parse the indent and content separately
+    // This forces the lexer to use the more specific pattern first
     markdown_header: ($) =>
-      prec.right(2, seq($._indent, $._md_hashes, $._md_text, optional($._eol))),
+      prec.right(
+        2,
+        seq($._content_line_start, $.md_indicator, $.md_heading_text, optional($._eol)),
+      ),
 
-    _md_hashes: (_) => token.immediate(/#+/),
-    _md_text: (_) => token(/ [^\r\n]+/),
+    content_line: ($) =>
+      prec.right(1, seq($._content_line_start, $.content_text, optional($._eol))),
 
-    // Note: _eol is optional to handle content at EOF without trailing newline
-    // prec.right ensures we consume the newline when present (prefer shift over reduce)
-    content_line: ($) => prec.right(1, seq($._indent, $._content_text, optional($._eol))),
+    // Matches newline + indent - shared by both header and content
+    // Using + after the quantifier group to ensure greedy matching of all spaces
+    _content_line_start: (_) => token(/\r?\n(?:\t|[ \t][ \t])+/),
 
-    _content_text: (_) => token(/[^#\r\n][^\r\n]*/),
+    // Markdown header indicator (one or more #)
+    md_indicator: (_) => token.immediate(/#+/),
+
+    // Text after markdown hashes (starts with space)
+    md_heading_text: (_) => token.immediate(/ [^\r\n]+/),
+
+    // Regular content text (must not start with #)
+    content_text: (_) => token.immediate(/[^#\r\n][^\r\n]*/),
 
     // ===================
     // Common tokens
@@ -182,7 +196,7 @@ export default grammar({
 
     _nl: (_) => /\r?\n/,
 
-    _indent: (_) => token.immediate(/ {2}/),
+    _indent: (_) => token.immediate(/\t+|[ \t]{2,}/),
 
     _eol: (_) => /\r?\n/,
 

@@ -65,7 +65,8 @@ entries with content
         (key)
         (value))
       (content
-        (content_line))))
+        (content_line
+          (content_text)))))
   (entry
     (instance_entry
       (instance_header
@@ -80,7 +81,8 @@ entries with content
         (key)
         (value))
       (content
-        (content_line)))))
+        (content_line
+          (content_text))))))
 
 ==================
 three entries mixed
@@ -126,8 +128,11 @@ three entries mixed
         (key)
         (value))
       (content
-        (markdown_header)
-        (content_line))))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text)))))
   (entry
     (instance_entry
       (instance_header

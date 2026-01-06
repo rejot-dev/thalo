@@ -18,7 +18,17 @@ export const parsePtall = (source: string): Parser.Tree => {
 };
 
 export const parser = {
-  parse: (text: string) => parsePtall(text).rootNode,
+  parse: (text: string) => {
+    const tree = parsePtall(text);
+    if (tree.rootNode.hasError) {
+      throw new Error(
+        "Parse error: The file contains syntax errors. " +
+          "Please check that field definitions and sections use exactly 2 spaces of indentation. " +
+          "Run tree-sitter parse to see detailed error locations.",
+      );
+    }
+    return tree.rootNode;
+  },
   astFormat: "ptall-ast",
   locStart: (node: SyntaxNode) => node.startIndex,
   locEnd: (node: SyntaxNode) => node.endIndex,

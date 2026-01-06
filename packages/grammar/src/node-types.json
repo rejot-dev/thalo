@@ -40,7 +40,17 @@
   {
     "type": "content_line",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "content_text",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "default_value",
@@ -268,7 +278,21 @@
   {
     "type": "markdown_header",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "md_heading_text",
+          "named": true
+        },
+        {
+          "type": "md_indicator",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "metadata",
@@ -625,6 +649,10 @@
     "extra": true
   },
   {
+    "type": "content_text",
+    "named": true
+  },
+  {
     "type": "create",
     "named": false
   },
@@ -659,6 +687,14 @@
   {
     "type": "lore",
     "named": false
+  },
+  {
+    "type": "md_heading_text",
+    "named": true
+  },
+  {
+    "type": "md_indicator",
+    "named": true
   },
   {
     "type": "opinion",

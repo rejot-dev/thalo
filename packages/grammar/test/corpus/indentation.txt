@@ -1,0 +1,171 @@
+==================
+4-space indentation for metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with 4-space indent"
+    type: fact
+    subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+tab indentation for metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with tab indent"
+	type: fact
+	subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+4-space indentation for content
+==================
+
+2026-01-05T18:11 create journal "Entry with 4-space content"
+
+    This is content with 4-space indent.
+    Second line also 4-space.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
+
+==================
+tab indentation for content
+==================
+
+2026-01-05T18:11 create journal "Entry with tab content"
+
+	This is content with tab indent.
+	Second line also tab.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
+
+==================
+tab indentation for markdown header
+==================
+
+2026-01-05T18:11 create opinion "Opinion with tab indent"
+	confidence: high
+
+	# Claim
+	This is the claim.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+mixed 4-space indent throughout
+==================
+
+2026-01-05T18:11 create opinion "Full 4-space example"
+    confidence: high
+    related: ^other
+
+    # Claim
+    Indentation should be flexible.
+    # Reasoning
+    Different editors use different defaults.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value
+          (link)))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))

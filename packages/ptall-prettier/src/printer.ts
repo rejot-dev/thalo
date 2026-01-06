@@ -45,23 +45,23 @@ const printMetadata = (node: SyntaxNode): Doc => {
 };
 
 const printMarkdownHeader = (node: SyntaxNode): Doc => {
-  // Extract hashes and text from the node
+  // Extract hashes and text from the node (new grammar uses md_indicator and md_heading_text)
   let hashes = "";
   let text = "";
 
   for (const child of node.children) {
-    if (child.type === "_md_hashes") {
+    if (child.type === "md_indicator") {
       hashes = child.text;
-    } else if (child.type === "_md_text") {
+    } else if (child.type === "md_heading_text") {
       text = child.text;
     }
   }
 
   // If we couldn't get structured parts, fall back to reconstructing from text
-  // Note: node.text includes trailing newline from grammar's $._eol
+  // Note: node.text includes preceding newline from grammar's _content_line_start
   if (!hashes) {
-    const trimmedText = node.text.replace(/[\r\n]+$/, "");
-    const match = trimmedText.match(/^\s*(#+)\s*(.*)$/);
+    const trimmedText = node.text.replace(/^[\r\n\s]+/, "").replace(/[\r\n]+$/, "");
+    const match = trimmedText.match(/^(#+)\s*(.*)$/);
     if (match) {
       hashes = match[1];
       text = " " + match[2];
@@ -74,9 +74,15 @@ const printMarkdownHeader = (node: SyntaxNode): Doc => {
 };
 
 const printContentLine = (node: SyntaxNode): Doc => {
-  // Content line text, trimmed of leading indent and trailing newline
-  // (grammar includes $._eol in content_line)
-  const text = node.text.replace(/^ {2}/, "").replace(/[\r\n]+$/, "");
+  // New grammar: content_line has content_text child
+  const contentText = node.children.find((c) => c.type === "content_text");
+  if (contentText) {
+    return ["  ", contentText.text.trim()];
+  }
+
+  // Fallback: Content line text, trimmed of leading newline/indent and trailing newline
+  // (grammar includes _content_line_start which has the newline+indent)
+  const text = node.text.replace(/^[\r\n\s]+/, "").replace(/[\r\n]+$/, "");
   return ["  ", text];
 };
 

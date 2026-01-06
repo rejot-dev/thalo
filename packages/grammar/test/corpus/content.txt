@@ -25,7 +25,8 @@ simple content
         (key)
         (value))
       (content
-        (content_line)))))
+        (content_line
+          (content_text))))))
 
 ==================
 multi-line content
@@ -52,9 +53,12 @@ multi-line content
         (key)
         (value))
       (content
-        (content_line)
-        (content_line)
-        (content_line)))))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
 
 ==================
 content with markdown header
@@ -80,8 +84,11 @@ content with markdown header
         (key)
         (value))
       (content
-        (markdown_header)
-        (content_line)))))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
 
 ==================
 content with multiple sections
@@ -110,10 +117,16 @@ content with multiple sections
         (key)
         (value))
       (content
-        (markdown_header)
-        (content_line)
-        (markdown_header)
-        (content_line)))))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
 
 ==================
 content without metadata
@@ -134,7 +147,8 @@ content without metadata
         (entity)
         (title))
       (content
-        (content_line)))))
+        (content_line
+          (content_text))))))
 
 ==================
 content at EOF without trailing newline
@@ -159,8 +173,10 @@ content at EOF without trailing newline
         (key)
         (value))
       (content
-        (content_line)
-        (content_line)))))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
 
 ==================
 markdown header at EOF without trailing newline
@@ -184,4 +200,6 @@ markdown header at EOF without trailing newline
         (key)
         (value))
       (content
-        (markdown_header)))))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))))))
