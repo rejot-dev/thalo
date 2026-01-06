@@ -82,10 +82,10 @@ static bool in_error_recovery(const bool *valid_symbols) {
 /**
  * @brief Check if a line has valid indentation
  *
- * Valid indentation is at least 2 spaces or at least 1 tab.
+ * Valid indentation is at least 1 space or at least 1 tab.
  */
 static bool has_valid_indent(int indent, bool has_tab) {
-    return has_tab || indent >= 2;
+    return has_tab || indent >= 1;
 }
 
 /**

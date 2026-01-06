@@ -220,3 +220,228 @@ Empty Whitespace
       (metadata
         (key)
         (value)))))
+
+==================
+1-space indentation for metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with 1-space indent"
+ type: fact
+ subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+2-space indentation for metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with 2-space indent"
+  type: fact
+  subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+Content-only entry (no metadata)
+==================
+
+2026-01-05T18:11 create journal "Just content, no metadata"
+
+  This entry has no metadata fields.
+  Just content directly after blank line.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
+
+==================
+Multiple consecutive blank lines in content
+==================
+
+2026-01-05T18:11 create journal "Multiple blank lines"
+
+  First paragraph.
+
+
+  Second paragraph after two blank lines.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
+
+==================
+Entry ending at EOF (no trailing newline)
+:skip
+==================
+
+2026-01-05T18:11 create lore "Entry at EOF"
+  type: fact
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+Mixed tabs and spaces in same entry
+==================
+
+2026-01-05T18:11 create opinion "Mixed indent styles"
+	confidence: high
+  related: ^other
+
+	# Claim
+  This mixes tabs and spaces.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value
+          (link)))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+Content line that looks like metadata
+==================
+
+2026-01-05T18:11 create journal "Content with colon"
+
+  This line has key: value syntax but is content.
+  url: https://example.com is also just content.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
+
+==================
+Deeply nested markdown headers
+==================
+
+2026-01-05T18:11 create journal "Multi-level headers"
+
+  # Level 1
+  Some text.
+  ## Level 2
+  More text.
+  ### Level 3
+  Even more text.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+
