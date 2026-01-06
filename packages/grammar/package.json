@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "build": "tree-sitter build",
-    "test": "tree-sitter test"
+    "test": "tree-sitter test",
+    "types:check": "tsc --noEmit"
   },
   "devDependencies": {
     "@wilco/typescript-config": "workspace:*",

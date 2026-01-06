@@ -90,7 +90,7 @@ export default grammar({
       ),
 
     // Match field name with preceding newline and indent
-    _field_line_start: ($) => alias($._field_name_token, $.field_name),
+    _field_line_start: ($) => alias($._field_name_token, $["field_name"]),
     _field_name_token: (_) => token(/\r?\n {2}[a-z][a-zA-Z0-9\-_]*/),
 
     optional_marker: (_) => "?",
@@ -110,7 +110,7 @@ export default grammar({
       ),
 
     // Match section name with preceding newline and indent
-    _section_line_start: ($) => alias($._section_name_token, $.section_name),
+    _section_line_start: ($) => alias($._section_name_token, $["section_name"]),
     _section_name_token: (_) => token(/\r?\n {2}[A-Z][a-zA-Z0-9]*/),
 
     // ===================
