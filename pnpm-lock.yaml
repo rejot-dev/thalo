@@ -69,6 +69,34 @@ importers:
         specifier: ^0.26.3
         version: 0.26.3
 
+  packages/ptall-prettier:
+    dependencies:
+      '@wilco/grammar':
+        specifier: workspace:*
+        version: link:../grammar
+      tree-sitter:
+        specifier: ^0.25.0
+        version: 0.25.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
+      '@wilco/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      prettier:
+        specifier: ^3.5.3
+        version: 3.6.2
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.15.12(typescript@5.9.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
+
   packages/scripts:
     dependencies:
       '@wilco/grammar':
