@@ -59,8 +59,10 @@
     "publish": "vsce publish --no-dependencies"
   },
   "dependencies": {
+    "@wilco/ptall-lsp": "workspace:*",
     "@wilco/ptall-prettier": "workspace:*",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",
