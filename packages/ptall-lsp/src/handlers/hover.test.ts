@@ -217,6 +217,132 @@ describe("handleHover", () => {
     });
   });
 
+  describe("directive hover", () => {
+    it("should show documentation for create directive", () => {
+      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"`);
+
+      // Position cursor on "create"
+      const position: Position = { line: 0, character: 20 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("`create` directive");
+      expect(content).toContain("Creates a new instance entry");
+    });
+
+    it("should show documentation for define-entity directive", () => {
+      const doc = createDocument(`2026-01-07T10:00 define-entity custom "Custom entity"`);
+
+      // Position cursor on "define-entity"
+      const position: Position = { line: 0, character: 22 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("`define-entity` directive");
+      expect(content).toContain("Defines a new entity schema");
+    });
+  });
+
+  describe("entity hover", () => {
+    it("should show entity schema for known entity", () => {
+      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"`);
+
+      // Position cursor on "lore"
+      const position: Position = { line: 0, character: 28 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Entity: `lore`");
+      expect(content).toContain("Lore entries");
+      expect(content).toContain("Metadata Fields");
+    });
+
+    it("should show warning for unknown entity", () => {
+      const doc = createDocument(`2026-01-07T10:00 create unknown-entity "New entry"`);
+
+      // Position cursor on "unknown-entity"
+      const position: Position = { line: 0, character: 30 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Unknown entity");
+      expect(content).toContain("define-entity");
+    });
+  });
+
+  describe("metadata key hover", () => {
+    it("should show field info for known field", () => {
+      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"\n  type: fact`);
+
+      // Position cursor on "type" key
+      const position: Position = { line: 1, character: 4 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Field: `type`");
+      expect(content).toContain("From entity `lore`");
+    });
+
+    it("should show message for unknown field", () => {
+      const doc = createDocument(
+        `2026-01-07T10:00 create lore "New entry"\n  unknown-field: value`,
+      );
+
+      // Position cursor on "unknown-field"
+      const position: Position = { line: 1, character: 8 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Field:");
+      expect(content).toContain("unknown-field");
+      expect(content).toContain("Not defined in entity schema");
+    });
+  });
+
+  describe("timestamp hover", () => {
+    it("should show entry info for timestamp in header", () => {
+      const doc = createDocument(`2026-01-05T18:00 create lore "Test"`);
+
+      // Position cursor on timestamp
+      const position: Position = { line: 0, character: 8 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Timestamp:");
+      expect(content).toContain("2026-01-05T18:00");
+      // This timestamp exists in workspace, so should show entry
+      expect(content).toContain("Test entry about TypeScript");
+    });
+
+    it("should show reference hint for new timestamp", () => {
+      const doc = createDocument(`2026-01-07T12:00 create lore "New"`);
+
+      // Position cursor on timestamp
+      const position: Position = { line: 0, character: 8 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Timestamp:");
+      expect(content).toContain("^2026-01-07T12:00");
+    });
+  });
+
   describe("edge cases", () => {
     it("should return null when cursor is not on a link or tag", () => {
       const doc = createDocument(`  type: fact`);

@@ -4,14 +4,14 @@ Language Server Protocol (LSP) implementation for **ptall** (Personal Thought An
 
 ## Features
 
-| Feature             | Status | Description                        |
-| ------------------- | ------ | ---------------------------------- |
-| Go to Definition    | ✅     | Navigate to `^link-id` definitions |
-| Find All References | ✅     | Find all usages of a `^link-id`    |
-| Semantic Tokens     | ✅     | Syntax highlighting via LSP        |
-| Diagnostics         | ✅     | Validation errors and warnings     |
-| Hover               | ✅     | Show link target details on hover  |
-| Completions         | ✅     | Suggest `^link-ids` and `#tags`    |
+| Feature             | Status | Description                                 |
+| ------------------- | ------ | ------------------------------------------- |
+| Go to Definition    | ✅     | Navigate to `^link-id` definitions          |
+| Find All References | ✅     | Find all usages of a `^link-id`             |
+| Semantic Tokens     | ✅     | Syntax highlighting via LSP                 |
+| Diagnostics         | ✅     | Validation errors and warnings              |
+| Hover               | ✅     | Context-aware info for all syntax elements  |
+| Completions         | ✅     | Schema-aware suggestions throughout entries |
 
 ## Architecture
 
@@ -102,10 +102,18 @@ Find all places where a link ID is used across the workspace.
 
 ### Hover
 
-Shows entry details when hovering over:
+Context-aware hover information for various syntax elements:
 
-- `^link-id` references - displays entry title, metadata, and location
-- `#tags` - shows count and list of entries with that tag
+| Element        | Information shown                                             |
+| -------------- | ------------------------------------------------------------- |
+| `^link-id`     | Entry title, metadata, tags, and file location                |
+| `#tag`         | Usage count and list of entries with that tag                 |
+| Directive      | Documentation with syntax and examples                        |
+| Entity name    | Full schema: fields (with types), sections, and where defined |
+| Metadata key   | Field type, required/optional, default value, and description |
+| Timestamp      | Entry info if exists, or link reference hint                  |
+| Type expr      | Documentation for `string`, `date`, `date-range`, `link`      |
+| Section header | Section description and required/optional status from schema  |
 
 ### Completions
 
