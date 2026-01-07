@@ -250,6 +250,79 @@ describe("handleDefinition", () => {
     });
   });
 
+  describe("synthesis entry navigation", () => {
+    it("should navigate from actualize-synthesis target to define-synthesis", () => {
+      // Add a synthesis definition
+      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career
+  sources: lore where #career
+
+  # Prompt
+  Write a professional career summary.
+`;
+      workspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
+
+      // Create an actualize entry
+      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00
+`;
+      const doc = createDocument(actualizeSource, "file:///actualize.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/actualize.ptall" });
+
+      // Position cursor on ^career-summary target link
+      // "2026-01-06T15:00 actualize-synthesis ^career-summary"
+      // ^career-summary starts around character 37
+      const position: Position = { line: 0, character: 45 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///synthesis.ptall");
+      expect(result!.range.start.line).toBe(0);
+    });
+
+    it("should navigate from link reference to synthesis definition", () => {
+      // Add a synthesis definition
+      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career
+  sources: lore where #career
+
+  # Prompt
+  Write a professional career summary.
+`;
+      workspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
+
+      // Reference the synthesis from another entry
+      const referenceSource = `2026-01-06T12:00 create lore "Related lore" #career
+  type: fact
+  related: ^career-summary
+`;
+      const doc = createDocument(referenceSource, "file:///reference.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/reference.ptall" });
+
+      // Position cursor on ^career-summary
+      const position: Position = { line: 2, character: 15 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///synthesis.ptall");
+    });
+
+    it("should return null for unresolved synthesis target", () => {
+      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^nonexistent-synthesis
+  updated: 2026-01-06T15:00
+`;
+      const doc = createDocument(actualizeSource, "file:///actualize.ptall");
+      workspace.addDocument(doc.getText(), { filename: "/actualize.ptall" });
+
+      // Position cursor on the nonexistent link
+      const position: Position = { line: 0, character: 45 };
+
+      const result = handleDefinition(workspace, doc, position);
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe("edge cases", () => {
     it("should handle cursor inside link text", () => {
       // "  related: ^ts-lore" - ^ at 11, ts-lore is 12-18

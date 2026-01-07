@@ -190,6 +190,99 @@ describe("handleReferences", () => {
     });
   });
 
+  describe("synthesis entry references", () => {
+    let synthesisWorkspace: Workspace;
+
+    beforeEach(() => {
+      synthesisWorkspace = new Workspace();
+
+      // Add a synthesis definition
+      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career
+  sources: lore where #career
+
+  # Prompt
+  Write a professional career summary.
+`;
+      synthesisWorkspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
+
+      // Add an actualize entry referencing the synthesis
+      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00
+`;
+      synthesisWorkspace.addDocument(actualizeSource, { filename: "/actualize.ptall" });
+
+      // Add a lore entry that references the synthesis
+      const loreSource = `2026-01-07T10:00 create lore "Related to career summary" #career
+  type: fact
+  related: ^career-summary
+`;
+      synthesisWorkspace.addDocument(loreSource, { filename: "/lore.ptall" });
+    });
+
+    it("should find all references to a synthesis entry", () => {
+      const doc = createDocument(
+        synthesisWorkspace.getDocument("/synthesis.ptall")!.source,
+        "file:///synthesis.ptall",
+      );
+
+      // Position cursor on ^career-summary in the definition header
+      // "2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career"
+      // ^career-summary starts around character 50
+      const position: Position = { line: 0, character: 55 };
+      const context: ReferenceContext = { includeDeclaration: true };
+
+      const result = handleReferences(synthesisWorkspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find: 1 definition + 2 references (actualize + lore)
+      expect(result!.length).toBe(3);
+    });
+
+    it("should find synthesis definition from actualize-synthesis target", () => {
+      const doc = createDocument(
+        synthesisWorkspace.getDocument("/actualize.ptall")!.source,
+        "file:///actualize.ptall",
+      );
+
+      // Position cursor on ^career-summary in actualize entry
+      const position: Position = { line: 0, character: 45 };
+      const context: ReferenceContext = { includeDeclaration: true };
+
+      const result = handleReferences(synthesisWorkspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find all references including definition
+      expect(result!.length).toBeGreaterThanOrEqual(2);
+
+      // One should be the synthesis definition
+      const hasDefinition = result!.some((loc) => loc.uri.includes("synthesis.ptall"));
+      expect(hasDefinition).toBe(true);
+    });
+
+    it("should find synthesis references without definition when requested", () => {
+      const doc = createDocument(
+        synthesisWorkspace.getDocument("/synthesis.ptall")!.source,
+        "file:///synthesis.ptall",
+      );
+
+      // Position cursor on ^career-summary
+      const position: Position = { line: 0, character: 55 };
+      const context: ReferenceContext = { includeDeclaration: false };
+
+      const result = handleReferences(synthesisWorkspace, doc, position, context);
+
+      expect(result).not.toBeNull();
+      // Should find only references, not the definition
+      expect(result!.length).toBe(2);
+
+      // Should not include the definition file for the definition itself
+      const nonDefinitionRefs = result!.filter(
+        (loc) => !loc.uri.includes("synthesis.ptall") || loc.range.start.line !== 0,
+      );
+      expect(nonDefinitionRefs.length).toBe(2);
+    });
+  });
+
   describe("edge cases", () => {
     it("should return null when cursor is not on a navigable element", () => {
       const doc = createDocument(

@@ -165,6 +165,30 @@ More text.
 
       expect(result.data.length).toBeGreaterThan(0);
     });
+
+    it("should tokenize synthesis entries (define-synthesis)", () => {
+      const doc =
+        createDocument(`2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career #summary
+  sources: lore where #career
+
+  # Prompt
+  Write a professional career summary.
+`);
+
+      const result = handleSemanticTokens(doc);
+
+      expect(result.data.length).toBeGreaterThan(0);
+    });
+
+    it("should tokenize synthesis entries (actualize-synthesis)", () => {
+      const doc = createDocument(`2026-01-06T15:00 actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00
+`);
+
+      const result = handleSemanticTokens(doc);
+
+      expect(result.data.length).toBeGreaterThan(0);
+    });
   });
 
   describe("complex documents", () => {

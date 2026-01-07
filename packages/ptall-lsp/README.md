@@ -93,59 +93,63 @@ The server can be integrated with any editor that supports LSP:
 
 Navigate to the definition of various syntax elements:
 
-| Element                      | Navigates to                        |
-| ---------------------------- | ----------------------------------- |
-| `^link-id`                   | Entry where the link is defined     |
-| Entity name (`create lore`)  | `define-entity` for that entity     |
-| Metadata key (`confidence:`) | Field definition in entity schema   |
-| Section header (`# Claim`)   | Section definition in entity schema |
-| `alter-entity` entity name   | Original `define-entity`            |
+| Element                       | Navigates to                        |
+| ----------------------------- | ----------------------------------- |
+| `^link-id`                    | Entry where the link is defined     |
+| Entity name (`create lore`)   | `define-entity` for that entity     |
+| Metadata key (`confidence:`)  | Field definition in entity schema   |
+| Section header (`# Claim`)    | Section definition in entity schema |
+| `alter-entity` entity name    | Original `define-entity`            |
+| `actualize-synthesis ^target` | `define-synthesis` target entry     |
 
 ### Find All References
 
 Find all usages of various syntax elements across the workspace:
 
-| Element                     | Finds                              |
-| --------------------------- | ---------------------------------- |
-| `^link-id`                  | All references to that link        |
-| `#tag`                      | All entries with that tag          |
-| Entity name                 | All entries using that entity type |
-| Metadata key                | All entries using that field       |
-| Section header              | All entries with that section      |
-| `define-entity` entity name | All usages + alter-entity entries  |
+| Element                       | Finds                                       |
+| ----------------------------- | ------------------------------------------- |
+| `^link-id`                    | All references to that link                 |
+| `#tag`                        | All entries with that tag                   |
+| Entity name                   | All entries using that entity type          |
+| Metadata key                  | All entries using that field                |
+| Section header                | All entries with that section               |
+| `define-entity` entity name   | All usages + alter-entity entries           |
+| `define-synthesis` `^link-id` | All references + actualize-synthesis usages |
 
 ### Hover
 
 Context-aware hover information for various syntax elements:
 
-| Element        | Information shown                                             |
-| -------------- | ------------------------------------------------------------- |
-| `^link-id`     | Entry title, metadata, tags, and file location                |
-| `#tag`         | Usage count and list of entries with that tag                 |
-| Directive      | Documentation with syntax and examples                        |
-| Entity name    | Full schema: fields (with types), sections, and where defined |
-| Metadata key   | Field type, required/optional, default value, and description |
-| Timestamp      | Entry info and hint to add explicit link ID for referencing   |
-| Type expr      | Documentation for `string`, `date`, `date-range`, `link`      |
-| Section header | Section description and required/optional status from schema  |
+| Element               | Information shown                                             |
+| --------------------- | ------------------------------------------------------------- |
+| `^link-id`            | Entry title, metadata, tags, and file location                |
+| `#tag`                | Usage count and list of entries with that tag                 |
+| Directive             | Documentation with syntax and examples                        |
+| Entity name           | Full schema: fields (with types), sections, and where defined |
+| Metadata key          | Field type, required/optional, default value, and description |
+| Timestamp             | Entry info and hint to add explicit link ID for referencing   |
+| Type expr             | Documentation for `string`, `date`, `date-range`, `link`      |
+| Section header        | Section description and required/optional status from schema  |
+| `define-synthesis`    | Documentation for defining synthesis operations               |
+| `actualize-synthesis` | Documentation for triggering synthesis regeneration           |
 
 ### Completions
 
 Context-aware completions throughout the entry lifecycle:
 
-| Context         | Trigger                    | Suggests                                            |
-| --------------- | -------------------------- | --------------------------------------------------- |
-| Empty line      | Start typing               | Current timestamp (`2026-01-06T14:30`)              |
-| After timestamp | Space                      | Directives (`create`, `update`, `define-entity`)    |
-| After directive | Space                      | Entity types (`lore`, `opinion`, `reference`, etc.) |
-| After title     | `^` or `#`                 | Link IDs or tags                                    |
-| Metadata key    | Indented line              | Field names from entity schema                      |
-| Metadata value  | After `key:`               | Valid values (literals, `^self`, etc.)              |
-| Content section | `#` in content area        | Section names from schema (`Claim`, `Reasoning`)    |
-| Schema block    | `#` in schema entry        | `# Metadata`, `# Sections`, etc.                    |
-| Field type      | After field name in schema | `string`, `date`, `link`, `date-range`              |
-| Link reference  | `^`                        | All link IDs from workspace                         |
-| Tag             | `#`                        | Existing tags with usage counts                     |
+| Context         | Trigger                    | Suggests                                                                       |
+| --------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| Empty line      | Start typing               | Current timestamp (`2026-01-06T14:30`)                                         |
+| After timestamp | Space                      | All directives (`create`, `update`, `define-entity`, `define-synthesis`, etc.) |
+| After directive | Space                      | Entity types (`lore`, `opinion`, `reference`, etc.)                            |
+| After title     | `^` or `#`                 | Link IDs or tags                                                               |
+| Metadata key    | Indented line              | Field names from entity schema                                                 |
+| Metadata value  | After `key:`               | Valid values (literals, `^self`, etc.)                                         |
+| Content section | `#` in content area        | Section names from schema (`Claim`, `Reasoning`)                               |
+| Schema block    | `#` in schema entry        | `# Metadata`, `# Sections`, etc.                                               |
+| Field type      | After field name in schema | `string`, `date`, `link`, `date-range`                                         |
+| Link reference  | `^`                        | All link IDs from workspace                                                    |
+| Tag             | `#`                        | Existing tags with usage counts                                                |
 
 **Schema-aware**: Metadata keys, values, and sections are pulled from entity schemas defined via
 `define-entity`.
@@ -171,9 +175,42 @@ Real-time validation errors using the `@wilco/ptall` checker:
 Provides rich syntax highlighting for:
 
 - Timestamps
-- Directives (create, update, define-entity, alter-entity)
+- Directives (`create`, `update`, `define-entity`, `alter-entity`, `define-synthesis`,
+  `actualize-synthesis`)
 - Entity types
-- Link references
+- Link references (with declaration modifier for definitions)
 - Tags
 - Metadata keys and values
 - Section headers
+
+## Limitations
+
+### Not Yet Implemented
+
+- **Rename Symbol**: No support for renaming link IDs, tags, or entities across files
+- **Code Actions**: No quick fixes or refactoring actions
+- **Workspace Symbols**: No symbol search across the workspace
+- **Document Symbols**: No outline/breadcrumb support for entry structure
+- **Folding Ranges**: No collapsible regions for entries or sections
+- **Document Links**: No clickable links in content (only `^link-id` in metadata)
+- **Signature Help**: No parameter hints (not applicable to ptall syntax)
+- **Call Hierarchy**: No incoming/outgoing call navigation
+- **Type Hierarchy**: No type relationship navigation
+
+### Partial Support
+
+- **Incremental Updates**: Full document re-parse on each edit (no incremental parsing)
+- **Large Workspaces**: Performance may degrade with very large `.ptall` files (>10K lines)
+- **Markdown Files**: Only `.ptall` code blocks within `.md` files are parsed; frontmatter is
+  ignored
+- **Query Language**: The `sources:` field in `define-synthesis` entries is not semantically
+  validated
+- **Synthesis Completions**: No specialized completions for synthesis query syntax (`where` clauses,
+  etc.)
+
+### Known Issues
+
+- Hover on timestamps shows entry info but timestamps are not valid link targets (use explicit
+  `^link-id`)
+- Section header completions only appear when cursor is directly after `#` in content area
+- Field type completions in schema entries don't suggest custom entity types for nested references

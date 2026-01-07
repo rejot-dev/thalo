@@ -1,6 +1,6 @@
 import type { Position } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
-import { isSchemaDirective } from "@wilco/ptall";
+import { isSchemaDirective, isSynthesisDirective } from "@wilco/ptall";
 
 // ===================
 // Context Kinds
@@ -32,12 +32,14 @@ export type CompletionContextKind =
  * Information about the entry being edited.
  */
 export interface EntryInfo {
-  /** The directive (create, update, define-entity, alter-entity) */
+  /** The directive (create, update, define-entity, alter-entity, define-synthesis, actualize-synthesis) */
   directive?: string;
   /** The entity type (lore, opinion, etc.) or entity name for schema entries */
   entity?: string;
   /** Whether this is a schema entry (define-entity/alter-entity) */
   isSchemaEntry?: boolean;
+  /** Whether this is a synthesis entry (define-synthesis/actualize-synthesis) */
+  isSynthesisEntry?: boolean;
   /** Metadata keys already present in the entry */
   existingMetadataKeys?: string[];
 }
@@ -127,10 +129,16 @@ function parseEntryInfo(headerText: string): EntryInfo {
     const directive = parts[1];
     info.directive = directive;
     info.isSchemaEntry = isSchemaDirective(directive);
+    info.isSynthesisEntry = isSynthesisDirective(directive);
   }
 
   if (parts.length >= 3) {
-    info.entity = parts[2];
+    // For synthesis entries, part[2] is either a title or ^link
+    if (info.isSynthesisEntry) {
+      info.entity = "synthesis";
+    } else {
+      info.entity = parts[2];
+    }
   }
 
   return info;
@@ -281,6 +289,7 @@ export function detectContext(document: TextDocument, position: Position): Compl
 
     ctx.entry.directive = directive;
     ctx.entry.isSchemaEntry = isSchemaDirective(directive);
+    ctx.entry.isSynthesisEntry = isSynthesisDirective(directive);
 
     // After directive -> suggest entity
     if (parts.length === 1 && !afterTimestamp.endsWith(" ")) {

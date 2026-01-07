@@ -13,8 +13,15 @@ export const INSTANCE_DIRECTIVES = ["create", "update"] as const;
 /** Directives for schema entries (define-entity/alter-entity) */
 export const SCHEMA_DIRECTIVES = ["define-entity", "alter-entity"] as const;
 
+/** Directives for synthesis entries (define-synthesis/actualize-synthesis) */
+export const SYNTHESIS_DIRECTIVES = ["define-synthesis", "actualize-synthesis"] as const;
+
 /** All directives */
-export const ALL_DIRECTIVES = [...INSTANCE_DIRECTIVES, ...SCHEMA_DIRECTIVES] as const;
+export const ALL_DIRECTIVES = [
+  ...INSTANCE_DIRECTIVES,
+  ...SCHEMA_DIRECTIVES,
+  ...SYNTHESIS_DIRECTIVES,
+] as const;
 
 // ===================
 // Primitive Types (for schema definitions)
@@ -41,6 +48,7 @@ export const SCHEMA_BLOCK_HEADERS = [
 
 export type InstanceDirective = (typeof INSTANCE_DIRECTIVES)[number];
 export type SchemaDirective = (typeof SCHEMA_DIRECTIVES)[number];
+export type SynthesisDirective = (typeof SYNTHESIS_DIRECTIVES)[number];
 export type Directive = (typeof ALL_DIRECTIVES)[number];
 export type PrimitiveType = (typeof PRIMITIVE_TYPES)[number];
 export type SchemaBlockHeader = (typeof SCHEMA_BLOCK_HEADERS)[number];
@@ -55,6 +63,10 @@ export function isInstanceDirective(value: string): value is InstanceDirective {
 
 export function isSchemaDirective(value: string): value is SchemaDirective {
   return (SCHEMA_DIRECTIVES as readonly string[]).includes(value);
+}
+
+export function isSynthesisDirective(value: string): value is SynthesisDirective {
+  return (SYNTHESIS_DIRECTIVES as readonly string[]).includes(value);
 }
 
 export function isDirective(value: string): value is Directive {

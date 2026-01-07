@@ -304,6 +304,58 @@ function getDirectiveDocumentation(directive: string): string | null {
         "All blocks are optional. Only include what you're changing.",
       ].join("\n");
 
+    case "define-synthesis":
+      return [
+        "### `define-synthesis` directive",
+        "",
+        "Defines a synthesis operation that queries entries and generates content via LLM.",
+        "",
+        "**Syntax:**",
+        "```",
+        '{timestamp} define-synthesis "Title" ^link-id [#tags...]',
+        "  sources: {entity} where {conditions}",
+        "",
+        "  # Prompt",
+        "  Instructions for the LLM...",
+        "```",
+        "",
+        "**Query language:**",
+        "- `{entity} where {conditions}` — Query entries",
+        "- Conditions: `field = value`, `#tag`, `^link`",
+        "- Multiple queries: comma-separated",
+        "",
+        "**Example:**",
+        "```",
+        '2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary',
+        "  sources: lore where subject = ^self and #career",
+        "",
+        "  # Prompt",
+        "  Write a professional career summary from these lore entries.",
+        "```",
+      ].join("\n");
+
+    case "actualize-synthesis":
+      return [
+        "### `actualize-synthesis` directive",
+        "",
+        "Triggers a synthesis to regenerate its output based on current data.",
+        "",
+        "**Syntax:**",
+        "```",
+        "{timestamp} actualize-synthesis ^target-synthesis",
+        "  updated: {timestamp}",
+        "```",
+        "",
+        "**Required metadata:**",
+        "- `updated:` — Timestamp when the synthesis was actualized",
+        "",
+        "**Example:**",
+        "```",
+        "2026-01-05T15:30 actualize-synthesis ^career-summary",
+        "  updated: 2026-01-05T15:30",
+        "```",
+      ].join("\n");
+
     default:
       return null;
   }
@@ -747,7 +799,14 @@ interface HeaderToken {
  */
 function tokenizeHeader(text: string): HeaderToken[] {
   const tokens: HeaderToken[] = [];
-  const directives = ["create", "update", "define-entity", "alter-entity"];
+  const directives = [
+    "create",
+    "update",
+    "define-entity",
+    "alter-entity",
+    "define-synthesis",
+    "actualize-synthesis",
+  ];
 
   // Simple regex-based tokenization
   const parts = text.match(/(?:"[^"]*"|[\^#]?[\w\-:.]+)/g) || [];
@@ -758,7 +817,12 @@ function tokenizeHeader(text: string): HeaderToken[] {
     if (i === 0 && directives.includes(part)) {
       tokens.push({ type: "directive", text: part });
     } else if (i === 1 && !part.startsWith('"') && !part.startsWith("^") && !part.startsWith("#")) {
-      tokens.push({ type: "entity", text: part });
+      // For actualize-synthesis, the second token is a link (^target)
+      if (parts[0] === "actualize-synthesis" && part.startsWith("^")) {
+        tokens.push({ type: "link", text: part });
+      } else {
+        tokens.push({ type: "entity", text: part });
+      }
     } else if (part.startsWith('"')) {
       tokens.push({ type: "title", text: part });
     } else if (part.startsWith("^")) {

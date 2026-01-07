@@ -169,6 +169,20 @@ describe("detectContext", () => {
       expect(ctx.entry.isSchemaEntry).toBe(true);
     });
 
+    it("returns after_directive after define-synthesis", () => {
+      const ctx = detectContextFromMarker("2026-01-06T14:30 define-synthesis |");
+      expect(ctx.kind).toBe("after_directive");
+      expect(ctx.entry.directive).toBe("define-synthesis");
+      expect(ctx.entry.isSynthesisEntry).toBe(true);
+    });
+
+    it("returns after_directive after actualize-synthesis", () => {
+      const ctx = detectContextFromMarker("2026-01-06T14:30 actualize-synthesis |");
+      expect(ctx.kind).toBe("after_directive");
+      expect(ctx.entry.directive).toBe("actualize-synthesis");
+      expect(ctx.entry.isSynthesisEntry).toBe(true);
+    });
+
     it("returns after_directive when typing entity", () => {
       const ctx = detectContextFromMarker("2026-01-06T14:30 create lo|");
       expect(ctx.kind).toBe("after_directive");
@@ -209,6 +223,22 @@ describe("detectContext", () => {
   |`);
       expect(ctx.kind).toBe("metadata_key");
       expect(ctx.entry.existingMetadataKeys).toContain("type");
+    });
+
+    it("returns metadata_key for synthesis entries", () => {
+      const ctx =
+        detectContextFromMarker(`2026-01-06T14:30 define-synthesis "Career Summary" ^career-summary
+  |`);
+      expect(ctx.kind).toBe("metadata_key");
+      expect(ctx.entry.isSynthesisEntry).toBe(true);
+      expect(ctx.entry.entity).toBe("synthesis");
+    });
+
+    it("returns metadata_key for actualize entries", () => {
+      const ctx = detectContextFromMarker(`2026-01-06T14:30 actualize-synthesis ^career-summary
+  |`);
+      expect(ctx.kind).toBe("metadata_key");
+      expect(ctx.entry.isSynthesisEntry).toBe(true);
     });
   });
 
@@ -346,6 +376,8 @@ describe("DirectiveProvider", () => {
     expect(labels).toContain("update");
     expect(labels).toContain("define-entity");
     expect(labels).toContain("alter-entity");
+    expect(labels).toContain("define-synthesis");
+    expect(labels).toContain("actualize-synthesis");
   });
 
   it("filters directives by partial text", () => {
@@ -353,8 +385,33 @@ describe("DirectiveProvider", () => {
     const workspace = new Workspace();
     const items = directiveProvider.getCompletions(ctx, workspace);
 
+    expect(items).toHaveLength(2);
+    const labels = items.map((i) => i.label);
+    expect(labels).toContain("define-entity");
+    expect(labels).toContain("define-synthesis");
+  });
+
+  it("filters directives by partial text for actualize", () => {
+    const ctx = createTestContext("after_timestamp", "act");
+    const workspace = new Workspace();
+    const items = directiveProvider.getCompletions(ctx, workspace);
+
     expect(items).toHaveLength(1);
-    expect(items[0].label).toBe("define-entity");
+    expect(items[0].label).toBe("actualize-synthesis");
+  });
+
+  it("includes synthesis directives description", () => {
+    const ctx = createTestContext("after_timestamp");
+    const workspace = new Workspace();
+    const items = directiveProvider.getCompletions(ctx, workspace);
+
+    const defineSynthesis = items.find((i) => i.label === "define-synthesis");
+    expect(defineSynthesis).toBeDefined();
+    expect((defineSynthesis!.documentation as { value: string }).value).toContain("LLM");
+
+    const actualizeSynthesis = items.find((i) => i.label === "actualize-synthesis");
+    expect(actualizeSynthesis).toBeDefined();
+    expect((actualizeSynthesis!.documentation as { value: string }).value).toContain("Trigger");
   });
 });
 

@@ -55,7 +55,7 @@ function findEntryHeader(
 
     // Entry header starts with a timestamp
     const headerMatch = text.match(
-      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+(create|update|define-entity|alter-entity)\s+(\S+)/,
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+(create|update|define-entity|alter-entity|define-synthesis|actualize-synthesis)\s+(\S+)/,
     );
     if (headerMatch) {
       const [, timestamp, directive, entity] = headerMatch;
@@ -63,6 +63,10 @@ function findEntryHeader(
         return { entity, timestamp };
       }
       // For schema entries, entity is the entityName being defined
+      // For synthesis entries, entity is the title/link - we return null for entity context
+      if (directive === "define-synthesis" || directive === "actualize-synthesis") {
+        return { entity: "synthesis", timestamp };
+      }
       return { entity, timestamp };
     }
 
@@ -123,6 +127,20 @@ function detectDefinitionContext(
 
     if (position.character >= entityStart && position.character <= entityEnd) {
       return { kind: "entity", entityName };
+    }
+  }
+
+  // Check for actualize-synthesis header (link target after directive)
+  const actualizeMatch = lineText.match(
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+actualize-synthesis\s+(\^[a-zA-Z0-9\-_]+)/,
+  );
+  if (actualizeMatch) {
+    const [fullMatch, , linkRef] = actualizeMatch;
+    const linkStart = fullMatch.lastIndexOf(linkRef);
+    const linkEnd = linkStart + linkRef.length;
+
+    if (position.character >= linkStart && position.character <= linkEnd) {
+      return { kind: "link", linkId: linkRef.slice(1) };
     }
   }
 

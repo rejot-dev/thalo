@@ -1,6 +1,11 @@
 import type { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import type { Workspace } from "@wilco/ptall";
-import { ALL_DIRECTIVES, INSTANCE_DIRECTIVES, type Directive } from "@wilco/ptall";
+import {
+  ALL_DIRECTIVES,
+  INSTANCE_DIRECTIVES,
+  SCHEMA_DIRECTIVES,
+  type Directive,
+} from "@wilco/ptall";
 import type { CompletionContext } from "../context.js";
 import type { CompletionProvider } from "../types.js";
 
@@ -17,6 +22,10 @@ function getDirectiveDescription(directive: Directive): string {
       return "Define a new entity schema with fields and sections";
     case "alter-entity":
       return "Modify an existing entity schema (add/remove fields or sections)";
+    case "define-synthesis":
+      return "Define a synthesis operation that queries entries and generates content via LLM";
+    case "actualize-synthesis":
+      return "Trigger a synthesis to regenerate its output based on current data";
   }
 }
 
@@ -27,7 +36,10 @@ function getDirectiveDetail(directive: Directive): string {
   if ((INSTANCE_DIRECTIVES as readonly string[]).includes(directive)) {
     return "Instance directive";
   }
-  return "Schema directive";
+  if ((SCHEMA_DIRECTIVES as readonly string[]).includes(directive)) {
+    return "Schema directive";
+  }
+  return "Synthesis directive";
 }
 
 /**

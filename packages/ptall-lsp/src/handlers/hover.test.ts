@@ -246,6 +246,36 @@ describe("handleHover", () => {
       expect(content).toContain("`define-entity` directive");
       expect(content).toContain("Defines a new entity schema");
     });
+
+    it("should show documentation for define-synthesis directive", () => {
+      const doc = createDocument(
+        `2026-01-07T10:00 define-synthesis "Career Summary" ^career-summary`,
+      );
+
+      // Position cursor on "define-synthesis"
+      const position: Position = { line: 0, character: 22 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("`define-synthesis` directive");
+      expect(content).toContain("queries entries and generates content via LLM");
+    });
+
+    it("should show documentation for actualize-synthesis directive", () => {
+      const doc = createDocument(`2026-01-07T10:00 actualize-synthesis ^career-summary`);
+
+      // Position cursor on "actualize-synthesis"
+      const position: Position = { line: 0, character: 22 };
+
+      const result = handleHover(workspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("`actualize-synthesis` directive");
+      expect(content).toContain("Triggers a synthesis to regenerate");
+    });
   });
 
   describe("entity hover", () => {
@@ -343,6 +373,68 @@ describe("handleHover", () => {
       // Timestamps are not link IDs - should show hint to add explicit link-id
       expect(content).toContain("explicit");
       expect(content).toContain("link-id");
+    });
+  });
+
+  describe("synthesis entry hover", () => {
+    let synthesisWorkspace: Workspace;
+
+    beforeEach(() => {
+      synthesisWorkspace = new Workspace();
+
+      // Add a synthesis definition
+      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career #summary
+  sources: lore where subject = ^self and #career
+
+  # Prompt
+  Write a professional career summary.
+`;
+      synthesisWorkspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
+
+      // Add an actualize entry
+      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00
+`;
+      synthesisWorkspace.addDocument(actualizeSource, { filename: "/actualize.ptall" });
+    });
+
+    it("should show hover info for synthesis link reference", () => {
+      const doc = createDocument(`  related: ^career-summary`);
+
+      const position: Position = { line: 0, character: 15 };
+
+      const result = handleHover(synthesisWorkspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Career Summary");
+      expect(content).toContain("define-synthesis");
+    });
+
+    it("should show hover info for actualize-synthesis target link", () => {
+      const doc = createDocument(`2026-01-06T15:00 actualize-synthesis ^career-summary`);
+
+      // Position cursor on ^career-summary
+      const position: Position = { line: 0, character: 45 };
+
+      const result = handleHover(synthesisWorkspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("Career Summary");
+    });
+
+    it("should show tags for synthesis entry hover", () => {
+      const doc = createDocument(`  related: ^career-summary`);
+
+      const position: Position = { line: 0, character: 15 };
+
+      const result = handleHover(synthesisWorkspace, doc, position);
+
+      expect(result).not.toBeNull();
+      const content = (result!.contents as { value: string }).value;
+      expect(content).toContain("#career");
+      expect(content).toContain("#summary");
     });
   });
 

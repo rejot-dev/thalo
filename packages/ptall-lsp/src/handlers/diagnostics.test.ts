@@ -607,10 +607,10 @@ describe("getDiagnostics", () => {
       expect(error).toBeDefined();
     });
 
-    it("should reject empty array values", () => {
+    it("should reject plain value for link array", () => {
       const source = `2026-01-05T18:00 create reference "Test" #test
   ref-type: "article"
-  related: 
+  related: not-a-link
 
   # Summary
   Test summary.
@@ -621,6 +621,7 @@ describe("getDiagnostics", () => {
       const diagnostics = getDiagnostics(workspace, doc);
       const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
+      // Plain values don't match link[] type
       expect(error).toBeDefined();
       expect(error!.message).toContain("link[]");
     });
@@ -628,7 +629,7 @@ describe("getDiagnostics", () => {
     it("should accept valid date array", () => {
       const source = `2026-01-05T18:00 create reference "Test" #test
   ref-type: "article"
-  dates: 2024, 2024-05, 2024-05-11
+  dates: "2024", "2024-05", "2024-05-11"
 
   # Summary
   Test summary.
