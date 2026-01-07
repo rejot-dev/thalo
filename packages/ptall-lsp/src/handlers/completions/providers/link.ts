@@ -20,8 +20,20 @@ function getSortText(entry: ModelEntry): string {
  */
 function formatLinkCompletion(linkId: string, definition: LinkDefinition): CompletionItem {
   const entry = definition.entry;
-  const title = entry.title;
-  const entity = entry.kind === "instance" ? entry.entity : entry.entityName;
+  const title =
+    entry.kind === "instance" || entry.kind === "synthesis"
+      ? entry.title
+      : entry.kind === "actualize"
+        ? `actualize-synthesis ^${entry.target}`
+        : entry.title;
+  const entity =
+    entry.kind === "instance"
+      ? entry.entity
+      : entry.kind === "synthesis"
+        ? "synthesis"
+        : entry.kind === "actualize"
+          ? "actualize"
+          : entry.entityName;
 
   return {
     label: `^${linkId}`,
@@ -62,7 +74,13 @@ export const linkProvider: CompletionProvider = {
       // Filter by partial text
       if (partial && !linkId.toLowerCase().includes(partial)) {
         // Also check title
-        const title = definition.entry.title;
+        const entry = definition.entry;
+        const title =
+          entry.kind === "instance" || entry.kind === "synthesis"
+            ? entry.title
+            : entry.kind === "actualize"
+              ? `actualize-synthesis ^${entry.target}`
+              : entry.title;
         if (!title.toLowerCase().includes(partial)) {
           continue;
         }

@@ -33,7 +33,7 @@ export interface SourceFile extends AstNode {
 // Entries
 // ===================
 
-export type Entry = InstanceEntry | SchemaEntry;
+export type Entry = InstanceEntry | SchemaEntry | SynthesisEntry | ActualizeEntry;
 
 // ===================
 // Instance Entries (create/update)
@@ -84,6 +84,41 @@ export interface SchemaHeader extends AstNode {
 }
 
 export type SchemaDirective = "define-entity" | "alter-entity";
+
+// ===================
+// Synthesis Entries (define-synthesis)
+// ===================
+
+export interface SynthesisEntry extends AstNode {
+  type: "synthesis_entry";
+  header: SynthesisHeader;
+  metadata: Metadata[];
+  content: Content | null;
+}
+
+export interface SynthesisHeader extends AstNode {
+  type: "synthesis_header";
+  timestamp: Timestamp;
+  title: Title;
+  linkId: Link;
+  tags: Tag[];
+}
+
+// ===================
+// Actualize Entries (actualize-synthesis)
+// ===================
+
+export interface ActualizeEntry extends AstNode {
+  type: "actualize_entry";
+  header: ActualizeHeader;
+  metadata: Metadata[];
+}
+
+export interface ActualizeHeader extends AstNode {
+  type: "actualize_header";
+  timestamp: Timestamp;
+  target: Link;
+}
 
 // ===================
 // Schema Blocks

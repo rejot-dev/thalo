@@ -1,0 +1,239 @@
+==================
+simple define-synthesis
+==================
+
+2026-01-07T12:00 define-synthesis "Personal profile" ^profile-synthesis
+  sources: lore where subject = ^self
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+define-synthesis with tags
+==================
+
+2026-01-07T12:00 define-synthesis "Bio synthesis" ^bio #profile #career
+  sources: lore where subject = ^self
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link)
+        (tag)
+        (tag))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+define-synthesis with prompt content
+==================
+
+2026-01-07T12:00 define-synthesis "Profile synthesis" ^profile
+  sources: lore where subject = ^self
+
+  # Prompt
+  Write a narrative bio from these facts.
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+define-synthesis with multiple metadata
+==================
+
+2026-01-07T12:00 define-synthesis "Profile" ^profile
+  sources: lore where subject = ^self
+  format: markdown
+
+  # Prompt
+  Generate profile.
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+define-synthesis with multi-line prompt
+==================
+
+2026-01-07T12:00 define-synthesis "CV synthesis" ^cv
+  sources: lore where #career
+
+  # Prompt
+  Create a structured CV with:
+  1. Education section
+  2. Experience section
+  Sort by date descending.
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))
+        (content_line
+          (content_text))))))
+
+==================
+simple actualize-synthesis
+==================
+
+2026-01-07T12:01 actualize-synthesis ^profile
+  updated: 2026-01-07T12:01
+
+---
+
+(source_file
+  (entry
+    (actualize_entry
+      (actualize_header
+        (timestamp)
+        (link))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+actualize-synthesis with only updated field
+==================
+
+2026-01-08T10:00 actualize-synthesis ^bio-synthesis
+  updated: 2026-01-08T10:00
+
+---
+
+(source_file
+  (entry
+    (actualize_entry
+      (actualize_header
+        (timestamp)
+        (link))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+multiple entries in file
+==================
+
+2026-01-07T12:00 define-synthesis "Profile" ^profile
+  sources: lore where subject = ^self
+
+  # Prompt
+  Generate profile.
+
+2026-01-07T12:01 actualize-synthesis ^profile
+  updated: 2026-01-07T12:01
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text)))))
+  (entry
+    (actualize_entry
+      (actualize_header
+        (timestamp)
+        (link))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+complex sources query
+==================
+
+2026-01-07T12:00 define-synthesis "Career summary" ^career
+  sources: lore where subject = ^self and #career, journal where subject = ^self
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value)))))

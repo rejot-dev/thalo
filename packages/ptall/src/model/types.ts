@@ -48,7 +48,11 @@ export interface LinkIndex {
 // Entry Types
 // ===================
 
-export type ModelEntry = ModelInstanceEntry | ModelSchemaEntry;
+export type ModelEntry =
+  | ModelInstanceEntry
+  | ModelSchemaEntry
+  | ModelSynthesisEntry
+  | ModelActualizeEntry;
 
 /**
  * An instance entry (create/update lore, opinion, etc.)
@@ -173,4 +177,103 @@ export interface ModelArrayType {
 export interface ModelUnionType {
   kind: "union";
   members: (ModelPrimitiveType | ModelLiteralType | ModelArrayType)[];
+}
+
+// ===================
+// Synthesis Entry Types
+// ===================
+
+/**
+ * A synthesis entry (define-synthesis)
+ */
+export interface ModelSynthesisEntry {
+  kind: "synthesis";
+  /** The timestamp from the header */
+  timestamp: string;
+  /** The title/description */
+  title: string;
+  /** The link ID for this synthesis (required) */
+  linkId: string;
+  /** Tags from the header */
+  tags: string[];
+  /** Metadata key-value pairs */
+  metadata: Map<string, MetadataValue>;
+  /** Parsed source queries */
+  sources: Query[];
+  /** The raw prompt content from the # Prompt section */
+  prompt: string;
+  /** Location in source */
+  location: Location;
+  /** The file path containing this entry */
+  file: string;
+  /** Offset in the file (for markdown extraction) */
+  blockOffset: number;
+}
+
+/**
+ * An actualize entry (actualize-synthesis)
+ */
+export interface ModelActualizeEntry {
+  kind: "actualize";
+  /** The timestamp from the header */
+  timestamp: string;
+  /** The link to the synthesis definition this actualizes */
+  target: string;
+  /** Actualize entries don't define their own link ID */
+  linkId: null;
+  /** Actualize entries don't have tags */
+  tags: string[];
+  /** Metadata key-value pairs (contains 'updated' timestamp) */
+  metadata: Map<string, MetadataValue>;
+  /** Location in source */
+  location: Location;
+  /** The file path containing this entry */
+  file: string;
+  /** Offset in the file (for markdown extraction) */
+  blockOffset: number;
+}
+
+// ===================
+// Query Types
+// ===================
+
+/**
+ * A parsed query for filtering entries
+ * Example: "lore where subject = ^self and #career"
+ */
+export interface Query {
+  /** The entity type to query (lore, opinion, etc.) */
+  entity: string;
+  /** Filter conditions (ANDed together) */
+  conditions: QueryCondition[];
+}
+
+/**
+ * A single condition in a query
+ */
+export type QueryCondition = FieldCondition | TagCondition | LinkCondition;
+
+/**
+ * A field equality condition: field = value
+ */
+export interface FieldCondition {
+  kind: "field";
+  field: string;
+  value: string;
+}
+
+/**
+ * A tag condition: #tag (entry must have this tag)
+ */
+export interface TagCondition {
+  kind: "tag";
+  tag: string;
+}
+
+/**
+ * A link condition: ^link (entry must have this link)
+ */
+export interface LinkCondition {
+  kind: "link";
+  link: string;
 }

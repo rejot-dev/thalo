@@ -1,5 +1,54 @@
 [
   {
+    "type": "actualize_entry",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "actualize_header",
+          "named": true
+        },
+        {
+          "type": "comment_line",
+          "named": true
+        },
+        {
+          "type": "metadata",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "actualize_header",
+    "named": true,
+    "fields": {
+      "target": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "link",
+            "named": true
+          }
+        ]
+      },
+      "timestamp": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "timestamp",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "array_type",
     "named": true,
     "fields": {},
@@ -109,11 +158,19 @@
       "required": true,
       "types": [
         {
+          "type": "actualize_entry",
+          "named": true
+        },
+        {
           "type": "instance_entry",
           "named": true
         },
         {
           "type": "schema_entry",
+          "named": true
+        },
+        {
+          "type": "synthesis_entry",
           "named": true
         }
       ]
@@ -600,6 +657,79 @@
     }
   },
   {
+    "type": "synthesis_entry",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "comment_line",
+          "named": true
+        },
+        {
+          "type": "content",
+          "named": true
+        },
+        {
+          "type": "metadata",
+          "named": true
+        },
+        {
+          "type": "synthesis_header",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "synthesis_header",
+    "named": true,
+    "fields": {
+      "link_id": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "link",
+            "named": true
+          }
+        ]
+      },
+      "timestamp": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "timestamp",
+            "named": true
+          }
+        ]
+      },
+      "title": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "title",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "tag",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "title",
     "named": true,
     "fields": {}
@@ -694,6 +824,10 @@
     "named": false
   },
   {
+    "type": "actualize-synthesis",
+    "named": false
+  },
+  {
     "type": "alter-entity",
     "named": false
   },
@@ -719,6 +853,10 @@
   },
   {
     "type": "define-entity",
+    "named": false
+  },
+  {
+    "type": "define-synthesis",
     "named": false
   },
   {

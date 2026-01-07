@@ -1,5 +1,5 @@
 import { runCli, type CommandDef } from "./cli.js";
-import { checkCommand, initCommand, rulesCommand } from "./commands/index.js";
+import { actualizeCommand, checkCommand, initCommand, rulesCommand } from "./commands/index.js";
 
 /**
  * Root command definition
@@ -10,6 +10,7 @@ const rootCommand: CommandDef = {
   name: "ptall",
   description: "Lint and check ptall files",
   subcommands: {
+    actualize: actualizeCommand,
     check: checkCommand,
     init: initCommand,
     rules: rulesCommand,

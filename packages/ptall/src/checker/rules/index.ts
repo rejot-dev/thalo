@@ -39,6 +39,13 @@ import { createRequiresSectionRule } from "./create-requires-section.js";
 // Style rules
 import { missingTitleRule } from "./missing-title.js";
 
+// Synthesis rules
+import { synthesisMissingSourcesRule } from "./synthesis-missing-sources.js";
+import { synthesisMissingPromptRule } from "./synthesis-missing-prompt.js";
+import { synthesisEmptyQueryRule } from "./synthesis-empty-query.js";
+import { actualizeUnresolvedTargetRule } from "./actualize-unresolved-target.js";
+import { actualizeMissingUpdatedRule } from "./actualize-missing-updated.js";
+
 /**
  * All available validation rules
  */
@@ -81,6 +88,13 @@ export const allRules: Rule[] = [
 
   // Style rules
   missingTitleRule,
+
+  // Synthesis rules
+  synthesisMissingSourcesRule,
+  synthesisMissingPromptRule,
+  synthesisEmptyQueryRule,
+  actualizeUnresolvedTargetRule,
+  actualizeMissingUpdatedRule,
 ];
 
 /**

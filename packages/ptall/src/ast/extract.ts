@@ -11,6 +11,10 @@ import type {
   SchemaEntry,
   SchemaHeader,
   SchemaDirective,
+  SynthesisEntry,
+  SynthesisHeader,
+  ActualizeEntry,
+  ActualizeHeader,
   MetadataBlock,
   SectionsBlock,
   RemoveMetadataBlock,
@@ -149,6 +153,12 @@ export function extractEntry(node: SyntaxNode): Entry | null {
   if (child.type === "schema_entry") {
     return extractSchemaEntry(child);
   }
+  if (child.type === "synthesis_entry") {
+    return extractSynthesisEntry(child);
+  }
+  if (child.type === "actualize_entry") {
+    return extractActualizeEntry(child);
+  }
   return null;
 }
 
@@ -243,6 +253,77 @@ export function extractSchemaHeader(node: SyntaxNode): SchemaHeader {
     title: extractTitle(titleNode),
     link: linkNodes.length > 0 ? extractLink(linkNodes[0]) : null,
     tags: tagNodes.map(extractTag),
+  };
+}
+
+/**
+ * Extract a SynthesisEntry
+ */
+export function extractSynthesisEntry(node: SyntaxNode): SynthesisEntry {
+  const headerNode = getChildByType(node, "synthesis_header");
+  if (!headerNode) {
+    throw new Error("Missing synthesis_header in synthesis_entry");
+  }
+
+  const metadataNodes = getChildrenByType(node, "metadata");
+  const contentNode = getChildByType(node, "content");
+
+  return {
+    ...baseNode(node, "synthesis_entry"),
+    header: extractSynthesisHeader(headerNode),
+    metadata: metadataNodes.map(extractMetadata),
+    content: contentNode ? extractContent(contentNode) : null,
+  };
+}
+
+/**
+ * Extract a SynthesisHeader
+ */
+export function extractSynthesisHeader(node: SyntaxNode): SynthesisHeader {
+  const timestampNode = getChildByField(node, "timestamp");
+  const titleNode = getChildByField(node, "title");
+  const linkIdNode = getChildByField(node, "link_id");
+
+  const tagNodes = getChildrenByType(node, "tag");
+
+  return {
+    ...baseNode(node, "synthesis_header"),
+    timestamp: extractTimestamp(timestampNode),
+    title: extractTitle(titleNode),
+    linkId: extractLink(linkIdNode),
+    tags: tagNodes.map(extractTag),
+  };
+}
+
+/**
+ * Extract an ActualizeEntry
+ */
+export function extractActualizeEntry(node: SyntaxNode): ActualizeEntry {
+  const headerNode = getChildByType(node, "actualize_header");
+  if (!headerNode) {
+    throw new Error("Missing actualize_header in actualize_entry");
+  }
+
+  const metadataNodes = getChildrenByType(node, "metadata");
+
+  return {
+    ...baseNode(node, "actualize_entry"),
+    header: extractActualizeHeader(headerNode),
+    metadata: metadataNodes.map(extractMetadata),
+  };
+}
+
+/**
+ * Extract an ActualizeHeader
+ */
+export function extractActualizeHeader(node: SyntaxNode): ActualizeHeader {
+  const timestampNode = getChildByField(node, "timestamp");
+  const targetNode = getChildByField(node, "target");
+
+  return {
+    ...baseNode(node, "actualize_header"),
+    timestamp: extractTimestamp(timestampNode),
+    target: extractLink(targetNode),
   };
 }
 

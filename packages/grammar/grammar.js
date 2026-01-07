@@ -18,7 +18,7 @@ export default grammar({
     // Indented comment line (within entries) - same prec as metadata (will be tried via choice)
     comment_line: ($) => prec(2, seq($["_indent"], $.comment)),
 
-    entry: ($) => choice($.instance_entry, $.schema_entry),
+    entry: ($) => choice($.instance_entry, $.schema_entry, $.synthesis_entry, $.actualize_entry),
 
     // =========================================================================
     // Instance entries (create/update lore, opinion, etc.)
@@ -61,6 +61,27 @@ export default grammar({
     schema_directive: (_) => choice("define-entity", "alter-entity"),
 
     identifier: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
+
+    // =========================================================================
+    // Synthesis entries (define-synthesis/actualize-synthesis)
+    // =========================================================================
+
+    synthesis_entry: ($) =>
+      seq($.synthesis_header, repeat(choice($.metadata, $.comment_line)), optional($.content)),
+
+    synthesis_header: ($) =>
+      seq(
+        field("timestamp", $.timestamp),
+        "define-synthesis",
+        field("title", $.title),
+        field("link_id", $.link),
+        repeat($.tag),
+      ),
+
+    actualize_entry: ($) => seq($.actualize_header, repeat(choice($.metadata, $.comment_line))),
+
+    actualize_header: ($) =>
+      seq(field("timestamp", $.timestamp), "actualize-synthesis", field("target", $.link)),
 
     // =========================================================================
     // Schema blocks (# Metadata, # Sections, # Remove Metadata, # Remove Sections)

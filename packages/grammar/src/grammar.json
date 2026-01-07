@@ -65,6 +65,14 @@
         {
           "type": "SYMBOL",
           "name": "schema_entry"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "synthesis_entry"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "actualize_entry"
         }
       ]
     },
@@ -313,6 +321,133 @@
         "type": "PATTERN",
         "value": "[a-z][a-zA-Z0-9\\-_]*"
       }
+    },
+    "synthesis_entry": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "synthesis_header"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "metadata"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "comment_line"
+              }
+            ]
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "content"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
+    },
+    "synthesis_header": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "timestamp",
+          "content": {
+            "type": "SYMBOL",
+            "name": "timestamp"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "define-synthesis"
+        },
+        {
+          "type": "FIELD",
+          "name": "title",
+          "content": {
+            "type": "SYMBOL",
+            "name": "title"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "link_id",
+          "content": {
+            "type": "SYMBOL",
+            "name": "link"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "tag"
+          }
+        }
+      ]
+    },
+    "actualize_entry": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "actualize_header"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "metadata"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "comment_line"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "actualize_header": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "timestamp",
+          "content": {
+            "type": "SYMBOL",
+            "name": "timestamp"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "actualize-synthesis"
+        },
+        {
+          "type": "FIELD",
+          "name": "target",
+          "content": {
+            "type": "SYMBOL",
+            "name": "link"
+          }
+        }
+      ]
     },
     "_schema_block": {
       "type": "CHOICE",

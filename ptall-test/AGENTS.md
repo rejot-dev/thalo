@@ -32,14 +32,14 @@ entity. Values can be:
 
 ## Sections
 
-Content sections start with `# SectionName` (indented). Each entity type defines which sections are
-required/optional in `entities.ptall`.
+Content sections start with `# SectionName` (indented). **All content must be within a section.**
+Each entity type defines which sections are required/optional in `entities.ptall`.
 
 ## Example
 
 ```ptall
 2026-01-05T16:00 create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
-  confidence: high
+  confidence: "high"
 
   # Claim
   TypeScript enums should be replaced with `as const` objects.

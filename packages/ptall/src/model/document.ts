@@ -4,6 +4,8 @@ import type {
   SourceFile,
   InstanceEntry,
   SchemaEntry,
+  SynthesisEntry,
+  ActualizeEntry,
   TypeExpression,
   Content,
 } from "../ast/types.js";
@@ -11,6 +13,8 @@ import type {
   ModelEntry,
   ModelInstanceEntry,
   ModelSchemaEntry,
+  ModelSynthesisEntry,
+  ModelActualizeEntry,
   ModelFieldDefinition,
   ModelSectionDefinition,
   ModelTypeExpression,
@@ -21,6 +25,7 @@ import type {
   LinkReference,
   LinkIndex,
 } from "./types.js";
+import { parseSourcesValue } from "../query/parser.js";
 
 /**
  * Options for parsing a document
@@ -108,6 +113,20 @@ export class Document {
   }
 
   /**
+   * Get all synthesis entries
+   */
+  get synthesisEntries(): ModelSynthesisEntry[] {
+    return this.entries.filter((e): e is ModelSynthesisEntry => e.kind === "synthesis");
+  }
+
+  /**
+   * Get all actualize entries
+   */
+  get actualizeEntries(): ModelActualizeEntry[] {
+    return this.entries.filter((e): e is ModelActualizeEntry => e.kind === "actualize");
+  }
+
+  /**
    * Find an entry by timestamp or link ID
    */
   findEntry(id: string): ModelEntry | undefined {
@@ -126,6 +145,10 @@ function extractEntries(ast: SourceFile, file: string, blockOffset: number): Mod
       entries.push(extractInstanceEntry(entry, file, blockOffset));
     } else if (entry.type === "schema_entry") {
       entries.push(extractSchemaEntry(entry, file, blockOffset));
+    } else if (entry.type === "synthesis_entry") {
+      entries.push(extractSynthesisEntry(entry, file, blockOffset));
+    } else if (entry.type === "actualize_entry") {
+      entries.push(extractActualizeEntry(entry, file, blockOffset));
     }
   }
 
@@ -256,6 +279,113 @@ function extractSchemaEntry(ast: SchemaEntry, file: string, blockOffset: number)
 }
 
 /**
+ * Extract a model synthesis entry from AST
+ */
+function extractSynthesisEntry(
+  ast: SynthesisEntry,
+  file: string,
+  blockOffset: number,
+): ModelSynthesisEntry {
+  const metadata = new Map<
+    string,
+    { raw: string; linkId: string | null; location: typeof ast.location }
+  >();
+
+  for (const m of ast.metadata) {
+    metadata.set(m.key.value, {
+      raw: m.value.raw,
+      linkId: m.value.link?.id ?? null,
+      location: m.value.location,
+    });
+  }
+
+  // Parse sources from metadata
+  const sourcesValue = metadata.get("sources")?.raw ?? "";
+  const sources = parseSourcesValue(sourcesValue);
+
+  // Extract prompt content (everything after # Prompt header)
+  const prompt = extractPromptFromContent(ast.content);
+
+  return {
+    kind: "synthesis",
+    timestamp: ast.header.timestamp.value,
+    title: ast.header.title.value,
+    linkId: ast.header.linkId.id,
+    tags: ast.header.tags.map((t) => t.name),
+    metadata,
+    sources,
+    prompt,
+    location: ast.location,
+    file,
+    blockOffset,
+  };
+}
+
+/**
+ * Extract prompt text from content (looking for # Prompt section)
+ */
+function extractPromptFromContent(content: Content | null): string {
+  if (!content) {
+    return "";
+  }
+
+  const lines: string[] = [];
+  let inPromptSection = false;
+
+  for (const child of content.children) {
+    if (child.type === "markdown_header") {
+      const match = child.text.match(/^#+\s*(.+)$/);
+      if (match) {
+        const sectionName = match[1].trim().toLowerCase();
+        inPromptSection = sectionName === "prompt";
+        if (!inPromptSection && lines.length > 0) {
+          // New section that's not Prompt, stop collecting
+          break;
+        }
+      }
+    } else if (child.type === "content_line" && inPromptSection) {
+      lines.push(child.text);
+    }
+  }
+
+  return lines.join("\n").trim();
+}
+
+/**
+ * Extract a model actualize entry from AST
+ */
+function extractActualizeEntry(
+  ast: ActualizeEntry,
+  file: string,
+  blockOffset: number,
+): ModelActualizeEntry {
+  const metadata = new Map<
+    string,
+    { raw: string; linkId: string | null; location: typeof ast.location }
+  >();
+
+  for (const m of ast.metadata) {
+    metadata.set(m.key.value, {
+      raw: m.value.raw,
+      linkId: m.value.link?.id ?? null,
+      location: m.value.location,
+    });
+  }
+
+  return {
+    kind: "actualize",
+    timestamp: ast.header.timestamp.value,
+    target: ast.header.target.id,
+    linkId: null,
+    tags: [],
+    metadata,
+    location: ast.location,
+    file,
+    blockOffset,
+  };
+}
+
+/**
  * Convert AST type expression to model type expression
  */
 function convertTypeExpression(ast: TypeExpression): ModelTypeExpression {
@@ -335,7 +465,7 @@ function indexEntry(entry: ModelEntry, index: LinkIndex): void {
   }
 
   // Index link references from metadata
-  if (entry.kind === "instance") {
+  if (entry.kind === "instance" || entry.kind === "synthesis") {
     for (const [key, value] of entry.metadata) {
       if (value.linkId) {
         const ref: LinkReference = {
@@ -351,5 +481,20 @@ function indexEntry(entry: ModelEntry, index: LinkIndex): void {
         index.references.set(value.linkId, refs);
       }
     }
+  }
+
+  // Index target reference for actualize entries
+  if (entry.kind === "actualize") {
+    const ref: LinkReference = {
+      id: entry.target,
+      file: entry.file,
+      location: entry.location,
+      entry,
+      metadataKey: "target",
+    };
+
+    const refs = index.references.get(entry.target) ?? [];
+    refs.push(ref);
+    index.references.set(entry.target, refs);
   }
 }

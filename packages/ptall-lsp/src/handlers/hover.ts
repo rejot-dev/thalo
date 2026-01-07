@@ -1,6 +1,13 @@
 import type { Hover, Position } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
-import type { Workspace, ModelEntry, ModelInstanceEntry, ModelSchemaEntry } from "@wilco/ptall";
+import type {
+  Workspace,
+  ModelEntry,
+  ModelInstanceEntry,
+  ModelSchemaEntry,
+  ModelSynthesisEntry,
+  ModelActualizeEntry,
+} from "@wilco/ptall";
 import { TypeExpr, type EntitySchema, type FieldSchema, type SectionSchema } from "@wilco/ptall";
 
 // ===================
@@ -64,6 +71,10 @@ function getLineText(document: TextDocument, lineNumber: number): string {
 function formatEntryHover(entry: ModelEntry): string {
   if (entry.kind === "instance") {
     return formatInstanceEntry(entry);
+  } else if (entry.kind === "synthesis") {
+    return formatSynthesisEntry(entry);
+  } else if (entry.kind === "actualize") {
+    return formatActualizeEntry(entry);
   } else {
     return formatSchemaEntry(entry);
   }
@@ -142,6 +153,61 @@ function formatSchemaEntry(entry: ModelSchemaEntry): string {
   if (entry.sections.length > 0) {
     lines.push("");
     lines.push(`**Sections:** ${entry.sections.map((s) => `\`${s.name}\``).join(", ")}`);
+  }
+
+  // File location
+  lines.push("");
+  lines.push(`*${entry.file}*`);
+
+  return lines.join("\n");
+}
+
+/**
+ * Format a synthesis entry for hover
+ */
+function formatSynthesisEntry(entry: ModelSynthesisEntry): string {
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`### ${entry.title}`);
+  lines.push("");
+  lines.push(`**define-synthesis** synthesis • ${entry.timestamp}`);
+
+  // Tags
+  if (entry.tags.length > 0) {
+    lines.push("");
+    lines.push(`Tags: ${entry.tags.map((t) => `\`#${t}\``).join(" ")}`);
+  }
+
+  // Sources
+  if (entry.sources.length > 0) {
+    lines.push("");
+    lines.push(`**Sources:** ${entry.sources.map((q) => q.entity).join(", ")}`);
+  }
+
+  // File location
+  lines.push("");
+  lines.push(`*${entry.file}*`);
+
+  return lines.join("\n");
+}
+
+/**
+ * Format an actualize entry for hover
+ */
+function formatActualizeEntry(entry: ModelActualizeEntry): string {
+  const lines: string[] = [];
+
+  // Header
+  lines.push(`### actualize-synthesis`);
+  lines.push("");
+  lines.push(`**actualize-synthesis** ^${entry.target} • ${entry.timestamp}`);
+
+  // Updated timestamp
+  const updated = entry.metadata.get("updated");
+  if (updated) {
+    lines.push("");
+    lines.push(`**Updated:** ${updated.raw}`);
   }
 
   // File location
@@ -443,7 +509,12 @@ function formatTagHover(tag: string, entries: ModelEntry[]): string {
   // Show first few entries
   const toShow = entries.slice(0, 5);
   for (const entry of toShow) {
-    const title = entry.kind === "instance" ? entry.title : entry.title;
+    const title =
+      entry.kind === "instance" || entry.kind === "synthesis"
+        ? entry.title
+        : entry.kind === "actualize"
+          ? `actualize-synthesis ^${entry.target}`
+          : entry.title;
     lines.push(`- ${title} *(${entry.timestamp})*`);
   }
 
@@ -470,10 +541,20 @@ function formatTimestampHover(timestamp: string, entry: ModelEntry | undefined):
   if (entry) {
     lines.push("This timestamp identifies an entry:");
     lines.push("");
-    lines.push(`**${entry.kind === "instance" ? entry.title : entry.title}**`);
+    const title =
+      entry.kind === "instance" || entry.kind === "synthesis"
+        ? entry.title
+        : entry.kind === "actualize"
+          ? `actualize-synthesis ^${entry.target}`
+          : entry.title;
+    lines.push(`**${title}**`);
     lines.push("");
     if (entry.kind === "instance") {
       lines.push(`\`${entry.directive}\` ${entry.entity}`);
+    } else if (entry.kind === "synthesis") {
+      lines.push("`define-synthesis` synthesis");
+    } else if (entry.kind === "actualize") {
+      lines.push(`\`actualize-synthesis\` ^${entry.target}`);
     } else {
       lines.push(`\`${entry.directive}\` ${entry.entityName}`);
     }
