@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for 'update' entries that reference (via supersedes) a non-existent create entry
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const updateWithoutCreateRule: Rule = {
   code: "update-without-create",
   name: "Update Without Create",
+  description: "update entry supersedes wrong directive/entity type",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 
 /**
  * Check for duplicate section names within a single schema entry
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const duplicateSectionInSchemaRule: Rule = {
   code: "duplicate-section-in-schema",
   name: "Duplicate Section in Schema",
+  description: "Same section defined twice in a schema entry",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

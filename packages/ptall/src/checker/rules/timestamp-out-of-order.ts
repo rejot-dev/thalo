@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for timestamps that are out of chronological order within a document
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const timestampOutOfOrderRule: Rule = {
   code: "timestamp-out-of-order",
   name: "Timestamp Out of Order",
+  description: "Entry timestamp is earlier than the previous entry",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

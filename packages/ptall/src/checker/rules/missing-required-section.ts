@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for missing required sections in instance entry content
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const missingRequiredSectionRule: Rule = {
   code: "missing-required-section",
   name: "Missing Required Section",
+  description: "Required section not present in content",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

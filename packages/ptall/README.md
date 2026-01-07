@@ -94,64 +94,27 @@ const diagnostics = check(workspace, {
 
 ## Validation Rules
 
-The checker includes 24 fully implemented validation rules, plus 2 placeholder rules:
+The checker includes 25 validation rules across 5 categories: instance entry, link, schema
+definition, metadata value, and content rules.
 
-### Instance Entry Rules
+To see all available rules with descriptions, use the CLI:
 
-| Code                       | Severity | Description                                           |
-| -------------------------- | -------- | ----------------------------------------------------- |
-| `unknown-entity`           | error    | Instance entry uses an undefined entity type          |
-| `missing-required-field`   | error    | Required metadata field not present                   |
-| `unknown-field`            | warning  | Metadata field not defined in entity schema           |
-| `invalid-field-type`       | error    | Metadata value doesn't match declared type            |
-| `missing-required-section` | error    | Required section not present in content               |
-| `unknown-section`          | warning  | Section not defined in entity schema                  |
-| `missing-title`            | error    | Entry has empty or missing title                      |
-| `update-without-create`    | warning  | `update` entry supersedes wrong directive/entity type |
-| `timestamp-out-of-order`   | warning  | Entry timestamp is earlier than the previous entry    |
+```bash
+ptall rules list
+```
 
-### Link Rules
+Filter by severity or category:
 
-| Code                | Severity | Description                                     |
-| ------------------- | -------- | ----------------------------------------------- |
-| `unresolved-link`   | warning  | Link reference (`^id`) has no definition        |
-| `duplicate-link-id` | error    | Same explicit `^link-id` defined multiple times |
+```bash
+ptall rules list --severity error
+ptall rules list --category schema
+```
 
-### Schema Definition Rules
+Or get JSON output:
 
-| Code                          | Severity | Description                                        |
-| ----------------------------- | -------- | -------------------------------------------------- |
-| `duplicate-entity-definition` | error    | Multiple `define-entity` for the same entity name  |
-| `alter-undefined-entity`      | error    | `alter-entity` targets an undefined entity         |
-| `alter-before-define`         | error    | `alter-entity` timestamp before `define-entity`    |
-| `duplicate-field-in-schema`   | error    | Same field defined twice in a schema entry         |
-| `duplicate-section-in-schema` | error    | Same section defined twice in a schema entry       |
-| `remove-undefined-field`      | warning  | `# Remove Metadata` references nonexistent field   |
-| `remove-undefined-section`    | warning  | `# Remove Sections` references nonexistent section |
-| `invalid-default-value`       | error    | Default value doesn't match field's declared type  |
-
-### Metadata Value Rules
-
-| Code                       | Severity | Description                                           |
-| -------------------------- | -------- | ----------------------------------------------------- |
-| `empty-required-value`     | error    | Required field has empty value                        |
-| `invalid-date-value`       | error    | Date doesn't match `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` |
-| `invalid-date-range-value` | error    | Date range doesn't match `DATE ~ DATE` format         |
-
-### Content Rules
-
-| Code                        | Severity | Description                                     |
-| --------------------------- | -------- | ----------------------------------------------- |
-| `duplicate-section-heading` | error    | Same `# Section` appears twice in entry content |
-
-### Placeholder Rules (Not Yet Implemented)
-
-These rules exist but require additional infrastructure to fully implement:
-
-| Code                     | Severity | Description                                 | Blocker                                                                                               |
-| ------------------------ | -------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `duplicate-metadata-key` | error    | Same metadata key appears twice in an entry | Parser collapses duplicates into a Map before model extraction; needs AST-level or parser-level check |
-| `empty-section`          | warning  | Section heading exists but has no content   | Model only stores section names, not content boundaries; needs content structure in model             |
+```bash
+ptall rules list --json
+```
 
 ## Development
 

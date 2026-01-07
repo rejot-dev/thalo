@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 import { TypeExpr } from "../../schema/types.js";
 
 /**
@@ -7,6 +9,8 @@ import { TypeExpr } from "../../schema/types.js";
 export const invalidFieldTypeRule: Rule = {
   code: "invalid-field-type",
   name: "Invalid Field Type",
+  description: "Metadata value doesn't match declared type",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for missing required metadata fields in instance entries
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const missingRequiredFieldRule: Rule = {
   code: "missing-required-field",
   name: "Missing Required Field",
+  description: "Required metadata field not present",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

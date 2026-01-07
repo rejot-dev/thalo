@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for sections in content not defined in the entity schema
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const unknownSectionRule: Rule = {
   code: "unknown-section",
   name: "Unknown Section",
+  description: "Section not defined in entity schema",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

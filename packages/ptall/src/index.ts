@@ -31,7 +31,15 @@ export type { Location } from "./ast/types.js";
 // Checker
 export { check, checkDocument } from "./checker/check.js";
 export { allRules, getRule } from "./checker/rules/index.js";
-export type { Diagnostic, Severity, CheckConfig, CheckContext, Rule } from "./checker/types.js";
+export { RULE_CATEGORIES } from "./checker/types.js";
+export type {
+  Diagnostic,
+  Severity,
+  CheckConfig,
+  CheckContext,
+  Rule,
+  RuleCategory,
+} from "./checker/types.js";
 
 // Services
 export * from "./services/index.js";

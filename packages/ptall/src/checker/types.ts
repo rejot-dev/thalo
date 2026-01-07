@@ -8,6 +8,22 @@ import type { Document } from "../model/document.js";
 export type Severity = "error" | "warning" | "info" | "off";
 
 /**
+ * Rule categories for grouping related rules
+ */
+export type RuleCategory = "instance" | "link" | "schema" | "metadata" | "content";
+
+/**
+ * Display order and labels for rule categories
+ */
+export const RULE_CATEGORIES: Record<RuleCategory, { order: number; label: string }> = {
+  instance: { order: 1, label: "Instance Entry Rules" },
+  link: { order: 2, label: "Link Rules" },
+  schema: { order: 3, label: "Schema Definition Rules" },
+  metadata: { order: 4, label: "Metadata Value Rules" },
+  content: { order: 5, label: "Content Rules" },
+};
+
+/**
  * A diagnostic message from the checker
  */
 export interface Diagnostic {
@@ -45,6 +61,10 @@ export interface Rule {
   code: string;
   /** Human-readable rule name */
   name: string;
+  /** Short description of what this rule checks */
+  description: string;
+  /** Category for grouping related rules */
+  category: RuleCategory;
   /** Default severity for this rule */
   defaultSeverity: Severity;
   /** Run the rule and report diagnostics */

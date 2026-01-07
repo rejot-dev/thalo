@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 import { TypeExpr } from "../../schema/types.js";
 
 /**
@@ -7,6 +9,8 @@ import { TypeExpr } from "../../schema/types.js";
 export const invalidDefaultValueRule: Rule = {
   code: "invalid-default-value",
   name: "Invalid Default Value",
+  description: "Default value doesn't match field's declared type",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for instance entries using undefined entity types
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const unknownEntityRule: Rule = {
   code: "unknown-entity",
   name: "Unknown Entity",
+  description: "Instance entry uses an undefined entity type",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "link";
 import type { LinkDefinition } from "../../model/types.js";
 
 /**
@@ -7,6 +9,8 @@ import type { LinkDefinition } from "../../model/types.js";
 export const duplicateLinkIdRule: Rule = {
   code: "duplicate-link-id",
   name: "Duplicate Link ID",
+  description: "Same explicit ^link-id defined multiple times",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

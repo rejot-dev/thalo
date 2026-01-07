@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 
 /**
  * Check for alter-entity trying to remove sections that don't exist in the schema
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const removeUndefinedSectionRule: Rule = {
   code: "remove-undefined-section",
   name: "Remove Undefined Section",
+  description: "# Remove Sections references nonexistent section",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

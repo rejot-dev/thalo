@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "metadata";
 
 /**
  * Check for duplicate metadata keys within a single instance entry
@@ -10,6 +12,8 @@ import type { Rule } from "../types.js";
 export const duplicateMetadataKeyRule: Rule = {
   code: "duplicate-metadata-key",
   name: "Duplicate Metadata Key",
+  description: "Same metadata key appears twice in an entry",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

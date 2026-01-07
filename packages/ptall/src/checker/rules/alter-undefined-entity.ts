@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 
 /**
  * Check for alter-entity entries targeting entities that were never defined
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const alterUndefinedEntityRule: Rule = {
   code: "alter-undefined-entity",
   name: "Alter Undefined Entity",
+  description: "alter-entity targets an undefined entity",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

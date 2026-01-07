@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 
 /**
  * Check for duplicate field names within a single schema entry
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const duplicateFieldInSchemaRule: Rule = {
   code: "duplicate-field-in-schema",
   name: "Duplicate Field in Schema",
+  description: "Same field defined twice in a schema entry",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

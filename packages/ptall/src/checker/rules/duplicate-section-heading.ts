@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "content";
 
 /**
  * Check for duplicate section headings within a single entry's content
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const duplicateSectionHeadingRule: Rule = {
   code: "duplicate-section-heading",
   name: "Duplicate Section Heading",
+  description: "Same # Section appears twice in entry content",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for entries with empty titles
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const missingTitleRule: Rule = {
   code: "missing-title",
   name: "Missing Title",
+  description: "Entry has empty or missing title",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

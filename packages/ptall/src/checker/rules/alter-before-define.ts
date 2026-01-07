@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 import type { ModelSchemaEntry } from "../../model/types.js";
 
 /**
@@ -7,6 +9,8 @@ import type { ModelSchemaEntry } from "../../model/types.js";
 export const alterBeforeDefineRule: Rule = {
   code: "alter-before-define",
   name: "Alter Before Define",
+  description: "alter-entity timestamp before define-entity",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

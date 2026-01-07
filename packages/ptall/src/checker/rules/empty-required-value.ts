@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "metadata";
 
 /**
  * Check for required fields that are present but have empty values
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const emptyRequiredValueRule: Rule = {
   code: "empty-required-value",
   name: "Empty Required Value",
+  description: "Required field has empty value",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

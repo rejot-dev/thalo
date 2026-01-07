@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "content";
 
 /**
  * Check for section headings that have no content
@@ -12,6 +14,8 @@ import type { Rule } from "../types.js";
 export const emptySectionRule: Rule = {
   code: "empty-section",
   name: "Empty Section",
+  description: "Section heading exists but has no content",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

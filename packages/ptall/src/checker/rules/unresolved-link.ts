@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "link";
 
 /**
  * Check for link references that don't resolve to any definition
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const unresolvedLinkRule: Rule = {
   code: "unresolved-link",
   name: "Unresolved Link",
+  description: "Link reference (^id) has no definition",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

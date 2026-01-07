@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "metadata";
 
 /**
  * Check that date field values match the expected format (YYYY, YYYY-MM, or YYYY-MM-DD)
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const invalidDateValueRule: Rule = {
   code: "invalid-date-value",
   name: "Invalid Date Value",
+  description: "Date doesn't match YYYY, YYYY-MM, or YYYY-MM-DD",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

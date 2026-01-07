@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 import type { ModelSchemaEntry } from "../../model/types.js";
 
 /**
@@ -7,6 +9,8 @@ import type { ModelSchemaEntry } from "../../model/types.js";
 export const duplicateEntityDefinitionRule: Rule = {
   code: "duplicate-entity-definition",
   name: "Duplicate Entity Definition",
+  description: "Multiple define-entity for the same entity name",
+  category,
   defaultSeverity: "error",
 
   check(ctx) {

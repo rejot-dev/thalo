@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "schema";
 
 /**
  * Check for alter-entity trying to remove fields that don't exist in the schema
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const removeUndefinedFieldRule: Rule = {
   code: "remove-undefined-field",
   name: "Remove Undefined Field",
+  description: "# Remove Metadata references nonexistent field",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {

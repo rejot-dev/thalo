@@ -1,4 +1,6 @@
-import type { Rule } from "../types.js";
+import type { Rule, RuleCategory } from "../types.js";
+
+const category: RuleCategory = "instance";
 
 /**
  * Check for metadata fields not defined in the entity schema
@@ -6,6 +8,8 @@ import type { Rule } from "../types.js";
 export const unknownFieldRule: Rule = {
   code: "unknown-field",
   name: "Unknown Field",
+  description: "Metadata field not defined in entity schema",
+  category,
   defaultSeverity: "warning",
 
   check(ctx) {
