@@ -7,7 +7,7 @@ import { check } from "./checker/check.js";
 describe("Parser", () => {
   it("parses a ptall file", () => {
     const source = `2026-01-05T18:00 create lore "Test entry" #test
-  type: fact
+  type: "fact"
   subject: ^self
 
   Some content here.
@@ -21,7 +21,7 @@ describe("Parser", () => {
 
   it("parses using filename heuristic", () => {
     const source = `2026-01-05T18:00 create lore "Test entry" #test
-  type: fact
+  type: "fact"
 `;
     const result = parseDocument(source, { filename: "test.ptall" });
 
@@ -35,14 +35,14 @@ Some text.
 
 \`\`\`ptall
 2026-01-05T18:00 create lore "Test entry" #test
-  type: fact
+  type: "fact"
 \`\`\`
 
 More text.
 
 \`\`\`ptall
 2026-01-05T19:00 create lore "Another entry" #test
-  type: insight
+  type: "insight"
 \`\`\`
 `;
     const result = parseDocument(source, { fileType: "markdown" });
@@ -57,7 +57,7 @@ More text.
 
 \`\`\`ptall
 2026-01-05T18:00 create lore "Test entry" #test
-  type: fact
+  type: "fact"
 \`\`\`
 `;
     const result = parseDocument(source, { filename: "test.md" });
@@ -69,7 +69,7 @@ More text.
 describe("Document", () => {
   it("parses entries from source", () => {
     const source = `2026-01-05T18:00 create lore "Test entry" ^my-lore #test
-  type: fact
+  type: "fact"
   subject: ^self
 
   Some content here.
@@ -86,13 +86,13 @@ describe("Document", () => {
     expect(entry.title).toBe("Test entry");
     expect(entry.linkId).toBe("my-lore");
     expect(entry.tags).toEqual(["test"]);
-    expect(entry.metadata.get("type")?.raw).toBe("fact");
+    expect(entry.metadata.get("type")?.raw).toBe('"fact"');
     expect(entry.metadata.get("subject")?.linkId).toBe("self");
   });
 
   it("builds link index", () => {
     const source = `2026-01-05T18:00 create lore "Test entry" ^my-lore #test
-  type: fact
+  type: "fact"
   related: ^other-entry
 `;
     const doc = Document.parse(source, { filename: "test.ptall" });
@@ -159,7 +159,7 @@ describe("Checker", () => {
   it("reports unknown entity", () => {
     // "journal" is a valid entity keyword but not defined in our test schema
     const source = `2026-01-05T18:00 create journal "Test" #test
-  field: value
+  field: "value"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
     const diagnostics = check(workspace);
@@ -171,7 +171,7 @@ describe("Checker", () => {
 
   it("reports missing required field", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
 `;
     // Missing "subject" which is required
     workspace.addDocument(source, { filename: "test.ptall" });
@@ -184,9 +184,9 @@ describe("Checker", () => {
 
   it("reports unknown field", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
-  unknown-field: value
+  type: "fact"
+  subject: "test"
+  unknown-field: "value"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
     const diagnostics = check(workspace);
@@ -198,8 +198,8 @@ describe("Checker", () => {
 
   it("reports invalid field type", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: invalid-value
-  subject: test
+  type: "invalid-value"
+  subject: "test"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
     const diagnostics = check(workspace);
@@ -211,8 +211,8 @@ describe("Checker", () => {
 
   it("reports missing required section", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: "test"
 
   Just some content without the required Summary section.
 `;
@@ -226,8 +226,8 @@ describe("Checker", () => {
 
   it("reports unresolved link", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: "test"
   related: ^nonexistent-link
 
   # Summary
@@ -244,7 +244,7 @@ describe("Checker", () => {
   it("passes with valid entry", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
   type: "fact"
-  subject: test
+  subject: "test"
 
   # Summary
   Test summary.
@@ -260,8 +260,8 @@ describe("Checker", () => {
   it("allows configuring rule severity", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
   type: "fact"
-  subject: test
-  unknown-field: value
+  subject: "test"
+  unknown-field: "value"
 
   # Summary
   Test summary.

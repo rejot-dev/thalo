@@ -19,13 +19,13 @@ describe("handleDefinition", () => {
 
     // Add a document with entries that can be linked to
     const source = `2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript
-  type: fact
+  type: "fact"
   subject: ^self
 
   Some content.
 
 2026-01-05T19:00 create opinion "TypeScript enums are bad" ^enum-opinion #typescript
-  confidence: high
+  confidence: "high"
   related: ^ts-lore
 
   # Claim
@@ -39,7 +39,7 @@ describe("handleDefinition", () => {
       // Document with cursor on ^ts-lore reference
       // Line 2: "  related: ^ts-lore" - ^ is at char 11, ts-lore ends at 19
       const source = `2026-01-06T10:00 create lore "New entry" #test
-  type: fact
+  type: "fact"
   related: ^ts-lore
 `;
       // Important: URI must match the filename in workspace for lookup to work
@@ -59,7 +59,7 @@ describe("handleDefinition", () => {
     it("should return null for timestamp link (timestamps are not link IDs)", () => {
       // Timestamps are not link IDs - only explicit ^link-id creates links
       const source = `2026-01-06T10:00 create lore "New entry" #test
-  type: fact
+  type: "fact"
   related: ^2026-01-05T18:00
 `;
       const doc = createDocument(source, "file:///test2.ptall");
@@ -76,12 +76,12 @@ describe("handleDefinition", () => {
 
     it("should return null when cursor is not on a link", () => {
       const doc = createDocument(`2026-01-06T10:00 create lore "New entry" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: ^test
 `);
       workspace.addDocument(doc.getText(), { filename: "/test2.ptall" });
 
-      // Position cursor on "type: fact" (no link)
+      // Position cursor on "type: "fact"" (no link)
       const position: Position = { line: 1, character: 5 };
 
       const result = handleDefinition(workspace, doc, position);
@@ -91,7 +91,7 @@ describe("handleDefinition", () => {
 
     it("should return null for unresolved link", () => {
       const doc = createDocument(`2026-01-06T10:00 create lore "New entry" #test
-  type: fact
+  type: "fact"
   related: ^nonexistent-link
 `);
       workspace.addDocument(doc.getText(), { filename: "/test2.ptall" });
@@ -125,7 +125,7 @@ describe("handleDefinition", () => {
     it("should navigate to definition in different file", () => {
       // Add another file that references the first
       const secondFile = `2026-01-06T10:00 create journal "Reflection" #journal
-  type: reflection
+  type: "reflection"
   subject: ^self
   related: ^enum-opinion
 `;
@@ -203,13 +203,13 @@ describe("handleDefinition", () => {
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
       const instanceSource = `2026-01-06T10:00 create opinion "Test opinion"
-  confidence: high
+  confidence: "high"
 `;
       const doc = createDocument(instanceSource, "file:///instance.ptall");
       workspace.addDocument(doc.getText(), { filename: "/instance.ptall" });
 
       // Position cursor on "confidence" metadata key
-      // "  confidence: high" - confidence starts at character 2
+      // "  confidence: "high"" - confidence starts at character 2
       const position: Position = { line: 1, character: 5 };
 
       const result = handleDefinition(workspace, doc, position);
@@ -231,7 +231,7 @@ describe("handleDefinition", () => {
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
       const instanceSource = `2026-01-06T10:00 create opinion "Test opinion"
-  confidence: high
+  confidence: "high"
 
   # Claim
   This is my claim.
@@ -292,7 +292,7 @@ describe("handleDefinition", () => {
 
       // Reference the synthesis from another entry
       const referenceSource = `2026-01-06T12:00 create lore "Related lore" #career
-  type: fact
+  type: "fact"
   related: ^career-summary
 `;
       const doc = createDocument(referenceSource, "file:///reference.ptall");

@@ -42,7 +42,7 @@ describe("duplicate-field-in-schema rule", () => {
   # Metadata
   type: string
   subject: string
-  date: date
+  date: datetime
 `,
       { filename: "schema.ptall" },
     );

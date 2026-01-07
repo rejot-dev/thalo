@@ -12,7 +12,6 @@ describe("invalid-field-type rule", () => {
   # Metadata
   type: "fact" | "insight"
   subject: string
-  count?: number
 
   # Sections
   Content
@@ -24,8 +23,8 @@ describe("invalid-field-type rule", () => {
   it("reports invalid enum value", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: invalid-value
-  subject: test
+  type: "invalid-value"
+  subject: "test"
 
   # Content
   Test content.
@@ -41,31 +40,11 @@ describe("invalid-field-type rule", () => {
     expect(error!.severity).toBe("error");
   });
 
-  it("reports unquoted literal value", () => {
-    workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
-
-  # Content
-  Test content.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    // Literal types require quoted values: "fact" not fact
-    expect(error).toBeDefined();
-    expect(error!.message).toContain("fact");
-  });
-
   it("accepts quoted literal value", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
   type: "fact"
-  subject: test
+  subject: "test"
 
   # Content
   Test content.
@@ -79,54 +58,11 @@ describe("invalid-field-type rule", () => {
     expect(error).toBeUndefined();
   });
 
-  it("accepts any string for string type", () => {
+  it("accepts any quoted string for string type", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
   type: "fact"
-  subject: any value here
-
-  # Content
-  Test content.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    expect(error).toBeUndefined();
-  });
-
-  it("reports invalid enum value but not invalid number", () => {
-    // Note: The 'number' type currently accepts any value in TypeExpr.matches
-    // So 'not-a-number' won't trigger invalid-field-type for count
-    workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
-  type: wrong
-  subject: test
-  count: not-a-number
-
-  # Content
-  Test content.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const errors = diagnostics.filter((d) => d.code === "invalid-field-type");
-
-    // Only 'type: wrong' should be caught (enum mismatch)
-    // 'count: not-a-number' may pass if number accepts anything
-    expect(errors.length).toBeGreaterThanOrEqual(1);
-    expect(errors[0].message).toContain("wrong");
-  });
-
-  it("accepts valid number for number type", () => {
-    workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
-  type: "fact"
-  subject: test
-  count: 42
+  subject: "any value here"
 
   # Content
   Test content.
@@ -197,25 +133,6 @@ describe("invalid-field-type rule - array types", () => {
     expect(error).toBeUndefined();
   });
 
-  it("reports invalid link array (non-link values)", () => {
-    workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: "high"
-  related: not-a-link, also-not
-
-  # Claim
-  Test claim.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    expect(error).toBeDefined();
-    expect(error!.message).toContain("link[]");
-  });
-
   it("accepts valid quoted string array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
@@ -232,26 +149,6 @@ describe("invalid-field-type rule - array types", () => {
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
     expect(error).toBeUndefined();
-  });
-
-  it("reports unquoted string array elements", () => {
-    workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: "high"
-  tags: foo, bar, baz
-
-  # Claim
-  Test claim.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    // String array elements must be quoted
-    expect(error).toBeDefined();
-    expect(error!.message).toContain("string[]");
   });
 
   it("accepts union array with quoted strings and links", () => {
@@ -271,34 +168,34 @@ describe("invalid-field-type rule - array types", () => {
 
     expect(error).toBeUndefined();
   });
+});
 
-  it("reports unquoted strings in union array", () => {
+describe("invalid-field-type rule - datetime fields with datetime_value", () => {
+  let workspace: Workspace;
+
+  beforeEach(() => {
+    workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: "high"
-  authors: Jane Doe, ^author-ref, John Smith
+      `2026-01-01T00:00 define-entity reference "References"
+  # Metadata
+  ref-type: "article" | "book"
+  published?: datetime
 
-  # Claim
-  Test claim.
+  # Sections
+  Summary
 `,
-      { filename: "test.ptall" },
+      { filename: "schema.ptall" },
     );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    // String elements in (string | link)[] must be quoted
-    expect(error).toBeDefined();
   });
 
-  it("reports unquoted literal value for confidence", () => {
+  it("accepts datetime_value without time for datetime field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
-  related: ^link1
+      `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  published: 2024-05-11
 
-  # Claim
-  Test claim.
+  # Summary
+  Test summary.
 `,
       { filename: "test.ptall" },
     );
@@ -306,19 +203,17 @@ describe("invalid-field-type rule - array types", () => {
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
-    // Literal types require quoted values: "high" not high
-    expect(error).toBeDefined();
-    expect(error!.message).toContain("high");
+    expect(error).toBeUndefined();
   });
 
-  it("reports plain value for link array", () => {
+  it("rejects datetime_value with time for datetime field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: "high"
-  related: not-a-link
+      `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  published: 2024-05-11T12:00
 
-  # Claim
-  Test claim.
+  # Summary
+  Test summary.
 `,
       { filename: "test.ptall" },
     );
@@ -326,13 +221,12 @@ describe("invalid-field-type rule - array types", () => {
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
-    // Plain values don't match link[] type
     expect(error).toBeDefined();
-    expect(error!.message).toContain("link[]");
+    expect(error!.message).toContain("datetime");
   });
 });
 
-describe("invalid-field-type rule - date and date-range arrays", () => {
+describe("invalid-field-type rule - datetime and date-range arrays", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
@@ -342,7 +236,7 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
   # Metadata
   type: "fact" | "insight"
   subject: string
-  dates?: date[]
+  dates?: datetime[]
   periods?: date-range[]
 
   # Sections
@@ -352,32 +246,12 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
     );
   });
 
-  it("accepts valid date array", () => {
+  it("accepts valid datetime array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test lore" #test
   type: "fact"
-  subject: test
-  dates: "2024", "2024-05", "2024-05-11"
-
-  # Content
-  Test content.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    // Quoted dates in array format should be valid for date[]
-    expect(error).toBeUndefined();
-  });
-
-  it("accepts single date for date array", () => {
-    workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test lore" #test
-  type: "fact"
-  subject: test
-  dates: 2024-05-11
+  subject: "test"
+  dates: 2024-01-01, 2024-05-15, 2024-12-31
 
   # Content
   Test content.
@@ -389,33 +263,13 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
     expect(error).toBeUndefined();
-  });
-
-  it("reports invalid date array (non-date values)", () => {
-    workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test lore" #test
-  type: "fact"
-  subject: test
-  dates: not-a-date, 2024
-
-  # Content
-  Test content.
-`,
-      { filename: "test.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-field-type");
-
-    expect(error).toBeDefined();
-    expect(error!.message).toContain("date[]");
   });
 
   it("accepts valid date-range array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test lore" #test
   type: "fact"
-  subject: test
+  subject: "test"
   periods: 2020 ~ 2022, 2023-01 ~ 2024-06
 
   # Content
@@ -434,7 +288,7 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test lore" #test
   type: "fact"
-  subject: test
+  subject: "test"
   periods: 2020-01-01 ~ 2024-12-31
 
   # Content
@@ -453,8 +307,8 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test lore" #test
   type: "fact"
-  subject: test
-  periods: 2020, 2024
+  subject: "test"
+  periods: "2020", "2024"
 
   # Content
   Test content.

@@ -13,7 +13,7 @@ describe("handleSemanticTokens", () => {
   describe("basic token extraction", () => {
     it("should return tokens for a valid ptall document", () => {
       const doc = createDocument(`2026-01-05T18:00 create lore "Test entry" ^link-id #tag
-  type: fact
+  type: "fact"
   subject: ^self
 `);
 
@@ -67,7 +67,7 @@ Some text.
 
 \`\`\`ptall
 2026-01-05T18:00 create lore "Test" #tag
-  type: fact
+  type: "fact"
 \`\`\`
 
 More text.
@@ -110,7 +110,7 @@ More text.
 
     it("should produce consistent tokens for same input", () => {
       const source = `2026-01-05T18:00 create lore "Test entry" #tag
-  type: fact
+  type: "fact"
 `;
       const doc1 = createDocument(source);
       const doc2 = createDocument(source);
@@ -125,7 +125,7 @@ More text.
   describe("various entry types", () => {
     it("should tokenize instance entries (create)", () => {
       const doc = createDocument(`2026-01-05T18:00 create lore "Test" #tag
-  type: fact
+  type: "fact"
 `);
 
       const result = handleSemanticTokens(doc);
@@ -135,7 +135,7 @@ More text.
 
     it("should tokenize instance entries (update)", () => {
       const doc = createDocument(`2026-01-05T18:00 update lore "Updated test" #tag
-  type: insight
+  type: "insight"
 `);
 
       const result = handleSemanticTokens(doc);
@@ -147,7 +147,7 @@ More text.
       const doc = createDocument(`2026-01-01T00:00 define-entity custom "Custom entity"
   # Metadata
   field: string
-  optional?: date
+  optional?: datetime
 `);
 
       const result = handleSemanticTokens(doc);
@@ -194,13 +194,13 @@ More text.
   describe("complex documents", () => {
     it("should handle multiple entries", () => {
       const doc = createDocument(`2026-01-05T18:00 create lore "First" #tag1
-  type: fact
-  subject: test
+  type: "fact"
+  subject: ^test
 
   Content here.
 
 2026-01-05T19:00 create opinion "Second" #tag2
-  confidence: high
+  confidence: "high"
 
   # Claim
   Some claim.
@@ -217,7 +217,7 @@ More text.
 
     it("should handle entries with sections", () => {
       const doc = createDocument(`2026-01-05T18:00 create opinion "With sections" #tag
-  confidence: high
+  confidence: "high"
 
   # Claim
   The main claim.
@@ -237,7 +237,7 @@ More text.
 
     it("should handle entries with links", () => {
       const doc = createDocument(`2026-01-05T18:00 create lore "With links" ^my-link #tag
-  type: fact
+  type: "fact"
   subject: ^self
   related: ^other-link
 

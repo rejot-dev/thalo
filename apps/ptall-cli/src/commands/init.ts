@@ -32,7 +32,7 @@ const ENTITIES_PTALL = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   file?: string ; "Path to local file"
   ref-type: "article" | "video" | "tweet" | "paper" | "book" | "other"
   author?: string | link ; "Creator/author name"
-  published?: date ; "Publication date"
+  published?: datetime ; "Publication date"
   status?: "unread" | "read" | "processed" = "unread"
   # Sections
   Summary? ; "Brief summary of the content"

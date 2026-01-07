@@ -3,7 +3,7 @@ comment line after metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with comment"
-  type: fact
+  type: "fact"
   // this is a comment
 
 ---
@@ -19,8 +19,7 @@ comment line after metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment)))))
 
@@ -31,7 +30,7 @@ comment line between metadata
 2026-01-05T18:11 create reference "Entry with interleaved comment"
   url: "https://example.com"
   // commenting out the next field
-  ref-type: article
+  ref-type: "article"
 
 ---
 
@@ -52,18 +51,17 @@ comment line between metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 multiple comment lines
 ==================
 
 2026-01-05T18:11 create lore "Entry with multiple comments"
-  type: fact
+  type: "fact"
   // first comment
   // second comment
-  subject: acme
+  subject: ^acme
 
 ---
 
@@ -78,8 +76,7 @@ multiple comment lines
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment))
       (comment_line
@@ -87,18 +84,17 @@ multiple comment lines
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 unindented comment lines between metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with unindented comments"
-  type: fact
+  type: "fact"
 // first comment
 // second comment
-  subject: acme
+  subject: ^acme
 
 ---
 
@@ -113,8 +109,7 @@ unindented comment lines between metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment))
       (comment_line
@@ -122,15 +117,14 @@ unindented comment lines between metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 comment line before content
 ==================
 
 2026-01-05T18:11 create lore "Entry with comment before content"
-  type: fact
+  type: "fact"
   // TODO: add more metadata later
 
   # Description
@@ -149,8 +143,7 @@ comment line before content
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment))
       (content
@@ -165,7 +158,7 @@ comment line in content section
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with comment in content"
-  confidence: high
+  confidence: "high"
 
   # Claim
   This is the main claim.
@@ -184,8 +177,7 @@ comment line in content section
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -200,7 +192,7 @@ comment line between content sections
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with comments between sections"
-  confidence: high
+  confidence: "high"
 
   # Claim
   Main claim here.
@@ -222,8 +214,7 @@ comment line between content sections
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -272,8 +263,8 @@ inline comment after metadata value (breaks parsing)
 ==================
 
 2026-01-05T18:11 create lore "Entry with inline comment"
-  type: fact // this is inline
-  subject: acme
+  type: "fact" // this is inline
+  subject: ^acme
 
 ---
 
@@ -288,19 +279,17 @@ inline comment after metadata value (breaks parsing)
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (comment)
   (ERROR
-    (value_word)
-    (value_word)))
+    (link)))
 
 ==================
 comment at end of entry
 ==================
 
 2026-01-05T18:11 create lore "Entry ending with comment"
-  type: fact
+  type: "fact"
   // end comment
 
 ---
@@ -316,8 +305,7 @@ comment at end of entry
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment)))))
 
@@ -326,7 +314,7 @@ comment with special characters
 ==================
 
 2026-01-05T18:11 create lore "Entry with special comment"
-  type: fact
+  type: "fact"
   // TODO: fix this! @user #tag (see: https://example.com)
 
 ---
@@ -342,8 +330,7 @@ comment with special characters
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment)))))
 
@@ -353,7 +340,7 @@ unindented comment before entry
 
 // This is a file-level comment
 2026-01-05T18:11 create lore "Entry after comment"
-  type: fact
+  type: "fact"
 
 ---
 
@@ -369,19 +356,18 @@ unindented comment before entry
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 unindented comment between entries
 ==================
 
 2026-01-05T18:11 create lore "First entry"
-  type: fact
+  type: "fact"
 
 // Comment between entries
 2026-01-05T18:12 create lore "Second entry"
-  type: insight
+  type: "insight"
 
 ---
 
@@ -396,8 +382,7 @@ unindented comment between entries
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (comment)
   (entry
     (instance_entry
@@ -409,15 +394,14 @@ unindented comment between entries
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 unindented comment at end of file
 ==================
 
 2026-01-05T18:11 create lore "Entry before comment"
-  type: fact
+  type: "fact"
 
 // Comment at end of file
 
@@ -434,8 +418,7 @@ unindented comment at end of file
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (comment))
 
 ==================
@@ -445,7 +428,7 @@ multiple unindented comments
 // First top-level comment
 // Second top-level comment
 2026-01-05T18:11 create lore "Entry with comments"
-  type: fact
+  type: "fact"
 
 ---
 
@@ -462,15 +445,14 @@ multiple unindented comments
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 unindented comment directly after entry (no blank line)
 ==================
 
 2026-01-05T18:11 create lore "Entry"
-  type: fact
+  type: "fact"
 // Comment right after entry
 
 ---
@@ -486,8 +468,7 @@ unindented comment directly after entry (no blank line)
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (comment))
 
 ==================
@@ -496,7 +477,7 @@ mixed indented and unindented comments
 
 // Top-level comment
 2026-01-05T18:11 create lore "Entry"
-  type: fact
+  type: "fact"
   // Indented comment in metadata
 
 // Another top-level comment
@@ -515,8 +496,7 @@ mixed indented and unindented comments
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (comment_line
         (comment))))
   (comment))
@@ -526,10 +506,10 @@ unindented comment in metadata ends entry
 ==================
 
 2026-01-05T18:11 create lore "Entry"
-  type: fact
+  type: "fact"
 // unindented comment ends entry
 2026-01-05T18:12 create lore "Next entry"
-  subject: acme
+  subject: ^acme
 
 ---
 
@@ -544,8 +524,7 @@ unindented comment in metadata ends entry
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (comment)
   (entry
     (instance_entry
@@ -557,5 +536,4 @@ unindented comment in metadata ends entry
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))

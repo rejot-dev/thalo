@@ -84,7 +84,7 @@ describe("Synthesis integration", () => {
   Content 1.
 
 2026-01-07T12:01 create journal "Journal 1"
-  type: reflection
+  type: "reflection"
   subject: ^self
 
   # Entry
@@ -163,7 +163,7 @@ describe("Synthesis integration", () => {
 
 2026-01-07T12:01 create lore "Other career" #career
   type: "fact"
-  subject: other-subject
+  subject: ^other-subject
 
   # Content
   Other career content.
@@ -208,7 +208,7 @@ describe("Synthesis integration", () => {
   Career.
 
 2026-01-07T12:01 create journal "Career journal" #career
-  type: reflection
+  type: "reflection"
   subject: ^self
 
   # Entry

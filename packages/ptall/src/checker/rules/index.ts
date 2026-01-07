@@ -24,7 +24,6 @@ import { defineEntityRequiresSectionRule } from "./define-entity-requires-sectio
 // Metadata value rules
 import { duplicateMetadataKeyRule } from "./duplicate-metadata-key.js";
 import { emptyRequiredValueRule } from "./empty-required-value.js";
-import { invalidDateValueRule } from "./invalid-date-value.js";
 import { invalidDateRangeValueRule } from "./invalid-date-range-value.js";
 
 // Content/section rules
@@ -74,7 +73,6 @@ export const allRules: Rule[] = [
   // Metadata value rules
   duplicateMetadataKeyRule,
   emptyRequiredValueRule,
-  invalidDateValueRule,
   invalidDateRangeValueRule,
 
   // Content/section rules

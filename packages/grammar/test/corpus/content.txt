@@ -3,8 +3,8 @@ content with section header
 ==================
 
 2026-01-05T18:11 create lore "Entry with content"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
 
   # Description
   This is the content paragraph.
@@ -22,13 +22,11 @@ content with section header
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (link)))
       (content
         (markdown_header
           (md_indicator)
@@ -41,7 +39,7 @@ multi-line content under section
 ==================
 
 2026-01-05T18:11 create lore "Entry with multi-line content"
-  type: fact
+  type: "fact"
 
   # Details
   First line of content.
@@ -61,8 +59,7 @@ multi-line content under section
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -79,7 +76,7 @@ content with multiple sections
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with multiple sections"
-  confidence: high
+  confidence: "high"
 
   # Claim
   This is the claim.
@@ -100,8 +97,7 @@ content with multiple sections
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -145,7 +141,7 @@ content at EOF without trailing newline
 ==================
 
 2026-01-05T18:11 create lore "Entry at EOF"
-  type: fact
+  type: "fact"
 
   # Notes
   First line.
@@ -163,8 +159,7 @@ content at EOF without trailing newline
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -179,7 +174,7 @@ markdown header at EOF without trailing newline
 ==================
 
 2026-01-05T18:11 create opinion "Opinion at EOF"
-  confidence: high
+  confidence: "high"
 
   # Final Section
 ---
@@ -195,8 +190,7 @@ markdown header at EOF without trailing newline
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -232,7 +226,7 @@ content directly after metadata (no blank line)
 ==================
 
 2026-01-05T18:11 create lore "Direct after metadata"
-  type: fact
+  type: "fact"
   # Description
   Section starts right after metadata.
 
@@ -249,8 +243,7 @@ content directly after metadata (no blank line)
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)

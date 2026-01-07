@@ -40,10 +40,10 @@ import type {
   Key,
   Value,
   ValueContent,
-  PlainValue,
   QuotedValue,
+  DatetimeValue,
+  DateRangeValue,
   ValueArray,
-  QueryList,
   Query,
   QueryCondition,
   FieldName,
@@ -669,14 +669,13 @@ export function extractKey(node: SyntaxNode): Key {
 export function extractValue(node: SyntaxNode): Value {
   const child = node.namedChildren[0];
   if (!child) {
-    // Fallback for empty or unrecognized values
+    // Fallback for empty or unrecognized values - treat as empty quoted value
     return {
       ...baseNode(node, "value"),
       raw: node.text.trim(),
       content: {
-        ...baseNode(node, "plain_value"),
-        words: [node.text.trim()],
-        text: node.text.trim(),
+        ...baseNode(node, "quoted_value"),
+        value: node.text.trim(),
       },
     };
   }
@@ -693,14 +692,17 @@ export function extractValue(node: SyntaxNode): Value {
  */
 function extractValueContent(node: SyntaxNode): ValueContent {
   switch (node.type) {
-    case "plain_value":
-      return extractPlainValue(node);
     case "quoted_value":
       return extractQuotedValue(node);
     case "link":
       return {
         ...baseNode(node, "link_value"),
         link: extractLink(node),
+      };
+    case "datetime_value":
+      return {
+        ...baseNode(node, "datetime_value"),
+        value: node.text.trim(),
       };
     case "date_range":
       return {
@@ -709,28 +711,18 @@ function extractValueContent(node: SyntaxNode): ValueContent {
       };
     case "value_array":
       return extractValueArray(node);
-    case "query_list":
-      return extractQueryList(node);
-    default:
-      // Fallback: treat as plain value
+    case "query":
       return {
-        ...baseNode(node, "plain_value"),
-        words: [node.text.trim()],
-        text: node.text.trim(),
+        ...baseNode(node, "query_value"),
+        query: extractQuery(node),
+      };
+    default:
+      // Fallback: treat as quoted value
+      return {
+        ...baseNode(node, "quoted_value"),
+        value: node.text.trim(),
       };
   }
-}
-
-function extractPlainValue(node: SyntaxNode): PlainValue {
-  const words = node.namedChildren
-    .filter((child) => child.type === "value_word")
-    .map((child) => child.text);
-
-  return {
-    ...baseNode(node, "plain_value"),
-    words,
-    text: words.join(" "),
-  };
 }
 
 function extractQuotedValue(node: SyntaxNode): QuotedValue {
@@ -741,28 +733,31 @@ function extractQuotedValue(node: SyntaxNode): QuotedValue {
 }
 
 function extractValueArray(node: SyntaxNode): ValueArray {
-  const elements: (Link | QuotedValue)[] = [];
+  const elements: (Link | QuotedValue | DatetimeValue | DateRangeValue | Query)[] = [];
 
   for (const child of node.namedChildren) {
     if (child.type === "link") {
       elements.push(extractLink(child));
     } else if (child.type === "quoted_value") {
       elements.push(extractQuotedValue(child));
+    } else if (child.type === "datetime_value") {
+      elements.push({
+        ...baseNode(child, "datetime_value"),
+        value: child.text.trim(),
+      });
+    } else if (child.type === "date_range") {
+      elements.push({
+        ...baseNode(child, "date_range"),
+        raw: child.text.trim(),
+      });
+    } else if (child.type === "query") {
+      elements.push(extractQuery(child));
     }
   }
 
   return {
     ...baseNode(node, "value_array"),
     elements,
-  };
-}
-
-function extractQueryList(node: SyntaxNode): QueryList {
-  const queries = node.namedChildren.filter((child) => child.type === "query").map(extractQuery);
-
-  return {
-    ...baseNode(node, "query_list"),
-    queries,
   };
 }
 

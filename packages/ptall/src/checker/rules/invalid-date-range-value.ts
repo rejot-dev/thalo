@@ -37,13 +37,24 @@ export const invalidDateRangeValueRule: Rule = {
         }
 
         // Validate the date-range format
-        const trimmedValue = value.raw.trim();
-        if (trimmedValue && !dateRangePattern.test(trimmedValue)) {
+        // For date_range content type, it's already validated by the parser
+        if (value.content.type === "date_range") {
+          // The grammar already validated the format, nothing more to check
+          continue;
+        }
+
+        // For quoted values, extract and validate
+        let rangeValue = value.raw.trim();
+        if (value.content.type === "quoted_value") {
+          rangeValue = value.content.value;
+        }
+
+        if (rangeValue && !dateRangePattern.test(rangeValue)) {
           ctx.report({
-            message: `Invalid date range format '${trimmedValue}' for field '${fieldName}'. Expected 'DATE ~ DATE' where DATE is YYYY, YYYY-MM, or YYYY-MM-DD.`,
+            message: `Invalid date range format '${rangeValue}' for field '${fieldName}'. Expected 'DATE ~ DATE' where DATE is YYYY, YYYY-MM, or YYYY-MM-DD.`,
             file: entry.file,
             location: value.location,
-            data: { fieldName, value: trimmedValue },
+            data: { fieldName, value: rangeValue },
           });
         }
       }

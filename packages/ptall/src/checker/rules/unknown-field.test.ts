@@ -20,9 +20,9 @@ describe("unknown-field rule", () => {
   it("reports unknown field", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
-  unknown-field: value
+  type: "fact"
+  subject: "test"
+  unknown-field: "value"
 `,
       { filename: "test.ptall" },
     );
@@ -38,8 +38,8 @@ describe("unknown-field rule", () => {
   it("does not report known fields", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: "test"
 `,
       { filename: "test.ptall" },
     );
@@ -53,10 +53,10 @@ describe("unknown-field rule", () => {
   it("reports multiple unknown fields", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
-  foo: bar
-  baz: qux
+  type: "fact"
+  subject: "test"
+  foo: "bar"
+  baz: "qux"
 `,
       { filename: "test.ptall" },
     );
@@ -73,9 +73,9 @@ describe("unknown-field rule", () => {
   it("can be configured to error", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
-  unknown: value
+  type: "fact"
+  subject: "test"
+  unknown: "value"
 `,
       { filename: "test.ptall" },
     );
@@ -90,9 +90,9 @@ describe("unknown-field rule", () => {
   it("can be turned off", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
-  unknown: value
+  type: "fact"
+  subject: "test"
+  unknown: "value"
 `,
       { filename: "test.ptall" },
     );

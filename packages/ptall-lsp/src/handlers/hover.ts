@@ -485,21 +485,20 @@ function getPrimitiveTypeDocumentation(typeName: string): string | null {
         "```",
       ].join("\n");
 
-    case "date":
+    case "datetime":
       return [
-        "### Type: `date`",
+        "### Type: `datetime`",
         "",
-        "A date in ISO format. Supports multiple precisions.",
+        "A date in ISO format (YYYY-MM-DD).",
         "",
-        "**Formats:**",
-        "- `YYYY` — year only (e.g., `2024`)",
-        "- `YYYY-MM` — year and month (e.g., `2024-05`)",
-        "- `YYYY-MM-DD` — full date (e.g., `2024-05-11`)",
+        "**Format:** `YYYY-MM-DD`",
         "",
         "**Example:**",
         "```",
         "published: 2024-05-11",
         "```",
+        "",
+        "Note: For partial dates (YYYY or YYYY-MM), use `date-range` type.",
       ].join("\n");
 
     case "date-range":
@@ -771,9 +770,9 @@ function detectHoverContext(document: TextDocument, position: Position): HoverCo
     const header = findEntryHeader(document, position.line);
     if (header?.text.includes("define-entity") || header?.text.includes("alter-entity")) {
       // Check for primitive types
-      const primitiveMatch = afterIndent.match(/:\s*(string|date-range|date|link)/);
+      const primitiveMatch = afterIndent.match(/:\s*(string|datetime|date-range|link)/);
       if (primitiveMatch && word) {
-        const typeNames = ["string", "date", "date-range", "link"];
+        const typeNames = ["string", "datetime", "date-range", "link"];
         if (typeNames.includes(word)) {
           return { kind: "type", value: word };
         }

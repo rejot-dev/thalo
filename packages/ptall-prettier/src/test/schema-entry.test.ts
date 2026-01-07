@@ -98,7 +98,7 @@ describe("schema entry formatting", () => {
     const input = `2026-01-05T18:12 define-entity lore "Facts"
   # Metadata
   date?: date-range
-  published?: date
+  published?: datetime
 `;
 
     const output = await format(input);
@@ -106,7 +106,7 @@ describe("schema entry formatting", () => {
     expect(output).toBe(`2026-01-05T18:12 define-entity lore "Facts"
   # Metadata
   date?: date-range
-  published?: date
+  published?: datetime
 `);
   });
 
@@ -238,14 +238,14 @@ describe("schema entry formatting", () => {
   it("should format alter-entity adding metadata", async () => {
     const input = `2026-01-10T14:00 alter-entity reference "Add published field"
   # Metadata
-  published: date ; "publication date"
+  published: datetime ; "publication date"
 `;
 
     const output = await format(input);
 
     expect(output).toBe(`2026-01-10T14:00 alter-entity reference "Add published field"
   # Metadata
-  published: date ; "publication date"
+  published: datetime ; "publication date"
 `);
   });
 
@@ -326,7 +326,7 @@ describe("schema entry formatting", () => {
   it("should format alter-entity with all block types", async () => {
     const input = `2026-01-10T14:00 alter-entity reference "Major update"
   # Metadata
-  published: date
+  published: datetime
   # Remove Metadata
   legacy-field
   # Sections
@@ -339,7 +339,7 @@ describe("schema entry formatting", () => {
 
     expect(output).toBe(`2026-01-10T14:00 alter-entity reference "Major update"
   # Metadata
-  published: date
+  published: datetime
   # Remove Metadata
   legacy-field
 

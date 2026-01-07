@@ -3,10 +3,10 @@ two simple entries
 ==================
 
 2026-01-05T18:11 create lore "First entry"
-  type: fact
+  type: "fact"
 
 2026-01-05T18:12 create lore "Second entry"
-  type: insight
+  type: "insight"
 
 ---
 
@@ -21,8 +21,7 @@ two simple entries
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (entry
     (instance_entry
       (instance_header
@@ -33,23 +32,22 @@ two simple entries
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 entries with content
 ==================
 
 2026-01-05T18:11 create lore "First entry with content"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
 
   # Description
   This is the first entry content.
 
 2026-01-05T18:12 create lore "Second entry with content"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
 
   # Description
   This is the second entry content.
@@ -67,13 +65,11 @@ entries with content
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (link)))
       (content
         (markdown_header
           (md_indicator)
@@ -90,13 +86,11 @@ entries with content
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (link)))
       (content
         (markdown_header
           (md_indicator)
@@ -109,16 +103,16 @@ three entries mixed
 ==================
 
 2026-01-05T18:11 create lore "Fact entry" ^fact-one #architecture
-  type: fact
+  type: "fact"
 
 2026-01-05T18:12 create opinion "Opinion entry" #opinions
-  confidence: high
+  confidence: "high"
 
   # Claim
   This is my claim.
 
 2026-01-05T18:13 create reference "Reference entry"
-  ref-type: article
+  ref-type: "article"
   url: "https://example.com"
 
 ---
@@ -136,8 +130,7 @@ three entries mixed
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (entry
     (instance_entry
       (instance_header
@@ -149,8 +142,7 @@ three entries mixed
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -167,8 +159,7 @@ three entries mixed
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
@@ -179,11 +170,11 @@ entry with blank lines between
 ==================
 
 2026-01-05T18:11 create lore "Entry one"
-  type: fact
+  type: "fact"
 
 
 2026-01-05T18:12 create lore "Entry two"
-  type: fact
+  type: "fact"
 
 ---
 
@@ -198,8 +189,7 @@ entry with blank lines between
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))))
+          (quoted_value)))))
   (entry
     (instance_entry
       (instance_header
@@ -210,5 +200,4 @@ entry with blank lines between
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))

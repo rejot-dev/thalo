@@ -19,7 +19,7 @@ describe("handleReferences", () => {
 
     // Add documents with cross-references
     const source1 = `2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript
-  type: fact
+  type: "fact"
   subject: ^self
 
   Some content.
@@ -27,14 +27,14 @@ describe("handleReferences", () => {
     workspace.addDocument(source1, { filename: "/file1.ptall" });
 
     const source2 = `2026-01-05T19:00 create opinion "TypeScript enums are bad" ^enum-opinion #typescript
-  confidence: high
+  confidence: "high"
   related: ^ts-lore
 
   # Claim
   Enums should be avoided.
 
 2026-01-05T20:00 create journal "Working on TypeScript" #development
-  type: reflection
+  type: "reflection"
   subject: ^self
   inspiration: ^ts-lore
 
@@ -178,7 +178,7 @@ describe("handleReferences", () => {
       );
 
       // Position cursor on "type" metadata key
-      // "  type: fact" - type starts at character 2
+      // "  type: "fact"" - type starts at character 2
       const position: Position = { line: 1, character: 3 };
       const context: ReferenceContext = { includeDeclaration: true };
 
@@ -213,7 +213,7 @@ describe("handleReferences", () => {
 
       // Add a lore entry that references the synthesis
       const loreSource = `2026-01-07T10:00 create lore "Related to career summary" #career
-  type: fact
+  type: "fact"
   related: ^career-summary
 `;
       synthesisWorkspace.addDocument(loreSource, { filename: "/lore.ptall" });
@@ -318,7 +318,7 @@ describe("handleReferences", () => {
     it("should return empty array for link with no references", () => {
       // Add a document with a link that nothing references
       const isolatedDoc = `2026-01-06T10:00 create lore "Isolated entry" ^isolated-link #test
-  type: fact
+  type: "fact"
   subject: ^self
 `;
       workspace.addDocument(isolatedDoc, { filename: "/isolated.ptall" });

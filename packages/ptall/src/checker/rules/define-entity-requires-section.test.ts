@@ -93,7 +93,7 @@ describe("define-entity-requires-section rule", () => {
 
 2026-01-02T00:00 alter-entity lore "Add date field"
   # Metadata
-  date?: date
+  date?: datetime
 `,
       { filename: "schema.ptall" },
     );

@@ -9,14 +9,14 @@ describe("findReferences", () => {
     workspace = new Workspace();
 
     const source1 = `2026-01-05T18:00 create lore "First entry" ^first-entry #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: ^test
 
   Content.
 `;
     const source2 = `2026-01-05T19:00 create lore "Second entry" #test
-  type: insight
-  subject: test
+  type: "insight"
+  subject: ^test
   related: ^first-entry
 
   More content.
@@ -39,8 +39,8 @@ describe("findReferences", () => {
     // Add a file with a reference to an undefined link
     workspace.addDocument(
       `2026-01-05T20:00 create lore "Third" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: ^test
   see-also: ^undefined-link
 `,
       { filename: "file3.ptall" },

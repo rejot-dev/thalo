@@ -240,7 +240,7 @@ array of date type
 
 2026-01-05T18:12 define-entity lore "Lore"
   # Metadata
-  dates: date[]
+  dates: datetime[]
 
 ---
 
@@ -520,7 +520,7 @@ alter-entity adding metadata
 
 2026-01-10T14:00 alter-entity reference "Add published field"
   # Metadata
-  published: date ; "publication date"
+  published: datetime ; "publication date"
 
 ---
 
@@ -615,7 +615,7 @@ alter-entity all block types
 
 2026-01-10T14:00 alter-entity reference "Major update"
   # Metadata
-  published: date
+  published: datetime
   # Remove Metadata
   legacy-field
   # Sections

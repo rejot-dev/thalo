@@ -17,16 +17,13 @@ simple define-synthesis
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link))))))))))
 
 ==================
 define-synthesis with tags
@@ -49,16 +46,13 @@ define-synthesis with tags
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link))))))))))
 
 ==================
 define-synthesis with prompt content
@@ -82,16 +76,13 @@ define-synthesis with prompt content
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link)))))))
       (content
         (markdown_header
           (md_indicator)
@@ -105,7 +96,7 @@ define-synthesis with multiple metadata
 
 2026-01-07T12:00 define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
-  format: markdown
+  format: "markdown"
 
   # Prompt
   Generate profile.
@@ -122,21 +113,17 @@ define-synthesis with multiple metadata
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link)))))))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -169,14 +156,12 @@ define-synthesis with multi-line prompt
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (tag_condition
-                    (tag))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (tag_condition
+                  (tag)))))))
       (content
         (markdown_header
           (md_indicator)
@@ -208,8 +193,7 @@ simple actualize-synthesis
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (datetime_value))))))
 
 ==================
 actualize-synthesis with only updated field
@@ -229,8 +213,7 @@ actualize-synthesis with only updated field
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (datetime_value))))))
 
 ==================
 multiple entries in file
@@ -257,16 +240,13 @@ multiple entries in file
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link)))))))
       (content
         (markdown_header
           (md_indicator)
@@ -281,8 +261,7 @@ multiple entries in file
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (datetime_value))))))
 
 ==================
 complex sources query
@@ -303,25 +282,21 @@ complex sources query
       (metadata
         (key)
         (value
-          (query_list
+          (value_array
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (field_condition
-                    (condition_field
-                      (condition_field))
+                    (condition_field)
                     (link)))
                 (query_condition
                   (tag_condition
                     (tag)))))
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (field_condition
-                    (condition_field
-                      (condition_field))
+                    (condition_field)
                     (link)))))))))))

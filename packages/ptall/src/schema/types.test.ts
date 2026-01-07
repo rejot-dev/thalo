@@ -8,7 +8,7 @@ import type {
 } from "../model/types.js";
 
 // Helper functions to create type expressions
-function primitive(name: "string" | "date" | "date-range" | "link"): ModelPrimitiveType {
+function primitive(name: "string" | "datetime" | "date-range" | "link"): ModelPrimitiveType {
   return { kind: "primitive", name };
 }
 
@@ -44,12 +44,13 @@ describe("TypeExpr.matches", () => {
     });
 
     it("matches date type with valid formats", () => {
-      expect(TypeExpr.matches("2024", primitive("date"))).toBe(true);
-      expect(TypeExpr.matches("2024-05", primitive("date"))).toBe(true);
-      expect(TypeExpr.matches("2024-05-11", primitive("date"))).toBe(true);
-      expect(TypeExpr.matches("not-a-date", primitive("date"))).toBe(false);
-      expect(TypeExpr.matches("2024-5-11", primitive("date"))).toBe(false);
-      expect(TypeExpr.matches("24-05-11", primitive("date"))).toBe(false);
+      // Datetime only accepts YYYY-MM-DD format (no partial dates)
+      expect(TypeExpr.matches("2024-05-11", primitive("datetime"))).toBe(true);
+      expect(TypeExpr.matches("2024", primitive("datetime"))).toBe(false);
+      expect(TypeExpr.matches("2024-05", primitive("datetime"))).toBe(false);
+      expect(TypeExpr.matches("not-a-date", primitive("datetime"))).toBe(false);
+      expect(TypeExpr.matches("2024-5-11", primitive("datetime"))).toBe(false);
+      expect(TypeExpr.matches("24-05-11", primitive("datetime"))).toBe(false);
     });
 
     it("matches date-range type with valid formats", () => {
@@ -141,23 +142,23 @@ describe("TypeExpr.matches", () => {
       });
     });
 
-    describe("date[]", () => {
-      const type = array(primitive("date"));
+    describe("datetime[]", () => {
+      const type = array(primitive("datetime"));
 
-      it("matches single date", () => {
-        expect(TypeExpr.matches("2024", type)).toBe(true);
-        expect(TypeExpr.matches("2024-05", type)).toBe(true);
+      it("matches single datetime (YYYY-MM-DD)", () => {
         expect(TypeExpr.matches("2024-05-11", type)).toBe(true);
+        // Partial dates are not valid for datetime
+        expect(TypeExpr.matches("2024", type)).toBe(false);
+        expect(TypeExpr.matches("2024-05", type)).toBe(false);
       });
 
-      it("matches multiple dates", () => {
-        expect(TypeExpr.matches("2024, 2025", type)).toBe(true);
-        expect(TypeExpr.matches("2024-01, 2024-06, 2024-12", type)).toBe(true);
+      it("matches multiple datetimes", () => {
+        expect(TypeExpr.matches("2024-01-01, 2024-06-15, 2024-12-31", type)).toBe(true);
       });
 
-      it("rejects invalid dates", () => {
+      it("rejects invalid datetimes", () => {
         expect(TypeExpr.matches("not-a-date", type)).toBe(false);
-        expect(TypeExpr.matches("2024, not-a-date", type)).toBe(false);
+        expect(TypeExpr.matches("2024-05-11, not-a-date", type)).toBe(false);
       });
 
       it("rejects empty arrays", () => {
@@ -241,7 +242,7 @@ describe("TypeExpr.toString", () => {
   it("formats primitive types", () => {
     expect(TypeExpr.toString(primitive("string"))).toBe("string");
     expect(TypeExpr.toString(primitive("link"))).toBe("link");
-    expect(TypeExpr.toString(primitive("date"))).toBe("date");
+    expect(TypeExpr.toString(primitive("datetime"))).toBe("datetime");
     expect(TypeExpr.toString(primitive("date-range"))).toBe("date-range");
   });
 
@@ -258,7 +259,7 @@ describe("TypeExpr.toString", () => {
   it("formats simple array types", () => {
     expect(TypeExpr.toString(array(primitive("link")))).toBe("link[]");
     expect(TypeExpr.toString(array(primitive("string")))).toBe("string[]");
-    expect(TypeExpr.toString(array(primitive("date")))).toBe("date[]");
+    expect(TypeExpr.toString(array(primitive("datetime")))).toBe("datetime[]");
     expect(TypeExpr.toString(array(primitive("date-range")))).toBe("date-range[]");
   });
 

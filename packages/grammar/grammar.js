@@ -162,7 +162,7 @@ export default grammar({
     array_type: ($) => seq($._array_element, token.immediate("[]")),
     _array_element: ($) => choice($.primitive_type, $.literal_type, $.paren_type),
     paren_type: ($) => seq("(", $.type_expression, ")"),
-    primitive_type: (_) => choice("string", "date", "date-range", "link"),
+    primitive_type: (_) => choice("string", "datetime", "date-range", "link"),
     literal_type: (_) => token(/"[^"]*"/),
     default_value: ($) => choice($.literal_type, $._plain_default),
     _plain_default: (_) => token(/[^\s;][^;\r\n]*/),
@@ -205,54 +205,49 @@ export default grammar({
     // Typed metadata values
     // =========================================================================
 
-    // Value parsing uses small tokens to allow grammar-level pattern matching.
-    // This avoids having a greedy "plain_value" token that matches everything.
-    // Use prec.dynamic for GLR-style conflict resolution.
+    // Value parsing uses typed tokens. All values must be explicitly typed:
+    // - Links: ^identifier
+    // - Quoted strings: "text" (required for literal types like "fact")
+    // - Datetime: YYYY-MM-DD or YYYY-MM-DDTHH:MM (date with optional time)
+    // - Date ranges: YYYY ~ YYYY
+    // - Queries: entity where conditions
+    // - Arrays: comma-separated values of any type
     value: ($) =>
       choice(
-        prec.dynamic(10, $.query_list), // Query expressions (contains "where")
-        prec.dynamic(5, $.date_range), // DATE ~ DATE (contains ~)
-        prec.dynamic(5, $.value_array), // Comma-separated values
+        prec.dynamic(5, $.value_array), // Comma-separated values (2+ elements)
+        prec.dynamic(5, $.date_range), // DATE ~ DATE
+        prec.dynamic(4, $.datetime_value), // YYYY-MM-DD or YYYY-MM-DDTHH:MM
+        prec.dynamic(3, $.query), // entity where conditions
         prec.dynamic(3, $.link), // ^identifier
         prec.dynamic(3, $.quoted_value), // "quoted text"
-        prec.dynamic(1, $.plain_value), // Fallback: sequence of value words
       ),
 
-    // Quoted string as a value
+    // Quoted string as a value (required for literal types)
     quoted_value: (_) => token(/"[^"]*"/),
 
-    // Plain value: sequence of value words (NOT a single token)
-    // Uses the same token pattern as query_entity to avoid tokenization conflicts
-    plain_value: ($) => repeat1($.value_word),
-
-    // A word in a value - matches identifiers and other non-delimiter text
-    // This must use token() with the SAME pattern as query components
-    value_word: (_) => token(prec(-1, /[^\s"^#~,=\r\n]+/)),
+    // Datetime value: date with optional time (YYYY-MM-DD or YYYY-MM-DDTHH:MM)
+    datetime_value: (_) => token(/[12]\d{3}-[01]\d-[0-3]\d(T[0-2]\d:[0-5]\d)?/),
 
     // Date range: YYYY(-MM(-DD))? ~ YYYY(-MM(-DD))?
-    // Must be a token to prevent plain_value from matching the first date
     date_range: (_) => token(/\d{4}(-\d{2}(-\d{2})?)? *~ *\d{4}(-\d{2}(-\d{2})?)?/),
 
-    // Array values: comma-separated links and/or quoted values
+    // Unified array: comma-separated values of any type
     value_array: ($) =>
       prec.right(seq($._value_array_element, repeat1(seq(",", $._value_array_element)))),
 
-    _value_array_element: ($) => choice($.link, $.quoted_value),
+    _value_array_element: ($) =>
+      choice($.link, $.quoted_value, $.datetime_value, $.date_range, $.query),
 
     // =========================================================================
     // Query expressions (for sources metadata)
-    // Queries MUST have "where" to be distinguished from plain strings
     // =========================================================================
 
-    // Query list: one or more queries separated by commas
-    query_list: ($) => prec.left(seq($.query, repeat(seq(",", $.query)))),
-
-    // Single query: entity where conditions (where is REQUIRED)
+    // Single query: entity where conditions
     query: ($) =>
       seq(field("entity", $.query_entity), "where", field("conditions", $.query_conditions)),
 
-    // Query entity uses the same token as value_word, aliased for clarity
-    query_entity: ($) => alias($.value_word, $.query_entity),
+    // Query entity (lore, journal, opinion, reference)
+    query_entity: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
 
     // Conditions joined by "and"
     query_conditions: ($) => seq($.query_condition, repeat(seq("and", $.query_condition))),
@@ -268,11 +263,11 @@ export default grammar({
     field_condition: ($) =>
       seq(field("field", $.condition_field), "=", field("value", $._condition_value)),
 
-    // Condition field uses the same token as value_word, aliased for clarity
-    condition_field: ($) => alias($.value_word, $.condition_field),
+    // Condition field name
+    condition_field: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
 
-    _condition_value: ($) => choice($.link, $.quoted_value, $.condition_plain_value),
-    condition_plain_value: ($) => alias($.value_word, $.condition_plain_value),
+    // Condition values: links or quoted strings only (no plain values)
+    _condition_value: ($) => choice($.link, $.quoted_value),
 
     tag_condition: ($) => $.tag,
     link_condition: ($) => $.link,

@@ -65,11 +65,31 @@ value: quoted value
           (quoted_value))))))
 
 ==================
-value: plain value
+value: datetime with time
 ==================
 
-2026-01-05T18:11 create lore "Entry"
-  type: fact
+2026-01-07T12:00 actualize-synthesis ^profile
+  updated: 2026-01-07T12:00
+
+---
+
+(source_file
+  (entry
+    (actualize_entry
+      (actualize_header
+        (timestamp)
+        (link))
+      (metadata
+        (key)
+        (value
+          (datetime_value))))))
+
+==================
+value: datetime without time (date only)
+==================
+
+2026-01-07T12:00 create lore "Entry"
+  published: 2026-01-07
 
 ---
 
@@ -84,35 +104,8 @@ value: plain value
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (datetime_value))))))
 
-==================
-value: plain value with spaces
-==================
-
-2026-01-05T18:11 create lore "Entry"
-  description: this is a longer value
-
----
-
-(source_file
-  (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
-      (metadata
-        (key)
-        (value
-          (plain_value
-            (value_word)
-            (value_word)
-            (value_word)
-            (value_word)
-            (value_word)))))))
 
 ==================
 value: date range years
@@ -251,16 +244,13 @@ query: entity with field condition
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link))))))))))
 
 ==================
 query: entity with tag condition
@@ -281,14 +271,12 @@ query: entity with tag condition
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (tag_condition
-                    (tag)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (tag_condition
+                  (tag))))))))))
 
 ==================
 query: entity with link condition
@@ -309,14 +297,12 @@ query: entity with link condition
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (link_condition
-                    (link)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (link_condition
+                  (link))))))))))
 
 ==================
 query: multiple conditions with and
@@ -337,19 +323,16 @@ query: multiple conditions with and
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link)))
-                (query_condition
-                  (tag_condition
-                    (tag)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link)))
+              (query_condition
+                (tag_condition
+                  (tag))))))))))
 
 ==================
 query: three conditions
@@ -370,27 +353,50 @@ query: three conditions
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (link)))
-                (query_condition
-                  (tag_condition
-                    (tag)))
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (quoted_value)))))))))))
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (link)))
+              (query_condition
+                (tag_condition
+                  (tag)))
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (quoted_value))))))))))
 
 ==================
-query: comma-separated multiple queries
+query: field with quoted value
+==================
+
+2026-01-07T12:00 define-synthesis "Facts" ^facts
+  sources: lore where type = "fact"
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query
+            (query_entity)
+            (query_conditions
+              (query_condition
+                (field_condition
+                  (condition_field)
+                  (quoted_value))))))))))
+
+==================
+array: multiple queries
 ==================
 
 2026-01-07T12:00 define-synthesis "Profile" ^profile
@@ -408,28 +414,24 @@ query: comma-separated multiple queries
       (metadata
         (key)
         (value
-          (query_list
+          (value_array
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (field_condition
-                    (condition_field
-                      (condition_field))
+                    (condition_field)
                     (link)))))
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (field_condition
-                    (condition_field
-                      (condition_field))
+                    (condition_field)
                     (link)))))))))))
 
 ==================
-query: three queries
+array: three queries
 ==================
 
 2026-01-07T12:00 define-synthesis "All" ^all
@@ -447,56 +449,71 @@ query: three queries
       (metadata
         (key)
         (value
-          (query_list
+          (value_array
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (tag_condition
                     (tag)))))
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (tag_condition
                     (tag)))))
             (query
-              (query_entity
-                (query_entity))
+              (query_entity)
               (query_conditions
                 (query_condition
                   (tag_condition
                     (tag)))))))))))
 
 ==================
-query: field with plain value
+array: date ranges
 ==================
 
-2026-01-07T12:00 define-synthesis "Facts" ^facts
-  sources: lore where type = fact
+2026-01-07T12:00 create lore "Entry"
+  periods: 2020 ~ 2022, 2023 ~ 2024
 
 ---
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
+    (instance_entry
+      (instance_header
         (timestamp)
-        (title)
-        (link))
+        (instance_directive)
+        (entity)
+        (title))
       (metadata
         (key)
         (value
-          (query_list
-            (query
-              (query_entity
-                (query_entity))
-              (query_conditions
-                (query_condition
-                  (field_condition
-                    (condition_field
-                      (condition_field))
-                    (condition_plain_value
-                      (condition_plain_value))))))))))))
+          (value_array
+            (date_range)
+            (date_range)))))))
+
+==================
+array: mixed types
+==================
+
+2026-01-07T12:00 create lore "Entry"
+  sources: ^reference1, "inline note", 2020 ~ 2022
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (value_array
+            (link)
+            (quoted_value)
+            (date_range)))))))

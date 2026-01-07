@@ -42,14 +42,14 @@ describe("Document type expression parsing", () => {
       const type = getFieldType(
         `2026-01-01T00:00 define-entity test "Test"
   # Metadata
-  published: date
+  published: datetime
 
   # Sections
   Content
 `,
         "published",
       );
-      expect(type).toEqual({ kind: "primitive", name: "date" });
+      expect(type).toEqual({ kind: "primitive", name: "datetime" });
     });
 
     it("parses date-range type", () => {
@@ -165,7 +165,7 @@ describe("Document type expression parsing", () => {
       const type = getFieldType(
         `2026-01-01T00:00 define-entity test "Test"
   # Metadata
-  dates: date[]
+  dates: datetime[]
 
   # Sections
   Content
@@ -174,7 +174,7 @@ describe("Document type expression parsing", () => {
       );
       expect(type).toEqual({
         kind: "array",
-        elementType: { kind: "primitive", name: "date" },
+        elementType: { kind: "primitive", name: "datetime" },
       });
     });
 
@@ -299,7 +299,7 @@ describe("Document instance entry parsing", () => {
     const doc = Document.parse(
       `2026-01-01T00:00 create lore "Test" #tag
   type: "fact"
-  subject: my subject
+  subject: ^my-subject
   ref: ^my-ref
 
   # Content
@@ -310,7 +310,7 @@ describe("Document instance entry parsing", () => {
 
     const entry = doc.instanceEntries[0];
     expect(entry?.metadata.get("type")?.raw).toBe('"fact"');
-    expect(entry?.metadata.get("subject")?.raw).toBe("my subject");
+    expect(entry?.metadata.get("subject")?.raw).toBe("^my-subject");
     expect(entry?.metadata.get("ref")?.raw).toBe("^my-ref");
     expect(entry?.metadata.get("ref")?.linkId).toBe("my-ref");
   });
@@ -472,6 +472,19 @@ describe("Document actualize entry parsing", () => {
 
     const act = doc.actualizeEntries[0];
     expect(act?.metadata.get("updated")?.raw).toBe("2026-01-07T15:30");
+  });
+
+  it("parses date-only datetime value (without time)", () => {
+    const doc = Document.parse(
+      `2026-01-07T15:30 actualize-synthesis ^my-synthesis
+  updated: 2026-01-07
+`,
+      { filename: "test.ptall" },
+    );
+
+    const act = doc.actualizeEntries[0];
+    expect(act?.metadata.get("updated")?.raw).toBe("2026-01-07");
+    expect(act?.metadata.get("updated")?.content.type).toBe("datetime_value");
   });
 
   it("indexes actualize target references", () => {

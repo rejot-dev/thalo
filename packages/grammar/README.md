@@ -50,8 +50,8 @@ Create or update instances of entities (lore, opinion, reference, journal):
 
 ```ptall
 2026-01-05T18:11 create lore "Custom event streaming system" ^event-streaming #architecture #distributed
-  type: fact
-  subject: acme-corp
+  type: "fact"
+  subject: ^acme-corp
   date: 2018 ~ 2022
 
   The company built a custom event streaming system on top of Postgres
@@ -74,14 +74,15 @@ Create or update instances of entities (lore, opinion, reference, journal):
 Indented key-value pairs (2-space indent):
 
 ```
-  key: value
-  ref-type: article
+  key: "value"
+  ref-type: "article"
   related: ^other-entry
   source: "Technical documentation"
+  updated: 2026-01-05T18:11
 ```
 
 - **Keys**: lowercase, may contain hyphens/underscores
-- **Values**: plain text, quoted strings, or link references
+- **Values**: quoted strings, links (`^id`), timestamps, date ranges, or queries (no plain text)
 
 ### Content
 
@@ -137,15 +138,15 @@ Modify existing entity schemas by adding or removing fields/sections:
 ```ptall
 2026-01-10T14:00 alter-entity reference "Add published field, remove legacy"
   # Metadata
-  published: date ; "publication date"
+  published: datetime ; "publication date"
   # Remove Metadata
   legacy-field ; "deprecated in favor of new-field"
 
   # Sections
-  NewSection? ; "added section"
+  New Section? ; "added section"
 
   # Remove Sections
-  OldSection ; "no longer needed"
+  Old Section ; "no longer needed"
 ```
 
 ### Type System (Schema Definitions)
@@ -164,47 +165,7 @@ Modify existing entity schemas by adding or removing fields/sections:
 ## Typed Metadata Values
 
 The grammar parses metadata values into typed AST nodes, enabling downstream validation without
-regex-based parsing. Values are parsed in priority order:
-
-### Query Expressions
-
-Source queries for synthesis entries:
-
-```ptall
-sources: lore where subject = ^self and #career
-sources: lore where type = "fact", journal where #reflection
-```
-
-**AST structure**: `query_list` → `query` → `query_conditions` → `query_condition`
-
-Query conditions support:
-
-- **Field conditions**: `field = value` or `field = "quoted value"` or `field = ^link`
-- **Tag conditions**: `#tag`
-- **Link conditions**: `^link-id`
-
-### Date Ranges
-
-Date ranges with the `~` separator:
-
-```ptall
-date: 2022 ~ 2024
-period: 2022-05 ~ 2024-12-31
-```
-
-**AST node**: `date_range`
-
-### Value Arrays
-
-Comma-separated lists of links and/or quoted strings:
-
-```ptall
-related: ^ref1, ^ref2, ^ref3
-authors: "Jane Doe", ^john-ref, "Alice Smith"
-tags: "architecture", "distributed"
-```
-
-**AST structure**: `value_array` → `(link | quoted_value)*`
+regex-based parsing. All values must be explicitly typed (no plain/unquoted values).
 
 ### Links
 
@@ -219,25 +180,68 @@ supersedes: ^previous-opinion
 
 ### Quoted Values
 
-Values in double quotes (required for literal type matching):
+Values in double quotes (required for all string values including literal types):
 
 ```ptall
 type: "fact"
 confidence: "high"
+description: "A longer text value"
 ```
 
 **AST node**: `quoted_value`
 
-### Plain Values
+### Datetime Values
 
-Fallback for unquoted text (sequence of value words):
+Date or datetime values (date with optional time):
 
 ```ptall
-subject: acme-corp
-mood: contemplative
+published: 2026-01-07
+updated: 2026-01-07T12:00
+created: 2026-01-05T18:11
 ```
 
-**AST structure**: `plain_value` → `value_word+`
+**AST node**: `datetime_value`
+
+### Date Ranges
+
+Date ranges with the `~` separator:
+
+```ptall
+date: 2022 ~ 2024
+period: 2022-05 ~ 2024-12-31
+```
+
+**AST node**: `date_range`
+
+### Query Expressions
+
+Source queries for synthesis entries:
+
+```ptall
+sources: lore where subject = ^self and #career
+sources: lore where type = "fact"
+```
+
+**AST structure**: `query` → `query_conditions` → `query_condition`
+
+Query conditions support:
+
+- **Field conditions**: `field = "quoted value"` or `field = ^link`
+- **Tag conditions**: `#tag`
+- **Link conditions**: `^link-id`
+
+### Arrays (Unified)
+
+Comma-separated lists of any value type (links, quoted values, timestamps, date ranges, or queries):
+
+```ptall
+related: ^ref1, ^ref2, ^ref3
+authors: "Jane Doe", ^john-ref, "Alice Smith"
+periods: 2020 ~ 2022, 2023 ~ 2024
+sources: lore where #career, journal where #reflection
+```
+
+**AST structure**: `value_array` → `(link | quoted_value | datetime_value | date_range | query)*`
 
 ### Field Syntax
 
@@ -329,49 +333,45 @@ pnpm exec tree-sitter parse path/to/file.ptall
 
 ### Typed Value Parsing
 
+- **All string values must be quoted**: There are no plain/unquoted values. Literal types like
+  `"fact"` require quotes.
+
+  ```ptall
+  # Correct:
+  type: "fact"
+  description: "Some text"
+  ```
+
 - **No inline comments in values**: Comments (`//`) after metadata values break parsing. Use a
   separate comment line instead.
 
   ```ptall
   # Wrong - causes parse error:
-  type: fact // this breaks
+  type: "fact" // this breaks
 
   # Correct:
   // Note about type
   type: "fact"
   ```
 
-- **Array elements must be links or quoted strings**: Plain values in arrays cause parse errors due
-  to comma ambiguity.
+- **Single dates must be quoted**: The grammar only recognizes date ranges (`YYYY ~ YYYY`). Single
+  dates should be quoted strings.
 
   ```ptall
-  # Wrong - parse error:
-  dates: 2024, 2024-05, 2024-05-11
-
   # Correct:
-  dates: "2024", "2024-05", "2024-05-11"
+  published: "2024-05-11"
+  period: 2022 ~ 2024
   ```
 
-- **Single dates parsed as plain values**: The grammar cannot distinguish dates from other plain
-  text, so `date: 2024-05-11` parses as `plain_value`. Validation happens at the semantic level.
-
-- **Query `where` clause is required**: Entity-only queries (e.g., `lore` without `where`) parse as
-  `plain_value`, not `query_list`.
+- **Query `where` clause is required**: Queries must include a `where` clause.
 
   ```ptall
-  # Parsed as query_list:
+  # Correct:
   sources: lore where #career
 
-  # Parsed as plain_value (not a query):
+  # Wrong - not a valid query:
   sources: lore
   ```
 
 - **Empty values cause parse errors**: Metadata must have a value; use optional fields and omit the
   field entirely instead.
-
-  ```ptall
-  # Wrong - parse error:
-  related:
-
-  # Correct - omit the optional field entirely
-  ```

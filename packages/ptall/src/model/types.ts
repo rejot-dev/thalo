@@ -163,7 +163,7 @@ export type ModelTypeExpression =
 
 export interface ModelPrimitiveType {
   kind: "primitive";
-  name: "string" | "date" | "date-range" | "link";
+  name: "string" | "datetime" | "date-range" | "link";
 }
 
 export interface ModelLiteralType {

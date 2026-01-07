@@ -11,7 +11,7 @@ describe("missing-required-field rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
-  subject: string
+  subject: link
   optional-field?: string
 `,
       { filename: "schema.ptall" },
@@ -21,7 +21,7 @@ describe("missing-required-field rule", () => {
   it("reports missing required field", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
 `,
       { filename: "test.ptall" },
     );
@@ -38,8 +38,8 @@ describe("missing-required-field rule", () => {
   it("does not report when all required fields present", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test-subject
+  type: "fact"
+  subject: ^test-subject
 `,
       { filename: "test.ptall" },
     );
@@ -53,8 +53,8 @@ describe("missing-required-field rule", () => {
   it("does not report missing optional field", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test-subject
+  type: "fact"
+  subject: ^test-subject
 `,
       { filename: "test.ptall" },
     );
@@ -69,7 +69,7 @@ describe("missing-required-field rule", () => {
   it("reports multiple missing required fields", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  optional-field: something
+  optional-field: "something"
 `,
       { filename: "test.ptall" },
     );
@@ -90,14 +90,14 @@ describe("missing-required-field rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "fact"
-  subject: string
+  subject: link
 `,
       { filename: "schema.ptall" },
     );
 
     workspaceWithDefaults.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  subject: test-subject
+  subject: ^test-subject
 `,
       { filename: "test.ptall" },
     );

@@ -518,11 +518,34 @@ function extractLinkIdFromValue(value: Value): string | null {
  * Extract queries from grammar-parsed sources content
  */
 function extractSourcesFromContent(content: ValueContent | undefined): Query[] {
-  if (!content || content.type !== "query_list") {
+  if (!content) {
     return [];
   }
 
-  return content.queries.map((q) => ({
+  // Single query
+  if (content.type === "query_value") {
+    return [convertQuery(content.query)];
+  }
+
+  // Array of queries
+  if (content.type === "value_array") {
+    const queries: Query[] = [];
+    for (const element of content.elements) {
+      if (element.type === "query") {
+        queries.push(convertQuery(element));
+      }
+    }
+    return queries;
+  }
+
+  return [];
+}
+
+/**
+ * Convert an AST query to a model query
+ */
+function convertQuery(q: import("../ast/types.js").Query): Query {
+  return {
     entity: q.entity,
     conditions: q.conditions.map((c) => {
       switch (c.type) {
@@ -534,5 +557,5 @@ function extractSourcesFromContent(content: ValueContent | undefined): Query[] {
           return { kind: "link" as const, link: c.linkId };
       }
     }),
-  }));
+  };
 }

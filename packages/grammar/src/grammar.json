@@ -944,7 +944,7 @@
         },
         {
           "type": "STRING",
-          "value": "date"
+          "value": "datetime"
         },
         {
           "type": "STRING",
@@ -1130,10 +1130,10 @@
       "members": [
         {
           "type": "PREC_DYNAMIC",
-          "value": 10,
+          "value": 5,
           "content": {
             "type": "SYMBOL",
-            "name": "query_list"
+            "name": "value_array"
           }
         },
         {
@@ -1146,10 +1146,18 @@
         },
         {
           "type": "PREC_DYNAMIC",
-          "value": 5,
+          "value": 4,
           "content": {
             "type": "SYMBOL",
-            "name": "value_array"
+            "name": "datetime_value"
+          }
+        },
+        {
+          "type": "PREC_DYNAMIC",
+          "value": 3,
+          "content": {
+            "type": "SYMBOL",
+            "name": "query"
           }
         },
         {
@@ -1167,14 +1175,6 @@
             "type": "SYMBOL",
             "name": "quoted_value"
           }
-        },
-        {
-          "type": "PREC_DYNAMIC",
-          "value": 1,
-          "content": {
-            "type": "SYMBOL",
-            "name": "plain_value"
-          }
         }
       ]
     },
@@ -1185,22 +1185,11 @@
         "value": "\"[^\"]*\""
       }
     },
-    "plain_value": {
-      "type": "REPEAT1",
-      "content": {
-        "type": "SYMBOL",
-        "name": "value_word"
-      }
-    },
-    "value_word": {
+    "datetime_value": {
       "type": "TOKEN",
       "content": {
-        "type": "PREC",
-        "value": -1,
-        "content": {
-          "type": "PATTERN",
-          "value": "[^\\s\"^#~,=\\r\\n]+"
-        }
+        "type": "PATTERN",
+        "value": "[12]\\d{3}-[01]\\d-[0-3]\\d(T[0-2]\\d:[0-5]\\d)?"
       }
     },
     "date_range": {
@@ -1249,37 +1238,20 @@
         {
           "type": "SYMBOL",
           "name": "quoted_value"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "datetime_value"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "date_range"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "query"
         }
       ]
-    },
-    "query_list": {
-      "type": "PREC_LEFT",
-      "value": 0,
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "query"
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "STRING",
-                  "value": ","
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "query"
-                }
-              ]
-            }
-          }
-        ]
-      }
     },
     "query": {
       "type": "SEQ",
@@ -1307,13 +1279,11 @@
       ]
     },
     "query_entity": {
-      "type": "ALIAS",
+      "type": "TOKEN",
       "content": {
-        "type": "SYMBOL",
-        "name": "value_word"
-      },
-      "named": true,
-      "value": "query_entity"
+        "type": "PATTERN",
+        "value": "[a-z][a-zA-Z0-9\\-_]*"
+      }
     },
     "query_conditions": {
       "type": "SEQ",
@@ -1383,13 +1353,11 @@
       ]
     },
     "condition_field": {
-      "type": "ALIAS",
+      "type": "TOKEN",
       "content": {
-        "type": "SYMBOL",
-        "name": "value_word"
-      },
-      "named": true,
-      "value": "condition_field"
+        "type": "PATTERN",
+        "value": "[a-z][a-zA-Z0-9\\-_]*"
+      }
     },
     "_condition_value": {
       "type": "CHOICE",
@@ -1401,21 +1369,8 @@
         {
           "type": "SYMBOL",
           "name": "quoted_value"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "condition_plain_value"
         }
       ]
-    },
-    "condition_plain_value": {
-      "type": "ALIAS",
-      "content": {
-        "type": "SYMBOL",
-        "name": "value_word"
-      },
-      "named": true,
-      "value": "condition_plain_value"
     },
     "tag_condition": {
       "type": "SYMBOL",

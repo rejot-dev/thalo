@@ -89,32 +89,7 @@
   {
     "type": "condition_field",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": false,
-      "types": [
-        {
-          "type": "condition_field",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "condition_plain_value",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": false,
-      "types": [
-        {
-          "type": "condition_plain_value",
-          "named": true
-        }
-      ]
-    }
+    "fields": {}
   },
   {
     "type": "content",
@@ -224,10 +199,6 @@
         "multiple": false,
         "required": true,
         "types": [
-          {
-            "type": "condition_plain_value",
-            "named": true
-          },
           {
             "type": "link",
             "named": true
@@ -514,21 +485,6 @@
     }
   },
   {
-    "type": "plain_value",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "value_word",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "primitive_type",
     "named": true,
     "fields": {}
@@ -600,32 +556,7 @@
   {
     "type": "query_entity",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": false,
-      "required": false,
-      "types": [
-        {
-          "type": "query_entity",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "query_list",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "query",
-          "named": true
-        }
-      ]
-    }
+    "fields": {}
   },
   {
     "type": "quoted_value",
@@ -1005,15 +936,15 @@
           "named": true
         },
         {
+          "type": "datetime_value",
+          "named": true
+        },
+        {
           "type": "link",
           "named": true
         },
         {
-          "type": "plain_value",
-          "named": true
-        },
-        {
-          "type": "query_list",
+          "type": "query",
           "named": true
         },
         {
@@ -1036,7 +967,19 @@
       "required": true,
       "types": [
         {
+          "type": "date_range",
+          "named": true
+        },
+        {
+          "type": "datetime_value",
+          "named": true
+        },
+        {
           "type": "link",
+          "named": true
+        },
+        {
+          "type": "query",
           "named": true
         },
         {
@@ -1099,15 +1042,19 @@
     "named": false
   },
   {
-    "type": "date",
-    "named": false
-  },
-  {
     "type": "date-range",
     "named": false
   },
   {
     "type": "date_range",
+    "named": true
+  },
+  {
+    "type": "datetime",
+    "named": false
+  },
+  {
+    "type": "datetime_value",
     "named": true
   },
   {
@@ -1177,10 +1124,6 @@
   {
     "type": "update",
     "named": false
-  },
-  {
-    "type": "value_word",
-    "named": true
   },
   {
     "type": "where",

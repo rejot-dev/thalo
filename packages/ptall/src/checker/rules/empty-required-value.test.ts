@@ -21,7 +21,7 @@ describe("empty-required-value rule", () => {
   it("reports empty value for required field", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
   subject:
 `,
       { filename: "test.ptall" },
@@ -39,8 +39,8 @@ describe("empty-required-value rule", () => {
   it("does not report non-empty required field", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: my subject
+  type: "fact"
+  subject: "my subject"
 `,
       { filename: "test.ptall" },
     );
@@ -54,8 +54,8 @@ describe("empty-required-value rule", () => {
   it("does not report empty value for optional field", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: "test"
   optional:
 `,
       { filename: "test.ptall" },
@@ -70,7 +70,7 @@ describe("empty-required-value rule", () => {
   it('reports empty quoted string ""', () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
   subject: ""
 `,
       { filename: "test.ptall" },
@@ -97,7 +97,7 @@ describe("empty-required-value rule", () => {
     workspaceWithDefaults.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
   type:
-  subject: test
+  subject: "test"
 `,
       { filename: "test.ptall" },
     );

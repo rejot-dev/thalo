@@ -3,7 +3,7 @@ single metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with metadata"
-  type: fact
+  type: "fact"
 
 ---
 
@@ -18,16 +18,15 @@ single metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 multiple metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with multiple metadata"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
 
 ---
 
@@ -42,20 +41,18 @@ multiple metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 metadata with quoted value
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with source" #work
-  confidence: high
+  confidence: "high"
   source: "Technical documentation"
 
 ---
@@ -72,8 +69,7 @@ metadata with quoted value
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
@@ -84,8 +80,8 @@ metadata with reference value
 ==================
 
 2026-01-05T18:11 create lore "Entry with reference"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
   related: ^other-entry
 
 ---
@@ -101,13 +97,11 @@ metadata with reference value
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (link)))
       (metadata
         (key)
         (value
@@ -118,8 +112,8 @@ metadata with date range
 ==================
 
 2026-01-05T18:11 create lore "Entry with date range"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
   date: 2022 ~ 2024
 
 ---
@@ -135,13 +129,11 @@ metadata with date range
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (link)))
       (metadata
         (key)
         (value
@@ -152,8 +144,8 @@ metadata with hyphenated key
 ==================
 
 2026-01-05T18:11 create reference "Reference entry"
-  ref-type: article
-  status: read
+  ref-type: "article"
+  status: "read"
 
 ---
 
@@ -168,10 +160,8 @@ metadata with hyphenated key
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))

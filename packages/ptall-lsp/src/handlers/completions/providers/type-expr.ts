@@ -11,8 +11,8 @@ function getPrimitiveTypeDescription(type: PrimitiveType): string {
   switch (type) {
     case "string":
       return "Any text value";
-    case "date":
-      return "Date value (YYYY, YYYY-MM, or YYYY-MM-DD)";
+    case "datetime":
+      return "Date value (YYYY-MM-DD)";
     case "date-range":
       return "Date range (YYYY ~ YYYY or similar)";
     case "link":

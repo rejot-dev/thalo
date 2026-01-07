@@ -3,8 +3,8 @@
 ==================
 
 2026-01-05T18:11 create lore "Entry with 4-space indent"
-    type: fact
-    subject: acme
+    type: "fact"
+    subject: ^acme
 
 ---
 
@@ -19,21 +19,19 @@
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 tab indentation for metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with tab indent"
-	type: fact
-	subject: acme
+	type: "fact"
+	subject: ^acme
 
 ---
 
@@ -48,13 +46,11 @@ tab indentation for metadata
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 4-space indentation for content
@@ -119,7 +115,7 @@ tab indentation for markdown header
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with tab indent"
-	confidence: high
+	confidence: "high"
 
 	# Claim
 	This is the claim.
@@ -137,8 +133,7 @@ tab indentation for markdown header
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)
@@ -151,8 +146,8 @@ tab indentation for markdown header
 ==================
 
 2026-01-05T18:11 create lore "Entry with 3-space indent"
-   type: fact
-   subject: acme
+   type: "fact"
+   subject: ^acme
 
 ---
 
@@ -167,20 +162,18 @@ tab indentation for markdown header
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 mixed 4-space indent throughout
 ==================
 
 2026-01-05T18:11 create opinion "Full 4-space example"
-    confidence: high
+    confidence: "high"
     related: ^other
 
     # Claim
@@ -201,8 +194,7 @@ mixed 4-space indent throughout
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
@@ -224,8 +216,8 @@ Empty Whitespace
 ==================
 
 2026-01-05T18:11 create lore "Entry with extra whitespace"
-   type: fact
-   subject: acme
+   type: "fact"
+   subject: ^acme
   
   
 ---
@@ -241,21 +233,19 @@ Empty Whitespace
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 1-space indentation for metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with 1-space indent"
- type: fact
- subject: acme
+ type: "fact"
+ subject: ^acme
 
 ---
 
@@ -270,21 +260,19 @@ Empty Whitespace
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 2-space indentation for metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with 2-space indent"
-  type: fact
-  subject: acme
+  type: "fact"
+  subject: ^acme
 
 ---
 
@@ -299,13 +287,11 @@ Empty Whitespace
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (link))))))
 
 ==================
 Content-only entry (no metadata)
@@ -372,7 +358,7 @@ Entry ending at EOF (no trailing newline)
 ==================
 
 2026-01-05T18:11 create lore "Entry at EOF"
-  type: fact
+  type: "fact"
 ---
 
 (source_file
@@ -386,15 +372,14 @@ Entry ending at EOF (no trailing newline)
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word)))))))
+          (quoted_value))))))
 
 ==================
 Mixed tabs and spaces in same entry
 ==================
 
 2026-01-05T18:11 create opinion "Mixed indent styles"
-	confidence: high
+	confidence: "high"
   related: ^other
 
 	# Claim
@@ -413,8 +398,7 @@ Mixed tabs and spaces in same entry
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (metadata
         (key)
         (value
@@ -525,7 +509,7 @@ Content directly after metadata (no blank line)
 ==================
 
 2026-01-05T18:11 create lore "Direct after metadata"
-  type: fact
+  type: "fact"
   # Description
   Content section starts right after metadata, no blank line needed.
 
@@ -542,8 +526,7 @@ Content directly after metadata (no blank line)
       (metadata
         (key)
         (value
-          (plain_value
-            (value_word))))
+          (quoted_value)))
       (content
         (markdown_header
           (md_indicator)

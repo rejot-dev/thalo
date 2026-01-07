@@ -19,21 +19,21 @@ describe("handleHover", () => {
 
     // Add documents with various entry types
     const source = `2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript #testing
-  type: fact
+  type: "fact"
   subject: ^self
-  confidence: high
+  confidence: "high"
 
   Some content here.
 
 2026-01-05T19:00 create opinion "TypeScript enums are bad" ^enum-opinion #typescript #best-practices
-  confidence: high
+  confidence: "high"
   related: ^ts-lore
 
   # Claim
   Enums should be avoided.
 
 2026-01-06T10:00 create journal "Working on tests" #testing #development
-  type: reflection
+  type: "reflection"
   subject: ^self
 
   Reflecting on test coverage.
@@ -311,7 +311,7 @@ describe("handleHover", () => {
 
   describe("metadata key hover", () => {
     it("should show field info for known field", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"\n  type: fact`);
+      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"\n  type: "fact"`);
 
       // Position cursor on "type" key
       const position: Position = { line: 1, character: 4 };
@@ -440,7 +440,7 @@ describe("handleHover", () => {
 
   describe("edge cases", () => {
     it("should return null when cursor is not on a link or tag", () => {
-      const doc = createDocument(`  type: fact`);
+      const doc = createDocument(`  type: "fact"`);
 
       const position: Position = { line: 0, character: 8 };
 

@@ -4,7 +4,14 @@ import type {
   ModelLiteralType,
   ModelUnionType,
 } from "../model/types.js";
-import type { ValueContent, Link, QuotedValue } from "../ast/types.js";
+import type {
+  ValueContent,
+  Link,
+  QuotedValue,
+  DatetimeValue,
+  DateRangeValue,
+  Query,
+} from "../ast/types.js";
 
 /**
  * A resolved entity schema (after applying all define-entity and alter-entity entries)
@@ -122,7 +129,7 @@ export const TypeExpr = {
  */
 function matchesPrimitiveContent(
   content: ValueContent,
-  type: "string" | "date" | "date-range" | "link",
+  type: "string" | "datetime" | "date-range" | "link",
 ): boolean {
   switch (type) {
     case "string":
@@ -134,10 +141,10 @@ function matchesPrimitiveContent(
     case "date-range":
       // Grammar identifies date ranges by the ~ separator
       return content.type === "date_range";
-    case "date":
-      // Dates are parsed as plain_value, need to validate the format
-      if (content.type === "plain_value") {
-        return /^\d{4}(-\d{2}(-\d{2})?)?$/.test(content.text);
+    case "datetime":
+      // Date must be datetime_value without time component (YYYY-MM-DD only)
+      if (content.type === "datetime_value") {
+        return !content.value.includes("T");
       }
       return false;
   }
@@ -189,9 +196,6 @@ function matchesSingleValueAsArrayElement(
   if (content.type === "quoted_value" && content.value === "") {
     return false;
   }
-  if (content.type === "plain_value" && content.text === "") {
-    return false;
-  }
 
   switch (elementType.kind) {
     case "primitive":
@@ -219,7 +223,7 @@ function matchesSingleValueAsArrayElement(
  */
 function matchesSingleValueAsPrimitive(
   content: ValueContent,
-  type: "string" | "date" | "date-range" | "link",
+  type: "string" | "datetime" | "date-range" | "link",
 ): boolean {
   switch (type) {
     case "string":
@@ -229,10 +233,10 @@ function matchesSingleValueAsPrimitive(
       return content.type === "link_value";
     case "date-range":
       return content.type === "date_range";
-    case "date":
-      // Date should be plain value matching date format
-      if (content.type === "plain_value") {
-        return /^\d{4}(-\d{2}(-\d{2})?)?$/.test(content.text);
+    case "datetime":
+      // Date must be datetime_value without time component (YYYY-MM-DD only)
+      if (content.type === "datetime_value") {
+        return !content.value.includes("T");
       }
       return false;
   }
@@ -242,7 +246,7 @@ function matchesSingleValueAsPrimitive(
  * Check if an array element matches the expected element type
  */
 function matchesArrayElementContent(
-  element: Link | QuotedValue,
+  element: Link | QuotedValue | DatetimeValue | DateRangeValue | Query,
   elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType,
 ): boolean {
   switch (elementType.kind) {
@@ -271,8 +275,8 @@ function matchesArrayElementContent(
  * Check if an array element matches a primitive type
  */
 function matchesArrayPrimitiveContent(
-  element: Link | QuotedValue,
-  type: "string" | "date" | "date-range" | "link",
+  element: Link | QuotedValue | DatetimeValue | DateRangeValue | Query,
+  type: "string" | "datetime" | "date-range" | "link",
 ): boolean {
   switch (type) {
     case "string":
@@ -280,14 +284,18 @@ function matchesArrayPrimitiveContent(
       return element.type === "quoted_value";
     case "link":
       return element.type === "link";
-    case "date":
-      // Dates in arrays should be quoted for clarity
-      if (element.type === "quoted_value") {
-        return /^\d{4}(-\d{2}(-\d{2})?)?$/.test(element.value);
+    case "datetime":
+      // Date in arrays must be datetime_value without time (YYYY-MM-DD only)
+      if (element.type === "datetime_value") {
+        return !element.value.includes("T");
       }
       return false;
     case "date-range":
-      // Date ranges in arrays should be quoted
+      // Date ranges parsed by grammar are valid
+      if (element.type === "date_range") {
+        return true;
+      }
+      // Also accept quoted date ranges
       if (element.type === "quoted_value") {
         return /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/.test(element.value);
       }
@@ -302,14 +310,17 @@ function matchesArrayPrimitiveContent(
 /**
  * Check if a value matches a primitive type
  */
-function matchesPrimitive(value: string, type: "string" | "date" | "date-range" | "link"): boolean {
+function matchesPrimitive(
+  value: string,
+  type: "string" | "datetime" | "date-range" | "link",
+): boolean {
   switch (type) {
     case "string":
       // Any string value matches
       return true;
-    case "date":
-      // Date format: YYYY, YYYY-MM, or YYYY-MM-DD
-      return /^\d{4}(-\d{2}(-\d{2})?)?$/.test(value);
+    case "datetime":
+      // Date format: YYYY-MM-DD only (no partial dates)
+      return /^\d{4}-\d{2}-\d{2}$/.test(value);
     case "date-range":
       // Date range format: DATE ~ DATE
       return /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/.test(value);
@@ -381,13 +392,14 @@ function matchesElementType(
  */
 function matchesPrimitiveInArray(
   value: string,
-  type: "string" | "date" | "date-range" | "link",
+  type: "string" | "datetime" | "date-range" | "link",
 ): boolean {
   switch (type) {
     case "string":
       return isQuoted(value);
-    case "date":
-      return /^\d{4}(-\d{2}(-\d{2})?)?$/.test(value);
+    case "datetime":
+      // Date format: YYYY-MM-DD only (no partial dates)
+      return /^\d{4}-\d{2}-\d{2}$/.test(value);
     case "date-range":
       return /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/.test(value);
     case "link":

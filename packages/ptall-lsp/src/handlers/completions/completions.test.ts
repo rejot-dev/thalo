@@ -122,7 +122,7 @@ describe("detectContext", () => {
 
     it("returns line_start at empty line after entry", () => {
       const ctx = detectContextFromMarker(`2026-01-05T18:00 create lore "Test"
-  type: fact
+  type: "fact"
 
 |`);
       expect(ctx.kind).toBe("line_start");
@@ -219,7 +219,7 @@ describe("detectContext", () => {
 
     it("includes existing metadata keys", () => {
       const ctx = detectContextFromMarker(`2026-01-06T14:30 create lore "Title"
-  type: fact
+  type: "fact"
   |`);
       expect(ctx.kind).toBe("metadata_key");
       expect(ctx.entry.existingMetadataKeys).toContain("type");
@@ -299,7 +299,7 @@ describe("detectContext", () => {
   describe("section_header", () => {
     it("returns section_header for # in content area", () => {
       const ctx = detectContextFromMarker(`2026-01-06T14:30 create opinion "Title"
-  confidence: high
+  confidence: "high"
 
   #|`);
       expect(ctx.kind).toBe("section_header");
@@ -310,7 +310,7 @@ describe("detectContext", () => {
       // because we can't easily distinguish section headers from regular markdown content.
       // The completion triggers best right after typing "#"
       const ctx = detectContextFromMarker(`2026-01-06T14:30 create opinion "Title"
-  confidence: high
+  confidence: "high"
 
   #|`);
       expect(ctx.kind).toBe("section_header");
@@ -582,10 +582,10 @@ describe("LinkProvider", () => {
   beforeEach(() => {
     workspace = new Workspace();
     const source = `2026-01-05T18:00 create lore "Test entry" ^my-lore #test
-  type: fact
+  type: "fact"
 
 2026-01-05T19:00 create opinion "Another entry" ^my-opinion #test
-  confidence: high
+  confidence: "high"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
   });
@@ -634,10 +634,10 @@ describe("TagProvider", () => {
   beforeEach(() => {
     workspace = new Workspace();
     const source = `2026-01-05T18:00 create lore "Entry 1" #typescript #testing
-  type: fact
+  type: "fact"
 
 2026-01-05T19:00 create lore "Entry 2" #typescript #architecture
-  type: insight
+  type: "insight"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
   });
@@ -764,7 +764,7 @@ describe("TypeExprProvider", () => {
 
     const labels = items.map((i) => i.label);
     expect(labels).toContain("string");
-    expect(labels).toContain("date");
+    expect(labels).toContain("datetime");
     expect(labels).toContain("date-range");
     expect(labels).toContain("link");
   });
@@ -819,8 +819,8 @@ describe("handleCompletion integration", () => {
 
     // Add some content
     const contentSource = `2026-01-05T18:00 create lore "Existing lore entry" ^existing-lore #typescript #architecture
-  type: fact
-  subject: test-subject
+  type: "fact"
+  subject: ^test-subject
 
   # Summary
   Test summary.
@@ -866,8 +866,8 @@ describe("handleCompletion integration", () => {
     items = completeFromMarker(
       workspace,
       `2026-01-06T14:30 create lore "Title"
-  type: fact
-  subject: test
+  type: "fact"
+  subject: ^test
 
   # |`,
     );
@@ -893,7 +893,7 @@ describe("handleCompletion integration", () => {
     );
     expect(items.map((i) => i.label)).toContain("string");
     expect(items.map((i) => i.label)).toContain("link");
-    expect(items.map((i) => i.label)).toContain("date");
+    expect(items.map((i) => i.label)).toContain("datetime");
   });
 
   it("provides link completions", () => {

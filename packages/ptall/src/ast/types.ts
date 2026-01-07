@@ -188,7 +188,7 @@ export type TypeExpression = PrimitiveType | LiteralType | ArrayType | UnionType
 
 export interface PrimitiveType extends AstNode {
   type: "primitive_type";
-  name: "string" | "date" | "date-range" | "link";
+  name: "string" | "datetime" | "date-range" | "link";
 }
 
 export interface LiteralType extends AstNode {
@@ -281,23 +281,16 @@ export interface Value extends AstNode {
 }
 
 /**
- * Typed value content from the grammar
+ * Typed value content from the grammar.
+ * All values must be explicitly typed (no plain/unquoted values).
  */
 export type ValueContent =
-  | PlainValue
   | QuotedValue
   | LinkValue
+  | DatetimeValue
   | DateRangeValue
-  | ValueArray
-  | QueryList;
-
-export interface PlainValue extends AstNode {
-  type: "plain_value";
-  /** The individual words that make up the value */
-  words: string[];
-  /** Combined text of all words */
-  text: string;
-}
+  | QueryValue
+  | ValueArray;
 
 export interface QuotedValue extends AstNode {
   type: "quoted_value";
@@ -311,22 +304,28 @@ export interface LinkValue extends AstNode {
   link: Link;
 }
 
+export interface DatetimeValue extends AstNode {
+  type: "datetime_value";
+  /** The datetime value (YYYY-MM-DD or YYYY-MM-DDTHH:MM) */
+  value: string;
+}
+
 export interface DateRangeValue extends AstNode {
   type: "date_range";
   /** The raw date range text */
   raw: string;
 }
 
-export interface ValueArray extends AstNode {
-  type: "value_array";
-  /** Elements of the array (links or quoted values) */
-  elements: (Link | QuotedValue)[];
+export interface QueryValue extends AstNode {
+  type: "query_value";
+  /** The parsed query */
+  query: Query;
 }
 
-export interface QueryList extends AstNode {
-  type: "query_list";
-  /** The individual queries */
-  queries: Query[];
+export interface ValueArray extends AstNode {
+  type: "value_array";
+  /** Elements of the array (links, quoted values, datetimes, date ranges, or queries) */
+  elements: (Link | QuotedValue | DatetimeValue | DateRangeValue | Query)[];
 }
 
 export interface Query extends AstNode {
