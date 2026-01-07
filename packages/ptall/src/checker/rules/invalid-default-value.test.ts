@@ -14,6 +14,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "invalid"
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -32,6 +35,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "fact"
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -47,6 +53,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   status: "unread" | "read" | "processed" = "unread"
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -62,6 +71,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   subject: string = "default subject"
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -79,6 +91,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   count: number = "not-a-number"
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -94,6 +109,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   count: number = 42
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -109,6 +127,9 @@ describe("invalid-default-value rule", () => {
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
   type: string
+
+  # Sections
+  Content
 
 2026-01-01T01:00 alter-entity lore "Add field with bad default"
   # Metadata
@@ -130,6 +151,9 @@ describe("invalid-default-value rule", () => {
   # Metadata
   type: "fact" | "insight"
   subject: string
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );

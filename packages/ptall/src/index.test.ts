@@ -243,7 +243,7 @@ describe("Checker", () => {
 
   it("passes with valid entry", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
   subject: test
 
   # Summary
@@ -259,7 +259,7 @@ describe("Checker", () => {
 
   it("allows configuring rule severity", () => {
     const source = `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
   subject: test
   unknown-field: value
 

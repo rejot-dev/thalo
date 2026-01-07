@@ -13,6 +13,9 @@ describe("invalid-field-type rule", () => {
   type: "fact" | "insight"
   subject: string
   count?: number
+
+  # Sections
+  Content
 `,
       { filename: "schema.ptall" },
     );
@@ -23,6 +26,9 @@ describe("invalid-field-type rule", () => {
       `2026-01-05T18:00 create lore "Test" #test
   type: invalid-value
   subject: test
+
+  # Content
+  Test content.
 `,
       { filename: "test.ptall" },
     );
@@ -35,11 +41,34 @@ describe("invalid-field-type rule", () => {
     expect(error!.severity).toBe("error");
   });
 
-  it("accepts valid enum value", () => {
+  it("reports unquoted literal value", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
   type: fact
   subject: test
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    // Literal types require quoted values: "fact" not fact
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("fact");
+  });
+
+  it("accepts quoted literal value", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test" #test
+  type: "fact"
+  subject: test
+
+  # Content
+  Test content.
 `,
       { filename: "test.ptall" },
     );
@@ -53,8 +82,11 @@ describe("invalid-field-type rule", () => {
   it("accepts any string for string type", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
   subject: any value here
+
+  # Content
+  Test content.
 `,
       { filename: "test.ptall" },
     );
@@ -73,6 +105,9 @@ describe("invalid-field-type rule", () => {
   type: wrong
   subject: test
   count: not-a-number
+
+  # Content
+  Test content.
 `,
       { filename: "test.ptall" },
     );
@@ -89,9 +124,12 @@ describe("invalid-field-type rule", () => {
   it("accepts valid number for number type", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create lore "Test" #test
-  type: fact
+  type: "fact"
   subject: test
   count: 42
+
+  # Content
+  Test content.
 `,
       { filename: "test.ptall" },
     );
@@ -115,6 +153,9 @@ describe("invalid-field-type rule - array types", () => {
   related?: link[]
   tags?: string[]
   authors?: (string | link)[]
+
+  # Sections
+  Claim
 `,
       { filename: "schema.ptall" },
     );
@@ -123,8 +164,11 @@ describe("invalid-field-type rule - array types", () => {
   it("accepts valid link array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
+  confidence: "high"
   related: ^link1, ^link2
+
+  # Claim
+  Test claim.
 `,
       { filename: "test.ptall" },
     );
@@ -138,8 +182,11 @@ describe("invalid-field-type rule - array types", () => {
   it("accepts single link for link array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
+  confidence: "high"
   related: ^single-link
+
+  # Claim
+  Test claim.
 `,
       { filename: "test.ptall" },
     );
@@ -153,8 +200,11 @@ describe("invalid-field-type rule - array types", () => {
   it("reports invalid link array (non-link values)", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
+  confidence: "high"
   related: not-a-link, also-not
+
+  # Claim
+  Test claim.
 `,
       { filename: "test.ptall" },
     );
@@ -166,11 +216,14 @@ describe("invalid-field-type rule - array types", () => {
     expect(error!.message).toContain("link[]");
   });
 
-  it("accepts valid string array", () => {
+  it("accepts valid quoted string array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
-  tags: foo, bar, baz
+  confidence: "high"
+  tags: "foo", "bar", "baz"
+
+  # Claim
+  Test claim.
 `,
       { filename: "test.ptall" },
     );
@@ -181,11 +234,34 @@ describe("invalid-field-type rule - array types", () => {
     expect(error).toBeUndefined();
   });
 
-  it("accepts union array with string values", () => {
+  it("reports unquoted string array elements", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
-  authors: Jane Doe, ^author-ref, John Smith
+  confidence: "high"
+  tags: foo, bar, baz
+
+  # Claim
+  Test claim.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    // String array elements must be quoted
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("string[]");
+  });
+
+  it("accepts union array with quoted strings and links", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create opinion "Test opinion" #test
+  confidence: "high"
+  authors: "Jane Doe", ^author-ref, "John Smith"
+
+  # Claim
+  Test claim.
 `,
       { filename: "test.ptall" },
     );
@@ -194,13 +270,55 @@ describe("invalid-field-type rule - array types", () => {
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
     expect(error).toBeUndefined();
+  });
+
+  it("reports unquoted strings in union array", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create opinion "Test opinion" #test
+  confidence: "high"
+  authors: Jane Doe, ^author-ref, John Smith
+
+  # Claim
+  Test claim.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    // String elements in (string | link)[] must be quoted
+    expect(error).toBeDefined();
+  });
+
+  it("reports unquoted literal value for confidence", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create opinion "Test opinion" #test
+  confidence: high
+  related: ^link1
+
+  # Claim
+  Test claim.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    // Literal types require quoted values: "high" not high
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("high");
   });
 
   it("accepts empty array value", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
-  confidence: high
+  confidence: "high"
   related: 
+
+  # Claim
+  Test claim.
 `,
       { filename: "test.ptall" },
     );

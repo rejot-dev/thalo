@@ -19,6 +19,7 @@ import { duplicateSectionInSchemaRule } from "./duplicate-section-in-schema.js";
 import { removeUndefinedFieldRule } from "./remove-undefined-field.js";
 import { removeUndefinedSectionRule } from "./remove-undefined-section.js";
 import { invalidDefaultValueRule } from "./invalid-default-value.js";
+import { defineEntityRequiresSectionRule } from "./define-entity-requires-section.js";
 
 // Metadata value rules
 import { duplicateMetadataKeyRule } from "./duplicate-metadata-key.js";
@@ -33,6 +34,7 @@ import { emptySectionRule } from "./empty-section.js";
 // Instance entry rules
 import { updateWithoutCreateRule } from "./update-without-create.js";
 import { timestampOutOfOrderRule } from "./timestamp-out-of-order.js";
+import { createRequiresSectionRule } from "./create-requires-section.js";
 
 // Style rules
 import { missingTitleRule } from "./missing-title.js";
@@ -60,6 +62,7 @@ export const allRules: Rule[] = [
   removeUndefinedFieldRule,
   removeUndefinedSectionRule,
   invalidDefaultValueRule,
+  defineEntityRequiresSectionRule,
 
   // Metadata value rules
   duplicateMetadataKeyRule,
@@ -74,6 +77,7 @@ export const allRules: Rule[] = [
   // Instance entry rules
   updateWithoutCreateRule,
   timestampOutOfOrderRule,
+  createRequiresSectionRule,
 
   // Style rules
   missingTitleRule,
