@@ -1,7 +1,7 @@
 export default grammar({
   name: "ptall",
 
-  extras: ($) => [" ", $.comment],
+  extras: (_) => [" "],
 
   externals: ($) => [
     $["_indent"], // Newline followed by indentation (1+ spaces or tab)
@@ -10,10 +10,13 @@ export default grammar({
   ],
 
   rules: {
-    source_file: ($) => repeat(choice($.entry, $._nl)),
+    source_file: ($) => repeat(choice($.entry, $.comment, $._nl)),
 
-    // Standalone comment lines inside entries are skipped by the scanner
+    // Comment token (the text of a comment)
     comment: (_) => token(seq("//", /[^\r\n]*/)),
+
+    // Indented comment line (within entries) - same prec as metadata (will be tried via choice)
+    comment_line: ($) => prec(2, seq($["_indent"], $.comment)),
 
     entry: ($) => choice($.instance_entry, $.schema_entry),
 
@@ -21,7 +24,8 @@ export default grammar({
     // Instance entries (create/update lore, opinion, etc.)
     // =========================================================================
 
-    instance_entry: ($) => seq($.instance_header, repeat($.metadata), optional($.content)),
+    instance_entry: ($) =>
+      seq($.instance_header, repeat(choice($.metadata, $.comment_line)), optional($.content)),
 
     instance_header: ($) =>
       seq(
@@ -150,7 +154,7 @@ export default grammar({
         seq(
           repeat($["_content_blank"]),
           $.markdown_header,
-          repeat(choice($.markdown_header, $.content_line, $["_content_blank"])),
+          repeat(choice($.markdown_header, $.content_line, $.comment_line, $["_content_blank"])),
         ),
       ),
 
@@ -160,7 +164,8 @@ export default grammar({
 
     md_indicator: (_) => token.immediate(/#+/),
     md_heading_text: (_) => token.immediate(/ [^\r\n]+/),
-    content_text: (_) => token.immediate(/[^#\r\n][^\r\n]*/), // Must not start with # (would be header)
+    // Must not start with # (would be header) or // (would be comment)
+    content_text: (_) => token.immediate(/[^#/\r\n][^\r\n]*|\/[^/\r\n][^\r\n]*/),
 
     // =========================================================================
     // Common tokens

@@ -11,6 +11,11 @@ const format = async (code: string): Promise<string> => {
 
 describe("comment formatting", () => {
   describe("indented comments (within entries)", () => {
+    // Note: The grammar's scanner skips comments that appear between metadata lines
+    // or between content sections. Only comments at the end of an entry (after all
+    // metadata/content) are captured in the AST. This is by design - formatting
+    // preserves what the grammar captures.
+
     it("should format comment line after metadata", async () => {
       const input = `2026-01-05T18:00 create lore "Entry with comment"
   type: fact
@@ -59,7 +64,26 @@ describe("comment formatting", () => {
 `);
     });
 
-    it("should format comment line in content section", async () => {
+    it("should format unindented comment lines between metadata", async () => {
+      const input = `2026-01-05T18:00 create lore "Entry"
+  type: fact
+// first comment
+// second comment
+  subject: acme
+`;
+
+      const output = await format(input);
+
+      // Unindented comments within entries get normalized to indented
+      expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
+  type: fact
+  // first comment
+  // second comment
+  subject: acme
+`);
+    });
+
+    it("should format comment line at end of content section", async () => {
       const input = `2026-01-05T18:00 create opinion "Opinion"
   confidence: high
 
@@ -120,6 +144,56 @@ describe("comment formatting", () => {
 
   # Thoughts
   Some thoughts.
+`);
+    });
+
+    it("should format comment line before content section", async () => {
+      const input = `2026-01-05T18:00 create lore "Entry"
+  type: fact
+  // TODO: add more metadata later
+
+  # Description
+  The actual content.
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
+  type: fact
+  // TODO: add more metadata later
+
+  # Description
+  The actual content.
+`);
+    });
+
+    it("should preserve inline comment as part of metadata value", async () => {
+      // Note: inline comments after metadata values are absorbed into the value
+      // This is by grammar design - they're not separate comment nodes
+      const input = `2026-01-05T18:00 create lore "Entry"
+  type: fact // this is inline
+  subject: acme
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
+  type: fact // this is inline
+  subject: acme
+`);
+    });
+
+    it("should format comment with special characters", async () => {
+      const input = `2026-01-05T18:00 create lore "Entry"
+  type: fact
+  // TODO: fix this! @user #tag (see: https://example.com)
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
+  type: fact
+  // TODO: fix this! @user #tag (see: https://example.com)
 `);
     });
   });
@@ -212,6 +286,43 @@ describe("comment formatting", () => {
   // Indented comment
 
 // Another top-level comment
+`);
+    });
+
+    it("should format unindented comment directly after entry (no blank line)", async () => {
+      const input = `2026-01-05T18:00 create lore "Entry"
+  type: fact
+// Comment right after entry
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
+  type: fact
+
+// Comment right after entry
+`);
+    });
+
+    it("should treat unindented comment as top-level when followed by new entry", async () => {
+      // When an unindented comment is NOT followed by indented content,
+      // it ends the current entry and becomes a top-level comment
+      const input = `2026-01-05T18:00 create lore "Entry"
+  type: fact
+// unindented comment ends entry
+2026-01-05T18:01 create lore "Next entry"
+  subject: acme
+`;
+
+      const output = await format(input);
+
+      expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
+  type: fact
+
+// unindented comment ends entry
+
+2026-01-05T18:01 create lore "Next entry"
+  subject: acme
 `);
     });
   });

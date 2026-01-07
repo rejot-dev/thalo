@@ -151,7 +151,7 @@ const printInstanceEntry = (node: SyntaxNode): Doc => {
     parts.push(printInstanceHeader(header));
   }
 
-  // Handle both metadata and comment_line nodes (they can be interleaved)
+  // Handle metadata and comment_line nodes (they can be interleaved)
   const metadataAndComments = node.children.filter(
     (c) => c.type === "metadata" || c.type === "comment_line",
   );
@@ -463,12 +463,14 @@ const printEntry = (node: SyntaxNode): Doc => {
   return "";
 };
 
-const printTopLevelComment = (node: SyntaxNode): Doc => {
-  return node.text;
+const printComment = (node: SyntaxNode): Doc => {
+  // Use column position to determine if comment was indented
+  const isIndented = node.startPosition.column > 0;
+  return isIndented ? ["  ", node.text] : node.text;
 };
 
 const printSourceFile = (node: SyntaxNode): Doc => {
-  // Get entries and top-level comments
+  // Get entries and comments
   const relevantChildren = node.children.filter((c) => c.type === "entry" || c.type === "comment");
 
   if (relevantChildren.length === 0) {
@@ -478,16 +480,26 @@ const printSourceFile = (node: SyntaxNode): Doc => {
   // Build output preserving comments and entries with proper spacing
   const docs: Doc[] = [];
   let lastWasEntry = false;
+  let lastWasIndentedComment = false;
 
   for (const child of relevantChildren) {
     if (child.type === "comment") {
-      // Add blank line before comment if previous was an entry
-      if (lastWasEntry) {
-        docs.push(hardline, hardline);
-      } else if (docs.length > 0) {
-        docs.push(hardline);
+      const isIndented = child.startPosition.column > 0;
+
+      if (isIndented) {
+        // Indented comment - belongs to preceding entry, no blank line
+        docs.push(hardline, printComment(child));
+        lastWasIndentedComment = true;
+      } else {
+        // Top-level comment - add blank line after entry
+        if (lastWasEntry || lastWasIndentedComment) {
+          docs.push(hardline, hardline);
+        } else if (docs.length > 0) {
+          docs.push(hardline);
+        }
+        docs.push(printComment(child));
+        lastWasIndentedComment = false;
       }
-      docs.push(printTopLevelComment(child));
       lastWasEntry = false;
     } else {
       // Entry - add blank line between entries/after comments
@@ -496,6 +508,7 @@ const printSourceFile = (node: SyntaxNode): Doc => {
       }
       docs.push(printEntry(child));
       lastWasEntry = true;
+      lastWasIndentedComment = false;
     }
   }
 
@@ -530,7 +543,7 @@ export const printer: PtallPrinter = {
       case "comment_line":
         return printCommentLine(node);
       case "comment":
-        return printTopLevelComment(node);
+        return printComment(node);
       case "metadata_block":
         return printMetadataBlock(node);
       case "sections_block":

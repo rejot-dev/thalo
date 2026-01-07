@@ -1,5 +1,5 @@
 ==================
-comment line after metadata (captured at top level via extras)
+comment line after metadata
 ==================
 
 2026-01-05T18:11 create lore "Entry with comment"
@@ -18,11 +18,12 @@ comment line after metadata (captured at top level via extras)
         (title))
       (metadata
         (key)
-        (value))))
-  (comment))
+        (value))
+      (comment_line
+        (comment)))))
 
 ==================
-comment line between metadata (skipped by scanner, entry continues)
+comment line between metadata
 ==================
 
 2026-01-05T18:11 create reference "Entry with interleaved comment"
@@ -43,12 +44,14 @@ comment line between metadata (skipped by scanner, entry continues)
       (metadata
         (key)
         (value))
+      (comment_line
+        (comment))
       (metadata
         (key)
         (value)))))
 
 ==================
-multiple comment lines (skipped by scanner, entry continues)
+multiple comment lines
 ==================
 
 2026-01-05T18:11 create lore "Entry with multiple comments"
@@ -70,12 +73,47 @@ multiple comment lines (skipped by scanner, entry continues)
       (metadata
         (key)
         (value))
+      (comment_line
+        (comment))
+      (comment_line
+        (comment))
       (metadata
         (key)
         (value)))))
 
 ==================
-comment line before content (skipped by scanner, content follows)
+unindented comment lines between metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with unindented comments"
+  type: fact
+// first comment
+// second comment
+  subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment))
+      (comment_line
+        (comment))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+comment line before content
 ==================
 
 2026-01-05T18:11 create lore "Entry with comment before content"
@@ -98,6 +136,8 @@ comment line before content (skipped by scanner, content follows)
       (metadata
         (key)
         (value))
+      (comment_line
+        (comment))
       (content
         (markdown_header
           (md_indicator)
@@ -106,7 +146,7 @@ comment line before content (skipped by scanner, content follows)
           (content_text))))))
 
 ==================
-comment line in content section (captured at top level via extras)
+comment line in content section
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with comment in content"
@@ -134,11 +174,12 @@ comment line in content section (captured at top level via extras)
           (md_indicator)
           (md_heading_text))
         (content_line
-          (content_text)))))
-  (comment))
+          (content_text))
+        (comment_line
+          (comment))))))
 
 ==================
-comment line between content sections (skipped by scanner, content continues)
+comment line between content sections
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with comments between sections"
@@ -170,6 +211,8 @@ comment line between content sections (skipped by scanner, content continues)
           (md_heading_text))
         (content_line
           (content_text))
+        (comment_line
+          (comment))
         (markdown_header
           (md_indicator)
           (md_heading_text))
@@ -196,6 +239,8 @@ comment only in metadata section - allows content after
         (instance_directive)
         (entity)
         (title))
+      (comment_line
+        (comment))
       (content
         (markdown_header
           (md_indicator)
@@ -229,7 +274,7 @@ inline comment after metadata value (via extras)
         (value)))))
 
 ==================
-comment at end of entry (captured at top level via extras)
+comment at end of entry
 ==================
 
 2026-01-05T18:11 create lore "Entry ending with comment"
@@ -248,11 +293,12 @@ comment at end of entry (captured at top level via extras)
         (title))
       (metadata
         (key)
-        (value))))
-  (comment))
+        (value))
+      (comment_line
+        (comment)))))
 
 ==================
-comment with special characters (captured at top level via extras)
+comment with special characters
 ==================
 
 2026-01-05T18:11 create lore "Entry with special comment"
@@ -271,11 +317,12 @@ comment with special characters (captured at top level via extras)
         (title))
       (metadata
         (key)
-        (value))))
-  (comment))
+        (value))
+      (comment_line
+        (comment)))))
 
 ==================
-unindented comment before entry (via extras)
+unindented comment before entry
 ==================
 
 // This is a file-level comment
@@ -298,7 +345,7 @@ unindented comment before entry (via extras)
         (value)))))
 
 ==================
-unindented comment between entries (via extras)
+unindented comment between entries
 ==================
 
 2026-01-05T18:11 create lore "First entry"
@@ -334,7 +381,7 @@ unindented comment between entries (via extras)
         (value)))))
 
 ==================
-unindented comment at end of file (via extras)
+unindented comment at end of file
 ==================
 
 2026-01-05T18:11 create lore "Entry before comment"
@@ -358,7 +405,7 @@ unindented comment at end of file (via extras)
   (comment))
 
 ==================
-multiple unindented comments (via extras)
+multiple unindented comments
 ==================
 
 // First top-level comment
@@ -412,7 +459,7 @@ mixed indented and unindented comments
 // Top-level comment
 2026-01-05T18:11 create lore "Entry"
   type: fact
-  // Indented comment in metadata (captured at top level)
+  // Indented comment in metadata
 
 // Another top-level comment
 
@@ -429,17 +476,19 @@ mixed indented and unindented comments
         (title))
       (metadata
         (key)
-        (value))))
-  (comment)
+        (value))
+      (comment_line
+        (comment))))
   (comment))
 
 ==================
-unindented comment in metadata (now works - skipped by scanner)
+unindented comment in metadata ends entry
 ==================
 
 2026-01-05T18:11 create lore "Entry"
   type: fact
-// unindented comment in metadata
+// unindented comment ends entry
+2026-01-05T18:12 create lore "Next entry"
   subject: acme
 
 ---
@@ -454,7 +503,15 @@ unindented comment in metadata (now works - skipped by scanner)
         (title))
       (metadata
         (key)
-        (value))
+        (value))))
+  (comment)
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
       (metadata
         (key)
         (value)))))

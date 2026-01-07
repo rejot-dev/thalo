@@ -341,7 +341,6 @@ Multiple consecutive blank lines in content
 
 ==================
 Entry ending at EOF (no trailing newline)
-:skip
 ==================
 
 2026-01-05T18:11 create lore "Entry at EOF"

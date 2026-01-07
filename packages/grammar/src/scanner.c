@@ -31,7 +31,8 @@
  *
  * These must match the order in the grammar's externals array.
  */
-enum TokenType {
+enum TokenType
+{
     INDENT,         // Newline followed by proper indentation (2+ spaces or tab)
     CONTENT_BLANK,  // Blank line in content (newline, optionally with whitespace-only line)
     ERROR_SENTINEL, // Sentinel for error recovery detection
@@ -43,7 +44,8 @@ enum TokenType {
  * Currently stateless since we don't track indent levels across parses.
  * Tree-sitter handles the grammar-level block structure.
  */
-typedef struct {
+typedef struct
+{
     // Reserved for future use if we need state
     uint8_t _reserved;
 } Scanner;
@@ -51,21 +53,24 @@ typedef struct {
 /**
  * @brief Advance the lexer to the next character (include in parse result)
  */
-static inline void advance(TSLexer *lexer) {
+static inline void advance(TSLexer *lexer)
+{
     lexer->advance(lexer, false);
 }
 
 /**
  * @brief Check if character is a newline
  */
-static inline bool is_newline(int32_t c) {
+static inline bool is_newline(int32_t c)
+{
     return c == '\n' || c == '\r';
 }
 
 /**
  * @brief Check if character is horizontal whitespace (space or tab)
  */
-static inline bool is_hspace(int32_t c) {
+static inline bool is_hspace(int32_t c)
+{
     return c == ' ' || c == '\t';
 }
 
@@ -75,7 +80,8 @@ static inline bool is_hspace(int32_t c) {
  * During error recovery, all symbols are marked valid. We detect this
  * by checking if the error sentinel is valid.
  */
-static bool in_error_recovery(const bool *valid_symbols) {
+static bool in_error_recovery(const bool *valid_symbols)
+{
     return valid_symbols[ERROR_SENTINEL];
 }
 
@@ -84,48 +90,20 @@ static bool in_error_recovery(const bool *valid_symbols) {
  *
  * Valid indentation is at least 1 space or at least 1 tab.
  */
-static bool has_valid_indent(int indent, bool has_tab) {
+static bool has_valid_indent(int indent, bool has_tab)
+{
     return has_tab || indent >= 1;
-}
-
-/**
- * @brief Check if the current position starts a comment (//)
- *
- * If it does, skip to the end of the line and return true.
- * This makes comments invisible to the grammar structure.
- */
-static bool skip_comment_if_present(TSLexer *lexer) {
-    if (lexer->lookahead != '/') {
-        return false;
-    }
-
-    // Consume first /
-    advance(lexer);
-
-    if (lexer->lookahead != '/') {
-        // Not a comment - this is problematic because we consumed a /
-        // However, this only matters for unindented lines starting with /x
-        // which would be a parse error anyway. For indented lines,
-        // we check for comments BEFORE deciding to produce INDENT.
-        return false;
-    }
-
-    // It's a comment - skip to end of line
-    while (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
-        advance(lexer);
-    }
-
-    DEBUG_LOG("[SCANNER] skipped comment line\n");
-    return true;
 }
 
 /**
  * @brief Consume a newline sequence (\n or \r\n)
  */
-static void consume_newline(TSLexer *lexer) {
+static void consume_newline(TSLexer *lexer)
+{
     bool was_cr = lexer->lookahead == '\r';
     advance(lexer);
-    if (was_cr && lexer->lookahead == '\n') {
+    if (was_cr && lexer->lookahead == '\n')
+    {
         advance(lexer);
     }
 }
@@ -135,12 +113,15 @@ static void consume_newline(TSLexer *lexer) {
  *
  * Returns the indent count and sets has_tab if a tab was found.
  */
-static int consume_indentation(TSLexer *lexer, bool *has_tab) {
+static int consume_indentation(TSLexer *lexer, bool *has_tab)
+{
     int indent = 0;
     *has_tab = false;
 
-    while (is_hspace(lexer->lookahead)) {
-        if (lexer->lookahead == '\t') {
+    while (is_hspace(lexer->lookahead))
+    {
+        if (lexer->lookahead == '\t')
+        {
             *has_tab = true;
         }
         indent++;
@@ -151,135 +132,184 @@ static int consume_indentation(TSLexer *lexer, bool *has_tab) {
 }
 
 /**
+ * @brief Skip to end of line (past comment content)
+ */
+static void skip_to_eol(TSLexer *lexer)
+{
+    while (!is_newline(lexer->lookahead) && !lexer->eof(lexer))
+    {
+        advance(lexer);
+    }
+}
+
+/**
+ * @brief Look ahead past comment(s) to see if indented content follows
+ *
+ * Called when we're at '//' (already advanced past first '/').
+ * Returns true if there's indented content after the comment(s).
+ */
+static bool look_ahead_for_indented_content(TSLexer *lexer)
+{
+    // Skip rest of current comment line
+    skip_to_eol(lexer);
+
+    while (!lexer->eof(lexer))
+    {
+        if (!is_newline(lexer->lookahead))
+            break;
+
+        consume_newline(lexer);
+
+        bool next_has_tab = false;
+        int next_indent = consume_indentation(lexer, &next_has_tab);
+
+        if (is_newline(lexer->lookahead) || lexer->eof(lexer))
+        {
+            // Blank line, continue looking
+            continue;
+        }
+
+        // Check if this is another unindented comment
+        if (next_indent == 0 && !next_has_tab && lexer->lookahead == '/')
+        {
+            advance(lexer);
+            if (lexer->lookahead == '/')
+            {
+                // Another unindented comment, skip it and continue
+                skip_to_eol(lexer);
+                continue;
+            }
+            // Single slash at start of line - not a comment, not indented
+            return false;
+        }
+
+        // Found non-blank, non-comment content
+        return has_valid_indent(next_indent, next_has_tab);
+    }
+
+    // EOF without finding indented content
+    return false;
+}
+
+/**
  * @brief Unified newline scanner
  *
  * This function handles both INDENT and CONTENT_BLANK in a single pass
  * to avoid advancing the lexer before knowing what token to produce.
  *
- * Comments are treated as invisible - comment-only lines are skipped
- * entirely, allowing the scanner to find the next real content line.
- *
  * Algorithm:
  * 1. Consume the initial newline
  * 2. Count indentation on the current line
- * 3. If line is a comment: skip it and loop to next line
- * 4. If we have valid indent and content: return INDENT
+ * 3. If we have valid indent and content: return INDENT
+ * 4. If unindented comment and indented content follows: return INDENT
  * 5. If we're at end of line (blank line): look ahead for content
  *    - If indented content follows: return CONTENT_BLANK
  *    - Otherwise: return false (let grammar handle the newline)
  */
-static bool scan_newline(TSLexer *lexer, const bool *valid_symbols) {
+static bool scan_newline(TSLexer *lexer, const bool *valid_symbols)
+{
     // Must start at a newline
-    if (!is_newline(lexer->lookahead)) {
+    if (!is_newline(lexer->lookahead))
+    {
         return false;
     }
 
-    // Loop to skip comment lines
-    while (true) {
-        // Consume the newline
-        consume_newline(lexer);
+    // Consume the newline
+    consume_newline(lexer);
 
-        // Count indentation on this line
-        bool has_tab = false;
-        int indent = consume_indentation(lexer, &has_tab);
+    // Count indentation on this line
+    bool has_tab = false;
+    int indent = consume_indentation(lexer, &has_tab);
 
-        // Check what's on this line
-        bool at_eol = is_newline(lexer->lookahead) || lexer->eof(lexer);
-        bool valid_indent = has_valid_indent(indent, has_tab);
+    // Check what's on this line
+    bool at_eol = is_newline(lexer->lookahead) || lexer->eof(lexer);
+    bool valid_indent = has_valid_indent(indent, has_tab);
 
-        DEBUG_LOG("[SCANNER] line: indent=%d, has_tab=%d, at_eol=%d, valid_indent=%d, lookahead='%c'(%d)\n",
-                  indent, has_tab, at_eol, valid_indent,
-                  lexer->lookahead > 31 && lexer->lookahead < 127
-                      ? (char)lexer->lookahead
-                      : '?',
-                  lexer->lookahead);
+    DEBUG_LOG("[SCANNER] line: indent=%d, has_tab=%d, at_eol=%d, valid_indent=%d, lookahead='%c'(%d)\n",
+              indent, has_tab, at_eol, valid_indent,
+              lexer->lookahead > 31 && lexer->lookahead < 127
+                  ? (char)lexer->lookahead
+                  : '?',
+              lexer->lookahead);
 
-        // Check for comment line - skip it entirely and continue to next line
-        // We skip comments regardless of indentation to make them "invisible"
-        if (!at_eol && lexer->lookahead == '/') {
-            // Peek ahead to see if it's //
-            advance(lexer); // consume first /
-            if (lexer->lookahead == '/') {
-                // It's a comment - skip to end of line
-                while (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
-                    advance(lexer);
-                }
-                DEBUG_LOG("[SCANNER] skipped comment line\n");
-                // If there's another line, continue the loop
-                if (is_newline(lexer->lookahead)) {
-                    continue;
-                }
-                // EOF after comment
-                return false;
+    // Case 1: Valid indented line with content (including comments) -> INDENT
+    if (!at_eol && valid_indent && valid_symbols[INDENT])
+    {
+        lexer->mark_end(lexer);
+        lexer->result_symbol = INDENT;
+        DEBUG_LOG("[SCANNER] -> INDENT\n");
+        return true;
+    }
+
+    // Case 2: Unindented comment line - check if followed by indented content
+    // This allows comments at column 0 to be part of an entry if more metadata follows
+    if (!at_eol && indent == 0 && !has_tab && valid_symbols[INDENT] && lexer->lookahead == '/')
+    {
+        // Mark end here (token is just the newline, no indentation)
+        lexer->mark_end(lexer);
+
+        // Check if this is a comment and if indented content follows
+        advance(lexer); // Consume first '/'
+        if (lexer->lookahead == '/')
+        {
+            // It's a comment, look ahead past it
+            if (look_ahead_for_indented_content(lexer))
+            {
+                lexer->result_symbol = INDENT;
+                DEBUG_LOG("[SCANNER] -> INDENT (unindented comment with indented content after)\n");
+                return true;
             }
-            // Not a comment (single /) - fall through
-            // Note: we've consumed the /, but for unindented lines this is
-            // already an error. For indented lines, this breaks content
-            // starting with /x - but that's an edge case we accept.
         }
-
-        // Case 1: Valid indented line with non-comment content -> INDENT
-        if (!at_eol && valid_indent && valid_symbols[INDENT]) {
-            lexer->mark_end(lexer);
-            lexer->result_symbol = INDENT;
-            DEBUG_LOG("[SCANNER] -> INDENT\n");
-            return true;
-        }
-
-        // Case 2: Blank line (or whitespace-only line)
-        // Only match if content follows AND CONTENT_BLANK is valid
-        if (at_eol && valid_symbols[CONTENT_BLANK]) {
-            // Mark the end after this blank line
-            lexer->mark_end(lexer);
-
-            // Look ahead to see if indented content follows
-            // (also skipping any comment lines)
-            while (is_newline(lexer->lookahead)) {
-                consume_newline(lexer);
-
-                // Count indent on this next line
-                bool next_has_tab = false;
-                int next_indent = consume_indentation(lexer, &next_has_tab);
-
-                // Check what's on this line
-                if (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
-                    // Check for comment line - skip it
-                    if (lexer->lookahead == '/') {
-                        advance(lexer);
-                        if (lexer->lookahead == '/') {
-                            // Comment line - skip and continue looking
-                            while (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
-                                advance(lexer);
-                            }
-                            continue;
-                        }
-                        // Not a comment, fall through to content check
-                    }
-
-                    // Found a line with real content
-                    if (has_valid_indent(next_indent, next_has_tab)) {
-                        // Indented content follows - match CONTENT_BLANK
-                        lexer->result_symbol = CONTENT_BLANK;
-                        DEBUG_LOG("[SCANNER] -> CONTENT_BLANK (indented content follows)\n");
-                        return true;
-                    } else {
-                        // Unindented content (new entry) - don't match
-                        DEBUG_LOG("[SCANNER] -> no match (unindented content follows)\n");
-                        return false;
-                    }
-                }
-                // Another blank line - continue looking
-            }
-
-            // Reached EOF without finding indented content
-            DEBUG_LOG("[SCANNER] -> no match (EOF, no content follows)\n");
-            return false;
-        }
-
-        // No match - not a valid indent and not a blank line
-        DEBUG_LOG("[SCANNER] -> no match (at_eol=%d, valid_indent=%d)\n", at_eol, valid_indent);
+        // Not a comment or no indented content follows - don't match
+        DEBUG_LOG("[SCANNER] -> no match (unindented comment without indented content after)\n");
         return false;
     }
+
+    // Case 3: Blank line (or whitespace-only line)
+    // Only match if content follows AND CONTENT_BLANK is valid
+    if (at_eol && valid_symbols[CONTENT_BLANK])
+    {
+        // Mark the end after this blank line
+        lexer->mark_end(lexer);
+
+        // Look ahead to see if indented content follows
+        while (is_newline(lexer->lookahead))
+        {
+            consume_newline(lexer);
+
+            // Count indent on this next line
+            bool next_has_tab = false;
+            int next_indent = consume_indentation(lexer, &next_has_tab);
+
+            // Check what's on this line
+            if (!is_newline(lexer->lookahead) && !lexer->eof(lexer))
+            {
+                // Found a line with content
+                if (has_valid_indent(next_indent, next_has_tab))
+                {
+                    // Indented content follows - match CONTENT_BLANK
+                    lexer->result_symbol = CONTENT_BLANK;
+                    DEBUG_LOG("[SCANNER] -> CONTENT_BLANK (indented content follows)\n");
+                    return true;
+                }
+                else
+                {
+                    // Unindented content (new entry) - don't match
+                    DEBUG_LOG("[SCANNER] -> no match (unindented content follows)\n");
+                    return false;
+                }
+            }
+            // Another blank line - continue looking
+        }
+
+        // Reached EOF without finding indented content
+        DEBUG_LOG("[SCANNER] -> no match (EOF, no content follows)\n");
+        return false;
+    }
+
+    // No match - not a valid indent and not a blank line
+    DEBUG_LOG("[SCANNER] -> no match (at_eol=%d, valid_indent=%d)\n", at_eol, valid_indent);
+    return false;
 }
 
 /**
@@ -287,7 +317,8 @@ static bool scan_newline(TSLexer *lexer, const bool *valid_symbols) {
  *
  * Attempts to recognize external tokens based on what's valid at this position.
  */
-static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols)
+{
     (void)scanner; // Currently unused
 
     DEBUG_LOG("[SCANNER] called: lookahead='%c'(%d) valid=[%d,%d,%d]\n",
@@ -298,13 +329,15 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
               valid_symbols[ERROR_SENTINEL]);
 
     // Don't produce tokens during error recovery
-    if (in_error_recovery(valid_symbols)) {
+    if (in_error_recovery(valid_symbols))
+    {
         DEBUG_LOG("[SCANNER] error recovery mode, returning false\n");
         return false;
     }
 
     // Only scan if we might want INDENT or CONTENT_BLANK
-    if (valid_symbols[INDENT] || valid_symbols[CONTENT_BLANK]) {
+    if (valid_symbols[INDENT] || valid_symbols[CONTENT_BLANK])
+    {
         return scan_newline(lexer, valid_symbols);
     }
 
@@ -314,7 +347,8 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
 /**
  * @brief Create a new scanner instance
  */
-void *tree_sitter_ptall_external_scanner_create(void) {
+void *tree_sitter_ptall_external_scanner_create(void)
+{
     Scanner *scanner = ts_calloc(1, sizeof(Scanner));
     return scanner;
 }
@@ -322,7 +356,8 @@ void *tree_sitter_ptall_external_scanner_create(void) {
 /**
  * @brief Destroy scanner instance and free memory
  */
-void tree_sitter_ptall_external_scanner_destroy(void *payload) {
+void tree_sitter_ptall_external_scanner_destroy(void *payload)
+{
     Scanner *scanner = (Scanner *)payload;
     ts_free(scanner);
 }
@@ -333,7 +368,8 @@ void tree_sitter_ptall_external_scanner_destroy(void *payload) {
  * Currently stateless, so nothing to serialize.
  */
 unsigned tree_sitter_ptall_external_scanner_serialize(void *payload,
-                                                      char *buffer) {
+                                                      char *buffer)
+{
     (void)payload;
     (void)buffer;
     return 0;
@@ -346,7 +382,8 @@ unsigned tree_sitter_ptall_external_scanner_serialize(void *payload,
  */
 void tree_sitter_ptall_external_scanner_deserialize(void *payload,
                                                     const char *buffer,
-                                                    unsigned length) {
+                                                    unsigned length)
+{
     (void)payload;
     (void)buffer;
     (void)length;
@@ -356,7 +393,8 @@ void tree_sitter_ptall_external_scanner_deserialize(void *payload,
  * @brief Main entry point for token scanning
  */
 bool tree_sitter_ptall_external_scanner_scan(void *payload, TSLexer *lexer,
-                                             const bool *valid_symbols) {
+                                             const bool *valid_symbols)
+{
     Scanner *scanner = (Scanner *)payload;
     return scan(scanner, lexer, valid_symbols);
 }
