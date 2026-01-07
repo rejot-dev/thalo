@@ -12,6 +12,10 @@
           "named": true
         },
         {
+          "type": "paren_type",
+          "named": true
+        },
+        {
           "type": "primitive_type",
           "named": true
         }
@@ -359,6 +363,21 @@
     }
   },
   {
+    "type": "paren_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "type_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "primitive_type",
     "named": true,
     "fields": {}
@@ -649,6 +668,14 @@
         }
       ]
     }
+  },
+  {
+    "type": "(",
+    "named": false
+  },
+  {
+    "type": ")",
+    "named": false
   },
   {
     "type": ":",

@@ -423,11 +423,23 @@ export function extractArrayType(node: SyntaxNode): ArrayType {
     throw new Error("Empty array_type");
   }
 
-  let elementType: PrimitiveType | LiteralType;
+  let elementType: PrimitiveType | LiteralType | UnionType;
   if (child.type === "primitive_type") {
     elementType = extractPrimitiveType(child);
   } else if (child.type === "literal_type") {
     elementType = extractLiteralType(child);
+  } else if (child.type === "paren_type") {
+    // Parenthesized type: extract the inner type_expression
+    const innerTypeExpr = child.namedChildren[0];
+    if (!innerTypeExpr) {
+      throw new Error("Empty paren_type");
+    }
+    const extracted = extractTypeExpression(innerTypeExpr);
+    // paren_type is only valid with union types in arrays
+    if (extracted.type !== "union_type") {
+      throw new Error(`Unexpected paren_type content: ${extracted.type}`);
+    }
+    elementType = extracted;
   } else {
     throw new Error(`Invalid array element type: ${child.type}`);
   }

@@ -163,7 +163,7 @@ export interface LiteralType extends AstNode {
 
 export interface ArrayType extends AstNode {
   type: "array_type";
-  elementType: PrimitiveType | LiteralType;
+  elementType: PrimitiveType | LiteralType | UnionType;
 }
 
 export interface UnionType extends AstNode {

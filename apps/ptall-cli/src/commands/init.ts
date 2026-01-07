@@ -46,6 +46,10 @@ const ENTITIES_PTALL = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   date?: date-range ; "Relevant date or date range"
   # Sections
   Description ; "The lore content"
+
+{{TIMESTAMP}} define-entity me "Entity to allow for self-references" ^self
+  # Sections
+  Bio ; "Need at least one section"
 `;
 
 const AGENTS_MD = `# PTALL - Personal Thought And Lore Language
@@ -89,7 +93,7 @@ Each entity type defines which sections are required/optional in \`entities.ptal
 
 \`\`\`ptall
 2026-01-05T16:00 create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
-  confidence: high
+  confidence: "high"
 
   # Claim
   TypeScript enums should be replaced with \`as const\` objects.

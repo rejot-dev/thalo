@@ -22,13 +22,8 @@ export const invalidDefaultValueRule: Rule = {
           continue;
         }
 
-        // Strip quotes from the default value for comparison
-        const defaultValue =
-          field.defaultValue.startsWith('"') && field.defaultValue.endsWith('"')
-            ? field.defaultValue.slice(1, -1)
-            : field.defaultValue;
-
-        if (!TypeExpr.matches(defaultValue, field.type)) {
+        // Pass the raw default value - it should already be quoted for literals
+        if (!TypeExpr.matches(field.defaultValue, field.type)) {
           ctx.report({
             message: `Invalid default value '${field.defaultValue}' for field '${field.name}'. Expected ${TypeExpr.toString(field.type)}.`,
             file: entry.file,

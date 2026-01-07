@@ -754,17 +754,8 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "primitive_type"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "literal_type"
-            }
-          ]
+          "type": "SYMBOL",
+          "name": "_array_element"
         },
         {
           "type": "IMMEDIATE_TOKEN",
@@ -772,6 +763,40 @@
             "type": "STRING",
             "value": "[]"
           }
+        }
+      ]
+    },
+    "_array_element": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "primitive_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "literal_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "paren_type"
+        }
+      ]
+    },
+    "paren_type": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "SYMBOL",
+          "name": "type_expression"
+        },
+        {
+          "type": "STRING",
+          "value": ")"
         }
       ]
     },

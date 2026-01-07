@@ -311,7 +311,7 @@ describe("invalid-field-type rule - array types", () => {
     expect(error!.message).toContain("high");
   });
 
-  it("accepts empty array value", () => {
+  it("reports empty array value", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
   confidence: "high"
@@ -326,6 +326,146 @@ describe("invalid-field-type rule - array types", () => {
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
+    // Empty arrays are not allowed - use optional fields and omit the field instead
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("link[]");
+  });
+});
+
+describe("invalid-field-type rule - date and date-range arrays", () => {
+  let workspace: Workspace;
+
+  beforeEach(() => {
+    workspace = new Workspace();
+    workspace.addDocument(
+      `2026-01-01T00:00 define-entity lore "Lore entries"
+  # Metadata
+  type: "fact" | "insight"
+  subject: string
+  dates?: date[]
+  periods?: date-range[]
+
+  # Sections
+  Content
+`,
+      { filename: "schema.ptall" },
+    );
+  });
+
+  it("accepts valid date array", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test lore" #test
+  type: "fact"
+  subject: test
+  dates: 2024, 2024-05, 2024-05-11
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
     expect(error).toBeUndefined();
+  });
+
+  it("accepts single date for date array", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test lore" #test
+  type: "fact"
+  subject: test
+  dates: 2024-05-11
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("reports invalid date array (non-date values)", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test lore" #test
+  type: "fact"
+  subject: test
+  dates: not-a-date, 2024
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("date[]");
+  });
+
+  it("accepts valid date-range array", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test lore" #test
+  type: "fact"
+  subject: test
+  periods: 2020 ~ 2022, 2023-01 ~ 2024-06
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("accepts single date-range for date-range array", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test lore" #test
+  type: "fact"
+  subject: test
+  periods: 2020-01-01 ~ 2024-12-31
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("reports invalid date-range array", () => {
+    workspace.addDocument(
+      `2026-01-05T18:00 create lore "Test lore" #test
+  type: "fact"
+  subject: test
+  periods: 2020, 2024
+
+  # Content
+  Test content.
+`,
+      { filename: "test.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+    // Individual dates don't match date-range format
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("date-range[]");
   });
 });

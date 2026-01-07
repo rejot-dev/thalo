@@ -37,8 +37,8 @@ describe("getDiagnostics", () => {
   describe("valid documents", () => {
     it("should return no errors for valid entry", () => {
       const source = `2026-01-05T18:00 create lore "Valid entry" #test
-  type: fact
-  subject: test
+  type: "fact"
+  subject: "test"
 
   # Summary
   This is a valid summary.
@@ -482,6 +482,217 @@ describe("getDiagnostics", () => {
       expect(
         getDiagnostics(workspace, doc3).find((d) => d.code === "unknown-entity"),
       ).toBeDefined();
+    });
+  });
+
+  describe("array type validation", () => {
+    beforeEach(() => {
+      // Add schema with array field types
+      const schemaSource = `2026-01-01T00:00 define-entity reference "Reference entries"
+  # Metadata
+  ref-type: "article" | "video" | "other"
+  related?: link[]
+  tags?: string[]
+  authors?: (string | link)[]
+  dates?: date[]
+  periods?: date-range[]
+
+  # Sections
+  Summary
+`;
+      workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
+    });
+
+    it("should accept valid link array", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  related: ^link1, ^link2, ^link3
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeUndefined();
+    });
+
+    it("should reject invalid link array (non-link values)", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  related: not-a-link, also-not
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeDefined();
+      expect(error!.message).toContain("link[]");
+    });
+
+    it("should accept valid string array (quoted)", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  tags: "foo", "bar", "baz"
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeUndefined();
+    });
+
+    it("should reject unquoted string array elements", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  tags: foo, bar, baz
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeDefined();
+      expect(error!.message).toContain("string[]");
+    });
+
+    it("should accept valid union array (quoted strings and links)", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  authors: "Jane Doe", ^author-ref, "John Smith"
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeUndefined();
+    });
+
+    it("should reject unquoted strings in union array", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  authors: Jane Doe, ^author-ref
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeDefined();
+    });
+
+    it("should reject empty array values", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  related: 
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeDefined();
+      expect(error!.message).toContain("link[]");
+    });
+
+    it("should accept valid date array", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  dates: 2024, 2024-05, 2024-05-11
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeUndefined();
+    });
+
+    it("should reject invalid date array", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  dates: not-a-date, 2024
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeDefined();
+      expect(error!.message).toContain("date[]");
+    });
+
+    it("should accept valid date-range array", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  periods: 2020 ~ 2022, 2023-01 ~ 2024-06
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeUndefined();
+    });
+
+    it("should reject invalid date-range array (single dates)", () => {
+      const source = `2026-01-05T18:00 create reference "Test" #test
+  ref-type: "article"
+  periods: 2020, 2024
+
+  # Summary
+  Test summary.
+`;
+      workspace.addDocument(source, { filename: "/test.ptall" });
+      const doc = createDocument(source);
+
+      const diagnostics = getDiagnostics(workspace, doc);
+      const error = diagnostics.find((d) => d.code === "invalid-field-type");
+
+      expect(error).toBeDefined();
+      expect(error!.message).toContain("date-range[]");
     });
   });
 });

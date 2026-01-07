@@ -152,6 +152,139 @@ array type
               (primitive_type))))))))
 
 ==================
+array of union type (parenthesized)
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  related: (string | link)[]
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (array_type
+              (paren_type
+                (type_expression
+                  (union_type
+                    (primitive_type)
+                    (primitive_type)))))))))))
+
+==================
+array of literals union
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  tags: ("foo" | "bar")[]
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (array_type
+              (paren_type
+                (type_expression
+                  (union_type
+                    (literal_type)
+                    (literal_type)))))))))))
+
+==================
+array of string type
+==================
+
+2026-01-05T18:12 define-entity reference "Resources"
+  # Metadata
+  tags: string[]
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (array_type
+              (primitive_type))))))))
+
+==================
+array of date type
+==================
+
+2026-01-05T18:12 define-entity lore "Lore"
+  # Metadata
+  dates: date[]
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (array_type
+              (primitive_type))))))))
+
+==================
+array of date-range type
+==================
+
+2026-01-05T18:12 define-entity lore "Lore"
+  # Metadata
+  periods: date-range[]
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (array_type
+              (primitive_type))))))))
+
+==================
 default value with literal
 ==================
 

@@ -167,7 +167,7 @@ export interface ModelLiteralType {
 
 export interface ModelArrayType {
   kind: "array";
-  elementType: ModelPrimitiveType | ModelLiteralType;
+  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType;
 }
 
 export interface ModelUnionType {

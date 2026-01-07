@@ -14,6 +14,9 @@ import type {
   ModelFieldDefinition,
   ModelSectionDefinition,
   ModelTypeExpression,
+  ModelPrimitiveType,
+  ModelLiteralType,
+  ModelUnionType,
   LinkDefinition,
   LinkReference,
   LinkIndex,
@@ -264,10 +267,7 @@ function convertTypeExpression(ast: TypeExpression): ModelTypeExpression {
     case "array_type":
       return {
         kind: "array",
-        elementType:
-          ast.elementType.type === "primitive_type"
-            ? { kind: "primitive", name: ast.elementType.name }
-            : { kind: "literal", value: ast.elementType.value },
+        elementType: convertArrayElementType(ast.elementType),
       };
     case "union_type":
       return {
@@ -280,10 +280,38 @@ function convertTypeExpression(ast: TypeExpression): ModelTypeExpression {
           } else {
             return {
               kind: "array" as const,
-              elementType:
-                m.elementType.type === "primitive_type"
-                  ? { kind: "primitive" as const, name: m.elementType.name }
-                  : { kind: "literal" as const, value: m.elementType.value },
+              elementType: convertArrayElementType(m.elementType),
+            };
+          }
+        }),
+      };
+  }
+}
+
+/**
+ * Convert array element type (can be primitive, literal, or union for parenthesized unions)
+ */
+function convertArrayElementType(
+  ast: TypeExpression & { type: "primitive_type" | "literal_type" | "union_type" },
+): ModelPrimitiveType | ModelLiteralType | ModelUnionType {
+  switch (ast.type) {
+    case "primitive_type":
+      return { kind: "primitive", name: ast.name };
+    case "literal_type":
+      return { kind: "literal", value: ast.value };
+    case "union_type":
+      return {
+        kind: "union",
+        members: ast.members.map((m) => {
+          if (m.type === "primitive_type") {
+            return { kind: "primitive" as const, name: m.name };
+          } else if (m.type === "literal_type") {
+            return { kind: "literal" as const, value: m.value };
+          } else {
+            // Nested arrays in union - recursively convert
+            return {
+              kind: "array" as const,
+              elementType: convertArrayElementType(m.elementType),
             };
           }
         }),
