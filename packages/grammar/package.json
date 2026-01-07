@@ -14,7 +14,9 @@
     "src/**"
   ],
   "scripts": {
-    "build": "tree-sitter build",
+    "build": "tree-sitter generate && node scripts/check-rebuild.mjs --fix",
+    "build:native": "pnpm exec node-gyp rebuild",
+    "check:native": "node scripts/check-rebuild.mjs",
     "test": "tree-sitter test",
     "types:check": "tsc --noEmit"
   },

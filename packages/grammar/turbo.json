@@ -3,7 +3,8 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["src/**"]
+      "inputs": ["grammar.js", "src/scanner.c", "bindings/**"],
+      "outputs": ["src/**", "build/**"]
     }
   }
 }

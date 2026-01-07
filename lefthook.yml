@@ -13,3 +13,7 @@ pre-commit:
     - name: "turbo: build + test + type-check"
       run: pnpm exec turbo run --output-logs new-only --no-daemon build types:check test
       glob: "{*.ts,*.tsx,tsconfig.json}"
+    - name: "grammar: check native binding"
+      root: "packages/grammar"
+      glob: "{packages/grammar/grammar.js,packages/grammar/src/*.c}"
+      run: node scripts/check-rebuild.mjs
