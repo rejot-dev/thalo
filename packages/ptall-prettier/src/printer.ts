@@ -89,12 +89,23 @@ const printContentLine = (node: SyntaxNode): Doc => {
   return ["  ", text];
 };
 
+const printCommentLine = (node: SyntaxNode): Doc => {
+  // comment_line contains a comment child
+  const comment = node.children.find((c) => c.type === "comment");
+  if (comment) {
+    return ["  ", comment.text];
+  }
+  // Fallback: extract comment from node text
+  const text = node.text.replace(/^[\r\n\s]+/, "").replace(/[\r\n]+$/, "");
+  return ["  ", text];
+};
+
 const printContent = (node: SyntaxNode): Doc => {
   const parts: Doc[] = [];
 
-  // Get visible content children (markdown_header and content_line)
+  // Get visible content children (markdown_header, content_line, and comment_line)
   const contentChildren = node.children.filter(
-    (c) => c.type === "markdown_header" || c.type === "content_line",
+    (c) => c.type === "markdown_header" || c.type === "content_line" || c.type === "comment_line",
   );
 
   let lastRow = -1;
@@ -115,6 +126,8 @@ const printContent = (node: SyntaxNode): Doc => {
     parts.push(hardline);
     if (child.type === "markdown_header") {
       parts.push(printMarkdownHeader(child));
+    } else if (child.type === "comment_line") {
+      parts.push(printCommentLine(child));
     } else {
       parts.push(printContentLine(child));
     }
@@ -138,9 +151,16 @@ const printInstanceEntry = (node: SyntaxNode): Doc => {
     parts.push(printInstanceHeader(header));
   }
 
-  const metadataNodes = node.children.filter((c) => c.type === "metadata");
-  for (const meta of metadataNodes) {
-    parts.push(hardline, printMetadata(meta));
+  // Handle both metadata and comment_line nodes (they can be interleaved)
+  const metadataAndComments = node.children.filter(
+    (c) => c.type === "metadata" || c.type === "comment_line",
+  );
+  for (const child of metadataAndComments) {
+    if (child.type === "metadata") {
+      parts.push(hardline, printMetadata(child));
+    } else {
+      parts.push(hardline, printCommentLine(child));
+    }
   }
 
   const content = node.children.find((c) => c.type === "content");
@@ -443,16 +463,43 @@ const printEntry = (node: SyntaxNode): Doc => {
   return "";
 };
 
-const printSourceFile = (node: SyntaxNode): Doc => {
-  const entries = node.children.filter((c) => c.type === "entry");
+const printTopLevelComment = (node: SyntaxNode): Doc => {
+  return node.text;
+};
 
-  if (entries.length === 0) {
+const printSourceFile = (node: SyntaxNode): Doc => {
+  // Get entries and top-level comments
+  const relevantChildren = node.children.filter((c) => c.type === "entry" || c.type === "comment");
+
+  if (relevantChildren.length === 0) {
     return "";
   }
 
-  // Join entries with double newlines (blank line between entries)
-  const docs = entries.map((entry) => printEntry(entry));
-  return [join([hardline, hardline], docs), hardline];
+  // Build output preserving comments and entries with proper spacing
+  const docs: Doc[] = [];
+  let lastWasEntry = false;
+
+  for (const child of relevantChildren) {
+    if (child.type === "comment") {
+      // Add blank line before comment if previous was an entry
+      if (lastWasEntry) {
+        docs.push(hardline, hardline);
+      } else if (docs.length > 0) {
+        docs.push(hardline);
+      }
+      docs.push(printTopLevelComment(child));
+      lastWasEntry = false;
+    } else {
+      // Entry - add blank line between entries/after comments
+      if (docs.length > 0) {
+        docs.push(hardline, hardline);
+      }
+      docs.push(printEntry(child));
+      lastWasEntry = true;
+    }
+  }
+
+  return [...docs, hardline];
 };
 
 export const printer: PtallPrinter = {
@@ -480,6 +527,10 @@ export const printer: PtallPrinter = {
         return printMarkdownHeader(node);
       case "content_line":
         return printContentLine(node);
+      case "comment_line":
+        return printCommentLine(node);
+      case "comment":
+        return printTopLevelComment(node);
       case "metadata_block":
         return printMetadataBlock(node);
       case "sections_block":

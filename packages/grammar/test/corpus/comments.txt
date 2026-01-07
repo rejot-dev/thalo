@@ -1,0 +1,478 @@
+==================
+comment line after metadata
+==================
+
+2026-01-05T18:11 create lore "Entry with comment"
+  type: fact
+  // this is a comment
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment)))))
+
+==================
+comment line between metadata
+==================
+
+2026-01-05T18:11 create reference "Entry with interleaved comment"
+  url: "https://example.com"
+  // commenting out the next field
+  ref-type: article
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+multiple comment lines
+==================
+
+2026-01-05T18:11 create lore "Entry with multiple comments"
+  type: fact
+  // first comment
+  // second comment
+  subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment))
+      (comment_line
+        (comment))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+comment line before content
+==================
+
+2026-01-05T18:11 create lore "Entry with comment before content"
+  type: fact
+  // TODO: add more metadata later
+
+  # Description
+  The actual content.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+comment line in content section
+==================
+
+2026-01-05T18:11 create opinion "Opinion with comment in content"
+  confidence: high
+
+  # Claim
+  This is the main claim.
+  // Note: need to research this more
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (comment_line
+          (comment))))))
+
+==================
+comment line between content sections
+==================
+
+2026-01-05T18:11 create opinion "Opinion with comments between sections"
+  confidence: high
+
+  # Claim
+  Main claim here.
+  // transition comment
+
+  # Reasoning
+  Supporting reasoning.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (comment_line
+          (comment))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+comment only in metadata section (no other metadata)
+==================
+
+2026-01-05T18:11 create journal "Journal with only comment"
+  // all metadata commented out
+
+  # Thoughts
+  Some thoughts.
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (comment_line
+        (comment))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+inline comment after metadata value
+==================
+
+2026-01-05T18:11 create lore "Entry with inline comment"
+  type: fact // this is inline
+  subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+comment at end of entry
+==================
+
+2026-01-05T18:11 create lore "Entry ending with comment"
+  type: fact
+  // end comment
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment)))))
+
+==================
+comment with special characters
+==================
+
+2026-01-05T18:11 create lore "Entry with special comment"
+  type: fact
+  // TODO: fix this! @user #tag (see: https://example.com)
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment)))))
+
+==================
+unindented comment before entry
+==================
+
+// This is a file-level comment
+2026-01-05T18:11 create lore "Entry after comment"
+  type: fact
+
+---
+
+(source_file
+  (comment)
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+unindented comment between entries
+==================
+
+2026-01-05T18:11 create lore "First entry"
+  type: fact
+
+// Comment between entries
+2026-01-05T18:12 create lore "Second entry"
+  type: insight
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))))
+  (comment)
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+unindented comment at end of file
+==================
+
+2026-01-05T18:11 create lore "Entry before comment"
+  type: fact
+
+// Comment at end of file
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))))
+  (comment))
+
+==================
+multiple unindented comments
+==================
+
+// First top-level comment
+// Second top-level comment
+2026-01-05T18:11 create lore "Entry with comments"
+  type: fact
+
+---
+
+(source_file
+  (comment)
+  (comment)
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value)))))
+
+==================
+unindented comment directly after entry (no blank line)
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  type: fact
+// Comment right after entry
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))))
+  (comment))
+
+==================
+mixed indented and unindented comments
+==================
+
+// Top-level comment
+2026-01-05T18:11 create lore "Entry"
+  type: fact
+  // Indented comment in metadata
+
+// Another top-level comment
+
+---
+
+(source_file
+  (comment)
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))
+      (comment_line
+        (comment))))
+  (comment))
+
+==================
+unindented comment in metadata terminates entry (causes error)
+:error
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  type: fact
+// unindented comment terminates entry
+  subject: acme
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value))))
+  (comment)
+  (ERROR
+    (ERROR)))

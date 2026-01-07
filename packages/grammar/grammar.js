@@ -3,8 +3,6 @@ export default grammar({
 
   extras: ($) => [" ", $.comment],
 
-  // conflicts: ($) => [[$.instance_entry]], // No longer needed with external scanner
-
   // External scanner handles indentation-sensitive tokens
   externals: ($) => [
     $["_indent"], // Newline + proper indentation (2+ spaces or tab)
@@ -18,6 +16,9 @@ export default grammar({
     // Comments (primarily for highlight tests, but useful for documentation)
     comment: (_) => token(seq("//", /[^\r\n]*/)),
 
+    // Standalone comment line (indented comment on its own line)
+    comment_line: ($) => seq($["_indent"], $.comment),
+
     // Entry can be either an instance (create/update) or schema (define-entity/alter-entity)
     entry: ($) => choice($.instance_entry, $.schema_entry),
 
@@ -25,9 +26,10 @@ export default grammar({
     // Instance entries (create/update lore, opinion, etc.)
     // ===================
 
-    // Instance entry: header followed by optional metadata and content
+    // Instance entry: header followed by optional metadata/comments and content
     // _indent tokens handle the newline + indentation at start of each line
-    instance_entry: ($) => seq($.instance_header, repeat($.metadata), optional($.content)),
+    instance_entry: ($) =>
+      seq($.instance_header, repeat(choice($.metadata, $.comment_line)), optional($.content)),
 
     instance_header: ($) =>
       seq(
@@ -171,12 +173,13 @@ export default grammar({
     // Content MUST start with a section header (# Section Name)
     // Blank lines before content are optional (more lenient whitespace)
     // External _content_blank handles blank/whitespace-only lines properly
+    // Note: comment_line only allowed after the first markdown_header to avoid conflicts
     content: ($) =>
       prec.right(
         seq(
           repeat($["_content_blank"]),
           $.markdown_header,
-          repeat(choice($.markdown_header, $.content_line, $["_content_blank"])),
+          repeat(choice($.markdown_header, $.content_line, $["_content_blank"], $.comment_line)),
         ),
       ),
 
@@ -194,8 +197,8 @@ export default grammar({
     // Text after markdown hashes (starts with space)
     md_heading_text: (_) => token.immediate(/ [^\r\n]+/),
 
-    // Regular content text (must not start with #)
-    content_text: (_) => token.immediate(/[^#\r\n][^\r\n]*/),
+    // Regular content text (must not start with # or //)
+    content_text: (_) => token.immediate(/[^#/\r\n][^\r\n]*|\/[^/\r\n][^\r\n]*/),
 
     // ===================
     // Common tokens
