@@ -32,7 +32,7 @@ describe("parse error handling", () => {
     it("should report error location with line and column", () => {
       // Missing timestamp causes a parse error
       const source = `create lore "Title"
-  type: fact`;
+  type: "fact"`;
       const tree = parsePtall(source);
       const errorNodes = findErrorNodes(tree.rootNode);
 
@@ -45,7 +45,7 @@ describe("parse error handling", () => {
     it("should show context line with pointer", () => {
       // Invalid directive causes a parse error
       const source = `2026-01-05T15:30 invalid lore "Title"
-  type: fact`;
+  type: "fact"`;
       const tree = parsePtall(source);
       const errorNodes = findErrorNodes(tree.rootNode);
 
@@ -74,49 +74,50 @@ describe("parse error handling", () => {
 
       const message = formatParseErrors(source, errorNodes);
 
-      expect(message).toContain("section header");
-      expect(message).toContain("indented");
+      // New hint is about metadata values needing to be quoted
+      expect(message).toContain("Hint:");
+      expect(message).toContain("quoted strings");
     });
   });
 
   describe("prettier integration", () => {
     it("should throw descriptive error for missing timestamp", async () => {
       const input = `create lore "Title"
-  type: fact`;
+  type: "fact"`;
 
       await expect(format(input)).rejects.toThrow(/Line \d+, column \d+/);
     });
 
     it("should throw descriptive error for invalid directive", async () => {
       const input = `2026-01-05T15:30 invalid lore "Title"
-  type: fact`;
+  type: "fact"`;
 
       await expect(format(input)).rejects.toThrow(/Parse error/i);
     });
 
     it("should throw descriptive error for unclosed quote", async () => {
       const input = `2026-01-05T15:30 create lore "Unclosed title
-  type: fact`;
+  type: "fact"`;
 
       await expect(format(input)).rejects.toThrow(/Parse error/i);
     });
 
-    it("should include hint about indentation in error", async () => {
+    it("should include hint about metadata values", async () => {
       // Missing timestamp - will produce an error with the hint
       const input = `create lore "Title"`;
 
-      await expect(format(input)).rejects.toThrow(/indented/);
+      await expect(format(input)).rejects.toThrow(/quoted strings/);
     });
 
-    it("should include hint about section headers", async () => {
+    it("should include example in hint", async () => {
       const input = `create lore "Title"`;
 
-      await expect(format(input)).rejects.toThrow(/section header/);
+      await expect(format(input)).rejects.toThrow(/type: "fact"/);
     });
 
     it("should show specific error location", async () => {
       const input = `2026-01-05T15:30 invalid lore "Title"
-  type: fact`;
+  type: "fact"`;
 
       try {
         await format(input);
@@ -131,7 +132,7 @@ describe("parse error handling", () => {
 
     it("should not throw for valid input", async () => {
       const input = `2026-01-05T15:30 create lore "Valid title" #tag
-  type: fact
+  type: "fact"
 `;
 
       await expect(format(input)).resolves.toBeDefined();
@@ -140,7 +141,7 @@ describe("parse error handling", () => {
     it("should not throw for valid input with various indentation", async () => {
       // The grammar actually accepts 1-space indentation
       const input = `2026-01-05T15:30 create lore "Title"
- type: fact
+ type: "fact"
 `;
 
       // This should not throw - grammar is lenient

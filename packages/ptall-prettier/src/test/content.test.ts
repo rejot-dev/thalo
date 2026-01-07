@@ -12,7 +12,7 @@ const format = async (code: string): Promise<string> => {
 describe("content formatting", () => {
   it("should format content with markdown headers", async () => {
     const input = `2026-01-05T16:00 create opinion "TypeScript enums" #typescript
-  confidence: high
+  confidence: "high"
 
   # Claim
   TypeScript enums are a code smell.
@@ -24,7 +24,7 @@ describe("content formatting", () => {
     const output = await format(input);
 
     expect(output).toBe(`2026-01-05T16:00 create opinion "TypeScript enums" #typescript
-  confidence: high
+  confidence: "high"
 
   # Claim
   TypeScript enums are a code smell.
@@ -36,7 +36,7 @@ describe("content formatting", () => {
 
   it("should format content with multi-level headers", async () => {
     const input = `2026-01-05T16:00 create opinion "Complex opinion" #test
-  confidence: high
+  confidence: "high"
 
   # Main Section
   Introduction text.
@@ -51,7 +51,7 @@ describe("content formatting", () => {
     const output = await format(input);
 
     expect(output).toBe(`2026-01-05T16:00 create opinion "Complex opinion" #test
-  confidence: high
+  confidence: "high"
 
   # Main Section
   Introduction text.
@@ -66,7 +66,7 @@ describe("content formatting", () => {
 
   it("should normalize multiple spaces in content section headers", async () => {
     const input = `2026-01-05T16:00 create opinion "Test" #test
-  confidence: high
+  confidence: "high"
 
   # Key  Takeaways
   Some content.
@@ -78,7 +78,7 @@ describe("content formatting", () => {
     const output = await format(input);
 
     expect(output).toBe(`2026-01-05T16:00 create opinion "Test" #test
-  confidence: high
+  confidence: "high"
 
   # Key Takeaways
   Some content.
@@ -90,7 +90,7 @@ describe("content formatting", () => {
 
   it("should format multi-line content paragraphs", async () => {
     const input = `2026-01-05T18:00 create journal "Thoughts" #reflection
-  mood: contemplative
+  mood: "contemplative"
 
   # Reflection
   This is the first line of a longer paragraph
@@ -104,7 +104,7 @@ describe("content formatting", () => {
     const output = await format(input);
 
     expect(output).toBe(`2026-01-05T18:00 create journal "Thoughts" #reflection
-  mood: contemplative
+  mood: "contemplative"
 
   # Reflection
   This is the first line of a longer paragraph
@@ -118,7 +118,7 @@ describe("content formatting", () => {
 
   it("should preserve blank lines in content", async () => {
     const input = `2026-01-05T18:00 create journal "Spaced thoughts" #test
-  type: reflection
+  type: "reflection"
 
   # Notes
   First thought.
@@ -130,7 +130,7 @@ describe("content formatting", () => {
     const output = await format(input);
 
     expect(output).toBe(`2026-01-05T18:00 create journal "Spaced thoughts" #test
-  type: reflection
+  type: "reflection"
 
   # Notes
   First thought.

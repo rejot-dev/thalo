@@ -460,7 +460,9 @@ const printEntry = (node: SyntaxNode): Doc => {
     return printSchemaEntry(schemaEntry);
   }
 
-  return "";
+  // For unhandled entry types (synthesis_entry, actualize_entry, etc.),
+  // preserve the original text
+  return node.text;
 };
 
 const printComment = (node: SyntaxNode): Doc => {
@@ -469,9 +471,14 @@ const printComment = (node: SyntaxNode): Doc => {
   return isIndented ? ["  ", node.text] : node.text;
 };
 
+const printUnhandledNode = (node: SyntaxNode): Doc => {
+  // Preserve unhandled nodes exactly as they appear in source
+  return node.text;
+};
+
 const printSourceFile = (node: SyntaxNode): Doc => {
-  // Get entries and comments
-  const relevantChildren = node.children.filter((c) => c.type === "entry" || c.type === "comment");
+  // Get all non-whitespace children
+  const relevantChildren = node.children.filter((c) => c.type !== "");
 
   if (relevantChildren.length === 0) {
     return "";
@@ -501,13 +508,21 @@ const printSourceFile = (node: SyntaxNode): Doc => {
         lastWasIndentedComment = false;
       }
       lastWasEntry = false;
-    } else {
+    } else if (child.type === "entry") {
       // Entry - add blank line between entries/after comments
       if (docs.length > 0) {
         docs.push(hardline, hardline);
       }
       docs.push(printEntry(child));
       lastWasEntry = true;
+      lastWasIndentedComment = false;
+    } else {
+      // Unhandled node type - preserve as-is with proper spacing
+      if (docs.length > 0) {
+        docs.push(hardline, hardline);
+      }
+      docs.push(printUnhandledNode(child));
+      lastWasEntry = true; // Treat as entry for spacing purposes
       lastWasIndentedComment = false;
     }
   }

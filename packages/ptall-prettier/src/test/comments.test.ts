@@ -18,14 +18,14 @@ describe("comment formatting", () => {
 
     it("should format comment line after metadata", async () => {
       const input = `2026-01-05T18:00 create lore "Entry with comment"
-  type: fact
+  type: "fact"
   // this is a comment
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry with comment"
-  type: fact
+  type: "fact"
   // this is a comment
 `);
     });
@@ -34,7 +34,7 @@ describe("comment formatting", () => {
       const input = `2026-01-05T18:00 create reference "Entry"
   url: "https://example.com"
   // commenting out the next field
-  ref-type: article
+  ref-type: "article"
 `;
 
       const output = await format(input);
@@ -42,50 +42,50 @@ describe("comment formatting", () => {
       expect(output).toBe(`2026-01-05T18:00 create reference "Entry"
   url: "https://example.com"
   // commenting out the next field
-  ref-type: article
+  ref-type: "article"
 `);
     });
 
     it("should format multiple comment lines", async () => {
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // first comment
   // second comment
-  subject: acme
+  subject: ^acme
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // first comment
   // second comment
-  subject: acme
+  subject: ^acme
 `);
     });
 
     it("should format unindented comment lines between metadata", async () => {
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 // first comment
 // second comment
-  subject: acme
+  subject: ^acme
 `;
 
       const output = await format(input);
 
       // Unindented comments within entries get normalized to indented
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // first comment
   // second comment
-  subject: acme
+  subject: ^acme
 `);
     });
 
     it("should format comment line at end of content section", async () => {
       const input = `2026-01-05T18:00 create opinion "Opinion"
-  confidence: high
+  confidence: "high"
 
   # Claim
   This is the main claim.
@@ -95,7 +95,7 @@ describe("comment formatting", () => {
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create opinion "Opinion"
-  confidence: high
+  confidence: "high"
 
   # Claim
   This is the main claim.
@@ -105,7 +105,7 @@ describe("comment formatting", () => {
 
     it("should format comment line between content sections", async () => {
       const input = `2026-01-05T18:00 create opinion "Opinion"
-  confidence: high
+  confidence: "high"
 
   # Claim
   Main claim here.
@@ -118,7 +118,7 @@ describe("comment formatting", () => {
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create opinion "Opinion"
-  confidence: high
+  confidence: "high"
 
   # Claim
   Main claim here.
@@ -149,7 +149,7 @@ describe("comment formatting", () => {
 
     it("should format comment line before content section", async () => {
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // TODO: add more metadata later
 
   # Description
@@ -159,7 +159,7 @@ describe("comment formatting", () => {
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // TODO: add more metadata later
 
   # Description
@@ -172,7 +172,7 @@ describe("comment formatting", () => {
       const input = `2026-01-05T18:00 create lore "Entry"
   type: "fact"
   // Note about subject
-  subject: acme
+  subject: ^acme
 `;
 
       const output = await format(input);
@@ -180,20 +180,20 @@ describe("comment formatting", () => {
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
   type: "fact"
   // Note about subject
-  subject: acme
+  subject: ^acme
 `);
     });
 
     it("should format comment with special characters", async () => {
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // TODO: fix this! @user #tag (see: https://example.com)
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // TODO: fix this! @user #tag (see: https://example.com)
 `);
     });
@@ -203,7 +203,7 @@ describe("comment formatting", () => {
     it("should format comment before entry", async () => {
       const input = `// This is a file-level comment
 2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 `;
 
       const output = await format(input);
@@ -211,34 +211,34 @@ describe("comment formatting", () => {
       expect(output).toBe(`// This is a file-level comment
 
 2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 `);
     });
 
     it("should format comment between entries", async () => {
       const input = `2026-01-05T18:00 create lore "First"
-  type: fact
+  type: "fact"
 
 // Comment between entries
 2026-01-05T18:01 create lore "Second"
-  type: insight
+  type: "insight"
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "First"
-  type: fact
+  type: "fact"
 
 // Comment between entries
 
 2026-01-05T18:01 create lore "Second"
-  type: insight
+  type: "insight"
 `);
     });
 
     it("should format comment at end of file", async () => {
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 
 // Comment at end of file
 `;
@@ -246,7 +246,7 @@ describe("comment formatting", () => {
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 
 // Comment at end of file
 `);
@@ -256,7 +256,7 @@ describe("comment formatting", () => {
       const input = `// First comment
 // Second comment
 2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 `;
 
       const output = await format(input);
@@ -265,14 +265,14 @@ describe("comment formatting", () => {
 // Second comment
 
 2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 `);
     });
 
     it("should format mixed indented and unindented comments", async () => {
       const input = `// Top-level comment
 2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // Indented comment
 
 // Another top-level comment
@@ -283,7 +283,7 @@ describe("comment formatting", () => {
       expect(output).toBe(`// Top-level comment
 
 2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
   // Indented comment
 
 // Another top-level comment
@@ -292,14 +292,14 @@ describe("comment formatting", () => {
 
     it("should format unindented comment directly after entry (no blank line)", async () => {
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 // Comment right after entry
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 
 // Comment right after entry
 `);
@@ -309,21 +309,21 @@ describe("comment formatting", () => {
       // When an unindented comment is NOT followed by indented content,
       // it ends the current entry and becomes a top-level comment
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 // unindented comment ends entry
 2026-01-05T18:01 create lore "Next entry"
-  subject: acme
+  subject: ^acme
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact
+  type: "fact"
 
 // unindented comment ends entry
 
 2026-01-05T18:01 create lore "Next entry"
-  subject: acme
+  subject: ^acme
 `);
     });
   });
