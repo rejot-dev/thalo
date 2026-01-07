@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { serverCapabilities, tokenLegend } from "./capabilities.js";
+import { serverCapabilities, tokenLegend, ptallFileFilters } from "./capabilities.js";
 
 describe("ptall-lsp", () => {
   describe("serverCapabilities", () => {
@@ -35,6 +35,41 @@ describe("ptall-lsp", () => {
       };
       expect(provider.full).toBe(true);
       expect(provider.range).toBe(false);
+    });
+
+    it("should enable file operations for ptall and markdown files", () => {
+      expect(serverCapabilities.workspace).toBeDefined();
+      const workspace = serverCapabilities.workspace as {
+        fileOperations: {
+          didCreate: { filters: typeof ptallFileFilters };
+          didDelete: { filters: typeof ptallFileFilters };
+          didRename: { filters: typeof ptallFileFilters };
+        };
+      };
+
+      expect(workspace.fileOperations).toBeDefined();
+      expect(workspace.fileOperations.didCreate).toBeDefined();
+      expect(workspace.fileOperations.didDelete).toBeDefined();
+      expect(workspace.fileOperations.didRename).toBeDefined();
+
+      // Check that filters include ptall and md files
+      expect(workspace.fileOperations.didCreate.filters).toEqual(ptallFileFilters);
+      expect(workspace.fileOperations.didDelete.filters).toEqual(ptallFileFilters);
+      expect(workspace.fileOperations.didRename.filters).toEqual(ptallFileFilters);
+    });
+  });
+
+  describe("ptallFileFilters", () => {
+    it("should include ptall file filter", () => {
+      const ptallFilter = ptallFileFilters.find((f) => f.pattern.glob === "**/*.ptall");
+      expect(ptallFilter).toBeDefined();
+      expect(ptallFilter?.scheme).toBe("file");
+    });
+
+    it("should include markdown file filter", () => {
+      const mdFilter = ptallFileFilters.find((f) => f.pattern.glob === "**/*.md");
+      expect(mdFilter).toBeDefined();
+      expect(mdFilter?.scheme).toBe("file");
     });
   });
 

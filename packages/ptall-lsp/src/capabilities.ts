@@ -2,6 +2,23 @@ import type { ServerCapabilities, SemanticTokensLegend } from "vscode-languagese
 import { tokenTypes, tokenModifiers } from "@wilco/ptall";
 
 /**
+ * File operation filter type for LSP file operations.
+ * Describes which files the server is interested in for file operation notifications.
+ */
+interface FileOperationFilter {
+  scheme?: string;
+  pattern: { glob: string };
+}
+
+/**
+ * File operation filters for ptall and markdown files
+ */
+export const ptallFileFilters: FileOperationFilter[] = [
+  { scheme: "file", pattern: { glob: "**/*.ptall" } },
+  { scheme: "file", pattern: { glob: "**/*.md" } },
+];
+
+/**
  * Semantic tokens legend for LSP
  * Maps the token types and modifiers from @wilco/ptall
  */
@@ -45,5 +62,14 @@ export const serverCapabilities: ServerCapabilities = {
     legend: tokenLegend,
     full: true,
     range: false,
+  },
+
+  // Workspace features - file operations for cross-file updates
+  workspace: {
+    fileOperations: {
+      didCreate: { filters: ptallFileFilters },
+      didDelete: { filters: ptallFileFilters },
+      didRename: { filters: ptallFileFilters },
+    },
   },
 };

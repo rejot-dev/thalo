@@ -7,6 +7,7 @@ import {
   InitializeResult,
   type Connection,
   DidChangeConfigurationNotification,
+  FileChangeType,
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { Workspace, type FileType } from "@wilco/ptall";
@@ -306,6 +307,132 @@ export function startServer(connection: Connection = createConnection()): void {
     });
 
     console.error(`[ptall-lsp] Closed: ${params.textDocument.uri}`);
+  });
+
+  // File watcher notifications - handles external file changes
+  connection.onDidChangeWatchedFiles((params) => {
+    for (const change of params.changes) {
+      const filePath = uriToPath(change.uri);
+
+      // Only process ptall and markdown files
+      if (!filePath.endsWith(".ptall") && !filePath.endsWith(".md")) {
+        continue;
+      }
+
+      // Skip if the file is currently open (handled by document lifecycle)
+      if (state.documents.has(change.uri)) {
+        continue;
+      }
+
+      switch (change.type) {
+        case FileChangeType.Created:
+        case FileChangeType.Changed: {
+          // Load/reload the file into workspace
+          try {
+            if (fs.existsSync(filePath)) {
+              const source = fs.readFileSync(filePath, "utf-8");
+              const fileType = getFileType(change.uri);
+              state.workspace.addDocument(source, { filename: filePath, fileType });
+              console.error(`[ptall-lsp] Loaded external file: ${filePath}`);
+            }
+          } catch (err) {
+            console.error(
+              `[ptall-lsp] Error loading ${filePath}: ${err instanceof Error ? err.message : err}`,
+            );
+          }
+          break;
+        }
+        case FileChangeType.Deleted: {
+          state.workspace.removeDocument(filePath);
+          console.error(`[ptall-lsp] Removed deleted file: ${filePath}`);
+          break;
+        }
+      }
+    }
+
+    // Refresh diagnostics for open documents since file changes may affect them
+    refreshAllDiagnostics(state);
+  });
+
+  // File operation notifications - handles user-initiated file operations in the editor
+  connection.workspace.onDidCreateFiles((params) => {
+    for (const file of params.files) {
+      const filePath = uriToPath(file.uri);
+
+      // Only process ptall and markdown files
+      if (!filePath.endsWith(".ptall") && !filePath.endsWith(".md")) {
+        continue;
+      }
+
+      // Load the new file into workspace
+      try {
+        if (fs.existsSync(filePath)) {
+          const source = fs.readFileSync(filePath, "utf-8");
+          const fileType = getFileType(file.uri);
+          state.workspace.addDocument(source, { filename: filePath, fileType });
+          console.error(`[ptall-lsp] Loaded created file: ${filePath}`);
+        }
+      } catch (err) {
+        console.error(
+          `[ptall-lsp] Error loading created file ${filePath}: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
+    // Refresh diagnostics since new files may resolve broken references
+    refreshAllDiagnostics(state);
+  });
+
+  connection.workspace.onDidDeleteFiles((params) => {
+    for (const file of params.files) {
+      const filePath = uriToPath(file.uri);
+
+      // Only process ptall and markdown files
+      if (!filePath.endsWith(".ptall") && !filePath.endsWith(".md")) {
+        continue;
+      }
+
+      state.workspace.removeDocument(filePath);
+      console.error(`[ptall-lsp] Removed file: ${filePath}`);
+    }
+
+    // Refresh diagnostics since deleted files may break references
+    refreshAllDiagnostics(state);
+  });
+
+  connection.workspace.onDidRenameFiles((params) => {
+    for (const file of params.files) {
+      const oldPath = uriToPath(file.oldUri);
+      const newPath = uriToPath(file.newUri);
+
+      // Only process ptall and markdown files
+      const oldIsPtall = oldPath.endsWith(".ptall") || oldPath.endsWith(".md");
+      const newIsPtall = newPath.endsWith(".ptall") || newPath.endsWith(".md");
+
+      if (oldIsPtall) {
+        state.workspace.removeDocument(oldPath);
+        console.error(`[ptall-lsp] Removed renamed file: ${oldPath}`);
+      }
+
+      if (newIsPtall) {
+        // Load the file at its new location
+        try {
+          if (fs.existsSync(newPath)) {
+            const source = fs.readFileSync(newPath, "utf-8");
+            const fileType = getFileType(file.newUri);
+            state.workspace.addDocument(source, { filename: newPath, fileType });
+            console.error(`[ptall-lsp] Loaded renamed file: ${newPath}`);
+          }
+        } catch (err) {
+          console.error(
+            `[ptall-lsp] Error loading renamed file ${newPath}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      }
+    }
+
+    // Refresh diagnostics since renames may affect references
+    refreshAllDiagnostics(state);
   });
 
   // Go to Definition
