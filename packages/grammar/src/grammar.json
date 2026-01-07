@@ -34,19 +34,6 @@
         ]
       }
     },
-    "comment_line": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "_indent"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "comment"
-        }
-      ]
-    },
     "entry": {
       "type": "CHOICE",
       "members": [
@@ -70,17 +57,8 @@
         {
           "type": "REPEAT",
           "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "metadata"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "comment_line"
-              }
-            ]
+            "type": "SYMBOL",
+            "name": "metadata"
           }
         },
         {
@@ -364,17 +342,6 @@
         ]
       }
     },
-    "_section_lines": {
-      "type": "PREC_RIGHT",
-      "value": 0,
-      "content": {
-        "type": "REPEAT1",
-        "content": {
-          "type": "SYMBOL",
-          "name": "section_definition"
-        }
-      }
-    },
     "remove_metadata_block": {
       "type": "PREC",
       "value": 2,
@@ -413,6 +380,17 @@
             }
           }
         ]
+      }
+    },
+    "_section_lines": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "REPEAT1",
+        "content": {
+          "type": "SYMBOL",
+          "name": "section_definition"
+        }
       }
     },
     "_metadata_header": {
@@ -848,10 +826,6 @@
                 {
                   "type": "SYMBOL",
                   "name": "_content_blank"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "comment_line"
                 }
               ]
             }
@@ -915,14 +889,10 @@
       "type": "IMMEDIATE_TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "[^#/\\r\\n][^\\r\\n]*|\\/[^/\\r\\n][^\\r\\n]*"
+        "value": "[^#\\r\\n][^\\r\\n]*"
       }
     },
     "_nl": {
-      "type": "PATTERN",
-      "value": "\\r?\\n"
-    },
-    "_eol": {
       "type": "PATTERN",
       "value": "\\r?\\n"
     },

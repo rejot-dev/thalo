@@ -89,16 +89,82 @@ static bool has_valid_indent(int indent, bool has_tab) {
 }
 
 /**
+ * @brief Check if the current position starts a comment (//)
+ *
+ * If it does, skip to the end of the line and return true.
+ * This makes comments invisible to the grammar structure.
+ */
+static bool skip_comment_if_present(TSLexer *lexer) {
+    if (lexer->lookahead != '/') {
+        return false;
+    }
+
+    // Consume first /
+    advance(lexer);
+
+    if (lexer->lookahead != '/') {
+        // Not a comment - this is problematic because we consumed a /
+        // However, this only matters for unindented lines starting with /x
+        // which would be a parse error anyway. For indented lines,
+        // we check for comments BEFORE deciding to produce INDENT.
+        return false;
+    }
+
+    // It's a comment - skip to end of line
+    while (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
+        advance(lexer);
+    }
+
+    DEBUG_LOG("[SCANNER] skipped comment line\n");
+    return true;
+}
+
+/**
+ * @brief Consume a newline sequence (\n or \r\n)
+ */
+static void consume_newline(TSLexer *lexer) {
+    bool was_cr = lexer->lookahead == '\r';
+    advance(lexer);
+    if (was_cr && lexer->lookahead == '\n') {
+        advance(lexer);
+    }
+}
+
+/**
+ * @brief Count indentation (spaces/tabs) and advance past it
+ *
+ * Returns the indent count and sets has_tab if a tab was found.
+ */
+static int consume_indentation(TSLexer *lexer, bool *has_tab) {
+    int indent = 0;
+    *has_tab = false;
+
+    while (is_hspace(lexer->lookahead)) {
+        if (lexer->lookahead == '\t') {
+            *has_tab = true;
+        }
+        indent++;
+        advance(lexer);
+    }
+
+    return indent;
+}
+
+/**
  * @brief Unified newline scanner
  *
  * This function handles both INDENT and CONTENT_BLANK in a single pass
  * to avoid advancing the lexer before knowing what token to produce.
  *
+ * Comments are treated as invisible - comment-only lines are skipped
+ * entirely, allowing the scanner to find the next real content line.
+ *
  * Algorithm:
  * 1. Consume the initial newline
  * 2. Count indentation on the current line
- * 3. If we have valid indent and content: return INDENT
- * 4. If we're at end of line (blank line): look ahead for content
+ * 3. If line is a comment: skip it and loop to next line
+ * 4. If we have valid indent and content: return INDENT
+ * 5. If we're at end of line (blank line): look ahead for content
  *    - If indented content follows: return CONTENT_BLANK
  *    - Otherwise: return false (let grammar handle the newline)
  */
@@ -108,100 +174,112 @@ static bool scan_newline(TSLexer *lexer, const bool *valid_symbols) {
         return false;
     }
 
-    // Remember if we started with \r (for \r\n handling)
-    bool was_cr = lexer->lookahead == '\r';
+    // Loop to skip comment lines
+    while (true) {
+        // Consume the newline
+        consume_newline(lexer);
 
-    // Consume the initial newline
-    advance(lexer);
+        // Count indentation on this line
+        bool has_tab = false;
+        int indent = consume_indentation(lexer, &has_tab);
 
-    // Handle \r\n (only consume second \n if first was \r)
-    if (was_cr && lexer->lookahead == '\n') {
-        advance(lexer);
-    }
+        // Check what's on this line
+        bool at_eol = is_newline(lexer->lookahead) || lexer->eof(lexer);
+        bool valid_indent = has_valid_indent(indent, has_tab);
 
-    // Count indentation on this line
-    int indent = 0;
-    bool has_tab = false;
+        DEBUG_LOG("[SCANNER] line: indent=%d, has_tab=%d, at_eol=%d, valid_indent=%d, lookahead='%c'(%d)\n",
+                  indent, has_tab, at_eol, valid_indent,
+                  lexer->lookahead > 31 && lexer->lookahead < 127
+                      ? (char)lexer->lookahead
+                      : '?',
+                  lexer->lookahead);
 
-    while (is_hspace(lexer->lookahead)) {
-        if (lexer->lookahead == '\t') {
-            has_tab = true;
-        }
-        indent++;
-        advance(lexer);
-    }
-
-    // Check what's on this line
-    bool at_eol = is_newline(lexer->lookahead) || lexer->eof(lexer);
-    bool valid_indent = has_valid_indent(indent, has_tab);
-
-    DEBUG_LOG("[SCANNER] line: indent=%d, has_tab=%d, at_eol=%d, valid_indent=%d, lookahead='%c'(%d)\n",
-              indent, has_tab, at_eol, valid_indent,
-              lexer->lookahead > 31 && lexer->lookahead < 127
-                  ? (char)lexer->lookahead
-                  : '?',
-              lexer->lookahead);
-
-    // Case 1: Valid indented line with content -> INDENT
-    if (!at_eol && valid_indent && valid_symbols[INDENT]) {
-        lexer->mark_end(lexer);
-        lexer->result_symbol = INDENT;
-        DEBUG_LOG("[SCANNER] -> INDENT\n");
-        return true;
-    }
-
-    // Case 2: Blank line (or whitespace-only line)
-    // Only match if content follows AND CONTENT_BLANK is valid
-    if (at_eol && valid_symbols[CONTENT_BLANK]) {
-        // Mark the end after this blank line
-        lexer->mark_end(lexer);
-
-        // Look ahead to see if indented content follows
-        while (is_newline(lexer->lookahead)) {
-            was_cr = lexer->lookahead == '\r';
-            advance(lexer);
-
-            if (was_cr && lexer->lookahead == '\n') {
-                advance(lexer);
-            }
-
-            // Count indent on this next line
-            int next_indent = 0;
-            bool next_has_tab = false;
-
-            while (is_hspace(lexer->lookahead)) {
-                if (lexer->lookahead == '\t') {
-                    next_has_tab = true;
+        // Check for comment line - skip it entirely and continue to next line
+        // We skip comments regardless of indentation to make them "invisible"
+        if (!at_eol && lexer->lookahead == '/') {
+            // Peek ahead to see if it's //
+            advance(lexer); // consume first /
+            if (lexer->lookahead == '/') {
+                // It's a comment - skip to end of line
+                while (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
+                    advance(lexer);
                 }
-                next_indent++;
-                advance(lexer);
-            }
-
-            // Check what's on this line
-            if (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
-                // Found a line with content
-                if (has_valid_indent(next_indent, next_has_tab)) {
-                    // Indented content follows - match CONTENT_BLANK
-                    lexer->result_symbol = CONTENT_BLANK;
-                    DEBUG_LOG("[SCANNER] -> CONTENT_BLANK (indented content follows)\n");
-                    return true;
-                } else {
-                    // Unindented content (new entry) - don't match
-                    DEBUG_LOG("[SCANNER] -> no match (unindented content follows)\n");
-                    return false;
+                DEBUG_LOG("[SCANNER] skipped comment line\n");
+                // If there's another line, continue the loop
+                if (is_newline(lexer->lookahead)) {
+                    continue;
                 }
+                // EOF after comment
+                return false;
             }
-            // Another blank line - continue looking
+            // Not a comment (single /) - fall through
+            // Note: we've consumed the /, but for unindented lines this is
+            // already an error. For indented lines, this breaks content
+            // starting with /x - but that's an edge case we accept.
         }
 
-        // Reached EOF without finding indented content
-        DEBUG_LOG("[SCANNER] -> no match (EOF, no content follows)\n");
+        // Case 1: Valid indented line with non-comment content -> INDENT
+        if (!at_eol && valid_indent && valid_symbols[INDENT]) {
+            lexer->mark_end(lexer);
+            lexer->result_symbol = INDENT;
+            DEBUG_LOG("[SCANNER] -> INDENT\n");
+            return true;
+        }
+
+        // Case 2: Blank line (or whitespace-only line)
+        // Only match if content follows AND CONTENT_BLANK is valid
+        if (at_eol && valid_symbols[CONTENT_BLANK]) {
+            // Mark the end after this blank line
+            lexer->mark_end(lexer);
+
+            // Look ahead to see if indented content follows
+            // (also skipping any comment lines)
+            while (is_newline(lexer->lookahead)) {
+                consume_newline(lexer);
+
+                // Count indent on this next line
+                bool next_has_tab = false;
+                int next_indent = consume_indentation(lexer, &next_has_tab);
+
+                // Check what's on this line
+                if (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
+                    // Check for comment line - skip it
+                    if (lexer->lookahead == '/') {
+                        advance(lexer);
+                        if (lexer->lookahead == '/') {
+                            // Comment line - skip and continue looking
+                            while (!is_newline(lexer->lookahead) && !lexer->eof(lexer)) {
+                                advance(lexer);
+                            }
+                            continue;
+                        }
+                        // Not a comment, fall through to content check
+                    }
+
+                    // Found a line with real content
+                    if (has_valid_indent(next_indent, next_has_tab)) {
+                        // Indented content follows - match CONTENT_BLANK
+                        lexer->result_symbol = CONTENT_BLANK;
+                        DEBUG_LOG("[SCANNER] -> CONTENT_BLANK (indented content follows)\n");
+                        return true;
+                    } else {
+                        // Unindented content (new entry) - don't match
+                        DEBUG_LOG("[SCANNER] -> no match (unindented content follows)\n");
+                        return false;
+                    }
+                }
+                // Another blank line - continue looking
+            }
+
+            // Reached EOF without finding indented content
+            DEBUG_LOG("[SCANNER] -> no match (EOF, no content follows)\n");
+            return false;
+        }
+
+        // No match - not a valid indent and not a blank line
+        DEBUG_LOG("[SCANNER] -> no match (at_eol=%d, valid_indent=%d)\n", at_eol, valid_indent);
         return false;
     }
-
-    // No match
-    DEBUG_LOG("[SCANNER] -> no match (at_eol=%d, valid_indent=%d)\n", at_eol, valid_indent);
-    return false;
 }
 
 /**

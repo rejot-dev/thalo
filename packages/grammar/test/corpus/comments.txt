@@ -1,5 +1,5 @@
 ==================
-comment line after metadata
+comment line after metadata (captured at top level via extras)
 ==================
 
 2026-01-05T18:11 create lore "Entry with comment"
@@ -18,12 +18,11 @@ comment line after metadata
         (title))
       (metadata
         (key)
-        (value))
-      (comment_line
-        (comment)))))
+        (value))))
+  (comment))
 
 ==================
-comment line between metadata
+comment line between metadata (skipped by scanner, entry continues)
 ==================
 
 2026-01-05T18:11 create reference "Entry with interleaved comment"
@@ -44,14 +43,12 @@ comment line between metadata
       (metadata
         (key)
         (value))
-      (comment_line
-        (comment))
       (metadata
         (key)
         (value)))))
 
 ==================
-multiple comment lines
+multiple comment lines (skipped by scanner, entry continues)
 ==================
 
 2026-01-05T18:11 create lore "Entry with multiple comments"
@@ -73,16 +70,12 @@ multiple comment lines
       (metadata
         (key)
         (value))
-      (comment_line
-        (comment))
-      (comment_line
-        (comment))
       (metadata
         (key)
         (value)))))
 
 ==================
-comment line before content
+comment line before content (skipped by scanner, content follows)
 ==================
 
 2026-01-05T18:11 create lore "Entry with comment before content"
@@ -105,8 +98,6 @@ comment line before content
       (metadata
         (key)
         (value))
-      (comment_line
-        (comment))
       (content
         (markdown_header
           (md_indicator)
@@ -115,7 +106,7 @@ comment line before content
           (content_text))))))
 
 ==================
-comment line in content section
+comment line in content section (captured at top level via extras)
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with comment in content"
@@ -143,12 +134,11 @@ comment line in content section
           (md_indicator)
           (md_heading_text))
         (content_line
-          (content_text))
-        (comment_line
-          (comment))))))
+          (content_text)))))
+  (comment))
 
 ==================
-comment line between content sections
+comment line between content sections (skipped by scanner, content continues)
 ==================
 
 2026-01-05T18:11 create opinion "Opinion with comments between sections"
@@ -180,8 +170,6 @@ comment line between content sections
           (md_heading_text))
         (content_line
           (content_text))
-        (comment_line
-          (comment))
         (markdown_header
           (md_indicator)
           (md_heading_text))
@@ -189,7 +177,7 @@ comment line between content sections
           (content_text))))))
 
 ==================
-comment only in metadata section (no other metadata)
+comment only in metadata section - allows content after
 ==================
 
 2026-01-05T18:11 create journal "Journal with only comment"
@@ -208,8 +196,6 @@ comment only in metadata section (no other metadata)
         (instance_directive)
         (entity)
         (title))
-      (comment_line
-        (comment))
       (content
         (markdown_header
           (md_indicator)
@@ -218,7 +204,7 @@ comment only in metadata section (no other metadata)
           (content_text))))))
 
 ==================
-inline comment after metadata value
+inline comment after metadata value (via extras)
 ==================
 
 2026-01-05T18:11 create lore "Entry with inline comment"
@@ -243,7 +229,7 @@ inline comment after metadata value
         (value)))))
 
 ==================
-comment at end of entry
+comment at end of entry (captured at top level via extras)
 ==================
 
 2026-01-05T18:11 create lore "Entry ending with comment"
@@ -262,12 +248,11 @@ comment at end of entry
         (title))
       (metadata
         (key)
-        (value))
-      (comment_line
-        (comment)))))
+        (value))))
+  (comment))
 
 ==================
-comment with special characters
+comment with special characters (captured at top level via extras)
 ==================
 
 2026-01-05T18:11 create lore "Entry with special comment"
@@ -286,12 +271,11 @@ comment with special characters
         (title))
       (metadata
         (key)
-        (value))
-      (comment_line
-        (comment)))))
+        (value))))
+  (comment))
 
 ==================
-unindented comment before entry
+unindented comment before entry (via extras)
 ==================
 
 // This is a file-level comment
@@ -314,7 +298,7 @@ unindented comment before entry
         (value)))))
 
 ==================
-unindented comment between entries
+unindented comment between entries (via extras)
 ==================
 
 2026-01-05T18:11 create lore "First entry"
@@ -350,7 +334,7 @@ unindented comment between entries
         (value)))))
 
 ==================
-unindented comment at end of file
+unindented comment at end of file (via extras)
 ==================
 
 2026-01-05T18:11 create lore "Entry before comment"
@@ -374,7 +358,7 @@ unindented comment at end of file
   (comment))
 
 ==================
-multiple unindented comments
+multiple unindented comments (via extras)
 ==================
 
 // First top-level comment
@@ -428,7 +412,7 @@ mixed indented and unindented comments
 // Top-level comment
 2026-01-05T18:11 create lore "Entry"
   type: fact
-  // Indented comment in metadata
+  // Indented comment in metadata (captured at top level)
 
 // Another top-level comment
 
@@ -445,19 +429,17 @@ mixed indented and unindented comments
         (title))
       (metadata
         (key)
-        (value))
-      (comment_line
-        (comment))))
+        (value))))
+  (comment)
   (comment))
 
 ==================
-unindented comment in metadata terminates entry (causes error)
-:error
+unindented comment in metadata (now works - skipped by scanner)
 ==================
 
 2026-01-05T18:11 create lore "Entry"
   type: fact
-// unindented comment terminates entry
+// unindented comment in metadata
   subject: acme
 
 ---
@@ -472,7 +454,7 @@ unindented comment in metadata terminates entry (causes error)
         (title))
       (metadata
         (key)
-        (value))))
-  (comment)
-  (ERROR
-    (ERROR)))
+        (value))
+      (metadata
+        (key)
+        (value)))))
