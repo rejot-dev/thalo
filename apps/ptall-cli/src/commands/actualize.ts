@@ -2,10 +2,11 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   Workspace,
+  executeQueries,
+  formatQuery,
   type ModelSynthesisEntry,
   type ModelActualizeEntry,
   type ModelInstanceEntry,
-  type Query,
 } from "@wilco/ptall";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
@@ -132,95 +133,6 @@ function getUpdatedTimestamp(actualize: ModelActualizeEntry | null): string | nu
 }
 
 /**
- * Check if an entry matches a query
- */
-function entryMatchesQuery(entry: ModelInstanceEntry, query: Query): boolean {
-  // Check entity type
-  if (entry.entity !== query.entity) {
-    return false;
-  }
-
-  // Check all conditions (ANDed together)
-  for (const condition of query.conditions) {
-    switch (condition.kind) {
-      case "field": {
-        const value = entry.metadata.get(condition.field)?.raw;
-        if (value !== condition.value) {
-          return false;
-        }
-        break;
-      }
-      case "tag": {
-        if (!entry.tags.includes(condition.tag)) {
-          return false;
-        }
-        break;
-      }
-      case "link": {
-        // Check if entry has this link in header or metadata
-        if (entry.linkId !== condition.link) {
-          // Also check metadata values for links
-          let hasLink = false;
-          for (const meta of entry.metadata.values()) {
-            if (meta.linkId === condition.link) {
-              hasLink = true;
-              break;
-            }
-          }
-          if (!hasLink) {
-            return false;
-          }
-        }
-        break;
-      }
-    }
-  }
-
-  return true;
-}
-
-/**
- * Query entries from the workspace
- */
-function queryEntries(
-  workspace: Workspace,
-  queries: Query[],
-  afterTimestamp: string | null,
-): ModelInstanceEntry[] {
-  const results: ModelInstanceEntry[] = [];
-  const seen = new Set<string>(); // Track by timestamp to avoid duplicates
-
-  for (const doc of workspace.allDocuments()) {
-    for (const entry of doc.instanceEntries) {
-      // Skip if we've already seen this entry
-      const key = `${entry.file}:${entry.timestamp}`;
-      if (seen.has(key)) {
-        continue;
-      }
-
-      // Skip if entry is before the cutoff
-      if (afterTimestamp && entry.timestamp <= afterTimestamp) {
-        continue;
-      }
-
-      // Check if entry matches any of the queries
-      for (const query of queries) {
-        if (entryMatchesQuery(entry, query)) {
-          results.push(entry);
-          seen.add(key);
-          break;
-        }
-      }
-    }
-  }
-
-  // Sort by timestamp
-  results.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-
-  return results;
-}
-
-/**
  * Get raw entry text from source file
  */
 function getEntryRawText(entry: ModelInstanceEntry): string {
@@ -232,27 +144,6 @@ function getEntryRawText(entry: ModelInstanceEntry): string {
   } catch {
     return `[Could not read entry from ${entry.file}]`;
   }
-}
-
-/**
- * Format a query for display
- */
-function formatQuery(query: Query): string {
-  let result = query.entity;
-  if (query.conditions.length > 0) {
-    const condStrs = query.conditions.map((c) => {
-      switch (c.kind) {
-        case "field":
-          return `${c.field} = ${c.value}`;
-        case "tag":
-          return `#${c.tag}`;
-        case "link":
-          return `^${c.link}`;
-      }
-    });
-    result += ` where ${condStrs.join(" and ")}`;
-  }
-  return result;
 }
 
 /**
@@ -298,7 +189,9 @@ function actualizeAction(ctx: CommandContext): void {
     const lastUpdated = getUpdatedTimestamp(lastActualize);
 
     // Query for new entries
-    const newEntries = queryEntries(workspace, synthesis.sources, lastUpdated);
+    const newEntries = executeQueries(workspace, synthesis.sources, {
+      afterTimestamp: lastUpdated,
+    });
 
     if (newEntries.length === 0) {
       console.log(pc.green(`✓ ${relativePath(synthesis.file)}: ${synthesis.title} - up to date`));
