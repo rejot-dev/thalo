@@ -91,6 +91,8 @@ export interface MetadataValue {
   raw: string;
   /** If the value is a link, the link ID (without ^) */
   linkId: string | null;
+  /** The typed value content from the grammar */
+  content: import("../ast/types.js").ValueContent;
   /** Location in source */
   location: Location;
 }

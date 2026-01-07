@@ -16,7 +16,17 @@ simple define-synthesis
         (link))
       (metadata
         (key)
-        (value)))))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))))))))))
 
 ==================
 define-synthesis with tags
@@ -38,7 +48,17 @@ define-synthesis with tags
         (tag))
       (metadata
         (key)
-        (value)))))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))))))))))
 
 ==================
 define-synthesis with prompt content
@@ -61,7 +81,17 @@ define-synthesis with prompt content
         (link))
       (metadata
         (key)
-        (value))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link))))))))
       (content
         (markdown_header
           (md_indicator)
@@ -91,10 +121,22 @@ define-synthesis with multiple metadata
         (link))
       (metadata
         (key)
-        (value))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link))))))))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -126,7 +168,15 @@ define-synthesis with multi-line prompt
         (link))
       (metadata
         (key)
-        (value))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (tag_condition
+                    (tag))))))))
       (content
         (markdown_header
           (md_indicator)
@@ -157,7 +207,9 @@ simple actualize-synthesis
         (link))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 actualize-synthesis with only updated field
@@ -176,7 +228,9 @@ actualize-synthesis with only updated field
         (link))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 multiple entries in file
@@ -202,7 +256,17 @@ multiple entries in file
         (link))
       (metadata
         (key)
-        (value))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link))))))))
       (content
         (markdown_header
           (md_indicator)
@@ -216,7 +280,9 @@ multiple entries in file
         (link))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 complex sources query
@@ -236,4 +302,26 @@ complex sources query
         (link))
       (metadata
         (key)
-        (value)))))
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))
+                (query_condition
+                  (tag_condition
+                    (tag)))))
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))))))))))

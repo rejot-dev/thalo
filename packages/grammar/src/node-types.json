@@ -87,6 +87,36 @@
     }
   },
   {
+    "type": "condition_field",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "condition_field",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "condition_plain_value",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "condition_plain_value",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "content",
     "named": true,
     "fields": {},
@@ -174,6 +204,40 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "field_condition",
+    "named": true,
+    "fields": {
+      "field": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "condition_field",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "condition_plain_value",
+            "named": true
+          },
+          {
+            "type": "link",
+            "named": true
+          },
+          {
+            "type": "quoted_value",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -355,6 +419,21 @@
     "fields": {}
   },
   {
+    "type": "link_condition",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "link",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "literal_type",
     "named": true,
     "fields": {}
@@ -435,7 +514,121 @@
     }
   },
   {
+    "type": "plain_value",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "value_word",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "primitive_type",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "query",
+    "named": true,
+    "fields": {
+      "conditions": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "query_conditions",
+            "named": true
+          }
+        ]
+      },
+      "entity": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "query_entity",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "query_condition",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "field_condition",
+          "named": true
+        },
+        {
+          "type": "link_condition",
+          "named": true
+        },
+        {
+          "type": "tag_condition",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "query_conditions",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "query_condition",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "query_entity",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "query_entity",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "query_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "query",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "quoted_value",
     "named": true,
     "fields": {}
   },
@@ -730,6 +923,21 @@
     }
   },
   {
+    "type": "tag_condition",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "tag",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "title",
     "named": true,
     "fields": {}
@@ -790,10 +998,49 @@
     "fields": {},
     "children": {
       "multiple": false,
-      "required": false,
+      "required": true,
+      "types": [
+        {
+          "type": "date_range",
+          "named": true
+        },
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "plain_value",
+          "named": true
+        },
+        {
+          "type": "query_list",
+          "named": true
+        },
+        {
+          "type": "quoted_value",
+          "named": true
+        },
+        {
+          "type": "value_array",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "value_array",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
       "types": [
         {
           "type": "link",
+          "named": true
+        },
+        {
+          "type": "quoted_value",
           "named": true
         }
       ]
@@ -805,6 +1052,10 @@
   },
   {
     "type": ")",
+    "named": false
+  },
+  {
+    "type": ",",
     "named": false
   },
   {
@@ -832,6 +1083,10 @@
     "named": false
   },
   {
+    "type": "and",
+    "named": false
+  },
+  {
     "type": "comment",
     "named": true
   },
@@ -850,6 +1105,10 @@
   {
     "type": "date-range",
     "named": false
+  },
+  {
+    "type": "date_range",
+    "named": true
   },
   {
     "type": "define-entity",
@@ -917,6 +1176,14 @@
   },
   {
     "type": "update",
+    "named": false
+  },
+  {
+    "type": "value_word",
+    "named": true
+  },
+  {
+    "type": "where",
     "named": false
   },
   {

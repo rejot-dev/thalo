@@ -20,7 +20,9 @@ two simple entries
         (title))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (entry
     (instance_entry
       (instance_header
@@ -30,7 +32,9 @@ two simple entries
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 entries with content
@@ -62,10 +66,14 @@ entries with content
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -81,10 +89,14 @@ entries with content
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -123,7 +135,9 @@ three entries mixed
         (tag))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (entry
     (instance_entry
       (instance_header
@@ -134,7 +148,9 @@ three entries mixed
         (tag))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -150,10 +166,13 @@ three entries mixed
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (quoted_value))))))
 
 ==================
 entry with blank lines between
@@ -178,7 +197,9 @@ entry with blank lines between
         (title))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (entry
     (instance_entry
       (instance_header
@@ -188,4 +209,6 @@ entry with blank lines between
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))

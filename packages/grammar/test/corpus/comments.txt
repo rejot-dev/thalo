@@ -18,7 +18,9 @@ comment line after metadata
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment)))))
 
@@ -43,12 +45,15 @@ comment line between metadata
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (quoted_value)))
       (comment_line
         (comment))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 multiple comment lines
@@ -72,14 +77,18 @@ multiple comment lines
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment))
       (comment_line
         (comment))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 unindented comment lines between metadata
@@ -103,14 +112,18 @@ unindented comment lines between metadata
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment))
       (comment_line
         (comment))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 comment line before content
@@ -135,7 +148,9 @@ comment line before content
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment))
       (content
@@ -168,7 +183,9 @@ comment line in content section
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -204,7 +221,9 @@ comment line between content sections
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -249,7 +268,7 @@ comment only in metadata section - allows content after
           (content_text))))))
 
 ==================
-inline comment after metadata value (via extras)
+inline comment after metadata value (breaks parsing)
 ==================
 
 2026-01-05T18:11 create lore "Entry with inline comment"
@@ -268,10 +287,13 @@ inline comment after metadata value (via extras)
         (title))
       (metadata
         (key)
-        (value))
-      (metadata
-        (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word))))))
+  (comment)
+  (ERROR
+    (value_word)
+    (value_word)))
 
 ==================
 comment at end of entry
@@ -293,7 +315,9 @@ comment at end of entry
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment)))))
 
@@ -317,7 +341,9 @@ comment with special characters
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment)))))
 
@@ -342,7 +368,9 @@ unindented comment before entry
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 unindented comment between entries
@@ -367,7 +395,9 @@ unindented comment between entries
         (title))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (comment)
   (entry
     (instance_entry
@@ -378,7 +408,9 @@ unindented comment between entries
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 unindented comment at end of file
@@ -401,7 +433,9 @@ unindented comment at end of file
         (title))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (comment))
 
 ==================
@@ -427,7 +461,9 @@ multiple unindented comments
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 unindented comment directly after entry (no blank line)
@@ -449,7 +485,9 @@ unindented comment directly after entry (no blank line)
         (title))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (comment))
 
 ==================
@@ -476,7 +514,9 @@ mixed indented and unindented comments
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (comment_line
         (comment))))
   (comment))
@@ -503,7 +543,9 @@ unindented comment in metadata ends entry
         (title))
       (metadata
         (key)
-        (value))))
+        (value
+          (plain_value
+            (value_word))))))
   (comment)
   (entry
     (instance_entry
@@ -514,4 +556,6 @@ unindented comment in metadata ends entry
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))

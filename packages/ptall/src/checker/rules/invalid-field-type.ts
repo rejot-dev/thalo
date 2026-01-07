@@ -29,8 +29,8 @@ export const invalidFieldTypeRule: Rule = {
           continue;
         } // Will be caught by unknown-field rule
 
-        // Check if value matches the type
-        if (!TypeExpr.matches(value.raw, fieldSchema.type)) {
+        // Check if value matches the type using grammar-parsed content
+        if (!TypeExpr.matchesContent(value.content, fieldSchema.type)) {
           ctx.report({
             message: `Invalid value '${value.raw}' for field '${fieldName}'. Expected ${TypeExpr.toString(fieldSchema.type)}.`,
             file: entry.file,

@@ -1,8 +1,27 @@
 import type { Query, QueryCondition } from "../model/types.js";
 
 /**
+ * @deprecated This module contains legacy regex-based query parsing.
+ *
+ * The Tree-Sitter grammar now parses queries directly into typed AST nodes:
+ * - `query_list` → `query` → `query_conditions` → `query_condition`
+ *
+ * Use the grammar-parsed `ValueContent` from metadata values instead:
+ * ```typescript
+ * if (value.content.type === "query_list") {
+ *   const queries = value.content.queries;
+ * }
+ * ```
+ *
+ * This module is kept for backwards compatibility but should be removed
+ * once all callers migrate to the grammar-based approach.
+ */
+
+/**
  * Parse a sources value into an array of queries.
  * Format: "entity where conditions[, entity where conditions]*"
+ *
+ * @deprecated Use grammar-parsed query_list from ValueContent instead.
  *
  * Examples:
  * - "lore where subject = ^self"
@@ -31,6 +50,8 @@ export function parseSourcesValue(value: string): Query[] {
 /**
  * Parse a single query string.
  * Format: "entity where condition [and condition]*"
+ *
+ * @deprecated Use grammar-parsed query from ValueContent instead.
  */
 export function parseQuery(queryStr: string): Query | null {
   // Match: entity where conditions

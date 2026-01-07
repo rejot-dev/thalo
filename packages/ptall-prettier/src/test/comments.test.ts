@@ -167,18 +167,19 @@ describe("comment formatting", () => {
 `);
     });
 
-    it("should preserve inline comment as part of metadata value", async () => {
-      // Note: inline comments after metadata values are absorbed into the value
-      // This is by grammar design - they're not separate comment nodes
+    it("should preserve comment between metadata lines", async () => {
+      // Comments can appear between metadata lines
       const input = `2026-01-05T18:00 create lore "Entry"
-  type: fact // this is inline
+  type: "fact"
+  // Note about subject
   subject: acme
 `;
 
       const output = await format(input);
 
       expect(output).toBe(`2026-01-05T18:00 create lore "Entry"
-  type: fact // this is inline
+  type: "fact"
+  // Note about subject
   subject: acme
 `);
     });

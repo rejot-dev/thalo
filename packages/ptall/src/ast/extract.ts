@@ -39,6 +39,13 @@ import type {
   Identifier,
   Key,
   Value,
+  ValueContent,
+  PlainValue,
+  QuotedValue,
+  ValueArray,
+  QueryList,
+  Query,
+  QueryCondition,
   FieldName,
   SectionName,
   Description,
@@ -660,13 +667,191 @@ export function extractKey(node: SyntaxNode): Key {
 }
 
 export function extractValue(node: SyntaxNode): Value {
-  const linkNode = getChildByType(node, "link");
+  const child = node.namedChildren[0];
+  if (!child) {
+    // Fallback for empty or unrecognized values
+    return {
+      ...baseNode(node, "value"),
+      raw: node.text.trim(),
+      content: {
+        ...baseNode(node, "plain_value"),
+        words: [node.text.trim()],
+        text: node.text.trim(),
+      },
+    };
+  }
 
   return {
     ...baseNode(node, "value"),
     raw: node.text.trim(),
-    link: linkNode ? extractLink(linkNode) : null,
+    content: extractValueContent(child),
   };
+}
+
+/**
+ * Extract typed value content from a child node of value
+ */
+function extractValueContent(node: SyntaxNode): ValueContent {
+  switch (node.type) {
+    case "plain_value":
+      return extractPlainValue(node);
+    case "quoted_value":
+      return extractQuotedValue(node);
+    case "link":
+      return {
+        ...baseNode(node, "link_value"),
+        link: extractLink(node),
+      };
+    case "date_range":
+      return {
+        ...baseNode(node, "date_range"),
+        raw: node.text.trim(),
+      };
+    case "value_array":
+      return extractValueArray(node);
+    case "query_list":
+      return extractQueryList(node);
+    default:
+      // Fallback: treat as plain value
+      return {
+        ...baseNode(node, "plain_value"),
+        words: [node.text.trim()],
+        text: node.text.trim(),
+      };
+  }
+}
+
+function extractPlainValue(node: SyntaxNode): PlainValue {
+  const words = node.namedChildren
+    .filter((child) => child.type === "value_word")
+    .map((child) => child.text);
+
+  return {
+    ...baseNode(node, "plain_value"),
+    words,
+    text: words.join(" "),
+  };
+}
+
+function extractQuotedValue(node: SyntaxNode): QuotedValue {
+  return {
+    ...baseNode(node, "quoted_value"),
+    value: stripQuotes(node.text),
+  };
+}
+
+function extractValueArray(node: SyntaxNode): ValueArray {
+  const elements: (Link | QuotedValue)[] = [];
+
+  for (const child of node.namedChildren) {
+    if (child.type === "link") {
+      elements.push(extractLink(child));
+    } else if (child.type === "quoted_value") {
+      elements.push(extractQuotedValue(child));
+    }
+  }
+
+  return {
+    ...baseNode(node, "value_array"),
+    elements,
+  };
+}
+
+function extractQueryList(node: SyntaxNode): QueryList {
+  const queries = node.namedChildren.filter((child) => child.type === "query").map(extractQuery);
+
+  return {
+    ...baseNode(node, "query_list"),
+    queries,
+  };
+}
+
+function extractQuery(node: SyntaxNode): Query {
+  const entityNode = node.childForFieldName("entity");
+  const conditionsNode = node.childForFieldName("conditions");
+
+  // Get entity text - handle nested query_entity from alias
+  let entityText = "";
+  if (entityNode) {
+    // The aliased query_entity may have a child query_entity
+    const innerEntity = entityNode.namedChildren[0];
+    entityText = innerEntity ? innerEntity.text : entityNode.text;
+  }
+
+  const conditions: QueryCondition[] = [];
+  if (conditionsNode) {
+    for (const child of conditionsNode.namedChildren) {
+      if (child.type === "query_condition") {
+        const condition = extractQueryCondition(child);
+        if (condition) {
+          conditions.push(condition);
+        }
+      }
+    }
+  }
+
+  return {
+    ...baseNode(node, "query"),
+    entity: entityText,
+    conditions,
+  };
+}
+
+function extractQueryCondition(node: SyntaxNode): QueryCondition | null {
+  const child = node.namedChildren[0];
+  if (!child) {
+    return null;
+  }
+
+  switch (child.type) {
+    case "field_condition": {
+      const fieldNode = child.childForFieldName("field");
+      const valueNode = child.childForFieldName("value");
+
+      // Handle nested alias for condition_field
+      let fieldText = "";
+      if (fieldNode) {
+        const innerField = fieldNode.namedChildren[0];
+        fieldText = innerField ? innerField.text : fieldNode.text;
+      }
+
+      // Handle value - could be link, quoted_value, or condition_plain_value
+      let valueText = "";
+      if (valueNode) {
+        if (valueNode.type === "link") {
+          valueText = valueNode.text;
+        } else if (valueNode.type === "quoted_value") {
+          valueText = stripQuotes(valueNode.text);
+        } else {
+          // condition_plain_value (aliased)
+          const inner = valueNode.namedChildren[0];
+          valueText = inner ? inner.text : valueNode.text;
+        }
+      }
+
+      return {
+        ...baseNode(child, "field_condition"),
+        field: fieldText,
+        value: valueText,
+      };
+    }
+    case "tag_condition": {
+      const tagNode = getChildByType(child, "tag");
+      return {
+        ...baseNode(child, "tag_condition"),
+        tag: tagNode ? tagNode.text.slice(1) : "", // Remove # prefix
+      };
+    }
+    case "link_condition": {
+      const linkNode = getChildByType(child, "link");
+      return {
+        ...baseNode(child, "link_condition"),
+        linkId: linkNode ? linkNode.text.slice(1) : "", // Remove ^ prefix
+      };
+    }
+    default:
+      return null;
+  }
 }
 
 export function extractFieldName(node: SyntaxNode): FieldName {

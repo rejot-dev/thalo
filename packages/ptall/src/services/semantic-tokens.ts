@@ -150,7 +150,11 @@ function getTokenForNode(node: SyntaxNode, _blockOffset: number): SemanticToken 
     case "link":
       tokenType = "function";
       // Check if this is a definition (in header) or reference (in metadata)
-      if (node.parent?.type === "instance_header" || node.parent?.type === "schema_header") {
+      if (
+        node.parent?.type === "instance_header" ||
+        node.parent?.type === "schema_header" ||
+        node.parent?.type === "synthesis_header"
+      ) {
         modifiers = ["declaration"];
       }
       break;

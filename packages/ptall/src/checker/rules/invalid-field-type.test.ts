@@ -311,11 +311,11 @@ describe("invalid-field-type rule - array types", () => {
     expect(error!.message).toContain("high");
   });
 
-  it("reports empty array value", () => {
+  it("reports plain value for link array", () => {
     workspace.addDocument(
       `2026-01-05T18:00 create opinion "Test opinion" #test
   confidence: "high"
-  related: 
+  related: not-a-link
 
   # Claim
   Test claim.
@@ -326,7 +326,7 @@ describe("invalid-field-type rule - array types", () => {
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
-    // Empty arrays are not allowed - use optional fields and omit the field instead
+    // Plain values don't match link[] type
     expect(error).toBeDefined();
     expect(error!.message).toContain("link[]");
   });
@@ -357,7 +357,7 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
       `2026-01-05T18:00 create lore "Test lore" #test
   type: "fact"
   subject: test
-  dates: 2024, 2024-05, 2024-05-11
+  dates: "2024", "2024-05", "2024-05-11"
 
   # Content
   Test content.
@@ -368,6 +368,7 @@ describe("invalid-field-type rule - date and date-range arrays", () => {
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
+    // Quoted dates in array format should be valid for date[]
     expect(error).toBeUndefined();
   });
 

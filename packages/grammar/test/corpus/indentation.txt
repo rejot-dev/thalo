@@ -18,10 +18,14 @@
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 tab indentation for metadata
@@ -43,10 +47,14 @@ tab indentation for metadata
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 4-space indentation for content
@@ -128,7 +136,9 @@ tab indentation for markdown header
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -156,10 +166,14 @@ tab indentation for markdown header
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 mixed 4-space indent throughout
@@ -186,7 +200,9 @@ mixed 4-space indent throughout
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
         (value
@@ -224,10 +240,14 @@ Empty Whitespace
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 1-space indentation for metadata
@@ -249,10 +269,14 @@ Empty Whitespace
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 2-space indentation for metadata
@@ -274,10 +298,14 @@ Empty Whitespace
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 Content-only entry (no metadata)
@@ -357,7 +385,9 @@ Entry ending at EOF (no trailing newline)
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 Mixed tabs and spaces in same entry
@@ -382,7 +412,9 @@ Mixed tabs and spaces in same entry
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
         (value
@@ -509,7 +541,9 @@ Content directly after metadata (no blank line)
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)

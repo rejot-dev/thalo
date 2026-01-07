@@ -21,10 +21,14 @@ content with section header
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -56,7 +60,9 @@ multi-line content under section
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -93,7 +99,9 @@ content with multiple sections
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -154,7 +162,9 @@ content at EOF without trailing newline
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -184,7 +194,9 @@ markdown header at EOF without trailing newline
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)
@@ -236,7 +248,9 @@ content directly after metadata (no blank line)
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (content
         (markdown_header
           (md_indicator)

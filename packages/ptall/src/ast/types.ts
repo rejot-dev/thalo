@@ -274,10 +274,89 @@ export interface Key extends AstNode {
 
 export interface Value extends AstNode {
   type: "value";
-  /** The raw value text (may include quotes) */
+  /** The raw value text */
   raw: string;
-  /** If the value is a link, the parsed link */
-  link: Link | null;
+  /** The typed value content */
+  content: ValueContent;
+}
+
+/**
+ * Typed value content from the grammar
+ */
+export type ValueContent =
+  | PlainValue
+  | QuotedValue
+  | LinkValue
+  | DateRangeValue
+  | ValueArray
+  | QueryList;
+
+export interface PlainValue extends AstNode {
+  type: "plain_value";
+  /** The individual words that make up the value */
+  words: string[];
+  /** Combined text of all words */
+  text: string;
+}
+
+export interface QuotedValue extends AstNode {
+  type: "quoted_value";
+  /** The quoted text without surrounding quotes */
+  value: string;
+}
+
+export interface LinkValue extends AstNode {
+  type: "link_value";
+  /** The parsed link */
+  link: Link;
+}
+
+export interface DateRangeValue extends AstNode {
+  type: "date_range";
+  /** The raw date range text */
+  raw: string;
+}
+
+export interface ValueArray extends AstNode {
+  type: "value_array";
+  /** Elements of the array (links or quoted values) */
+  elements: (Link | QuotedValue)[];
+}
+
+export interface QueryList extends AstNode {
+  type: "query_list";
+  /** The individual queries */
+  queries: Query[];
+}
+
+export interface Query extends AstNode {
+  type: "query";
+  /** The entity type to query */
+  entity: string;
+  /** The conditions (ANDed together) */
+  conditions: QueryCondition[];
+}
+
+export type QueryCondition = FieldCondition | TagCondition | LinkCondition;
+
+export interface FieldCondition extends AstNode {
+  type: "field_condition";
+  /** The field name */
+  field: string;
+  /** The field value */
+  value: string;
+}
+
+export interface TagCondition extends AstNode {
+  type: "tag_condition";
+  /** The tag (without #) */
+  tag: string;
+}
+
+export interface LinkCondition extends AstNode {
+  type: "link_condition";
+  /** The link (without ^) */
+  linkId: string;
 }
 
 export interface FieldName extends AstNode {

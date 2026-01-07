@@ -1,0 +1,502 @@
+==================
+value: simple link
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  subject: ^self
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (link))))))
+
+==================
+value: link with path
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  related: ^folder/entry-id
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (link))))))
+
+==================
+value: quoted value
+==================
+
+2026-01-05T18:11 create opinion "Entry"
+  source: "Technical documentation"
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (quoted_value))))))
+
+==================
+value: plain value
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  type: fact
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (plain_value
+            (value_word)))))))
+
+==================
+value: plain value with spaces
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  description: this is a longer value
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (plain_value
+            (value_word)
+            (value_word)
+            (value_word)
+            (value_word)
+            (value_word)))))))
+
+==================
+value: date range years
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  date: 2022 ~ 2024
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (date_range))))))
+
+==================
+value: date range full dates
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  date: 2022-05 ~ 2024-12-31
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (date_range))))))
+
+==================
+value: array of links
+==================
+
+2026-01-05T18:11 create lore "Entry"
+  related: ^link1, ^link2, ^link3
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (value_array
+            (link)
+            (link)
+            (link)))))))
+
+==================
+value: array of quoted values
+==================
+
+2026-01-05T18:11 create reference "Entry"
+  authors: "Jane Doe", "John Smith"
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (value_array
+            (quoted_value)
+            (quoted_value)))))))
+
+==================
+value: array mixed links and quoted
+==================
+
+2026-01-05T18:11 create reference "Entry"
+  authors: "Jane Doe", ^john-ref, "Alice"
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (value_array
+            (quoted_value)
+            (link)
+            (quoted_value)))))))
+
+==================
+query: entity with field condition
+==================
+
+2026-01-07T12:00 define-synthesis "Profile" ^profile
+  sources: lore where subject = ^self
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))))))))))
+
+==================
+query: entity with tag condition
+==================
+
+2026-01-07T12:00 define-synthesis "Career" ^career
+  sources: lore where #career
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (tag_condition
+                    (tag)))))))))))
+
+==================
+query: entity with link condition
+==================
+
+2026-01-07T12:00 define-synthesis "Profile" ^profile
+  sources: lore where ^some-entry
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (link_condition
+                    (link)))))))))))
+
+==================
+query: multiple conditions with and
+==================
+
+2026-01-07T12:00 define-synthesis "Career" ^career
+  sources: lore where subject = ^self and #career
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))
+                (query_condition
+                  (tag_condition
+                    (tag)))))))))))
+
+==================
+query: three conditions
+==================
+
+2026-01-07T12:00 define-synthesis "Profile" ^profile
+  sources: lore where subject = ^self and #career and type = "fact"
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))
+                (query_condition
+                  (tag_condition
+                    (tag)))
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (quoted_value)))))))))))
+
+==================
+query: comma-separated multiple queries
+==================
+
+2026-01-07T12:00 define-synthesis "Profile" ^profile
+  sources: lore where subject = ^self, journal where subject = ^self
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))))
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (link)))))))))))
+
+==================
+query: three queries
+==================
+
+2026-01-07T12:00 define-synthesis "All" ^all
+  sources: lore where #work, journal where #work, opinion where #work
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (tag_condition
+                    (tag)))))
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (tag_condition
+                    (tag)))))
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (tag_condition
+                    (tag)))))))))))
+
+==================
+query: field with plain value
+==================
+
+2026-01-07T12:00 define-synthesis "Facts" ^facts
+  sources: lore where type = fact
+
+---
+
+(source_file
+  (entry
+    (synthesis_entry
+      (synthesis_header
+        (timestamp)
+        (title)
+        (link))
+      (metadata
+        (key)
+        (value
+          (query_list
+            (query
+              (query_entity
+                (query_entity))
+              (query_conditions
+                (query_condition
+                  (field_condition
+                    (condition_field
+                      (condition_field))
+                    (condition_plain_value
+                      (condition_plain_value))))))))))))

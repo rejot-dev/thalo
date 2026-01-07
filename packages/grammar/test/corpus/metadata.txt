@@ -17,7 +17,9 @@ single metadata
         (title))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 multiple metadata
@@ -39,10 +41,14 @@ multiple metadata
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))
 
 ==================
 metadata with quoted value
@@ -65,10 +71,13 @@ metadata with quoted value
         (tag))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (quoted_value))))))
 
 ==================
 metadata with reference value
@@ -91,10 +100,14 @@ metadata with reference value
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
         (value
@@ -121,13 +134,18 @@ metadata with date range
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (date_range))))))
 
 ==================
 metadata with hyphenated key
@@ -149,7 +167,11 @@ metadata with hyphenated key
         (title))
       (metadata
         (key)
-        (value))
+        (value
+          (plain_value
+            (value_word))))
       (metadata
         (key)
-        (value)))))
+        (value
+          (plain_value
+            (value_word)))))))

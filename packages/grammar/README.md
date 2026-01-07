@@ -124,6 +124,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
   author?: string | link
   status?: "unread" | "read" = "unread"
   related?: link[]
+
   # Sections
   Summary ; "Brief summary of the content"
   KeyTakeaways?
@@ -139,13 +140,15 @@ Modify existing entity schemas by adding or removing fields/sections:
   published: date ; "publication date"
   # Remove Metadata
   legacy-field ; "deprecated in favor of new-field"
+
   # Sections
   NewSection? ; "added section"
+
   # Remove Sections
   OldSection ; "no longer needed"
 ```
 
-### Type System
+### Type System (Schema Definitions)
 
 | Type         | Example              | Description              |
 | ------------ | -------------------- | ------------------------ |
@@ -157,6 +160,84 @@ Modify existing entity schemas by adding or removing fields/sections:
 | Union        | `type: "a" \| "b"`   | One of multiple types    |
 | Array        | `tags: string[]`     | Array of type            |
 | Default      | `status?: "a" = "a"` | Default value            |
+
+## Typed Metadata Values
+
+The grammar parses metadata values into typed AST nodes, enabling downstream validation without
+regex-based parsing. Values are parsed in priority order:
+
+### Query Expressions
+
+Source queries for synthesis entries:
+
+```ptall
+sources: lore where subject = ^self and #career
+sources: lore where type = "fact", journal where #reflection
+```
+
+**AST structure**: `query_list` → `query` → `query_conditions` → `query_condition`
+
+Query conditions support:
+
+- **Field conditions**: `field = value` or `field = "quoted value"` or `field = ^link`
+- **Tag conditions**: `#tag`
+- **Link conditions**: `^link-id`
+
+### Date Ranges
+
+Date ranges with the `~` separator:
+
+```ptall
+date: 2022 ~ 2024
+period: 2022-05 ~ 2024-12-31
+```
+
+**AST node**: `date_range`
+
+### Value Arrays
+
+Comma-separated lists of links and/or quoted strings:
+
+```ptall
+related: ^ref1, ^ref2, ^ref3
+authors: "Jane Doe", ^john-ref, "Alice Smith"
+tags: "architecture", "distributed"
+```
+
+**AST structure**: `value_array` → `(link | quoted_value)*`
+
+### Links
+
+Single link references:
+
+```ptall
+subject: ^self
+supersedes: ^previous-opinion
+```
+
+**AST node**: `link`
+
+### Quoted Values
+
+Values in double quotes (required for literal type matching):
+
+```ptall
+type: "fact"
+confidence: "high"
+```
+
+**AST node**: `quoted_value`
+
+### Plain Values
+
+Fallback for unquoted text (sequence of value words):
+
+```ptall
+subject: acme-corp
+mood: contemplative
+```
+
+**AST structure**: `plain_value` → `value_word+`
 
 ### Field Syntax
 
@@ -238,8 +319,59 @@ pnpm exec tree-sitter parse path/to/file.ptall
 
 ## Limitations
 
+### General
+
 - Titles cannot contain unescaped quotes
 - Content text starting with `#` is always parsed as a markdown header
 - Only 2-space indentation is supported
 - Section names must be PascalCase
 - Field names must be lowercase (kebab-case or camelCase)
+
+### Typed Value Parsing
+
+- **No inline comments in values**: Comments (`//`) after metadata values break parsing. Use a
+  separate comment line instead.
+
+  ```ptall
+  # Wrong - causes parse error:
+  type: fact // this breaks
+
+  # Correct:
+  // Note about type
+  type: "fact"
+  ```
+
+- **Array elements must be links or quoted strings**: Plain values in arrays cause parse errors due
+  to comma ambiguity.
+
+  ```ptall
+  # Wrong - parse error:
+  dates: 2024, 2024-05, 2024-05-11
+
+  # Correct:
+  dates: "2024", "2024-05", "2024-05-11"
+  ```
+
+- **Single dates parsed as plain values**: The grammar cannot distinguish dates from other plain
+  text, so `date: 2024-05-11` parses as `plain_value`. Validation happens at the semantic level.
+
+- **Query `where` clause is required**: Entity-only queries (e.g., `lore` without `where`) parse as
+  `plain_value`, not `query_list`.
+
+  ```ptall
+  # Parsed as query_list:
+  sources: lore where #career
+
+  # Parsed as plain_value (not a query):
+  sources: lore
+  ```
+
+- **Empty values cause parse errors**: Metadata must have a value; use optional fields and omit the
+  field entirely instead.
+
+  ```ptall
+  # Wrong - parse error:
+  related:
+
+  # Correct - omit the optional field entirely
+  ```

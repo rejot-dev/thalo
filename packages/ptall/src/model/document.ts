@@ -8,6 +8,8 @@ import type {
   ActualizeEntry,
   TypeExpression,
   Content,
+  Value,
+  ValueContent,
 } from "../ast/types.js";
 import type {
   ModelEntry,
@@ -24,8 +26,8 @@ import type {
   LinkDefinition,
   LinkReference,
   LinkIndex,
+  Query,
 } from "./types.js";
-import { parseSourcesValue } from "../query/parser.js";
 
 /**
  * Options for parsing a document
@@ -165,13 +167,14 @@ function extractInstanceEntry(
 ): ModelInstanceEntry {
   const metadata = new Map<
     string,
-    { raw: string; linkId: string | null; location: typeof ast.location }
+    { raw: string; linkId: string | null; content: ValueContent; location: typeof ast.location }
   >();
 
   for (const m of ast.metadata) {
     metadata.set(m.key.value, {
       raw: m.value.raw,
-      linkId: m.value.link?.id ?? null,
+      linkId: extractLinkIdFromValue(m.value),
+      content: m.value.content,
       location: m.value.location,
     });
   }
@@ -288,20 +291,21 @@ function extractSynthesisEntry(
 ): ModelSynthesisEntry {
   const metadata = new Map<
     string,
-    { raw: string; linkId: string | null; location: typeof ast.location }
+    { raw: string; linkId: string | null; content: ValueContent; location: typeof ast.location }
   >();
 
   for (const m of ast.metadata) {
     metadata.set(m.key.value, {
       raw: m.value.raw,
-      linkId: m.value.link?.id ?? null,
+      linkId: extractLinkIdFromValue(m.value),
+      content: m.value.content,
       location: m.value.location,
     });
   }
 
-  // Parse sources from metadata
-  const sourcesValue = metadata.get("sources")?.raw ?? "";
-  const sources = parseSourcesValue(sourcesValue);
+  // Extract sources from grammar-parsed metadata
+  const sourcesContent = metadata.get("sources")?.content;
+  const sources = extractSourcesFromContent(sourcesContent);
 
   // Extract prompt content (everything after # Prompt header)
   const prompt = extractPromptFromContent(ast.content);
@@ -361,13 +365,14 @@ function extractActualizeEntry(
 ): ModelActualizeEntry {
   const metadata = new Map<
     string,
-    { raw: string; linkId: string | null; location: typeof ast.location }
+    { raw: string; linkId: string | null; content: ValueContent; location: typeof ast.location }
   >();
 
   for (const m of ast.metadata) {
     metadata.set(m.key.value, {
       raw: m.value.raw,
-      linkId: m.value.link?.id ?? null,
+      linkId: extractLinkIdFromValue(m.value),
+      content: m.value.content,
       location: m.value.location,
     });
   }
@@ -497,4 +502,37 @@ function indexEntry(entry: ModelEntry, index: LinkIndex): void {
     refs.push(ref);
     index.references.set(entry.target, refs);
   }
+}
+
+/**
+ * Extract the link ID from a value, if the value is a link type
+ */
+function extractLinkIdFromValue(value: Value): string | null {
+  if (value.content.type === "link_value") {
+    return value.content.link.id;
+  }
+  return null;
+}
+
+/**
+ * Extract queries from grammar-parsed sources content
+ */
+function extractSourcesFromContent(content: ValueContent | undefined): Query[] {
+  if (!content || content.type !== "query_list") {
+    return [];
+  }
+
+  return content.queries.map((q) => ({
+    entity: q.entity,
+    conditions: q.conditions.map((c) => {
+      switch (c.type) {
+        case "field_condition":
+          return { kind: "field" as const, field: c.field, value: c.value };
+        case "tag_condition":
+          return { kind: "tag" as const, tag: c.tag };
+        case "link_condition":
+          return { kind: "link" as const, link: c.linkId };
+      }
+    }),
+  }));
 }
