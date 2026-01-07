@@ -137,10 +137,20 @@ export interface ModelFieldDefinition {
   name: string;
   optional: boolean;
   type: ModelTypeExpression;
-  defaultValue: string | null;
+  /** The typed default value content (quoted, link, or datetime) */
+  defaultValue: ModelDefaultValue | null;
   description: string | null;
   location: Location;
 }
+
+/**
+ * A typed default value from a field definition.
+ * Can be a quoted string, link reference, or datetime.
+ */
+export type ModelDefaultValue =
+  | { kind: "quoted"; value: string; raw: string }
+  | { kind: "link"; id: string; raw: string }
+  | { kind: "datetime"; value: string; raw: string };
 
 /**
  * A section definition from a schema entry

@@ -152,9 +152,6 @@ src/
 │   ├── types.ts       # Rule and diagnostic types
 │   ├── check.ts       # Main check function
 │   └── rules/         # Individual validation rules
-├── query/
-│   ├── parser.ts      # Legacy regex-based query parser (deprecated)
-│   └── index.ts       # Query exports
 └── services/
     ├── definition.ts  # Go-to-definition lookup
     ├── references.ts  # Find-all-references
@@ -165,29 +162,16 @@ src/
 
 ### Grammar-Based Type System
 
-The Tree-Sitter grammar now parses metadata values into typed AST nodes (`query_list`, `date_range`,
-`value_array`, `link`, `quoted_value`, `plain_value`). This enables:
+The Tree-Sitter grammar parses all values into typed AST nodes:
 
-- ✅ Type validation using AST structure instead of regex
+- ✅ Type validation using AST structure (no regex parsing)
 - ✅ Query parsing at the grammar level
 - ✅ Proper array element validation
+- ✅ Typed default values (`quoted_value`, `link`, `datetime_value`)
 
 **Remaining work:**
 
-1. **Remove legacy query parser** (`src/query/parser.ts`): The regex-based `parseSourcesValue` and
-   `parseQuery` functions are no longer used in the main flow. The grammar now parses queries
-   directly, and `document.ts` extracts them from the AST. The legacy parser is kept for backwards
-   compatibility but should be removed.
-
-2. **Remove legacy string-based type matching**: `TypeExpr.matches(raw, type)` in `schema/types.ts`
-   still exists for backwards compatibility. It should be removed once all callers migrate to
-   `TypeExpr.matchesContent(content, type)`.
-
-3. **Date validation at grammar level**: Currently, single dates (e.g., `2024-05-11`) are parsed as
-   `plain_value` and validated with regex at the semantic level. A future grammar enhancement could
-   add a `date` token, though this conflicts with timestamp parsing.
-
-4. **Entity-only queries**: The grammar requires `where` for query expressions. Supporting
+1. **Entity-only queries**: The grammar requires `where` for query expressions. Supporting
    entity-only queries (e.g., `sources: lore`) would require grammar changes to avoid ambiguity with
    plain values.
 

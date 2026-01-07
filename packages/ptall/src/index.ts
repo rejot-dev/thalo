@@ -8,6 +8,9 @@ export {
   type FileType,
 } from "./parser.js";
 
+// Fragment parsing - parse individual expressions
+export { parseFragment, parseQuery, type FragmentType, type ParsedFragment } from "./fragment.js";
+
 // Model classes
 export { Document } from "./model/document.js";
 export { Workspace } from "./model/workspace.js";

@@ -22,15 +22,15 @@ export const invalidDefaultValueRule: Rule = {
           continue;
         }
 
-        // Pass the raw default value - it should already be quoted for literals
-        if (!TypeExpr.matches(field.defaultValue, field.type)) {
+        // Use typed default value matching
+        if (!TypeExpr.matchesDefaultValue(field.defaultValue, field.type)) {
           ctx.report({
-            message: `Invalid default value '${field.defaultValue}' for field '${field.name}'. Expected ${TypeExpr.toString(field.type)}.`,
+            message: `Invalid default value '${field.defaultValue.raw}' for field '${field.name}'. Expected ${TypeExpr.toString(field.type)}.`,
             file: entry.file,
             location: field.location ?? entry.location,
             data: {
               fieldName: field.name,
-              defaultValue: field.defaultValue,
+              defaultValue: field.defaultValue.raw,
               expectedType: TypeExpr.toString(field.type),
             },
           });

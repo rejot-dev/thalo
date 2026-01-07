@@ -378,6 +378,6 @@ export interface DefaultValue extends AstNode {
   type: "default_value";
   /** The raw default value text */
   raw: string;
-  /** If the default is a literal type, the parsed literal */
-  literal: LiteralType | null;
+  /** The typed value content (quoted_value, link, or datetime) */
+  content: QuotedValue | Link | DatetimeValue;
 }

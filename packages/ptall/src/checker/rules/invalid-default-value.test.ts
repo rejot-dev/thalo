@@ -66,7 +66,7 @@ describe("invalid-default-value rule", () => {
     expect(error).toBeUndefined();
   });
 
-  it("accepts any default value for string type", () => {
+  it("accepts any quoted default value for string type", () => {
     workspace.addDocument(
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
@@ -84,31 +84,11 @@ describe("invalid-default-value rule", () => {
     expect(error).toBeUndefined();
   });
 
-  it.skip("should report invalid default for number type (number type accepts any value)", () => {
-    // This test is skipped because the TypeExpr.matches for 'number' type
-    // may accept any string value in the current implementation
+  it("accepts link default value for link type", () => {
     workspace.addDocument(
       `2026-01-01T00:00 define-entity lore "Lore entries"
   # Metadata
-  count: number = "not-a-number"
-
-  # Sections
-  Content
-`,
-      { filename: "schema.ptall" },
-    );
-
-    const diagnostics = check(workspace);
-    const error = diagnostics.find((d) => d.code === "invalid-default-value");
-
-    expect(error).toBeDefined();
-  });
-
-  it("accepts valid number default", () => {
-    workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
-  # Metadata
-  count: number = 42
+  ref: link = ^default-ref
 
   # Sections
   Content
@@ -120,6 +100,62 @@ describe("invalid-default-value rule", () => {
     const error = diagnostics.find((d) => d.code === "invalid-default-value");
 
     expect(error).toBeUndefined();
+  });
+
+  it("reports wrong type for link default", () => {
+    workspace.addDocument(
+      `2026-01-01T00:00 define-entity lore "Lore entries"
+  # Metadata
+  ref: link = "not-a-link"
+
+  # Sections
+  Content
+`,
+      { filename: "schema.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-default-value");
+
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("Invalid default value");
+  });
+
+  it("accepts datetime default value for datetime type", () => {
+    workspace.addDocument(
+      `2026-01-01T00:00 define-entity lore "Lore entries"
+  # Metadata
+  created: datetime = 2026-01-01
+
+  # Sections
+  Content
+`,
+      { filename: "schema.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-default-value");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("reports datetime with time as invalid for datetime type", () => {
+    workspace.addDocument(
+      `2026-01-01T00:00 define-entity lore "Lore entries"
+  # Metadata
+  created: datetime = 2026-01-01T10:30
+
+  # Sections
+  Content
+`,
+      { filename: "schema.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-default-value");
+
+    expect(error).toBeDefined();
+    expect(error!.message).toContain("Invalid default value");
   });
 
   it("checks defaults in alter-entity too", () => {
@@ -151,6 +187,24 @@ describe("invalid-default-value rule", () => {
   # Metadata
   type: "fact" | "insight"
   subject: string
+
+  # Sections
+  Content
+`,
+      { filename: "schema.ptall" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "invalid-default-value");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("accepts link default for link array type", () => {
+    workspace.addDocument(
+      `2026-01-01T00:00 define-entity lore "Lore entries"
+  # Metadata
+  refs: link[] = ^default-ref
 
   # Sections
   Content

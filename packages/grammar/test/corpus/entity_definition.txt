@@ -311,7 +311,88 @@ default value with literal
               (literal_type)
               (literal_type)))
           (default_value
-            (literal_type)))))))
+            (quoted_value)))))))
+
+==================
+default value with link
+==================
+
+2026-01-05T18:12 define-entity lore "Facts"
+  # Metadata
+  subject?: link = ^self
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type))
+          (default_value
+            (link)))))))
+
+==================
+default value with datetime
+==================
+
+2026-01-05T18:12 define-entity event "Events"
+  # Metadata
+  created?: datetime = 2024-01-01
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type))
+          (default_value
+            (datetime_value)))))))
+
+==================
+default value with string type
+==================
+
+2026-01-05T18:12 define-entity note "Notes"
+  # Metadata
+  category?: string = "general"
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (schema_header
+        (timestamp)
+        (schema_directive)
+        (identifier)
+        (title))
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type))
+          (default_value
+            (quoted_value)))))))
 
 ==================
 sections block
@@ -469,7 +550,7 @@ complete define-entity
               (literal_type)
               (literal_type)))
           (default_value
-            (literal_type)))
+            (quoted_value)))
         (field_definition
           (field_name)
           (optional_marker)

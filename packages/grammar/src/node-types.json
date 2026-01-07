@@ -135,10 +135,18 @@
     "fields": {},
     "children": {
       "multiple": false,
-      "required": false,
+      "required": true,
       "types": [
         {
-          "type": "literal_type",
+          "type": "datetime_value",
+          "named": true
+        },
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "quoted_value",
           "named": true
         }
       ]

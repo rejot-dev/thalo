@@ -164,8 +164,7 @@ export default grammar({
     paren_type: ($) => seq("(", $.type_expression, ")"),
     primitive_type: (_) => choice("string", "datetime", "date-range", "link"),
     literal_type: (_) => token(/"[^"]*"/),
-    default_value: ($) => choice($.literal_type, $._plain_default),
-    _plain_default: (_) => token(/[^\s;][^;\r\n]*/),
+    default_value: ($) => choice($.quoted_value, $.link, $.datetime_value),
 
     // =========================================================================
     // Content (markdown body for instance entries)

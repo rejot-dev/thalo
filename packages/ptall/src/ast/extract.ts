@@ -871,11 +871,32 @@ export function extractDescription(node: SyntaxNode): Description {
 }
 
 export function extractDefaultValue(node: SyntaxNode): DefaultValue {
-  const literalNode = getChildByType(node, "literal_type");
+  const child = node.namedChildren[0];
+  if (!child) {
+    throw new Error("Empty default_value");
+  }
+
+  let content: DefaultValue["content"];
+  switch (child.type) {
+    case "quoted_value":
+      content = extractQuotedValue(child);
+      break;
+    case "link":
+      content = extractLink(child);
+      break;
+    case "datetime_value":
+      content = {
+        ...baseNode(child, "datetime_value"),
+        value: child.text.trim(),
+      };
+      break;
+    default:
+      throw new Error(`Unknown default_value child type: ${child.type}`);
+  }
 
   return {
     ...baseNode(node, "default_value"),
     raw: node.text,
-    literal: literalNode ? extractLiteralType(literalNode) : null,
+    content,
   };
 }

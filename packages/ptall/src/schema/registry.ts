@@ -1,4 +1,4 @@
-import type { ModelSchemaEntry } from "../model/types.js";
+import type { ModelSchemaEntry, ModelDefaultValue } from "../model/types.js";
 import type { EntitySchema, FieldSchema, SectionSchema } from "./types.js";
 
 /**
@@ -159,7 +159,7 @@ export function createFieldSchema(
   name: string,
   optional: boolean,
   type: FieldSchema["type"],
-  defaultValue?: string,
+  defaultValue?: ModelDefaultValue | null,
   description?: string,
 ): FieldSchema {
   return {

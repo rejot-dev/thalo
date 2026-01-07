@@ -10,6 +10,7 @@ import type {
   Content,
   Value,
   ValueContent,
+  DefaultValue,
 } from "../ast/types.js";
 import type {
   ModelEntry,
@@ -23,6 +24,7 @@ import type {
   ModelPrimitiveType,
   ModelLiteralType,
   ModelUnionType,
+  ModelDefaultValue,
   LinkDefinition,
   LinkReference,
   LinkIndex,
@@ -233,7 +235,7 @@ function extractSchemaEntry(ast: SchemaEntry, file: string, blockOffset: number)
         name: field.name.value,
         optional: field.optional,
         type: convertTypeExpression(field.typeExpr),
-        defaultValue: field.defaultValue?.raw ?? null,
+        defaultValue: field.defaultValue ? convertDefaultValue(field.defaultValue) : null,
         description: field.description?.value ?? null,
         location: field.location,
       });
@@ -388,6 +390,21 @@ function extractActualizeEntry(
     file,
     blockOffset,
   };
+}
+
+/**
+ * Convert AST default value to model default value
+ */
+function convertDefaultValue(ast: DefaultValue): ModelDefaultValue {
+  const content = ast.content;
+  switch (content.type) {
+    case "quoted_value":
+      return { kind: "quoted", value: content.value, raw: ast.raw };
+    case "link":
+      return { kind: "link", id: content.id, raw: ast.raw };
+    case "datetime_value":
+      return { kind: "datetime", value: content.value, raw: ast.raw };
+  }
 }
 
 /**

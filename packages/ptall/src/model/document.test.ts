@@ -273,7 +273,11 @@ describe("Document type expression parsing", () => {
       );
       const schema = doc.schemaEntries[0];
       const field = schema?.fields.find((f) => f.name === "status");
-      expect(field?.defaultValue).toBe('"active"');
+      expect(field?.defaultValue).toEqual({
+        kind: "quoted",
+        value: "active",
+        raw: '"active"',
+      });
     });
 
     it("parses descriptions", () => {

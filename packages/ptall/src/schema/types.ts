@@ -3,6 +3,7 @@ import type {
   ModelPrimitiveType,
   ModelLiteralType,
   ModelUnionType,
+  ModelDefaultValue,
 } from "../model/types.js";
 import type {
   ValueContent,
@@ -42,7 +43,7 @@ export interface FieldSchema {
   /** The type expression */
   type: ModelTypeExpression;
   /** Default value (if any) */
-  defaultValue: string | null;
+  defaultValue: ModelDefaultValue | null;
   /** Description (if any) */
   description: string | null;
 }
@@ -82,20 +83,22 @@ export const TypeExpr = {
   },
 
   /**
-   * Legacy: Check if a raw value string matches a type expression.
-   * @deprecated Use matchesContent with parsed ValueContent instead
+   * Check if a default value matches a type expression.
+   * Default values can only be quoted strings, links, or datetimes.
    */
-  matches(value: string, type: ModelTypeExpression): boolean {
+  matchesDefaultValue(defaultValue: ModelDefaultValue, type: ModelTypeExpression): boolean {
     switch (type.kind) {
       case "primitive":
-        return matchesPrimitive(value, type.name);
+        return matchesDefaultPrimitive(defaultValue, type.name);
       case "literal":
-        // Literal types require quoted values: "high" not high
-        return isQuoted(value) && stripQuotes(value) === type.value;
+        // Literal types require quoted values with matching content
+        return defaultValue.kind === "quoted" && defaultValue.value === type.value;
       case "array":
-        return matchesArray(value, type.elementType);
+        // Default values can't be arrays (grammar doesn't support it)
+        // But a single value can match an array type as a single-element array
+        return matchesDefaultAsArrayElement(defaultValue, type.elementType);
       case "union":
-        return type.members.some((member) => TypeExpr.matches(value, member));
+        return type.members.some((member) => TypeExpr.matchesDefaultValue(defaultValue, member));
     }
   },
 
@@ -304,83 +307,52 @@ function matchesArrayPrimitiveContent(
 }
 
 // ===================
-// Legacy string-based matching (for backwards compatibility)
+// Default value matching
 // ===================
 
 /**
- * Check if a value matches a primitive type
+ * Check if a default value matches a primitive type
  */
-function matchesPrimitive(
-  value: string,
+function matchesDefaultPrimitive(
+  defaultValue: ModelDefaultValue,
   type: "string" | "datetime" | "date-range" | "link",
 ): boolean {
   switch (type) {
     case "string":
-      // Any string value matches
+      // Any default value can be coerced to string
       return true;
-    case "datetime":
-      // Date format: YYYY-MM-DD only (no partial dates)
-      return /^\d{4}-\d{2}-\d{2}$/.test(value);
-    case "date-range":
-      // Date range format: DATE ~ DATE
-      return /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/.test(value);
     case "link":
-      // Link format: ^identifier
-      return value.startsWith("^");
+      return defaultValue.kind === "link";
+    case "datetime":
+      // Date must be datetime without time component (YYYY-MM-DD only)
+      if (defaultValue.kind === "datetime") {
+        return !defaultValue.value.includes("T");
+      }
+      return false;
+    case "date-range":
+      // Default values can't be date ranges (grammar doesn't support it)
+      return false;
   }
 }
 
 /**
- * Check if a value is quoted
+ * Check if a default value matches as a single array element
  */
-function isQuoted(value: string): boolean {
-  return value.startsWith('"') && value.endsWith('"');
-}
-
-/**
- * Strip quotes from a string if present
- */
-function stripQuotes(value: string): string {
-  if (isQuoted(value)) {
-    return value.slice(1, -1);
-  }
-  return value;
-}
-
-/**
- * Check if a comma-separated value matches an array type
- */
-function matchesArray(
-  value: string,
-  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType,
-): boolean {
-  const elements = value.split(",").map((e) => e.trim());
-
-  if (elements.length === 1 && elements[0] === "") {
-    return false;
-  }
-
-  return elements.every((element) => matchesElementType(element, elementType));
-}
-
-/**
- * Check if a single value matches an array element type
- */
-function matchesElementType(
-  value: string,
+function matchesDefaultAsArrayElement(
+  defaultValue: ModelDefaultValue,
   elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType,
 ): boolean {
   switch (elementType.kind) {
     case "primitive":
-      return matchesPrimitiveInArray(value, elementType.name);
+      return matchesDefaultAsPrimitive(defaultValue, elementType.name);
     case "literal":
-      return isQuoted(value) && stripQuotes(value) === elementType.value;
+      return defaultValue.kind === "quoted" && defaultValue.value === elementType.value;
     case "union":
       return elementType.members.some((member) => {
         if (member.kind === "primitive") {
-          return matchesPrimitiveInArray(value, member.name);
+          return matchesDefaultAsPrimitive(defaultValue, member.name);
         } else if (member.kind === "literal") {
-          return isQuoted(value) && stripQuotes(value) === member.value;
+          return defaultValue.kind === "quoted" && defaultValue.value === member.value;
         }
         return false;
       });
@@ -388,21 +360,25 @@ function matchesElementType(
 }
 
 /**
- * Check if a value matches a primitive type in array context
+ * Check if a default value matches a primitive type as array element
  */
-function matchesPrimitiveInArray(
-  value: string,
+function matchesDefaultAsPrimitive(
+  defaultValue: ModelDefaultValue,
   type: "string" | "datetime" | "date-range" | "link",
 ): boolean {
   switch (type) {
     case "string":
-      return isQuoted(value);
-    case "datetime":
-      // Date format: YYYY-MM-DD only (no partial dates)
-      return /^\d{4}-\d{2}-\d{2}$/.test(value);
-    case "date-range":
-      return /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/.test(value);
+      // String in array context requires quoted value
+      return defaultValue.kind === "quoted" && defaultValue.value.length > 0;
     case "link":
-      return value.startsWith("^");
+      return defaultValue.kind === "link";
+    case "datetime":
+      if (defaultValue.kind === "datetime") {
+        return !defaultValue.value.includes("T");
+      }
+      return false;
+    case "date-range":
+      // Default values can't be date ranges
+      return false;
   }
 }
