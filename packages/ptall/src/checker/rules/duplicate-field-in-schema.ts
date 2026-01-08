@@ -26,6 +26,7 @@ export const duplicateFieldInSchemaRule: Rule = {
             message: `Duplicate field '${field.name}' in schema entry. First defined at line ${existingLine}.`,
             file: entry.file,
             location: field.location ?? entry.location,
+            sourceMap: entry.sourceMap,
             data: { fieldName: field.name, firstLine: existingLine },
           });
         } else {

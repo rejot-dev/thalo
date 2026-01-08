@@ -35,6 +35,23 @@ export type { EntitySchema, FieldSchema, SectionSchema } from "./schema/types.js
 // AST types
 export type { Location } from "./ast/types.js";
 
+// Source mapping for embedded blocks
+export {
+  identitySourceMap,
+  isIdentityMap,
+  createSourceMap,
+  toFilePosition,
+  toBlockPosition,
+  toFileLocation,
+  toBlockLocation,
+  pointToPosition,
+  positionToPoint,
+  findBlockAtPosition,
+  type SourceMap,
+  type Position,
+  type BlockMatch,
+} from "./source-map.js";
+
 // Checker
 export { check, checkDocument } from "./checker/check.js";
 export { allRules, getRule } from "./checker/rules/index.js";

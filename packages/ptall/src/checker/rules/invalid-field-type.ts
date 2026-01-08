@@ -35,6 +35,7 @@ export const invalidFieldTypeRule: Rule = {
             message: `Invalid value '${value.raw}' for field '${fieldName}'. Expected ${TypeExpr.toString(fieldSchema.type)}.`,
             file: entry.file,
             location: value.location,
+            sourceMap: entry.sourceMap,
             data: {
               field: fieldName,
               value: value.raw,

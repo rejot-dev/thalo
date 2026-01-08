@@ -27,6 +27,7 @@ export const unresolvedLinkRule: Rule = {
             message: `Unresolved link '^${linkId}'. No entry defines this link ID.`,
             file: ref.file,
             location: ref.location,
+            sourceMap: ref.entry.sourceMap,
             data: { linkId },
           });
         }

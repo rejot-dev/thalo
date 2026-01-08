@@ -1,5 +1,6 @@
 import Parser, { type Language, type Tree } from "tree-sitter";
 import ptall from "@wilco/grammar";
+import { createSourceMap, identitySourceMap, type SourceMap } from "./source-map.js";
 
 let parserInstance: Parser | undefined;
 
@@ -21,13 +22,13 @@ export const parsePtall = (source: string): Tree => {
 };
 
 /**
- * A parsed ptall block with its source, offset in the original document, and parse tree.
+ * A parsed ptall block with its source, source map for position translation, and parse tree.
  */
 export interface ParsedBlock {
   /** The ptall source code */
   source: string;
-  /** Offset in the original document where this block starts */
-  offset: number;
+  /** Source map for translating block-relative positions to file-absolute positions */
+  sourceMap: SourceMap;
   /** The parsed tree-sitter tree */
   tree: Tree;
 }
@@ -70,11 +71,13 @@ function extractPtallBlocks(source: string): ParsedDocument {
 
   while ((match = PTALL_FENCE_REGEX.exec(source)) !== null) {
     const content = match[1];
-    // Offset is the position of the content start (after ```ptall\n)
-    const offset = match.index + match[0].indexOf(content);
+    // Character offset is the position of the content start (after ```ptall\n)
+    const charOffset = match.index + match[0].indexOf(content);
+    // Create source map with proper line/column offset calculation
+    const sourceMap = createSourceMap(source, charOffset, content);
     blocks.push({
       source: content,
-      offset,
+      sourceMap,
       tree: parsePtall(content),
     });
   }
@@ -90,7 +93,7 @@ function extractPtallBlocks(source: string): ParsedDocument {
  */
 function parsePtallDocument(source: string): ParsedDocument {
   return {
-    blocks: [{ source, offset: 0, tree: parsePtall(source) }],
+    blocks: [{ source, sourceMap: identitySourceMap(), tree: parsePtall(source) }],
   };
 }
 

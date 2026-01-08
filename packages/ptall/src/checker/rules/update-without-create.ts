@@ -43,6 +43,7 @@ export const updateWithoutCreateRule: Rule = {
             message: `'update' entry supersedes another '${supersededEntry.directive}' entry. Consider pointing to the original 'create' entry instead.`,
             file: entry.file,
             location: supersedes.location,
+            sourceMap: entry.sourceMap,
             data: {
               linkId,
               supersededDirective: supersededEntry.directive,
@@ -53,6 +54,7 @@ export const updateWithoutCreateRule: Rule = {
             message: `'update ${entry.entity}' supersedes a '${supersededEntry.entity}' entry. Entity types should match.`,
             file: entry.file,
             location: supersedes.location,
+            sourceMap: entry.sourceMap,
             data: {
               linkId,
               expectedEntity: entry.entity,

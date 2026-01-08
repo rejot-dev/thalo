@@ -31,23 +31,11 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "grammars": [
-      {
-        "language": "ptall",
-        "scopeName": "source.ptall",
-        "path": "./syntaxes/ptall.tmLanguage.json"
-      },
-      {
-        "scopeName": "markdown.ptall.codeblock",
-        "path": "./syntaxes/ptall-markdown.tmLanguage.json",
-        "injectTo": [
-          "text.html.markdown"
-        ],
-        "embeddedLanguages": {
-          "meta.embedded.block.ptall": "ptall"
-        }
+    "configurationDefaults": {
+      "[ptall]": {
+        "editor.semanticHighlighting.enabled": true
       }
-    ]
+    }
   },
   "scripts": {
     "build": "tsdown",

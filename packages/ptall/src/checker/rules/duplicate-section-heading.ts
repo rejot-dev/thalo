@@ -27,6 +27,7 @@ export const duplicateSectionHeadingRule: Rule = {
             message: `Duplicate section heading '# ${sectionName}' in entry content.`,
             file: entry.file,
             location: entry.location, // Ideally we'd have the section's location
+            sourceMap: entry.sourceMap,
             data: { sectionName },
           });
         } else {

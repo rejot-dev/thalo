@@ -1,4 +1,5 @@
 import type { Location } from "../ast/types.js";
+import type { SourceMap } from "../source-map.js";
 
 // ===================
 // Model Types
@@ -75,12 +76,12 @@ export interface ModelInstanceEntry {
   metadata: Map<string, MetadataValue>;
   /** Section names found in content */
   sections: string[];
-  /** Location in source */
+  /** Location in source (block-relative) */
   location: Location;
   /** The file path containing this entry */
   file: string;
-  /** Offset in the file (for markdown extraction) */
-  blockOffset: number;
+  /** Source map for translating block-relative to file-absolute positions */
+  sourceMap: SourceMap;
 }
 
 /**
@@ -122,12 +123,12 @@ export interface ModelSchemaEntry {
   removeFields: string[];
   /** Section removals (for alter) */
   removeSections: string[];
-  /** Location in source */
+  /** Location in source (block-relative) */
   location: Location;
   /** The file path containing this entry */
   file: string;
-  /** Offset in the file (for markdown extraction) */
-  blockOffset: number;
+  /** Source map for translating block-relative to file-absolute positions */
+  sourceMap: SourceMap;
 }
 
 /**
@@ -214,12 +215,12 @@ export interface ModelSynthesisEntry {
   sources: Query[];
   /** The raw prompt content from the # Prompt section */
   prompt: string;
-  /** Location in source */
+  /** Location in source (block-relative) */
   location: Location;
   /** The file path containing this entry */
   file: string;
-  /** Offset in the file (for markdown extraction) */
-  blockOffset: number;
+  /** Source map for translating block-relative to file-absolute positions */
+  sourceMap: SourceMap;
 }
 
 /**
@@ -237,12 +238,12 @@ export interface ModelActualizeEntry {
   tags: string[];
   /** Metadata key-value pairs (contains 'updated' timestamp) */
   metadata: Map<string, MetadataValue>;
-  /** Location in source */
+  /** Location in source (block-relative) */
   location: Location;
   /** The file path containing this entry */
   file: string;
-  /** Offset in the file (for markdown extraction) */
-  blockOffset: number;
+  /** Source map for translating block-relative to file-absolute positions */
+  sourceMap: SourceMap;
 }
 
 // ===================

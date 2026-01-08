@@ -22,6 +22,7 @@ export const missingTitleRule: Rule = {
           message: `Entry is missing a title. Provide a descriptive title in quotes.`,
           file: entry.file,
           location: entry.location,
+          sourceMap: entry.sourceMap,
           data: { directive: entry.directive, entity: entry.entity },
         });
       }
@@ -34,6 +35,7 @@ export const missingTitleRule: Rule = {
           message: `Schema entry is missing a title/description. Provide a description in quotes.`,
           file: entry.file,
           location: entry.location,
+          sourceMap: entry.sourceMap,
           data: { directive: entry.directive, entityName: entry.entityName },
         });
       }

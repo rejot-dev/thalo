@@ -25,6 +25,7 @@ export const defineEntityRequiresSectionRule: Rule = {
           message: `Entity definition '${entry.entityName}' must have at least one section.`,
           file: entry.file,
           location: entry.location,
+          sourceMap: entry.sourceMap,
           data: { entityName: entry.entityName },
         });
       }

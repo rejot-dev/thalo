@@ -30,6 +30,7 @@ export const timestampOutOfOrderRule: Rule = {
             message: `Timestamp '${entry.timestamp}' is earlier than previous entry '${previousTimestamp}'. Entries should be in chronological order.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: {
               timestamp: entry.timestamp,
               previousTimestamp,

@@ -64,7 +64,12 @@ async function startLanguageServer(context: vscode.ExtensionContext): Promise<La
   };
 
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: "file", language: "ptall" }],
+    documentSelector: [
+      { scheme: "file", language: "ptall" },
+      { scheme: "untitled", language: "ptall" },
+      // Enable LSP features for ptall blocks embedded in markdown files
+      { scheme: "file", language: "markdown" },
+    ],
     synchronize: {
       // Watch for file changes in ptall and markdown files (for cross-file features)
       fileEvents: [

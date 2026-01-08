@@ -32,6 +32,7 @@ export const missingRequiredSectionRule: Rule = {
             message: `Missing required section '${sectionName}' for entity '${entry.entity}'.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: { section: sectionName, entity: entry.entity },
           });
         }

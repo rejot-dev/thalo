@@ -28,6 +28,7 @@ export const invalidDefaultValueRule: Rule = {
             message: `Invalid default value '${field.defaultValue.raw}' for field '${field.name}'. Expected ${TypeExpr.toString(field.type)}.`,
             file: entry.file,
             location: field.location ?? entry.location,
+            sourceMap: entry.sourceMap,
             data: {
               fieldName: field.name,
               defaultValue: field.defaultValue.raw,

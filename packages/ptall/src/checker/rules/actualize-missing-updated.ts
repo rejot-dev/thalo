@@ -24,6 +24,7 @@ export const actualizeMissingUpdatedRule: Rule = {
             message: `Actualize entry is missing 'updated:' field. Add 'updated: ${actualize.timestamp}' to track when this synthesis was last run.`,
             file: actualize.file,
             location: actualize.location,
+            sourceMap: actualize.sourceMap,
             data: { target: actualize.target, suggestedTimestamp: actualize.timestamp },
           });
         }

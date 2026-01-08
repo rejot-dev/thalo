@@ -37,6 +37,7 @@ export const alterBeforeDefineRule: Rule = {
             message: `alter-entity for '${entry.entityName}' has timestamp ${entry.timestamp} which is before the define-entity at ${defineEntry.timestamp}.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: {
               entityName: entry.entityName,
               alterTimestamp: entry.timestamp,

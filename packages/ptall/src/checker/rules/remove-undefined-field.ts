@@ -36,6 +36,7 @@ export const removeUndefinedFieldRule: Rule = {
             message: `Cannot remove field '${fieldName}' from entity '${entry.entityName}': field does not exist.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: { fieldName, entityName: entry.entityName },
           });
         }

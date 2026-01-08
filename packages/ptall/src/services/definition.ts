@@ -1,6 +1,7 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Location } from "../ast/types.js";
 import type { LinkDefinition } from "../model/types.js";
+import { toFileLocation } from "../source-map.js";
 
 /**
  * Result of a find-definition query
@@ -8,7 +9,7 @@ import type { LinkDefinition } from "../model/types.js";
 export interface DefinitionResult {
   /** The file containing the definition */
   file: string;
-  /** Location of the definition */
+  /** Location of the definition (file-absolute) */
   location: Location;
   /** The link definition details */
   definition: LinkDefinition;
@@ -19,7 +20,7 @@ export interface DefinitionResult {
  *
  * @param workspace - The workspace to search in
  * @param linkId - The link ID to find (without ^ prefix)
- * @returns The definition result, or undefined if not found
+ * @returns The definition result with file-absolute location, or undefined if not found
  */
 export function findDefinition(workspace: Workspace, linkId: string): DefinitionResult | undefined {
   const definition = workspace.getLinkDefinition(linkId);
@@ -27,9 +28,12 @@ export function findDefinition(workspace: Workspace, linkId: string): Definition
     return undefined;
   }
 
+  // Convert block-relative location to file-absolute location
+  const fileLocation = toFileLocation(definition.entry.sourceMap, definition.location);
+
   return {
     file: definition.file,
-    location: definition.location,
+    location: fileLocation,
     definition,
   };
 }

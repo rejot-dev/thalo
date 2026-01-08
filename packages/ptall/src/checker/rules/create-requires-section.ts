@@ -25,6 +25,7 @@ export const createRequiresSectionRule: Rule = {
           message: `Create entry '${entry.title}' must use at least one section.`,
           file: entry.file,
           location: entry.location,
+          sourceMap: entry.sourceMap,
           data: { title: entry.title, entity: entry.entity },
         });
       }

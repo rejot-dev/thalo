@@ -23,6 +23,7 @@ export const synthesisEmptyQueryRule: Rule = {
               message: `Synthesis '${synthesis.title}' has an empty query. Specify an entity type like 'lore', 'journal', 'opinion', or 'reference'.`,
               file: synthesis.file,
               location: synthesis.location,
+              sourceMap: synthesis.sourceMap,
               data: { title: synthesis.title },
             });
           }

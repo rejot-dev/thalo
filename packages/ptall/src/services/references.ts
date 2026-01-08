@@ -1,6 +1,7 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Location } from "../ast/types.js";
 import type { LinkReference, LinkDefinition } from "../model/types.js";
+import { toFileLocation } from "../source-map.js";
 
 /**
  * A reference location
@@ -8,7 +9,7 @@ import type { LinkReference, LinkDefinition } from "../model/types.js";
 export interface ReferenceLocation {
   /** The file containing the reference */
   file: string;
-  /** Location of the reference */
+  /** Location of the reference (file-absolute) */
   location: Location;
   /** Whether this is the definition (vs a reference) */
   isDefinition: boolean;
@@ -24,7 +25,7 @@ export interface ReferencesResult {
   definition: LinkDefinition | undefined;
   /** All references to this link */
   references: LinkReference[];
-  /** All locations (definition + references) */
+  /** All locations (definition + references) with file-absolute positions */
   locations: ReferenceLocation[];
 }
 
@@ -34,7 +35,7 @@ export interface ReferencesResult {
  * @param workspace - The workspace to search in
  * @param linkId - The link ID to find (without ^ prefix)
  * @param includeDefinition - Whether to include the definition in the results
- * @returns The references result
+ * @returns The references result with file-absolute locations
  */
 export function findReferences(
   workspace: Workspace,
@@ -48,18 +49,22 @@ export function findReferences(
 
   // Add definition first if requested
   if (includeDefinition && definition) {
+    // Convert block-relative to file-absolute location
+    const fileLocation = toFileLocation(definition.entry.sourceMap, definition.location);
     locations.push({
       file: definition.file,
-      location: definition.location,
+      location: fileLocation,
       isDefinition: true,
     });
   }
 
   // Add all references
   for (const ref of references) {
+    // Convert block-relative to file-absolute location
+    const fileLocation = toFileLocation(ref.entry.sourceMap, ref.location);
     locations.push({
       file: ref.file,
-      location: ref.location,
+      location: fileLocation,
       isDefinition: false,
     });
   }

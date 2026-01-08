@@ -23,6 +23,7 @@ export const synthesisMissingSourcesRule: Rule = {
             message: `Synthesis '${synthesis.title}' is missing a 'sources:' field. Add a query like 'sources: lore where subject = ^self'.`,
             file: synthesis.file,
             location: synthesis.location,
+            sourceMap: synthesis.sourceMap,
             data: { title: synthesis.title, linkId: synthesis.linkId },
           });
         }

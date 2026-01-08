@@ -3,6 +3,7 @@ import { parseDocument } from "./parser.js";
 import { Document } from "./model/document.js";
 import { Workspace } from "./model/workspace.js";
 import { check } from "./checker/check.js";
+import { isIdentityMap } from "./source-map.js";
 
 describe("Parser", () => {
   it("parses a ptall file", () => {
@@ -15,7 +16,7 @@ describe("Parser", () => {
     const result = parseDocument(source, { fileType: "ptall" });
 
     expect(result.blocks).toHaveLength(1);
-    expect(result.blocks[0].offset).toBe(0);
+    expect(isIdentityMap(result.blocks[0].sourceMap)).toBe(true);
     expect(result.blocks[0].tree.rootNode.type).toBe("source_file");
   });
 

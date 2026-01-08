@@ -46,6 +46,7 @@ export const duplicateLinkIdRule: Rule = {
               message: `Duplicate link ID '^${linkId}'. Also defined in: ${otherFiles}`,
               file: def.file,
               location: def.location,
+              sourceMap: def.entry.sourceMap,
               data: { linkId, otherFiles },
             });
           }

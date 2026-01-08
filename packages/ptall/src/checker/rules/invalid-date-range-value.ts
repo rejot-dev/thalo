@@ -54,6 +54,7 @@ export const invalidDateRangeValueRule: Rule = {
             message: `Invalid date range format '${rangeValue}' for field '${fieldName}'. Expected 'DATE ~ DATE' where DATE is YYYY, YYYY-MM, or YYYY-MM-DD.`,
             file: entry.file,
             location: value.location,
+            sourceMap: entry.sourceMap,
             data: { fieldName, value: rangeValue },
           });
         }

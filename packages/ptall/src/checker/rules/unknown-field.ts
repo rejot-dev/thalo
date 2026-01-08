@@ -28,6 +28,7 @@ export const unknownFieldRule: Rule = {
             message: `Unknown field '${fieldName}' for entity '${entry.entity}'.`,
             file: entry.file,
             location: value.location,
+            sourceMap: entry.sourceMap,
             data: { field: fieldName, entity: entry.entity },
           });
         }

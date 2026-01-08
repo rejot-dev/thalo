@@ -40,6 +40,7 @@ export const duplicateEntityDefinitionRule: Rule = {
             message: `Duplicate definition for entity '${entityName}'. Also defined at: ${otherLocations}`,
             file: def.file,
             location: def.location,
+            sourceMap: def.sourceMap,
             data: { entityName, otherLocations },
           });
         }

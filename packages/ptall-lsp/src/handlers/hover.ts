@@ -1,4 +1,4 @@
-import type { Hover, Position } from "vscode-languageserver";
+import type { Hover, Position, Range } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import type {
   Workspace,
@@ -8,7 +8,28 @@ import type {
   ModelSynthesisEntry,
   ModelActualizeEntry,
 } from "@wilco/ptall";
-import { TypeExpr, type EntitySchema, type FieldSchema, type SectionSchema } from "@wilco/ptall";
+import {
+  TypeExpr,
+  parseDocument,
+  findBlockAtPosition,
+  type EntitySchema,
+  type FieldSchema,
+  type SectionSchema,
+  type Position as PtallPosition,
+} from "@wilco/ptall";
+
+// ===================
+// Types
+// ===================
+
+/**
+ * Minimal TextDocument-like interface for text operations.
+ * Both real TextDocuments and block text wrappers implement this.
+ */
+interface MinimalTextDocument {
+  getText(range?: Range): string;
+  readonly lineCount: number;
+}
 
 // ===================
 // Word Detection
@@ -17,7 +38,7 @@ import { TypeExpr, type EntitySchema, type FieldSchema, type SectionSchema } fro
 /**
  * Get the word at a position (for link/tag detection)
  */
-function getWordAtPosition(document: TextDocument, position: Position): string | null {
+function getWordAtPosition(document: MinimalTextDocument, position: Position): string | null {
   const line = document.getText({
     start: { line: position.line, character: 0 },
     end: { line: position.line + 1, character: 0 },
@@ -48,7 +69,7 @@ function getWordAtPosition(document: TextDocument, position: Position): string |
 /**
  * Get the full line text
  */
-function getLineText(document: TextDocument, lineNumber: number): string {
+function getLineText(document: MinimalTextDocument, lineNumber: number): string {
   const lineCount = document.lineCount;
   if (lineNumber >= lineCount) {
     return "";
@@ -647,7 +668,7 @@ const TIMESTAMP_LINE_PATTERN = /^([12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d)\s+/;
  * Find the entry header by scanning backwards from a line
  */
 function findEntryHeader(
-  document: TextDocument,
+  document: MinimalTextDocument,
   fromLine: number,
 ): { line: number; text: string; entity?: string } | undefined {
   for (let i = fromLine; i >= 0; i--) {
@@ -670,7 +691,7 @@ function findEntryHeader(
 /**
  * Detect what element is at the hover position
  */
-function detectHoverContext(document: TextDocument, position: Position): HoverContext {
+function detectHoverContext(document: MinimalTextDocument, position: Position): HoverContext {
   const lineText = getLineText(document, position.line);
   const char = position.character;
 
@@ -841,30 +862,22 @@ function tokenizeHeader(text: string): HeaderToken[] {
 // ===================
 
 /**
- * Handle textDocument/hover request
- *
- * Provides hover information for various syntax elements:
- * - ^link-id: Shows target entry details
- * - #tag: Shows tag usage statistics
- * - Directives: Shows documentation
- * - Entity names: Shows schema with fields and sections
- * - Metadata keys: Shows field type and description
- * - Type expressions: Shows type documentation
- * - Section headers: Shows section description
- * - Timestamps: Shows entry info or link reference hint
- *
- * @param workspace - The ptall workspace
- * @param document - The text document
- * @param position - The hover position
- * @returns Hover information, or null if nothing to show
+ * Core hover logic for ptall content.
+ * Works with either a standalone ptall document or a virtual block document.
  */
-export function handleHover(
+function handleHoverCore(
   workspace: Workspace,
-  document: TextDocument,
+  document: MinimalTextDocument,
   position: Position,
 ): Hover | null {
   const ctx = detectHoverContext(document, position);
+  return processHoverContext(workspace, ctx);
+}
 
+/**
+ * Process a hover context and return hover information.
+ */
+function processHoverContext(workspace: Workspace, ctx: HoverContext): Hover | null {
   switch (ctx.kind) {
     // Link reference (^link-id)
     case "link": {
@@ -1011,4 +1024,102 @@ export function handleHover(
     default:
       return null;
   }
+}
+
+// ===================
+// Block Text Document Helper
+// ===================
+
+/**
+ * Create a minimal text document interface for a block's content.
+ */
+function createBlockTextDocument(blockSource: string): MinimalTextDocument {
+  const lines = blockSource.split("\n");
+
+  return {
+    lineCount: lines.length,
+    getText(range?: Range): string {
+      if (!range) {
+        return blockSource;
+      }
+
+      const startLine = Math.max(0, range.start.line);
+      const endLine = Math.min(lines.length - 1, range.end.line);
+
+      if (startLine === endLine) {
+        return lines[startLine].slice(range.start.character, range.end.character);
+      }
+
+      const result: string[] = [];
+      for (let i = startLine; i <= endLine; i++) {
+        if (i === startLine) {
+          result.push(lines[i].slice(range.start.character));
+        } else if (i === endLine) {
+          result.push(lines[i].slice(0, range.end.character));
+        } else {
+          result.push(lines[i]);
+        }
+      }
+      return result.join("\n");
+    },
+  };
+}
+
+/**
+ * Convert LSP Position to ptall Position (both are 0-based, same structure).
+ */
+function lspToPtallPosition(pos: Position): PtallPosition {
+  return { line: pos.line, column: pos.character };
+}
+
+/**
+ * Handle textDocument/hover request
+ *
+ * Provides hover information for various syntax elements:
+ * - ^link-id: Shows target entry details
+ * - #tag: Shows tag usage statistics
+ * - Directives: Shows documentation
+ * - Entity names: Shows schema with fields and sections
+ * - Metadata keys: Shows field type and description
+ * - Type expressions: Shows type documentation
+ * - Section headers: Shows section description
+ * - Timestamps: Shows entry info or link reference hint
+ *
+ * Supports both standalone .ptall files and ptall blocks embedded in markdown.
+ *
+ * @param workspace - The ptall workspace
+ * @param document - The text document
+ * @param position - The hover position
+ * @returns Hover information, or null if nothing to show
+ */
+export function handleHover(
+  workspace: Workspace,
+  document: TextDocument,
+  position: Position,
+): Hover | null {
+  const uri = document.uri;
+  const isMarkdown = uri.endsWith(".md");
+
+  // Handle markdown files with embedded ptall blocks
+  if (isMarkdown) {
+    const parsed = parseDocument(document.getText(), { fileType: "markdown" });
+
+    // Find which block (if any) contains the cursor position
+    const match = findBlockAtPosition(parsed.blocks, lspToPtallPosition(position));
+    if (!match) {
+      // Position is not inside a ptall block
+      return null;
+    }
+
+    // Create a minimal text document for the block and use block-relative position
+    const blockDocument = createBlockTextDocument(match.block.source);
+    const blockPosition: Position = {
+      line: match.blockPosition.line,
+      character: match.blockPosition.column,
+    };
+    return handleHoverCore(workspace, blockDocument, blockPosition);
+  }
+
+  // Handle standalone ptall files
+  return handleHoverCore(workspace, document, position);
 }

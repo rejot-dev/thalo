@@ -23,6 +23,7 @@ export const synthesisMissingPromptRule: Rule = {
             message: `Synthesis '${synthesis.title}' is missing a '# Prompt' section. Add instructions for the LLM.`,
             file: synthesis.file,
             location: synthesis.location,
+            sourceMap: synthesis.sourceMap,
             data: { title: synthesis.title, linkId: synthesis.linkId },
           });
         }

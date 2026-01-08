@@ -24,6 +24,7 @@ export const actualizeUnresolvedTargetRule: Rule = {
             message: `Actualize references undefined synthesis '^${actualize.target}'. Define a synthesis with this link ID first.`,
             file: actualize.file,
             location: actualize.location,
+            sourceMap: actualize.sourceMap,
             data: { target: actualize.target },
           });
         } else if (targetDef.entry.kind !== "synthesis") {
@@ -31,6 +32,7 @@ export const actualizeUnresolvedTargetRule: Rule = {
             message: `Actualize target '^${actualize.target}' is not a synthesis definition (found '${targetDef.entry.kind}' entry).`,
             file: actualize.file,
             location: actualize.location,
+            sourceMap: actualize.sourceMap,
             data: { target: actualize.target, actualKind: targetDef.entry.kind },
           });
         }

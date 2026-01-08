@@ -28,6 +28,7 @@ export const unknownSectionRule: Rule = {
             message: `Unknown section '${sectionName}' for entity '${entry.entity}'.`,
             file: entry.file,
             location: entry.location, // Ideally we'd have the section's location
+            sourceMap: entry.sourceMap,
             data: { section: sectionName, entity: entry.entity },
           });
         }

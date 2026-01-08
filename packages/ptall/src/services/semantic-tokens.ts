@@ -1,20 +1,25 @@
 import type { SyntaxNode, Tree } from "tree-sitter";
 import type { ParsedDocument } from "../parser.js";
+import type { SourceMap } from "../source-map.js";
 
 /**
  * Semantic token types - these map to LSP's SemanticTokenTypes
+ *
+ * See: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokenTypes
  */
 export const tokenTypes = [
   "namespace", // timestamp
-  "type", // entity type (lore, opinion, etc.)
-  "class", // directive (create, update, define-entity, alter-entity)
+  "type", // entity type (lore, opinion, etc.), primitive types
+  "class", // (unused, kept for index stability)
   "function", // link (^link-id)
-  "property", // metadata key
-  "string", // title, description, quoted strings
-  "keyword", // section keywords (metadata:, sections:, etc.)
-  "comment", // content lines
+  "property", // metadata key, field name, section name
+  "string", // title, description, quoted strings, literal types
+  "keyword", // where, and, block headers (# Metadata, etc.)
+  "comment", // comments
   "variable", // tag names
-  "number", // date values
+  "number", // datetime values, date ranges
+  "operator", // |, [], =, :, ;, (, ), ,
+  "macro", // markdown header indicator (#, ##, etc.)
 ] as const;
 
 export type TokenType = (typeof tokenTypes)[number];
@@ -26,6 +31,7 @@ export const tokenModifiers = [
   "declaration", // link definition
   "definition", // entity definition
   "documentation", // description text
+  "readonly", // optional marker (?)
 ] as const;
 
 export type TokenModifier = (typeof tokenModifiers)[number];
@@ -68,13 +74,14 @@ export function getTokenModifiersMask(modifiers: TokenModifier[]): number {
 }
 
 /**
- * Extract semantic tokens from a parsed document
+ * Extract semantic tokens from a parsed document.
+ * Returns tokens with file-absolute positions (sourceMap applied).
  */
 export function extractSemanticTokens(document: ParsedDocument): SemanticToken[] {
   const tokens: SemanticToken[] = [];
 
   for (const block of document.blocks) {
-    extractTokensFromTree(block.tree, block.offset, tokens);
+    extractTokensFromTree(block.tree, block.sourceMap, tokens);
   }
 
   // Sort by position (line, then character)
@@ -91,12 +98,12 @@ export function extractSemanticTokens(document: ParsedDocument): SemanticToken[]
 /**
  * Extract tokens from a tree-sitter tree
  */
-function extractTokensFromTree(tree: Tree, offset: number, tokens: SemanticToken[]): void {
+function extractTokensFromTree(tree: Tree, sourceMap: SourceMap, tokens: SemanticToken[]): void {
   const cursor = tree.walk();
 
   // DFS traversal
   const visitNode = (node: SyntaxNode): void => {
-    const token = getTokenForNode(node, offset);
+    const token = getTokenForNode(node, sourceMap);
     if (token) {
       tokens.push(token);
     }
@@ -114,12 +121,14 @@ function extractTokensFromTree(tree: Tree, offset: number, tokens: SemanticToken
 }
 
 /**
- * Get a semantic token for a tree-sitter node (if applicable)
+ * Get a semantic token for a tree-sitter node (if applicable).
+ * Returns token with file-absolute positions (sourceMap applied).
  */
-function getTokenForNode(node: SyntaxNode, _blockOffset: number): SemanticToken | null {
-  const { type, startPosition, endPosition } = node;
+function getTokenForNode(node: SyntaxNode, sourceMap: SourceMap): SemanticToken | null {
+  let { type, startPosition, endPosition } = node;
+  let nodeText = node.text;
 
-  // Skip ERROR nodes
+  // Skip ERROR nodes and certain wrapper nodes
   if (type === "ERROR") {
     return null;
   }
@@ -128,23 +137,33 @@ function getTokenForNode(node: SyntaxNode, _blockOffset: number): SemanticToken 
   let modifiers: TokenModifier[] = [];
 
   switch (type) {
+    // =========================================================================
+    // Header elements
+    // =========================================================================
     case "timestamp":
-      tokenType = "namespace";
-      modifiers = ["declaration"];
+      tokenType = "number"; // same as datetime_value for consistent date coloring
       break;
 
-    case "directive":
-      tokenType = "class";
-      modifiers = ["definition"];
+    case "instance_directive":
+    case "schema_directive":
+    case "define-synthesis":
+    case "actualize-synthesis":
+      tokenType = "keyword";
       break;
 
     case "entity":
+    case "query_entity":
       tokenType = "type";
       break;
 
-    case "entity_name":
+    case "identifier":
+      // Entity name in schema entries (define-entity custom)
       tokenType = "type";
       modifiers = ["definition"];
+      break;
+
+    case "title":
+      tokenType = "string";
       break;
 
     case "link":
@@ -163,17 +182,42 @@ function getTokenForNode(node: SyntaxNode, _blockOffset: number): SemanticToken 
       tokenType = "variable";
       break;
 
-    case "title":
+    // =========================================================================
+    // Metadata
+    // =========================================================================
+    case "key":
+      tokenType = "property";
+      break;
+
+    case "quoted_value":
       tokenType = "string";
       break;
 
-    case "metadata_key":
-    case "field_name":
-      tokenType = "property";
+    case "datetime_value":
+    case "date_range":
+      tokenType = "number";
       break;
 
-    case "section_name":
+    // =========================================================================
+    // Schema definitions
+    // =========================================================================
+    case "field_name":
+    case "section_name": {
       tokenType = "property";
+      // These tokens include leading whitespace (\n + indent), strip it
+      const trimmed = nodeText.trimStart();
+      const leadingLen = nodeText.length - trimmed.length;
+      if (leadingLen > 0) {
+        // Adjust position to after the whitespace (endPosition is correct, work backwards)
+        startPosition = { row: endPosition.row, column: endPosition.column - trimmed.length };
+        nodeText = trimmed;
+      }
+      break;
+    }
+
+    case "optional_marker":
+      tokenType = "operator";
+      modifiers = ["readonly"];
       break;
 
     case "primitive_type":
@@ -189,12 +233,47 @@ function getTokenForNode(node: SyntaxNode, _blockOffset: number): SemanticToken 
       modifiers = ["documentation"];
       break;
 
-    case "block_keyword":
-      // metadata:, sections:, remove-metadata:, remove-sections:
+    // =========================================================================
+    // Operators and punctuation
+    // =========================================================================
+    case "|":
+    case "[]":
+    case ":":
+    case "=":
+    case ";":
+    case "(":
+    case ")":
+    case ",":
+      tokenType = "operator";
+      break;
+
+    // =========================================================================
+    // Query expressions
+    // =========================================================================
+    case "where":
+    case "and":
       tokenType = "keyword";
       break;
 
-    case "markdown_header":
+    case "condition_field":
+      tokenType = "property";
+      break;
+
+    // =========================================================================
+    // Comments
+    // =========================================================================
+    case "comment":
+      tokenType = "comment";
+      break;
+
+    // =========================================================================
+    // Content sections
+    // =========================================================================
+    case "md_indicator":
+      tokenType = "macro";
+      break;
+
+    case "md_heading_text":
       tokenType = "keyword";
       break;
 
@@ -207,17 +286,24 @@ function getTokenForNode(node: SyntaxNode, _blockOffset: number): SemanticToken 
   }
 
   // For multiline tokens, only highlight the first line
-  const line = startPosition.row;
-  const startChar = startPosition.column;
   const length =
     startPosition.row === endPosition.row
       ? endPosition.column - startPosition.column
-      : node.text.indexOf("\n");
+      : nodeText.indexOf("\n");
+
+  // Apply sourceMap to convert block-relative positions to file-absolute
+  // For the first line of the block, add both line and column offset
+  // For subsequent lines, only add line offset
+  const isFirstBlockLine = startPosition.row === 0;
+  const fileLine = sourceMap.lineOffset + startPosition.row;
+  const fileChar = isFirstBlockLine
+    ? sourceMap.columnOffset + startPosition.column
+    : startPosition.column;
 
   return {
-    line,
-    startChar,
-    length: length > 0 ? length : node.text.length,
+    line: fileLine,
+    startChar: fileChar,
+    length: length > 0 ? length : nodeText.length,
     tokenType: getTokenTypeIndex(tokenType),
     tokenModifiers: getTokenModifiersMask(modifiers),
   };

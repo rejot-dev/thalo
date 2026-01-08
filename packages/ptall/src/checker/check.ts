@@ -1,8 +1,16 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Document } from "../model/document.js";
-import type { Diagnostic, CheckConfig, CheckContext, Rule, Severity } from "./types.js";
+import type {
+  Diagnostic,
+  CheckConfig,
+  CheckContext,
+  Rule,
+  Severity,
+  PartialDiagnostic,
+} from "./types.js";
 import { getEffectiveSeverity } from "./types.js";
 import { allRules } from "./rules/index.js";
+import { toFileLocation } from "../source-map.js";
 
 /**
  * Check a workspace for issues using all configured rules
@@ -48,6 +56,30 @@ export function checkDocument(
 }
 
 /**
+ * Convert a partial diagnostic to a full diagnostic.
+ * If sourceMap is provided, convert location from block-relative to file-absolute.
+ */
+function createDiagnostic(
+  partial: PartialDiagnostic,
+  code: string,
+  severity: Exclude<Severity, "off">,
+): Diagnostic {
+  // Convert location if sourceMap is provided
+  const location = partial.sourceMap
+    ? toFileLocation(partial.sourceMap, partial.location)
+    : partial.location;
+
+  return {
+    code,
+    severity,
+    message: partial.message,
+    file: partial.file,
+    location,
+    data: partial.data,
+  };
+}
+
+/**
  * Create a check context for workspace-wide checking
  */
 function createContext(
@@ -59,11 +91,7 @@ function createContext(
   return {
     workspace,
     report(partial) {
-      diagnostics.push({
-        ...partial,
-        code: rule.code,
-        severity,
-      });
+      diagnostics.push(createDiagnostic(partial, rule.code, severity));
     },
   };
 }
@@ -82,11 +110,7 @@ function createDocumentContext(
     workspace,
     document,
     report(partial) {
-      diagnostics.push({
-        ...partial,
-        code: rule.code,
-        severity,
-      });
+      diagnostics.push(createDiagnostic(partial, rule.code, severity));
     },
   };
 }

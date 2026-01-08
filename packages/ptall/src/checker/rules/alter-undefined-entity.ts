@@ -31,6 +31,7 @@ export const alterUndefinedEntityRule: Rule = {
             message: `Cannot alter undefined entity '${entry.entityName}'. Define it first using 'define-entity ${entry.entityName}'.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: { entityName: entry.entityName },
           });
         }

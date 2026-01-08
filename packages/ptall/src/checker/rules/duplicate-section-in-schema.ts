@@ -26,6 +26,7 @@ export const duplicateSectionInSchemaRule: Rule = {
             message: `Duplicate section '${section.name}' in schema entry. First defined at line ${existingLine}.`,
             file: entry.file,
             location: section.location ?? entry.location,
+            sourceMap: entry.sourceMap,
             data: { sectionName: section.name, firstLine: existingLine },
           });
         } else {

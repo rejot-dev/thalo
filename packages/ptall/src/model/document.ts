@@ -1,5 +1,6 @@
 import { parseDocument, type ParsedDocument, type ParsedBlock, type FileType } from "../parser.js";
 import { extractSourceFile } from "../ast/extract.js";
+import type { SourceMap } from "../source-map.js";
 import type {
   SourceFile,
   InstanceEntry,
@@ -91,7 +92,7 @@ export class Document {
 
     for (const block of parsed.blocks) {
       const ast = extractSourceFile(block.tree.rootNode);
-      const blockEntries = extractEntries(ast, file, block.offset);
+      const blockEntries = extractEntries(ast, file, block.sourceMap);
 
       for (const entry of blockEntries) {
         entries.push(entry);
@@ -141,18 +142,18 @@ export class Document {
 /**
  * Extract model entries from an AST
  */
-function extractEntries(ast: SourceFile, file: string, blockOffset: number): ModelEntry[] {
+function extractEntries(ast: SourceFile, file: string, sourceMap: SourceMap): ModelEntry[] {
   const entries: ModelEntry[] = [];
 
   for (const entry of ast.entries) {
     if (entry.type === "instance_entry") {
-      entries.push(extractInstanceEntry(entry, file, blockOffset));
+      entries.push(extractInstanceEntry(entry, file, sourceMap));
     } else if (entry.type === "schema_entry") {
-      entries.push(extractSchemaEntry(entry, file, blockOffset));
+      entries.push(extractSchemaEntry(entry, file, sourceMap));
     } else if (entry.type === "synthesis_entry") {
-      entries.push(extractSynthesisEntry(entry, file, blockOffset));
+      entries.push(extractSynthesisEntry(entry, file, sourceMap));
     } else if (entry.type === "actualize_entry") {
-      entries.push(extractActualizeEntry(entry, file, blockOffset));
+      entries.push(extractActualizeEntry(entry, file, sourceMap));
     }
   }
 
@@ -165,7 +166,7 @@ function extractEntries(ast: SourceFile, file: string, blockOffset: number): Mod
 function extractInstanceEntry(
   ast: InstanceEntry,
   file: string,
-  blockOffset: number,
+  sourceMap: SourceMap,
 ): ModelInstanceEntry {
   const metadata = new Map<
     string,
@@ -195,7 +196,7 @@ function extractInstanceEntry(
     sections,
     location: ast.location,
     file,
-    blockOffset,
+    sourceMap,
   };
 }
 
@@ -223,7 +224,11 @@ function extractSectionsFromContent(content: Content | null): string[] {
 /**
  * Extract a model schema entry from AST
  */
-function extractSchemaEntry(ast: SchemaEntry, file: string, blockOffset: number): ModelSchemaEntry {
+function extractSchemaEntry(
+  ast: SchemaEntry,
+  file: string,
+  sourceMap: SourceMap,
+): ModelSchemaEntry {
   const fields: ModelFieldDefinition[] = [];
   const sections: ModelSectionDefinition[] = [];
   const removeFields: string[] = [];
@@ -279,7 +284,7 @@ function extractSchemaEntry(ast: SchemaEntry, file: string, blockOffset: number)
     removeSections,
     location: ast.location,
     file,
-    blockOffset,
+    sourceMap,
   };
 }
 
@@ -289,7 +294,7 @@ function extractSchemaEntry(ast: SchemaEntry, file: string, blockOffset: number)
 function extractSynthesisEntry(
   ast: SynthesisEntry,
   file: string,
-  blockOffset: number,
+  sourceMap: SourceMap,
 ): ModelSynthesisEntry {
   const metadata = new Map<
     string,
@@ -323,7 +328,7 @@ function extractSynthesisEntry(
     prompt,
     location: ast.location,
     file,
-    blockOffset,
+    sourceMap,
   };
 }
 
@@ -363,7 +368,7 @@ function extractPromptFromContent(content: Content | null): string {
 function extractActualizeEntry(
   ast: ActualizeEntry,
   file: string,
-  blockOffset: number,
+  sourceMap: SourceMap,
 ): ModelActualizeEntry {
   const metadata = new Map<
     string,
@@ -388,7 +393,7 @@ function extractActualizeEntry(
     metadata,
     location: ast.location,
     file,
-    blockOffset,
+    sourceMap,
   };
 }
 

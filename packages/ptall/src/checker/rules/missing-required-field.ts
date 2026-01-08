@@ -35,6 +35,7 @@ export const missingRequiredFieldRule: Rule = {
             message: `Missing required field '${fieldName}' for entity '${entry.entity}'.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: { field: fieldName, entity: entry.entity },
           });
         }

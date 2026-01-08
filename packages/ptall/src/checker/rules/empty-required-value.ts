@@ -37,6 +37,7 @@ export const emptyRequiredValueRule: Rule = {
               message: `Required field '${fieldName}' has an empty value.`,
               file: entry.file,
               location: value.location,
+              sourceMap: entry.sourceMap,
               data: { fieldName, entity: entry.entity },
             });
           }

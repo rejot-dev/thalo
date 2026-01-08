@@ -1,6 +1,7 @@
 import type { Location } from "../ast/types.js";
 import type { Workspace } from "../model/workspace.js";
 import type { Document } from "../model/document.js";
+import type { SourceMap } from "../source-map.js";
 
 /**
  * Severity levels for diagnostics
@@ -35,8 +36,24 @@ export interface Diagnostic {
   message: string;
   /** File path where the issue was found */
   file: string;
-  /** Location in the source */
+  /** Location in the source (file-absolute) */
   location: Location;
+  /** Additional data for the diagnostic (rule-specific) */
+  data?: Record<string, unknown>;
+}
+
+/**
+ * Partial diagnostic with optional sourceMap for position mapping
+ */
+export interface PartialDiagnostic {
+  /** Human-readable message */
+  message: string;
+  /** File path where the issue was found */
+  file: string;
+  /** Location in the source (block-relative) */
+  location: Location;
+  /** Source map for converting block-relative to file-absolute positions */
+  sourceMap?: SourceMap;
   /** Additional data for the diagnostic (rule-specific) */
   data?: Record<string, unknown>;
 }
@@ -49,8 +66,8 @@ export interface CheckContext {
   workspace: Workspace;
   /** The document being checked (for document-scoped rules) */
   document?: Document;
-  /** Report a diagnostic */
-  report(diagnostic: Omit<Diagnostic, "code" | "severity">): void;
+  /** Report a diagnostic. If sourceMap is provided, location will be converted to file-absolute. */
+  report(diagnostic: PartialDiagnostic): void;
 }
 
 /**

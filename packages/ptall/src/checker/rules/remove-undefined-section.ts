@@ -34,6 +34,7 @@ export const removeUndefinedSectionRule: Rule = {
             message: `Cannot remove section '${sectionName}' from entity '${entry.entityName}': section does not exist.`,
             file: entry.file,
             location: entry.location,
+            sourceMap: entry.sourceMap,
             data: { sectionName, entityName: entry.entityName },
           });
         }

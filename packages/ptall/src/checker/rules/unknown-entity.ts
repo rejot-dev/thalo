@@ -22,6 +22,7 @@ export const unknownEntityRule: Rule = {
           message: `Unknown entity type '${entry.entity}'. Define it using 'define-entity ${entry.entity}'.`,
           file: entry.file,
           location: entry.location,
+          sourceMap: entry.sourceMap,
           data: { entity: entry.entity },
         });
       }
