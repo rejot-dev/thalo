@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import * as prettier from "prettier";
 import * as plugin from "../index";
-import { formatParseErrors, parseThalo } from "../parser";
+import { formatParseErrors, parseThalo, findErrorNodes } from "../parser";
 
 const format = async (code: string): Promise<string> => {
   return prettier.format(code, {
@@ -9,23 +9,6 @@ const format = async (code: string): Promise<string> => {
     plugins: [plugin],
   });
 };
-
-// Helper to find error nodes - same as in parser.ts but exported for tests
-function findErrorNodes(
-  node: import("tree-sitter").SyntaxNode,
-): import("tree-sitter").SyntaxNode[] {
-  const errors: import("tree-sitter").SyntaxNode[] = [];
-
-  if (node.type === "ERROR" || node.isMissing) {
-    errors.push(node);
-  }
-
-  for (const child of node.children) {
-    errors.push(...findErrorNodes(child));
-  }
-
-  return errors;
-}
 
 describe("parse error handling", () => {
   describe("formatParseErrors", () => {
@@ -81,71 +64,139 @@ describe("parse error handling", () => {
   });
 
   describe("prettier integration", () => {
-    it("should throw descriptive error for missing timestamp", async () => {
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    it("should return original source and warn for missing timestamp", async () => {
       const input = `create lore "Title"
   type: "fact"`;
 
-      await expect(format(input)).rejects.toThrow(/Line \d+, column \d+/);
+      const result = await format(input);
+
+      // Should return original source unchanged (with trailing newline)
+      expect(result).toBe(input + "\n");
+
+      // Should warn about the error
+      expect(warnSpy).toHaveBeenCalled();
+      const warning = warnSpy.mock.calls[0]?.[0] as string;
+      expect(warning).toContain("syntax errors");
     });
 
-    it("should throw descriptive error for invalid directive", async () => {
+    it("should return original source and warn for invalid directive", async () => {
       const input = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
 
-      await expect(format(input)).rejects.toThrow(/Parse error/i);
+      const result = await format(input);
+
+      // Should return original source unchanged
+      expect(result).toBe(input + "\n");
+      expect(warnSpy).toHaveBeenCalled();
     });
 
-    it("should throw descriptive error for unclosed quote", async () => {
+    it("should return original source and warn for unclosed quote", async () => {
       const input = `2026-01-05T15:30Z create lore "Unclosed title
   type: "fact"`;
 
-      await expect(format(input)).rejects.toThrow(/Parse error/i);
+      const result = await format(input);
+
+      // Should return original source unchanged
+      expect(result).toBe(input + "\n");
+      expect(warnSpy).toHaveBeenCalled();
     });
 
-    it("should include hint about metadata values", async () => {
+    it("should include hint about metadata values in warning", async () => {
       // Missing timestamp - will produce an error with the hint
       const input = `create lore "Title"`;
 
-      await expect(format(input)).rejects.toThrow(/quoted strings/);
+      await format(input);
+
+      expect(warnSpy).toHaveBeenCalled();
+      const warning = warnSpy.mock.calls[0]?.[0] as string;
+      expect(warning).toContain("quoted strings");
     });
 
-    it("should include example in hint", async () => {
+    it("should include example in warning hint", async () => {
       const input = `create lore "Title"`;
 
-      await expect(format(input)).rejects.toThrow(/type: "fact"/);
+      await format(input);
+
+      expect(warnSpy).toHaveBeenCalled();
+      const warning = warnSpy.mock.calls[0]?.[0] as string;
+      expect(warning).toContain('type: "fact"');
     });
 
-    it("should show specific error location", async () => {
+    it("should show specific error location in warning", async () => {
       const input = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
 
-      try {
-        await format(input);
-        expect.fail("Should have thrown");
-      } catch (e) {
-        const message = (e as Error).message;
-        // Should include line 1 (where "invalid" is)
-        expect(message).toContain("Line 1");
-        expect(message).toContain("column");
-      }
+      await format(input);
+
+      expect(warnSpy).toHaveBeenCalled();
+      const warning = warnSpy.mock.calls[0]?.[0] as string;
+      // Should include line 1 (where "invalid" is)
+      expect(warning).toContain("Line 1");
+      expect(warning).toContain("column");
     });
 
-    it("should not throw for valid input", async () => {
+    it("should not warn for valid input", async () => {
       const input = `2026-01-05T15:30Z create lore "Valid title" #tag
   type: "fact"
 `;
 
-      await expect(format(input)).resolves.toBeDefined();
+      const result = await format(input);
+
+      expect(result).toBeDefined();
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it("should not throw for valid input with various indentation", async () => {
+    it("should not warn for valid input with various indentation", async () => {
       // The grammar actually accepts 1-space indentation
       const input = `2026-01-05T15:30Z create lore "Title"
  type: "fact"
 `;
 
-      // This should not throw - grammar is lenient
-      await expect(format(input)).resolves.toBeDefined();
+      const result = await format(input);
+
+      expect(result).toBeDefined();
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it("should return original source and warn when timezone is forgotten in timestamp", async () => {
+      // Missing timezone indicator (Z or +/-HH:MM) at end of timestamp
+      const input = `2026-01-05T15:30 create lore "Title"
+  type: "fact"`;
+
+      const result = await format(input);
+
+      // Should return original source unchanged
+      expect(result).toBe(input + "\n");
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
+    it("should return original source unchanged when file has any errors", async () => {
+      // First entry is invalid (no timezone), second is valid
+      // We return original unchanged to avoid tree-sitter error recovery issues
+      const input = `2026-01-05T15:30 create lore "Invalid"
+  type: "fact"
+
+2026-01-05T18:11Z create lore "Valid Entry"
+  type: "fact"
+`;
+
+      const result = await format(input);
+
+      // Should warn about errors
+      expect(warnSpy).toHaveBeenCalled();
+
+      // Should return original source unchanged (already has trailing newline)
+      expect(result).toBe(input);
     });
   });
 });

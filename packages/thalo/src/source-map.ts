@@ -189,6 +189,29 @@ export function positionToPoint(pos: Position): Point {
 }
 
 /**
+ * Convert a character offset in source text to a Position (line, column).
+ *
+ * @param source - The source text
+ * @param offset - Character offset (0-based)
+ * @returns Position with 0-based line and column
+ */
+export function positionFromOffset(source: string, offset: number): Position {
+  let line = 0;
+  let column = 0;
+
+  for (let i = 0; i < offset && i < source.length; i++) {
+    if (source[i] === "\n") {
+      line++;
+      column = 0;
+    } else {
+      column++;
+    }
+  }
+
+  return { line, column };
+}
+
+/**
  * Convert a block-relative Location to a file-absolute Location.
  *
  * @param map - The source map for the block

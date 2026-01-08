@@ -35,6 +35,25 @@ export type { EntitySchema, FieldSchema, SectionSchema } from "./schema/types.js
 // AST types
 export type { Location } from "./ast/types.js";
 
+// AST node-at-position utility
+export { findNodeAtPosition } from "./ast/node-at-position.js";
+export type {
+  NodeContext,
+  LinkContext,
+  TagContext,
+  TimestampContext,
+  DirectiveContext,
+  EntityContext,
+  SchemaEntityContext,
+  MetadataKeyContext,
+  SectionHeaderContext,
+  TypeContext,
+  FieldNameContext,
+  SectionNameContext,
+  TitleContext,
+  UnknownContext,
+} from "./ast/node-at-position.js";
+
 // Source mapping for embedded blocks
 export {
   identitySourceMap,
@@ -46,6 +65,7 @@ export {
   toBlockLocation,
   pointToPosition,
   positionToPoint,
+  positionFromOffset,
   findBlockAtPosition,
   type SourceMap,
   type Position,

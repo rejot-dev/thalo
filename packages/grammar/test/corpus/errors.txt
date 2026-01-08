@@ -1,0 +1,63 @@
+==================
+invalid timestamp
+==================
+
+2026-01-05T18:11 create lore "Invalid"
+  type: "fact"
+
+
+2026-01-05T18:11Z create lore "Proper"
+  type: "fact"
+---
+
+(source_file
+  (ERROR
+    (datetime_value)
+    (UNEXPECTED 'T')
+    (UNEXPECTED ' ')
+    (field_name))
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title))
+      (metadata
+        (key)
+        (value
+          (quoted_value))))))
+
+==================
+still typing #1
+==================
+
+2026-01-05T18:11Z create 
+
+---
+
+(source_file
+  (ERROR
+    (timestamp)
+    (instance_directive)))
+
+==================
+invalid timestamp w/ section
+==================
+
+2026-01-05T18:11 create lore "Invalid"
+  type: "fact"
+
+  # Hello
+  World
+---
+
+(source_file
+  (ERROR
+    (datetime_value)
+    (UNEXPECTED 'T')
+    (UNEXPECTED ' ')
+    (field_name))
+  (ERROR
+    (UNEXPECTED ' ')
+    (section_name)))

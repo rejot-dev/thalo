@@ -26,14 +26,23 @@ export const parseThalo = (source: string): Parser.Tree => {
 // Re-export for external use
 export { findErrorNodes, formatParseErrors, type ErrorLocation, extractErrorLocations };
 
+// Extended root node type that includes parse metadata
+export interface ThaloRootNode extends SyntaxNode {
+  _thaloSource?: string;
+  _thaloHasErrors?: boolean;
+}
+
 export const parser = {
-  parse: (text: string) => {
+  parse: (text: string): ThaloRootNode => {
     const tree = parseThalo(text);
-    if (tree.rootNode.hasError) {
-      const errorNodes = findErrorNodes(tree.rootNode);
-      throw new Error(formatParseErrors(text, errorNodes));
-    }
-    return tree.rootNode;
+    const rootNode = tree.rootNode as ThaloRootNode;
+
+    // Attach metadata to root node for printer to access
+    rootNode._thaloSource = text;
+    rootNode._thaloHasErrors = tree.rootNode.hasError;
+
+    // Don't throw - let printer handle ERROR nodes gracefully
+    return rootNode;
   },
   astFormat: "thalo-ast",
   locStart: (node: SyntaxNode) => node.startIndex,

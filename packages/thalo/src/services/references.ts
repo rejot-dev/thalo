@@ -1,7 +1,8 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Location } from "../ast/types.js";
 import type { LinkReference, LinkDefinition } from "../model/types.js";
-import { toFileLocation } from "../source-map.js";
+import { toFileLocation, positionFromOffset } from "../source-map.js";
+import { findNodeAtPosition } from "../ast/node-at-position.js";
 
 /**
  * A reference location
@@ -97,36 +98,16 @@ export function findReferencesAtPosition(
     return undefined;
   }
 
-  // Find link at the given offset
-  const linkId = findLinkAtOffset(doc.source, offset);
-  if (!linkId) {
+  // Convert offset to position
+  const position = positionFromOffset(doc.source, offset);
+
+  // Use AST-based node detection
+  const context = findNodeAtPosition({ blocks: doc.blocks }, position);
+
+  // Only handle link contexts
+  if (context.kind !== "link") {
     return undefined;
   }
 
-  return findReferences(workspace, linkId, includeDefinition);
-}
-
-/**
- * Find a link ID at a given offset in source text
- */
-function findLinkAtOffset(source: string, offset: number): string | undefined {
-  // Look for ^link-id pattern at or around the offset
-  const linkRegex = /\^[A-Za-z0-9\-_/.:]+/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = linkRegex.exec(source)) !== null) {
-    const start = match.index;
-    const end = start + match[0].length;
-
-    if (offset >= start && offset <= end) {
-      return match[0].slice(1); // Remove ^ prefix
-    }
-
-    // Stop searching if we've passed the offset
-    if (start > offset) {
-      break;
-    }
-  }
-
-  return undefined;
+  return findReferences(workspace, context.linkId, includeDefinition);
 }

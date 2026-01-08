@@ -6,13 +6,13 @@
   Write a narrative bio from the collected facts and insights.
   Keep it professional but personable.
 
-2026-01-07T14:25 actualize-synthesis ^bio-synthesis
-  updated: 2026-01-07T14:25
+2026-01-07T14:25Z actualize-synthesis ^bio-synthesis
+  updated: 2026-01-07T14:25Z
 
-2026-01-08T11:58 create reference "some ref"
+2026-01-08T11:58Z create reference "some ref"
   ref-type: "other"
 
-  # Key Takeaways
+# Key Takeaways
 ```
 
 # Personal Bio

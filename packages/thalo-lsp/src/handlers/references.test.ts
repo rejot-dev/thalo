@@ -299,7 +299,9 @@ describe("handleReferences", () => {
       expect(result).toBeNull();
     });
 
-    it("should return null when document is not in workspace", () => {
+    it("should find references from document not in workspace when link exists", () => {
+      // Create document but don't add to workspace
+      // References should still work because the link exists in the workspace
       const doc = createDocument(
         `2026-01-06T10:00Z create lore "New" #test
   related: ^ts-lore
@@ -312,7 +314,9 @@ describe("handleReferences", () => {
 
       const result = handleReferences(workspace, doc, position, context);
 
-      expect(result).toBeNull();
+      // The link ^ts-lore exists in the workspace, so references are found
+      expect(result).not.toBeNull();
+      expect(result!.length).toBeGreaterThan(0);
     });
 
     it("should return empty array for link with no references", () => {

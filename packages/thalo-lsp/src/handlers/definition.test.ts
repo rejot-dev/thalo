@@ -104,8 +104,9 @@ describe("handleDefinition", () => {
       expect(result).toBeNull();
     });
 
-    it("should return null when document is not in workspace", () => {
+    it("should navigate from document not in workspace when link is defined", () => {
       // Create document but don't add to workspace
+      // Navigation should still work because the link IS defined in the workspace
       const doc = createDocument(
         `2026-01-06T10:00Z create lore "New entry" #test
   related: ^ts-lore
@@ -117,7 +118,9 @@ describe("handleDefinition", () => {
 
       const result = handleDefinition(workspace, doc, position);
 
-      expect(result).toBeNull();
+      // The link ^ts-lore is defined in the workspace, so navigation works
+      expect(result).not.toBeNull();
+      expect(result!.uri).toBe("file:///test.thalo");
     });
   });
 
