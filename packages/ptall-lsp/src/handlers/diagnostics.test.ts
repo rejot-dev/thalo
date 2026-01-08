@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@wilco/ptall";
+import { Workspace } from "@rejot-dev/ptall";
 import { getDiagnostics } from "./diagnostics.js";
 
 /**

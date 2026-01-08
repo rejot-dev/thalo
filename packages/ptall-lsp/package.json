@@ -1,5 +1,5 @@
 {
-  "name": "@wilco/ptall-lsp",
+  "name": "@rejot-dev/ptall-lsp",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -23,13 +23,13 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "@wilco/ptall": "workspace:*",
+    "@rejot-dev/ptall": "workspace:*",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@wilco/typescript-config": "workspace:*",
+    "@rejot-dev/typescript-config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

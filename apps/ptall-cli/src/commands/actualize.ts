@@ -7,7 +7,7 @@ import {
   type ModelSynthesisEntry,
   type ModelActualizeEntry,
   type ModelInstanceEntry,
-} from "@wilco/ptall";
+} from "@rejot-dev/ptall";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 

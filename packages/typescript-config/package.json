@@ -1,5 +1,5 @@
 {
-  "name": "@wilco/typescript-config",
+  "name": "@rejot-dev/typescript-config",
   "version": "0.0.1",
   "private": true,
   "exports": {

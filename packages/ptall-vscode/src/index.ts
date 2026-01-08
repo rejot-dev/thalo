@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       try {
         // Dynamic import for ESM modules
         const prettier = await import("prettier");
-        const ptallPrettier = await import("@wilco/ptall-prettier");
+        const ptallPrettier = await import("@rejot-dev/ptall-prettier");
 
         const formatted = await prettier.format(text, {
           parser: "ptall",
@@ -48,7 +48,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 async function startLanguageServer(context: vscode.ExtensionContext): Promise<LanguageClient> {
-  // Resolve the server module path from @wilco/ptall-lsp
+  // Resolve the server module path from @rejot-dev/ptall-lsp
   const serverModule = resolveServerPath();
 
   const serverOptions: ServerOptions = {
@@ -93,11 +93,11 @@ async function startLanguageServer(context: vscode.ExtensionContext): Promise<La
 
 /**
  * Resolve the path to the LSP server module.
- * We require the @wilco/ptall-lsp package and get the path to server.js
+ * We require the @rejot-dev/ptall-lsp package and get the path to server.js
  */
 function resolveServerPath(): string {
   // require.resolve finds the package entry point, we need the server.js instead
-  const lspPackagePath = require.resolve("@wilco/ptall-lsp");
+  const lspPackagePath = require.resolve("@rejot-dev/ptall-lsp");
   // The package exports index.js, but we need server.js in the same dist folder
   return path.join(path.dirname(lspPackagePath), "server.js");
 }

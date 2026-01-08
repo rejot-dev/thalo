@@ -1,5 +1,5 @@
 import Parser, { type Language, type Tree } from "tree-sitter";
-import ptall from "@wilco/grammar";
+import ptall from "@rejot-dev/grammar";
 import { createSourceMap, identitySourceMap, type SourceMap } from "./source-map.js";
 
 let parserInstance: Parser | undefined;

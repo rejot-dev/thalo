@@ -1,4 +1,4 @@
-# @wilco/grammar
+# @rejot-dev/grammar
 
 A Tree-Sitter grammar for parsing **ptall** (Personal Thought And Lore Language) entries used in the
 Knowledge Center.
@@ -30,7 +30,7 @@ Some markdown content here.
 More markdown content.
 ````
 
-When using the `@wilco/ptall-prettier` plugin, Prettier automatically formats ptall code blocks
+When using the `@rejot-dev/ptall-prettier` plugin, Prettier automatically formats ptall code blocks
 embedded in markdown files. This enables documentation files to include properly formatted ptall
 examples.
 

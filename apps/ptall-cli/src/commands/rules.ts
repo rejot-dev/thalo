@@ -1,4 +1,4 @@
-import { allRules, RULE_CATEGORIES, type RuleCategory, type Rule } from "@wilco/ptall";
+import { allRules, RULE_CATEGORIES, type RuleCategory, type Rule } from "@rejot-dev/ptall";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 

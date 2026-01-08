@@ -1,11 +1,11 @@
 {
-  "name": "@wilco/",
+  "name": "@rejot-dev/",
   "private": true,
   "author": "Wilco Kruijer",
   "packageManager": "pnpm@10.18.2",
   "type": "module",
   "devDependencies": {
-    "@wilco/ptall-prettier": "workspace:*",
+    "@rejot-dev/ptall-prettier": "workspace:*",
     "lefthook": "^1.13.6",
     "oxlint": "^1.36.0",
     "prettier": "3.6.2",

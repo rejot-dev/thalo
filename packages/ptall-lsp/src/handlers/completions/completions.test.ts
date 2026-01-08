@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@wilco/ptall";
+import { Workspace } from "@rejot-dev/ptall";
 import { CompletionItemKind, type CompletionParams, type Position } from "vscode-languageserver";
 import { handleCompletion, handleCompletionResolve, detectContext } from "./index.js";
 import type { CompletionContext, CompletionContextKind } from "./context.js";

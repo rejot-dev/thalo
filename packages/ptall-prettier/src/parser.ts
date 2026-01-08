@@ -1,5 +1,5 @@
 import Parser, { type Language, type SyntaxNode } from "tree-sitter";
-import ptall from "@wilco/grammar";
+import ptall from "@rejot-dev/grammar";
 import {
   findErrorNodes,
   formatParseErrors,

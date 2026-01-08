@@ -6,7 +6,7 @@ import {
   findFieldDefinition,
   findSectionDefinition,
   type Workspace,
-} from "@wilco/ptall";
+} from "@rejot-dev/ptall";
 
 /**
  * Convert a file path to a URI

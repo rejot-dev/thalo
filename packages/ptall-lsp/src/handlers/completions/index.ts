@@ -13,7 +13,7 @@
 
 import type { CompletionItem, CompletionParams } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
-import type { Workspace } from "@wilco/ptall";
+import type { Workspace } from "@rejot-dev/ptall";
 import { detectContext } from "./context.js";
 import { allProviders } from "./providers/index.js";
 

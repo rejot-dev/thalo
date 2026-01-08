@@ -1,5 +1,5 @@
 {
-  "name": "@wilco/ptall",
+  "name": "@rejot-dev/ptall",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -45,12 +45,12 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "@wilco/grammar": "workspace:*",
+    "@rejot-dev/grammar": "workspace:*",
     "tree-sitter": "^0.25.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@wilco/typescript-config": "workspace:*",
+    "@rejot-dev/typescript-config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

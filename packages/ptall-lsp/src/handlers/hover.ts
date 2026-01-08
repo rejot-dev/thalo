@@ -7,7 +7,7 @@ import type {
   ModelSchemaEntry,
   ModelSynthesisEntry,
   ModelActualizeEntry,
-} from "@wilco/ptall";
+} from "@rejot-dev/ptall";
 import {
   TypeExpr,
   parseDocument,
@@ -16,7 +16,7 @@ import {
   type FieldSchema,
   type SectionSchema,
   type Position as PtallPosition,
-} from "@wilco/ptall";
+} from "@rejot-dev/ptall";
 
 // ===================
 // Types

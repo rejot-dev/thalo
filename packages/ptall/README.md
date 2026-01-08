@@ -1,4 +1,4 @@
-# @wilco/ptall
+# @rejot-dev/ptall
 
 Core library for **ptall** (Personal Thought And Lore Language). Provides parsing, semantic
 analysis, validation, and workspace management for `.ptall` files.
@@ -15,7 +15,7 @@ analysis, validation, and workspace management for `.ptall` files.
 ## Installation
 
 ```bash
-pnpm add @wilco/ptall
+pnpm add @rejot-dev/ptall
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ pnpm add @wilco/ptall
 ### Parsing a Document
 
 ```typescript
-import { Document } from "@wilco/ptall/model";
+import { Document } from "@rejot-dev/ptall/model";
 
 const source = `
 2026-01-05T15:30 create lore "My first entry" #example
@@ -40,7 +40,7 @@ console.log(doc.entries); // Array of parsed entries
 ### Working with a Workspace
 
 ```typescript
-import { Workspace } from "@wilco/ptall/model";
+import { Workspace } from "@rejot-dev/ptall/model";
 
 const workspace = new Workspace();
 
@@ -56,8 +56,8 @@ const linkDef = workspace.getLinkDefinition("my-link-id");
 ### Validating with the Checker
 
 ```typescript
-import { Workspace } from "@wilco/ptall/model";
-import { check } from "@wilco/ptall/checker";
+import { Workspace } from "@rejot-dev/ptall/model";
+import { check } from "@rejot-dev/ptall/checker";
 
 const workspace = new Workspace();
 workspace.addDocument(source, { filename: "test.ptall" });
@@ -71,7 +71,7 @@ for (const d of diagnostics) {
 ### Configuring Rule Severity
 
 ```typescript
-import { check } from "@wilco/ptall/checker";
+import { check } from "@rejot-dev/ptall/checker";
 
 const diagnostics = check(workspace, {
   rules: {
@@ -85,12 +85,12 @@ const diagnostics = check(workspace, {
 
 | Export                  | Description                             |
 | ----------------------- | --------------------------------------- |
-| `@wilco/ptall`          | Main entry (parser, constants)          |
-| `@wilco/ptall/ast`      | AST types and extraction                |
-| `@wilco/ptall/model`    | Document, Workspace, model types        |
-| `@wilco/ptall/schema`   | SchemaRegistry, EntitySchema types      |
-| `@wilco/ptall/checker`  | Validation rules and check function     |
-| `@wilco/ptall/services` | Definition, references, semantic tokens |
+| `@rejot-dev/ptall`          | Main entry (parser, constants)          |
+| `@rejot-dev/ptall/ast`      | AST types and extraction                |
+| `@rejot-dev/ptall/model`    | Document, Workspace, model types        |
+| `@rejot-dev/ptall/schema`   | SchemaRegistry, EntitySchema types      |
+| `@rejot-dev/ptall/checker`  | Validation rules and check function     |
+| `@rejot-dev/ptall/services` | Definition, references, semantic tokens |
 
 ## Validation Rules
 

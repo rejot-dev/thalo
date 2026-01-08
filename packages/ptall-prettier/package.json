@@ -1,5 +1,5 @@
 {
-  "name": "@wilco/ptall-prettier",
+  "name": "@rejot-dev/ptall-prettier",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,7 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "@wilco/grammar": "workspace:*",
+    "@rejot-dev/grammar": "workspace:*",
     "tree-sitter": "^0.25.0"
   },
   "peerDependencies": {
@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@wilco/typescript-config": "workspace:*",
+    "@rejot-dev/typescript-config": "workspace:*",
     "prettier": "^3.5.3",
     "tsdown": "catalog:",
     "typescript": "catalog:",

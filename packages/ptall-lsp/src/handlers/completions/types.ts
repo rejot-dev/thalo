@@ -1,5 +1,5 @@
 import type { CompletionItem } from "vscode-languageserver";
-import type { Workspace } from "@wilco/ptall";
+import type { Workspace } from "@rejot-dev/ptall";
 import type { CompletionContext, CompletionContextKind } from "./context.js";
 
 /**

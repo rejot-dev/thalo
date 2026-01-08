@@ -1,5 +1,5 @@
 {
-  "name": "@wilco/grammar",
+  "name": "@rejot-dev/grammar",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,7 @@
     "types:check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@wilco/typescript-config": "workspace:*",
+    "@rejot-dev/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "node-gyp": "^10.2.0",
     "tree-sitter-cli": "^0.26.3",

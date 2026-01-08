@@ -1,5 +1,5 @@
 {
-  "extends": "@wilco/typescript-config/tsconfig.base.json",
+  "extends": "@rejot-dev/typescript-config/tsconfig.base.json",
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,

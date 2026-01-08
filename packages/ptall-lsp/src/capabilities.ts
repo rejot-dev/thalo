@@ -1,5 +1,5 @@
 import type { ServerCapabilities, SemanticTokensLegend } from "vscode-languageserver";
-import { tokenTypes, tokenModifiers } from "@wilco/ptall";
+import { tokenTypes, tokenModifiers } from "@rejot-dev/ptall";
 
 /**
  * File operation filter type for LSP file operations.
@@ -20,7 +20,7 @@ export const ptallFileFilters: FileOperationFilter[] = [
 
 /**
  * Semantic tokens legend for LSP
- * Maps the token types and modifiers from @wilco/ptall
+ * Maps the token types and modifiers from @rejot-dev/ptall
  */
 export const tokenLegend: SemanticTokensLegend = {
   tokenTypes: [...tokenTypes],

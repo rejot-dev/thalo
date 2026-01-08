@@ -5,7 +5,7 @@ import {
   extractSemanticTokens,
   encodeSemanticTokens,
   type FileType,
-} from "@wilco/ptall";
+} from "@rejot-dev/ptall";
 
 /**
  * Get the file type from a URI

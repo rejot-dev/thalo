@@ -26,7 +26,7 @@ importers:
 
   .:
     devDependencies:
-      '@wilco/ptall-prettier':
+      '@rejot-dev/ptall-prettier':
         specifier: workspace:*
         version: link:packages/ptall-prettier
       lefthook:
@@ -56,7 +56,7 @@ importers:
 
   apps/ptall-cli:
     dependencies:
-      '@wilco/ptall':
+      '@rejot-dev/ptall':
         specifier: workspace:*
         version: link:../../packages/ptall
       picocolors:
@@ -66,7 +66,7 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       tsdown:
@@ -87,7 +87,7 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       node-addon-api:
@@ -105,7 +105,7 @@ importers:
 
   packages/ptall:
     dependencies:
-      '@wilco/grammar':
+      '@rejot-dev/grammar':
         specifier: workspace:*
         version: link:../grammar
       tree-sitter:
@@ -115,7 +115,7 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       tsdown:
@@ -130,7 +130,7 @@ importers:
 
   packages/ptall-lsp:
     dependencies:
-      '@wilco/ptall':
+      '@rejot-dev/ptall':
         specifier: workspace:*
         version: link:../ptall
       vscode-languageserver:
@@ -143,7 +143,7 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       tsdown:
@@ -158,7 +158,7 @@ importers:
 
   packages/ptall-prettier:
     dependencies:
-      '@wilco/grammar':
+      '@rejot-dev/grammar':
         specifier: workspace:*
         version: link:../grammar
       tree-sitter:
@@ -168,7 +168,7 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       prettier:
@@ -186,10 +186,10 @@ importers:
 
   packages/ptall-vscode:
     dependencies:
-      '@wilco/ptall-lsp':
+      '@rejot-dev/ptall-lsp':
         specifier: workspace:*
         version: link:../ptall-lsp
-      '@wilco/ptall-prettier':
+      '@rejot-dev/ptall-prettier':
         specifier: workspace:*
         version: link:../ptall-prettier
       prettier:
@@ -208,7 +208,7 @@ importers:
       '@vscode/vsce':
         specifier: ^3.2.2
         version: 3.7.1
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       tsdown:
@@ -223,7 +223,7 @@ importers:
 
   packages/scripts:
     dependencies:
-      '@wilco/grammar':
+      '@rejot-dev/grammar':
         specifier: workspace:*
         version: link:../grammar
       tree-sitter:
@@ -233,7 +233,7 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
-      '@wilco/typescript-config':
+      '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       tsdown:

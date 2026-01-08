@@ -1,5 +1,5 @@
 /**
- * @wilco/ptall-lsp - Language Server Protocol implementation for ptall
+ * @rejot-dev/ptall-lsp - Language Server Protocol implementation for ptall
  *
  * This package provides an LSP server for .ptall files, enabling IDE features like:
  * - Go to Definition (^link-id → definition location)
@@ -9,7 +9,7 @@
  * - Hover information (show link target details) [planned]
  * - Completions (suggest ^link-ids) [planned]
  *
- * The server uses @wilco/ptall for parsing and semantic analysis.
+ * The server uses @rejot-dev/ptall for parsing and semantic analysis.
  */
 
 export { createConnection, startServer, tokenLegend } from "./server.js";

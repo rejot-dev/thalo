@@ -15,7 +15,7 @@ Language Server Protocol (LSP) implementation for **ptall** (Personal Thought An
 
 ## Architecture
 
-The language server uses `@wilco/ptall` for parsing and semantic analysis:
+The language server uses `@rejot-dev/ptall` for parsing and semantic analysis:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -24,7 +24,7 @@ The language server uses `@wilco/ptall` for parsing and semantic analysis:
 └─────────────────────────┬───────────────────────────────┘
                           │ LSP Protocol
 ┌─────────────────────────▼───────────────────────────────┐
-│                    @wilco/ptall-lsp                     │
+│                    @rejot-dev/ptall-lsp                     │
 │  ┌────────────────────────────────────────────────────┐ │
 │  │ server.ts - LSP server lifecycle & routing         │ │
 │  └────────────────────────────────────────────────────┘ │
@@ -45,7 +45,7 @@ The language server uses `@wilco/ptall` for parsing and semantic analysis:
 └─────────────────────────┬───────────────────────────────┘
                           │
 ┌─────────────────────────▼───────────────────────────────┐
-│                      @wilco/ptall                       │
+│                      @rejot-dev/ptall                       │
 │  ┌─────────────┐ ┌─────────────┐ ┌───────────────────┐  │
 │  │   parser    │ │   model     │ │     services      │  │
 │  │  (parsing)  │ │ (workspace) │ │ (definition, etc) │  │
@@ -83,7 +83,7 @@ node dist/server.js --stdio
 
 The server can be integrated with any editor that supports LSP:
 
-- **VSCode**: Use the `@wilco/ptall-vscode` extension
+- **VSCode**: Use the `@rejot-dev/ptall-vscode` extension
 - **Neovim**: Configure with `nvim-lspconfig`
 - **Other editors**: Configure to run `ptall-lsp --stdio`
 
@@ -162,7 +162,7 @@ Context-aware completions throughout the entry lifecycle:
 
 ### Diagnostics
 
-Real-time validation errors using the `@wilco/ptall` checker:
+Real-time validation errors using the `@rejot-dev/ptall` checker:
 
 - Unresolved link references
 - Unknown entity types

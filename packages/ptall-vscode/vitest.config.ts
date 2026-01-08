@@ -7,7 +7,7 @@ export default defineConfig({
     passWithNoTests: true,
     server: {
       deps: {
-        inline: ["@wilco/ptall-prettier"],
+        inline: ["@rejot-dev/ptall-prettier"],
       },
     },
   },

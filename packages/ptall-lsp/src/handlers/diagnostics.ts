@@ -5,7 +5,7 @@ import {
   type Workspace,
   type Diagnostic as PtallDiagnostic,
   type Severity,
-} from "@wilco/ptall";
+} from "@rejot-dev/ptall";
 
 /**
  * Map ptall severity to LSP DiagnosticSeverity

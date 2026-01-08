@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@wilco/ptall";
+import { Workspace } from "@rejot-dev/ptall";
 import type { Position } from "vscode-languageserver";
 import { handleDefinition } from "./definition.js";
 import { handleReferences } from "./references.js";

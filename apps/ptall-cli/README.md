@@ -8,7 +8,7 @@ syntax.
 ```bash
 # From the monorepo root
 pnpm install
-pnpm exec turbo run build --filter=@wilco/ptall-cli
+pnpm exec turbo run build --filter=@rejot-dev/ptall-cli
 
 # Run directly
 node apps/ptall-cli/dist/index.js --help

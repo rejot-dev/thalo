@@ -1,6 +1,6 @@
 import type { Position } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
-import { isSchemaDirective, isSynthesisDirective } from "@wilco/ptall";
+import { isSchemaDirective, isSynthesisDirective } from "@rejot-dev/ptall";
 
 // ===================
 // Context Kinds

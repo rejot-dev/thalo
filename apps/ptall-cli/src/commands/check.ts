@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Workspace, check, type Diagnostic, type Severity, type CheckConfig } from "@wilco/ptall";
+import { Workspace, check, type Diagnostic, type Severity, type CheckConfig } from "@rejot-dev/ptall";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 

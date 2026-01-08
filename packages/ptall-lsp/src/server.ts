@@ -10,7 +10,7 @@ import {
   FileChangeType,
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace, type FileType } from "@wilco/ptall";
+import { Workspace, type FileType } from "@rejot-dev/ptall";
 
 import { serverCapabilities, tokenLegend } from "./capabilities.js";
 import { handleDefinition } from "./handlers/definition.js";

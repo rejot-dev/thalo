@@ -8,7 +8,7 @@ Code.
 - Syntax highlighting for `.ptall` files
 - Syntax highlighting for ptall code blocks in Markdown (` ```ptall `)
 - Comment toggling with `//`
-- Document formatting via Prettier (uses `@wilco/ptall-prettier`)
+- Document formatting via Prettier (uses `@rejot-dev/ptall-prettier`)
 
 ## Highlighted Elements
 

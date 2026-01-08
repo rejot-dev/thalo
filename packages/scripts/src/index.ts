@@ -1,5 +1,5 @@
 import Parser, { type Language } from "tree-sitter";
-import ptall from "@wilco/grammar";
+import ptall from "@rejot-dev/grammar";
 
 let parser: Parser | undefined;
 
