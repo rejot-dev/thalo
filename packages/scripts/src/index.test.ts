@@ -10,7 +10,7 @@ describe("hello", () => {
     hello();
 
     // Assert that console.log was called with the expected message
-    expect(consoleLogSpy).toHaveBeenCalledWith("Hello from @kc/scripts!");
+    expect(consoleLogSpy).toHaveBeenCalledWith("Hello from @rejot-dev/scripts!");
 
     // Restore the original console.log
     consoleLogSpy.mockRestore();

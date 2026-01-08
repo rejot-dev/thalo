@@ -24,7 +24,7 @@ ptall [options] [files or directories...]
 
 ```bash
 # Check all files in a directory
-ptall kc/
+ptall notes/
 
 # Check specific files
 ptall file.ptall journal.md
@@ -124,13 +124,13 @@ Override rule severities with `--rule`:
 
 ```bash
 # Disable a rule
-ptall --rule unknown-entity=off kc/
+ptall --rule unknown-entity=off notes/
 
 # Change severity
-ptall --rule unresolved-link=error kc/
+ptall --rule unresolved-link=error notes/
 
 # Multiple rules
-ptall --rule unknown-entity=off --rule unknown-field=off kc/
+ptall --rule unknown-entity=off --rule unknown-field=off notes/
 ```
 
 Valid severities: `error`, `warning`, `info`, `off`
@@ -141,7 +141,7 @@ Valid severities: `error`, `warning`, `info`, `off`
 
 ```yaml
 - name: Lint ptall files
-  run: ptall -f github kc/
+  run: ptall -f github notes/
 ```
 
 ### Warning Threshold
@@ -149,7 +149,7 @@ Valid severities: `error`, `warning`, `info`, `off`
 Fail if too many warnings:
 
 ```bash
-ptall --max-warnings 10 kc/
+ptall --max-warnings 10 notes/
 ```
 
 ### JSON Report
@@ -157,7 +157,7 @@ ptall --max-warnings 10 kc/
 Generate a report file:
 
 ```bash
-ptall -f json kc/ > ptall-report.json
+ptall -f json notes/ > ptall-report.json
 ```
 
 ## Watch Mode
@@ -165,7 +165,7 @@ ptall -f json kc/ > ptall-report.json
 Re-run on file changes:
 
 ```bash
-ptall -w kc/
+ptall -w notes/
 ```
 
 Press `Ctrl+C` to exit.

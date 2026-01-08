@@ -14,7 +14,7 @@ const getParser = (): Parser => {
 };
 
 export const hello = () => {
-  console.log("Hello from @kc/scripts!");
+  console.log("Hello from @rejot-dev/scripts!");
 };
 
 export const parsePtall = (source: string): Parser.Tree => {
