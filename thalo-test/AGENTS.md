@@ -14,7 +14,7 @@ Entity schemas are defined in `entities.thalo`.
 
 ```
 
-- **timestamp**: ISO 8601 local time (`2026-01-05T15:30`)
+- **timestamp**: ISO 8601 local time with timezone (`2026-01-05T15:30Z`)
 - **directive**: `create` or `update`
 - **entity**: `journal`, `opinion`, `reference`, or `lore`
 - **^link-id**: Optional explicit ID for cross-referencing

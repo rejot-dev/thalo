@@ -68,7 +68,7 @@ Entity schemas are defined in \`entities.thalo\`.
 
 \`\`\`
 
-- **timestamp**: ISO 8601 local time (\`2026-01-05T15:30\`)
+- **timestamp**: ISO 8601 local time with timezone (\`2026-01-05T15:30Z\`)
 - **directive**: \`create\` or \`update\`
 - **entity**: \`journal\`, \`opinion\`, \`reference\`, or \`lore\`
 - **^link-id**: Optional explicit ID for cross-referencing
@@ -92,7 +92,7 @@ Each entity type defines which sections are required/optional in \`entities.thal
 ## Example
 
 \`\`\`thalo
-2026-01-05T16:00 create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
+2026-01-05T16:00Z create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
   confidence: "high"
 
   # Claim
@@ -106,7 +106,7 @@ Each entity type defines which sections are required/optional in \`entities.thal
 
 ## Tips
 
-- Run \`date +"%Y-%m-%dT%H:%M"\` to get the current timestamp
+- Run \`date -u +"%Y-%m-%dT%H:%MZ"\` to get the current timestamp
 - Use \`thalo check\` to validate entries against schemas
 `;
 
@@ -122,7 +122,7 @@ function initAction(ctx: CommandContext): void {
 
   // Get current timestamp for entity definitions
   const now = new Date();
-  const timestamp = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
+  const timestamp = now.toISOString().slice(0, 16) + "Z"; // YYYY-MM-DDTHH:MMZ
 
   const dryRun = options["dry-run"] as boolean;
   const force = options["force"] as boolean;

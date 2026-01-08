@@ -1,4 +1,4 @@
-2026-01-07T10:18 create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
+2026-01-07T10:18Z create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
   ref-type: "book"
   author: "Robert C. Martin"
   published: 2008-08-01
@@ -14,7 +14,7 @@
   - Comments are often a sign of failure to express yourself in code
   - Boy Scout Rule: Leave the code cleaner than you found it
 
-2026-01-07T10:18 create reference "The Pragmatic Programmer" ^pragmatic-programmer #programming #books
+2026-01-07T10:18Z create reference "The Pragmatic Programmer" ^pragmatic-programmer #programming #books
   ref-type: "book"
   author: "David Thomas & Andrew Hunt"
   published: 1999-10-20
@@ -30,7 +30,7 @@
   - Tracer bullets help you get on target faster
   - Orthogonality: Eliminate effects between unrelated things
 
-2026-01-07T10:18 create reference "Rich Hickey - Simple Made Easy" ^simple-made-easy #programming #talks
+2026-01-07T10:18Z create reference "Rich Hickey - Simple Made Easy" ^simple-made-easy #programming #talks
   ref-type: "video"
   author: "Rich Hickey"
   published: 2011-10-20
@@ -50,7 +50,7 @@
   # Related
   - ^clean-code
 
-2026-01-07T10:18 create reference "You Don't Need That Abstraction" ^no-abstraction #programming #articles
+2026-01-07T10:18Z create reference "You Don't Need That Abstraction" ^no-abstraction #programming #articles
   ref-type: "article"
   author: "Dan Abramov"
   url: "https://overreacted.io/goodbye-clean-code/"
@@ -67,7 +67,7 @@
   - Some duplication is okay if use cases might diverge
   - Team dynamics matter more than code aesthetics
 
-2026-01-07T10:18 create opinion "Premature abstraction is worse than duplication" ^opinion-premature-abstraction #programming #architecture
+2026-01-07T10:18Z create opinion "Premature abstraction is worse than duplication" ^opinion-premature-abstraction #programming #architecture
   confidence: "high"
   related: ^no-abstraction, ^pragmatic-programmer
 
@@ -86,7 +86,7 @@
   - Some abstractions (like API boundaries) need to be designed upfront
   - Experience helps you recognize when abstraction is appropriate
 
-2026-01-07T10:18 create opinion "Comments explain why, not what" ^opinion-comments #programming #documentation
+2026-01-07T10:18Z create opinion "Comments explain why, not what" ^opinion-comments #programming #documentation
   confidence: "high"
   related: ^clean-code
 
@@ -105,7 +105,7 @@
   - Public API documentation is a different category
   - Regex and obscure syntax benefit from inline explanation
 
-2026-01-07T10:18 create reference "TypeScript 5.0 Release Notes" ^typescript-5 #typescript #releases
+2026-01-07T10:18Z create reference "TypeScript 5.0 Release Notes" ^typescript-5 #typescript #releases
   ref-type: "article"
   author: "Microsoft"
   url: "https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/"
@@ -122,7 +122,7 @@
   - Multiple extends in tsconfig for config composition
   - 10-20% faster builds, 40% smaller package
 
-2026-01-07T10:18 create opinion "TypeScript const assertions beat enums" ^opinion-const-vs-enums #typescript
+2026-01-07T10:18Z create opinion "TypeScript const assertions beat enums" ^opinion-const-vs-enums #typescript
   confidence: "high"
   related: ^typescript-5
 
@@ -141,7 +141,7 @@
   - Existing codebases may have valid reasons to keep enums
   - String enums are less problematic than numeric ones
 
-2026-01-07T10:18 create journal "Reflecting on abstractions in software design" #programming #reflection
+2026-01-07T10:18Z create journal "Reflecting on abstractions in software design" #programming #reflection
   subject: ^self
   type: "reflection"
   mood: "contemplative"
@@ -159,7 +159,7 @@
 
   Maybe that's the real test: can someone else change this code confidently?
 
-2026-01-07T10:18 create lore "Simple code is often better than clever code" #programming #insights
+2026-01-07T10:18Z create lore "Simple code is often better than clever code" #programming #insights
   type: "insight"
   subject: ^self
   date: 2024 ~ 2026

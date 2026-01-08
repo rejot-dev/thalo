@@ -1,4 +1,4 @@
-2026-01-07T14:10 define-synthesis "Reading List Summary" ^reading-summary #books #programming
+2026-01-07T14:10Z define-synthesis "Reading List Summary" ^reading-summary #books #programming
   sources: reference where status = "read"
 
   # Prompt
@@ -6,14 +6,14 @@
   Group by type (books vs articles vs videos).
   Include key takeaways from each.
 
-2026-01-07T14:15 define-synthesis "Career Reflections" ^career-reflections #career #reflection
+2026-01-07T14:15Z define-synthesis "Career Reflections" ^career-reflections #career #reflection
   sources: journal where subject = ^self, lore where subject = ^self and #career
 
   # Prompt
   Compile my career reflections and relevant lore into a narrative
   about my professional growth and lessons learned.
 
-2026-01-07T14:20 define-synthesis "TypeScript Best Practices" ^typescript-guide #typescript
+2026-01-07T14:20Z define-synthesis "TypeScript Best Practices" ^typescript-guide #typescript
   sources: opinion where #typescript, reference where #typescript
 
   # Prompt
