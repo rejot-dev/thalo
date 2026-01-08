@@ -1,5 +1,5 @@
 {
-  "name": "@rejot-dev/grammar",
+  "name": "@rejot-dev/tree-sitter-thalo",
   "version": "0.0.0",
   "private": true,
   "type": "module",

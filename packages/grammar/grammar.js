@@ -1,5 +1,5 @@
 export default grammar({
-  name: "ptall",
+  name: "thalo",
 
   extras: (_) => [" "],
 

@@ -26,9 +26,9 @@ importers:
 
   .:
     devDependencies:
-      '@rejot-dev/ptall-prettier':
+      '@rejot-dev/thalo-prettier':
         specifier: workspace:*
-        version: link:packages/ptall-prettier
+        version: link:packages/thalo-prettier
       lefthook:
         specifier: ^1.13.6
         version: 1.13.6
@@ -54,21 +54,21 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
 
-  apps/ptall-cli:
+  apps/thalo-cli:
     dependencies:
-      '@rejot-dev/ptall':
+      '@rejot-dev/thalo':
         specifier: workspace:*
-        version: link:../../packages/ptall
+        version: link:../../packages/thalo
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.3
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
       tsdown:
         specifier: 'catalog:'
         version: 0.15.12(typescript@5.9.3)
@@ -84,12 +84,12 @@ importers:
 
   packages/grammar:
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.3
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
       node-addon-api:
         specifier: ^8.5.0
         version: 8.5.0
@@ -103,21 +103,21 @@ importers:
         specifier: ^0.26.3
         version: 0.26.3
 
-  packages/ptall:
+  packages/scripts:
     dependencies:
-      '@rejot-dev/grammar':
+      '@rejot-dev/tree-sitter-thalo':
         specifier: workspace:*
         version: link:../grammar
       tree-sitter:
         specifier: ^0.25.0
         version: 0.25.0
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.3
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
       tsdown:
         specifier: 'catalog:'
         version: 0.15.12(typescript@5.9.3)
@@ -128,11 +128,36 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
 
-  packages/ptall-lsp:
+  packages/thalo:
     dependencies:
-      '@rejot-dev/ptall':
+      '@rejot-dev/tree-sitter-thalo':
         specifier: workspace:*
-        version: link:../ptall
+        version: link:../grammar
+      tree-sitter:
+        specifier: ^0.25.0
+        version: 0.25.0
+    devDependencies:
+      '@rejot-dev/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.15.12(typescript@5.9.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
+
+  packages/thalo-lsp:
+    dependencies:
+      '@rejot-dev/thalo':
+        specifier: workspace:*
+        version: link:../thalo
       vscode-languageserver:
         specifier: ^9.0.1
         version: 9.0.1
@@ -140,12 +165,12 @@ importers:
         specifier: ^1.0.12
         version: 1.0.12
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.3
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
       tsdown:
         specifier: 'catalog:'
         version: 0.15.12(typescript@5.9.3)
@@ -156,21 +181,21 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
 
-  packages/ptall-prettier:
+  packages/thalo-prettier:
     dependencies:
-      '@rejot-dev/grammar':
+      '@rejot-dev/tree-sitter-thalo':
         specifier: workspace:*
         version: link:../grammar
       tree-sitter:
         specifier: ^0.25.0
         version: 0.25.0
     devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.3
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.3
       prettier:
         specifier: ^3.5.3
         version: 3.6.2
@@ -184,14 +209,14 @@ importers:
         specifier: 'catalog:'
         version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
 
-  packages/ptall-vscode:
+  packages/thalo-vscode:
     dependencies:
-      '@rejot-dev/ptall-lsp':
+      '@rejot-dev/thalo-lsp':
         specifier: workspace:*
-        version: link:../ptall-lsp
-      '@rejot-dev/ptall-prettier':
+        version: link:../thalo-lsp
+      '@rejot-dev/thalo-prettier':
         specifier: workspace:*
-        version: link:../ptall-prettier
+        version: link:../thalo-prettier
       prettier:
         specifier: ^3.5.3
         version: 3.6.2
@@ -199,6 +224,9 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1
     devDependencies:
+      '@rejot-dev/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.3
@@ -208,34 +236,6 @@ importers:
       '@vscode/vsce':
         specifier: ^3.2.2
         version: 3.7.1
-      '@rejot-dev/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.15.12(typescript@5.9.3)
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/node@22.19.3)(jiti@2.6.1)(tsx@4.21.0)
-
-  packages/scripts:
-    dependencies:
-      '@rejot-dev/grammar':
-        specifier: workspace:*
-        version: link:../grammar
-      tree-sitter:
-        specifier: ^0.25.0
-        version: 0.25.0
-    devDependencies:
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.3
-      '@rejot-dev/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       tsdown:
         specifier: 'catalog:'
         version: 0.15.12(typescript@5.9.3)

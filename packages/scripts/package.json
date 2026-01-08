@@ -22,7 +22,7 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "@rejot-dev/grammar": "workspace:*",
+    "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "tree-sitter": "^0.25.0"
   },
   "devDependencies": {

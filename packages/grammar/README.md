@@ -1,37 +1,35 @@
-# @rejot-dev/grammar
+# @rejot-dev/tree-sitter-thalo
 
-A Tree-Sitter grammar for parsing **ptall** (Personal Thought And Lore Language) entries used in the
-Knowledge Center.
+A Tree-Sitter grammar for parsing **Thalo** entries used in the Knowledge Center.
 
 ## Overview
 
-Ptall is a Beancount-inspired syntax for recording structured knowledge entries including lore,
-opinions, references, and journal entries. It also supports a meta-layer for defining entity
-schemas.
+Thalo is a syntax for recording structured knowledge entries including lore, opinions, references,
+and journal entries. It also supports a meta-layer for defining entity schemas.
 
 ## Markdown Integration
 
-Ptall is designed to coexist with markdown. You can embed ptall code blocks inside markdown files
-using fenced code blocks with the `ptall` language identifier:
+Thalo is designed to coexist with markdown. You can embed thalo code blocks inside markdown files
+using fenced code blocks with the `thalo` language identifier:
 
 ````markdown
 # My Document
 
 Some markdown content here.
 
-```ptall
+```thalo
 2026-01-05T18:00 create lore "An insight" #example
   type: insight
   subject: ^self
 
-  This ptall entry lives inside a markdown file.
+  This thalo entry lives inside a markdown file.
 ```
 
 More markdown content.
 ````
 
-When using the `@rejot-dev/ptall-prettier` plugin, Prettier automatically formats ptall code blocks
-embedded in markdown files. This enables documentation files to include properly formatted ptall
+When using the `@rejot-dev/thalo-prettier` plugin, Prettier automatically formats Thalo code blocks
+embedded in markdown files. This enables documentation files to include properly formatted Thalo
 examples.
 
 ## Instance Entries
@@ -48,7 +46,7 @@ Create or update instances of entities (lore, opinion, reference, journal):
 
 ### Example
 
-```ptall
+```thalo
 2026-01-05T18:11 create lore "Custom event streaming system" ^event-streaming #architecture #distributed
   type: "fact"
   subject: ^acme-corp
@@ -117,7 +115,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
 
 ### Example
 
-```ptall
+```thalo
 2026-01-05T18:12 define-entity reference "Collected resources"
   # Metadata
   url?: string ; "the url to the resource"
@@ -135,7 +133,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
 
 Modify existing entity schemas by adding or removing fields/sections:
 
-```ptall
+```thalo
 2026-01-10T14:00 alter-entity reference "Add published field, remove legacy"
   # Metadata
   published: datetime ; "publication date"
@@ -171,7 +169,7 @@ regex-based parsing. All values must be explicitly typed (no plain/unquoted valu
 
 Single link references:
 
-```ptall
+```thalo
 subject: ^self
 supersedes: ^previous-opinion
 ```
@@ -182,7 +180,7 @@ supersedes: ^previous-opinion
 
 Values in double quotes (required for all string values including literal types):
 
-```ptall
+```thalo
 type: "fact"
 confidence: "high"
 description: "A longer text value"
@@ -194,7 +192,7 @@ description: "A longer text value"
 
 Date or datetime values (date with optional time):
 
-```ptall
+```thalo
 published: 2026-01-07
 updated: 2026-01-07T12:00
 created: 2026-01-05T18:11
@@ -206,7 +204,7 @@ created: 2026-01-05T18:11
 
 Date ranges with the `~` separator:
 
-```ptall
+```thalo
 date: 2022 ~ 2024
 period: 2022-05 ~ 2024-12-31
 ```
@@ -217,7 +215,7 @@ period: 2022-05 ~ 2024-12-31
 
 Source queries for synthesis entries:
 
-```ptall
+```thalo
 sources: lore where subject = ^self and #career
 sources: lore where type = "fact"
 ```
@@ -234,7 +232,7 @@ Query conditions support:
 
 Comma-separated lists of any value type (links, quoted values, timestamps, date ranges, or queries):
 
-```ptall
+```thalo
 related: ^ref1, ^ref2, ^ref3
 authors: "Jane Doe", ^john-ref, "Alice Smith"
 periods: 2020 ~ 2022, 2023 ~ 2024
@@ -318,7 +316,7 @@ pnpm exec tree-sitter generate
 pnpm exec tree-sitter test
 
 # Parse a file
-pnpm exec tree-sitter parse path/to/file.ptall
+pnpm exec tree-sitter parse path/to/file.thalo
 ```
 
 ## Limitations
@@ -336,7 +334,7 @@ pnpm exec tree-sitter parse path/to/file.ptall
 - **All string values must be quoted**: There are no plain/unquoted values. Literal types like
   `"fact"` require quotes.
 
-  ```ptall
+  ```thalo
   # Correct:
   type: "fact"
   description: "Some text"
@@ -345,7 +343,7 @@ pnpm exec tree-sitter parse path/to/file.ptall
 - **No inline comments in values**: Comments (`//`) after metadata values break parsing. Use a
   separate comment line instead.
 
-  ```ptall
+  ```thalo
   # Wrong - causes parse error:
   type: "fact" // this breaks
 
@@ -357,7 +355,7 @@ pnpm exec tree-sitter parse path/to/file.ptall
 - **Single dates must be quoted**: The grammar only recognizes date ranges (`YYYY ~ YYYY`). Single
   dates should be quoted strings.
 
-  ```ptall
+  ```thalo
   # Correct:
   published: "2024-05-11"
   period: 2022 ~ 2024
@@ -365,7 +363,7 @@ pnpm exec tree-sitter parse path/to/file.ptall
 
 - **Query `where` clause is required**: Queries must include a `where` clause.
 
-  ```ptall
+  ```thalo
   # Correct:
   sources: lore where #career
 

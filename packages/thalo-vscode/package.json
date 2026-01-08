@@ -1,0 +1,64 @@
+{
+  "name": "thalo-vscode",
+  "displayName": "Thalo Language",
+  "description": "Syntax highlighting and formatting for Thalo language files",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "wilco",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "main": "./dist/index.js",
+  "activationEvents": [
+    "onLanguage:thalo"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "thalo",
+        "aliases": [
+          "Thalo",
+          "thalo"
+        ],
+        "extensions": [
+          ".thalo"
+        ],
+        "firstLine": "^[12]\\d{3}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d\\s+(create|update|define-entity|alter-entity)",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[thalo]": {
+        "editor.semanticHighlighting.enabled": true
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "types:check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "package": "vsce package",
+    "publish": "vsce publish --no-dependencies"
+  },
+  "dependencies": {
+    "@rejot-dev/thalo-lsp": "workspace:*",
+    "@rejot-dev/thalo-prettier": "workspace:*",
+    "prettier": "^3.5.3",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.2",
+    "@rejot-dev/typescript-config": "workspace:*",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

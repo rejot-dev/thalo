@@ -1,14 +1,14 @@
 import Parser, { type Language } from "tree-sitter";
-import ptall from "@rejot-dev/grammar";
+import thalo from "@rejot-dev/tree-sitter-thalo";
 
 let parser: Parser | undefined;
 
 const getParser = (): Parser => {
   if (!parser) {
     // Ensure nodeTypeInfo is an array (may be undefined if JSON import fails in some environments)
-    ptall.nodeTypeInfo ??= [];
+    thalo.nodeTypeInfo ??= [];
     parser = new Parser();
-    parser.setLanguage(ptall as unknown as Language);
+    parser.setLanguage(thalo as unknown as Language);
   }
   return parser;
 };
@@ -17,7 +17,7 @@ export const hello = () => {
   console.log("Hello from @rejot-dev/scripts!");
 };
 
-export const parsePtall = (source: string): Parser.Tree => {
+export const parseThalo = (source: string): Parser.Tree => {
   return getParser().parse(source);
 };
 

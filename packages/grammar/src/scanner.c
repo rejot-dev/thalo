@@ -1,8 +1,8 @@
 /**
  * @file scanner.c
- * @brief External scanner for tree-sitter-ptall parser
+ * @brief External scanner for tree-sitter-thalo parser
  *
- * This file implements an external scanner for the ptall language parser.
+ * This file implements an external scanner for the thalo language parser.
  * It handles indentation-sensitive parsing for metadata and content blocks.
  *
  * Token types:
@@ -347,7 +347,7 @@ static bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols)
 /**
  * @brief Create a new scanner instance
  */
-void *tree_sitter_ptall_external_scanner_create(void)
+void *tree_sitter_thalo_external_scanner_create(void)
 {
     Scanner *scanner = ts_calloc(1, sizeof(Scanner));
     return scanner;
@@ -356,7 +356,7 @@ void *tree_sitter_ptall_external_scanner_create(void)
 /**
  * @brief Destroy scanner instance and free memory
  */
-void tree_sitter_ptall_external_scanner_destroy(void *payload)
+void tree_sitter_thalo_external_scanner_destroy(void *payload)
 {
     Scanner *scanner = (Scanner *)payload;
     ts_free(scanner);
@@ -367,7 +367,7 @@ void tree_sitter_ptall_external_scanner_destroy(void *payload)
  *
  * Currently stateless, so nothing to serialize.
  */
-unsigned tree_sitter_ptall_external_scanner_serialize(void *payload,
+unsigned tree_sitter_thalo_external_scanner_serialize(void *payload,
                                                       char *buffer)
 {
     (void)payload;
@@ -380,7 +380,7 @@ unsigned tree_sitter_ptall_external_scanner_serialize(void *payload,
  *
  * Currently stateless, so nothing to deserialize.
  */
-void tree_sitter_ptall_external_scanner_deserialize(void *payload,
+void tree_sitter_thalo_external_scanner_deserialize(void *payload,
                                                     const char *buffer,
                                                     unsigned length)
 {
@@ -392,7 +392,7 @@ void tree_sitter_ptall_external_scanner_deserialize(void *payload,
 /**
  * @brief Main entry point for token scanning
  */
-bool tree_sitter_ptall_external_scanner_scan(void *payload, TSLexer *lexer,
+bool tree_sitter_thalo_external_scanner_scan(void *payload, TSLexer *lexer,
                                              const bool *valid_symbols)
 {
     Scanner *scanner = (Scanner *)payload;

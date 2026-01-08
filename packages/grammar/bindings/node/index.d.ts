@@ -25,10 +25,10 @@ type NodeInfo =
  *
  * @example
  * import Parser from "tree-sitter";
- * import ptAll from "tree-sitter-ptall";
+ * import Thalo from "tree-sitter-thalo";
  *
  * const parser = new Parser();
- * parser.setLanguage(ptAll);
+ * parser.setLanguage(Thalo);
  */
 declare const binding: {
   /**
