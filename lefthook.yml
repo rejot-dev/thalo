@@ -16,4 +16,4 @@ pre-commit:
     - name: "grammar: check native binding"
       root: "packages/grammar"
       glob: "{packages/grammar/grammar.js,packages/grammar/src/*.c}"
-      run: node scripts/check-rebuild.mjs
+      run: node scripts/check-rebuild.mjs --fix
