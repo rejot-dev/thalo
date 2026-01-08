@@ -194,7 +194,7 @@ export default grammar({
     // =========================================================================
 
     _nl: (_) => /\r?\n/,
-    timestamp: (_) => token(/[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d/),
+    timestamp: (_) => token(/[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d)/),
     title: (_) => token(/"[^"]*"/),
     link: (_) => token(/\^[A-Za-z0-9\-_/.]+/),
     tag: (_) => token(/#[A-Za-z0-9\-_/.]+/),
@@ -224,8 +224,9 @@ export default grammar({
     // Quoted string as a value (required for literal types)
     quoted_value: (_) => token(/"[^"]*"/),
 
-    // Datetime value: date with optional time (YYYY-MM-DD or YYYY-MM-DDTHH:MM)
-    datetime_value: (_) => token(/[12]\d{3}-[01]\d-[0-3]\d(T[0-2]\d:[0-5]\d)?/),
+    // Datetime value: date with optional time (YYYY-MM-DD or YYYY-MM-DDTHH:MMZ)
+    datetime_value: (_) =>
+      token(/[12]\d{3}-[01]\d-[0-3]\d(T[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d))?/),
 
     // Date range: YYYY(-MM(-DD))? ~ YYYY(-MM(-DD))?
     date_range: (_) => token(/\d{4}(-\d{2}(-\d{2})?)? *~ *\d{4}(-\d{2}(-\d{2})?)?/),

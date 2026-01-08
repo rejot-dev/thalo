@@ -22,12 +22,12 @@ describe("remove-undefined-section rule", () => {
   it.skip("should report removing a section that does not exist (not tested - needs model support)", () => {
     // This test documents intended behavior but needs model.removeSections support
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Sections
   Claim
   Reasoning
 
-2026-01-01T01:00 alter-entity opinion "Remove nonexistent section"
+2026-01-01T01:00Z alter-entity opinion "Remove nonexistent section"
   # Remove Sections
   Nonexistent
 `,
@@ -42,13 +42,13 @@ describe("remove-undefined-section rule", () => {
 
   it.skip("should not report removing an existing section (not tested - needs model support)", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Sections
   Claim
   Reasoning
   Obsolete
 
-2026-01-01T01:00 alter-entity opinion "Remove obsolete section"
+2026-01-01T01:00Z alter-entity opinion "Remove obsolete section"
   # Remove Sections
   Obsolete
 `,
@@ -63,11 +63,11 @@ describe("remove-undefined-section rule", () => {
 
   it.skip("should report multiple undefined section removals (not tested - needs model support)", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Sections
   Claim
 
-2026-01-01T01:00 alter-entity opinion "Remove sections"
+2026-01-01T01:00Z alter-entity opinion "Remove sections"
   # Remove Sections
   Foo
   Bar
@@ -83,7 +83,7 @@ describe("remove-undefined-section rule", () => {
 
   it("does not report when entity is undefined (handled by other rule)", () => {
     workspace.addDocument(
-      `2026-01-01T01:00 alter-entity unknown "Remove section from unknown"
+      `2026-01-01T01:00Z alter-entity unknown "Remove section from unknown"
   # Sections
   Claim
 `,

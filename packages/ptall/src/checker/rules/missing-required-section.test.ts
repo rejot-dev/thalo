@@ -8,7 +8,7 @@ describe("missing-required-section rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -22,7 +22,7 @@ describe("missing-required-section rule", () => {
 
   it("reports missing required section", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -42,7 +42,7 @@ describe("missing-required-section rule", () => {
 
   it("does not report when all required sections present", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -62,7 +62,7 @@ describe("missing-required-section rule", () => {
 
   it("does not report missing optional section", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -83,7 +83,7 @@ describe("missing-required-section rule", () => {
 
   it("reports multiple missing required sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Caveats

@@ -2,7 +2,7 @@
 simple lore entry
 ==================
 
-2026-01-05T18:11 create lore "My first lore entry"
+2026-01-05T18:11Z create lore "My first lore entry"
 
 ---
 
@@ -19,7 +19,7 @@ simple lore entry
 simple opinion entry
 ==================
 
-2026-01-05T18:11 create opinion "My opinion on something"
+2026-01-05T18:11Z create opinion "My opinion on something"
 
 ---
 
@@ -36,7 +36,7 @@ simple opinion entry
 simple reference entry
 ==================
 
-2026-01-05T18:11 create reference "A useful reference"
+2026-01-05T18:11Z create reference "A useful reference"
 
 ---
 
@@ -53,7 +53,7 @@ simple reference entry
 simple journal entry
 ==================
 
-2026-01-05T18:11 create journal "A journal thought"
+2026-01-05T18:11Z create journal "A journal thought"
 
 ---
 
@@ -70,7 +70,7 @@ simple journal entry
 update directive
 ==================
 
-2026-01-10T14:00 update opinion "Revised stance on something"
+2026-01-10T14:00Z update opinion "Revised stance on something"
 
 ---
 
@@ -87,7 +87,41 @@ update directive
 title with special characters
 ==================
 
-2026-01-05T18:11 create lore "Adyen's accounting system is a custom double-entry bookkeeping system"
+2026-01-05T18:11Z create lore "Adyen's accounting system is a custom double-entry bookkeeping system"
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
+
+==================
+timestamp with positive timezone offset
+==================
+
+2026-01-05T18:11+05:30 create lore "Entry with positive timezone"
+
+---
+
+(source_file
+  (entry
+    (instance_entry
+      (instance_header
+        (timestamp)
+        (instance_directive)
+        (entity)
+        (title)))))
+
+==================
+timestamp with negative timezone offset
+==================
+
+2026-01-05T18:11-08:00 create lore "Entry with negative timezone"
 
 ---
 

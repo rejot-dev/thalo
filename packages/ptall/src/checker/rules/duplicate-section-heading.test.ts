@@ -8,7 +8,7 @@ describe("duplicate-section-heading rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -22,7 +22,7 @@ describe("duplicate-section-heading rule", () => {
 
   it("reports duplicate section headings in content", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -48,7 +48,7 @@ describe("duplicate-section-heading rule", () => {
 
   it("does not report unique section headings", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -71,7 +71,7 @@ describe("duplicate-section-heading rule", () => {
 
   it("reports multiple duplicate headings", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -100,7 +100,7 @@ describe("duplicate-section-heading rule", () => {
 
   it("does not confuse sections across entries", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create opinion "First" #test
+      `2026-01-05T17:00Z create opinion "First" #test
   confidence: high
 
   # Claim
@@ -109,7 +109,7 @@ describe("duplicate-section-heading rule", () => {
   # Reasoning
   First reasoning.
 
-2026-01-05T18:00 create opinion "Second" #test
+2026-01-05T18:00Z create opinion "Second" #test
   confidence: low
 
   # Claim

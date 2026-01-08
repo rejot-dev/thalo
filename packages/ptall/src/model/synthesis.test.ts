@@ -76,14 +76,14 @@ describe("Synthesis integration", () => {
     it("matches entries by entity type", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T12:00 create lore "Fact 1" #career
+        `2026-01-07T12:00Z create lore "Fact 1" #career
   type: "fact"
   subject: ^self
 
   # Content
   Content 1.
 
-2026-01-07T12:01 create journal "Journal 1"
+2026-01-07T12:01Z create journal "Journal 1"
   type: "reflection"
   subject: ^self
 
@@ -94,7 +94,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T10:00 define-synthesis "Profile" ^profile
+        `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -115,14 +115,14 @@ describe("Synthesis integration", () => {
     it("matches entries by tag", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T12:00 create lore "Career fact" #career
+        `2026-01-07T12:00Z create lore "Career fact" #career
   type: "fact"
   subject: ^self
 
   # Content
   Career content.
 
-2026-01-07T12:01 create lore "Education fact" #education
+2026-01-07T12:01Z create lore "Education fact" #education
   type: "fact"
   subject: ^self
 
@@ -133,7 +133,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T10:00 define-synthesis "Career Summary" ^career-summary
+        `2026-01-07T10:00Z define-synthesis "Career Summary" ^career-summary
   sources: lore where #career
 
   # Prompt
@@ -154,21 +154,21 @@ describe("Synthesis integration", () => {
     it("matches entries by multiple conditions (AND)", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T12:00 create lore "Self career" #career
+        `2026-01-07T12:00Z create lore "Self career" #career
   type: "fact"
   subject: ^self
 
   # Content
   Self career content.
 
-2026-01-07T12:01 create lore "Other career" #career
+2026-01-07T12:01Z create lore "Other career" #career
   type: "fact"
   subject: ^other-subject
 
   # Content
   Other career content.
 
-2026-01-07T12:02 create lore "Self education" #education
+2026-01-07T12:02Z create lore "Self education" #education
   type: "fact"
   subject: ^self
 
@@ -179,7 +179,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T10:00 define-synthesis "My Career" ^my-career
+        `2026-01-07T10:00Z define-synthesis "My Career" ^my-career
   sources: lore where subject = ^self and #career
 
   # Prompt
@@ -200,14 +200,14 @@ describe("Synthesis integration", () => {
     it("matches entries from multiple source queries (OR)", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T12:00 create lore "Career lore" #career
+        `2026-01-07T12:00Z create lore "Career lore" #career
   type: "fact"
   subject: ^self
 
   # Content
   Career.
 
-2026-01-07T12:01 create journal "Career journal" #career
+2026-01-07T12:01Z create journal "Career journal" #career
   type: "reflection"
   subject: ^self
 
@@ -218,7 +218,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T10:00 define-synthesis "All Career" ^all-career
+        `2026-01-07T10:00Z define-synthesis "All Career" ^all-career
   sources: lore where #career, journal where #career
 
   # Prompt
@@ -241,21 +241,21 @@ describe("Synthesis integration", () => {
     it("filters entries after a timestamp", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T10:00 create lore "Old fact"
+        `2026-01-07T10:00Z create lore "Old fact"
   type: "fact"
   subject: ^self
 
   # Content
   Old.
 
-2026-01-07T12:00 create lore "New fact"
+2026-01-07T12:00Z create lore "New fact"
   type: "fact"
   subject: ^self
 
   # Content
   New.
 
-2026-01-07T14:00 create lore "Newest fact"
+2026-01-07T14:00Z create lore "Newest fact"
   type: "fact"
   subject: ^self
 
@@ -266,7 +266,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T09:00 define-synthesis "Profile" ^profile
+        `2026-01-07T09:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -284,16 +284,16 @@ describe("Synthesis integration", () => {
       expect(matches).toHaveLength(3);
 
       // Filter after 10:00 - get 2
-      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T10:00");
+      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T10:00Z");
       expect(matches).toHaveLength(2);
 
       // Filter after 12:00 - get 1
-      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T12:00");
+      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T12:00Z");
       expect(matches).toHaveLength(1);
       expect(matches[0]?.title).toBe("Newest fact");
 
       // Filter after 14:00 - get 0
-      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T14:00");
+      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T14:00Z");
       expect(matches).toHaveLength(0);
     });
   });
@@ -302,20 +302,20 @@ describe("Synthesis integration", () => {
     it("finds latest actualize for a synthesis", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T10:00 define-synthesis "Profile" ^profile
+        `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
   Generate.
 
-2026-01-07T10:01 actualize-synthesis ^profile
-  updated: 2026-01-07T10:01
+2026-01-07T10:01Z actualize-synthesis ^profile
+  updated: 2026-01-07T10:01Z
 
-2026-01-07T12:00 actualize-synthesis ^profile
-  updated: 2026-01-07T12:00
+2026-01-07T12:00Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:00Z
 
-2026-01-07T11:00 actualize-synthesis ^profile
-  updated: 2026-01-07T11:00
+2026-01-07T11:00Z actualize-synthesis ^profile
+  updated: 2026-01-07T11:00Z
 `,
         { filename: "profile.ptall" },
       );
@@ -328,21 +328,21 @@ describe("Synthesis integration", () => {
 
       // Find latest by timestamp
       const latest = actualizes.reduce((a, b) => (a.timestamp > b.timestamp ? a : b));
-      expect(latest.timestamp).toBe("2026-01-07T12:00");
-      expect(latest.metadata.get("updated")?.raw).toBe("2026-01-07T12:00");
+      expect(latest.timestamp).toBe("2026-01-07T12:00Z");
+      expect(latest.metadata.get("updated")?.raw).toBe("2026-01-07T12:00Z");
     });
 
     it("uses actualize timestamp to filter new entries", () => {
       const workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-07T10:00 create lore "Old fact"
+        `2026-01-07T10:00Z create lore "Old fact"
   type: "fact"
   subject: ^self
 
   # Content
   Old.
 
-2026-01-07T14:00 create lore "New fact"
+2026-01-07T14:00Z create lore "New fact"
   type: "fact"
   subject: ^self
 
@@ -353,14 +353,14 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T09:00 define-synthesis "Profile" ^profile
+        `2026-01-07T09:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
   Generate.
 
-2026-01-07T12:00 actualize-synthesis ^profile
-  updated: 2026-01-07T12:00
+2026-01-07T12:00Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:00Z
 `,
         { filename: "profile.ptall" },
       );
@@ -375,7 +375,7 @@ describe("Synthesis integration", () => {
       expect(actualize).toBeDefined();
 
       const lastUpdated = actualize!.metadata.get("updated")?.raw;
-      expect(lastUpdated).toBe("2026-01-07T12:00");
+      expect(lastUpdated).toBe("2026-01-07T12:00Z");
 
       const newEntries = queryEntriesForSynthesis(workspace, synthesis!, lastUpdated);
       expect(newEntries).toHaveLength(1);
@@ -388,7 +388,7 @@ describe("Synthesis integration", () => {
       const workspace = new Workspace();
 
       workspace.addDocument(
-        `2026-01-07T10:00 create lore "Fact in file 1"
+        `2026-01-07T10:00Z create lore "Fact in file 1"
   type: "fact"
   subject: ^self
 
@@ -399,7 +399,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T11:00 create lore "Fact in file 2"
+        `2026-01-07T11:00Z create lore "Fact in file 2"
   type: "fact"
   subject: ^self
 
@@ -410,7 +410,7 @@ describe("Synthesis integration", () => {
       );
 
       workspace.addDocument(
-        `2026-01-07T09:00 define-synthesis "All Lore" ^all-lore
+        `2026-01-07T09:00Z define-synthesis "All Lore" ^all-lore
   sources: lore where subject = ^self
 
   # Prompt
@@ -441,7 +441,7 @@ describe("Synthesis link resolution", () => {
   it("synthesis linkId is resolvable in workspace", () => {
     const workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-07T10:00 define-synthesis "Profile" ^my-profile
+      `2026-01-07T10:00Z define-synthesis "Profile" ^my-profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -458,14 +458,14 @@ describe("Synthesis link resolution", () => {
   it("actualize target is tracked as reference", () => {
     const workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-07T10:00 define-synthesis "Profile" ^my-profile
+      `2026-01-07T10:00Z define-synthesis "Profile" ^my-profile
   sources: lore where subject = ^self
 
   # Prompt
   Generate.
 
-2026-01-07T12:00 actualize-synthesis ^my-profile
-  updated: 2026-01-07T12:00
+2026-01-07T12:00Z actualize-synthesis ^my-profile
+  updated: 2026-01-07T12:00Z
 `,
       { filename: "profile.ptall" },
     );

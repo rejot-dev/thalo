@@ -11,7 +11,7 @@ describe("synthesis-missing-prompt rule", () => {
 
   it("reports when synthesis has no prompt section", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 `,
       { filename: "profile.ptall" },
@@ -28,7 +28,7 @@ describe("synthesis-missing-prompt rule", () => {
 
   it("reports when prompt section is empty", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -44,7 +44,7 @@ describe("synthesis-missing-prompt rule", () => {
 
   it("does not report when synthesis has prompt content", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -62,7 +62,7 @@ describe("synthesis-missing-prompt rule", () => {
 
   it("can be configured to error", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 `,
       { filename: "profile.ptall" },
@@ -77,7 +77,7 @@ describe("synthesis-missing-prompt rule", () => {
 
   it("can be turned off", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 `,
       { filename: "profile.ptall" },

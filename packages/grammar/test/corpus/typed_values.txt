@@ -2,7 +2,7 @@
 value: simple link
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   subject: ^self
 
 ---
@@ -24,7 +24,7 @@ value: simple link
 value: link with path
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   related: ^folder/entry-id
 
 ---
@@ -46,7 +46,7 @@ value: link with path
 value: quoted value
 ==================
 
-2026-01-05T18:11 create opinion "Entry"
+2026-01-05T18:11Z create opinion "Entry"
   source: "Technical documentation"
 
 ---
@@ -68,8 +68,8 @@ value: quoted value
 value: datetime with time
 ==================
 
-2026-01-07T12:00 actualize-synthesis ^profile
-  updated: 2026-01-07T12:00
+2026-01-07T12:00Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:00Z
 
 ---
 
@@ -88,7 +88,7 @@ value: datetime with time
 value: datetime without time (date only)
 ==================
 
-2026-01-07T12:00 create lore "Entry"
+2026-01-07T12:00Z create lore "Entry"
   published: 2026-01-07
 
 ---
@@ -111,7 +111,7 @@ value: datetime without time (date only)
 value: date range years
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   date: 2022 ~ 2024
 
 ---
@@ -133,7 +133,7 @@ value: date range years
 value: date range full dates
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   date: 2022-05 ~ 2024-12-31
 
 ---
@@ -155,7 +155,7 @@ value: date range full dates
 value: array of links
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   related: ^link1, ^link2, ^link3
 
 ---
@@ -180,7 +180,7 @@ value: array of links
 value: array of quoted values
 ==================
 
-2026-01-05T18:11 create reference "Entry"
+2026-01-05T18:11Z create reference "Entry"
   authors: "Jane Doe", "John Smith"
 
 ---
@@ -204,7 +204,7 @@ value: array of quoted values
 value: array mixed links and quoted
 ==================
 
-2026-01-05T18:11 create reference "Entry"
+2026-01-05T18:11Z create reference "Entry"
   authors: "Jane Doe", ^john-ref, "Alice"
 
 ---
@@ -229,7 +229,7 @@ value: array mixed links and quoted
 query: entity with field condition
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile" ^profile
+2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
 ---
@@ -256,7 +256,7 @@ query: entity with field condition
 query: entity with tag condition
 ==================
 
-2026-01-07T12:00 define-synthesis "Career" ^career
+2026-01-07T12:00Z define-synthesis "Career" ^career
   sources: lore where #career
 
 ---
@@ -282,7 +282,7 @@ query: entity with tag condition
 query: entity with link condition
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile" ^profile
+2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where ^some-entry
 
 ---
@@ -308,7 +308,7 @@ query: entity with link condition
 query: multiple conditions with and
 ==================
 
-2026-01-07T12:00 define-synthesis "Career" ^career
+2026-01-07T12:00Z define-synthesis "Career" ^career
   sources: lore where subject = ^self and #career
 
 ---
@@ -338,7 +338,7 @@ query: multiple conditions with and
 query: three conditions
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile" ^profile
+2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self and #career and type = "fact"
 
 ---
@@ -372,7 +372,7 @@ query: three conditions
 query: field with quoted value
 ==================
 
-2026-01-07T12:00 define-synthesis "Facts" ^facts
+2026-01-07T12:00Z define-synthesis "Facts" ^facts
   sources: lore where type = "fact"
 
 ---
@@ -399,7 +399,7 @@ query: field with quoted value
 array: multiple queries
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile" ^profile
+2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self, journal where subject = ^self
 
 ---
@@ -434,7 +434,7 @@ array: multiple queries
 array: three queries
 ==================
 
-2026-01-07T12:00 define-synthesis "All" ^all
+2026-01-07T12:00Z define-synthesis "All" ^all
   sources: lore where #work, journal where #work, opinion where #work
 
 ---
@@ -473,7 +473,7 @@ array: three queries
 array: date ranges
 ==================
 
-2026-01-07T12:00 create lore "Entry"
+2026-01-07T12:00Z create lore "Entry"
   periods: 2020 ~ 2022, 2023 ~ 2024
 
 ---
@@ -497,7 +497,7 @@ array: date ranges
 array: mixed types
 ==================
 
-2026-01-07T12:00 create lore "Entry"
+2026-01-07T12:00Z create lore "Entry"
   sources: ^reference1, "inline note", 2020 ~ 2022
 
 ---

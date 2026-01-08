@@ -21,7 +21,7 @@ describe("duplicate-field-in-schema rule", () => {
   it.skip("should report duplicate field names in same schema entry (not implemented)", () => {
     // This test is skipped because the parser/model collapses duplicates
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
   subject: string
@@ -38,7 +38,7 @@ describe("duplicate-field-in-schema rule", () => {
 
   it("does not report unique field names", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
   subject: string
@@ -56,11 +56,11 @@ describe("duplicate-field-in-schema rule", () => {
   it.skip("should report duplicates in alter-entity (not implemented)", () => {
     // This test is skipped because the parser/model collapses duplicates
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 alter-entity lore "Add fields"
+2026-01-01T01:00Z alter-entity lore "Add fields"
   # Metadata
   subject: string
   subject: number
@@ -76,11 +76,11 @@ describe("duplicate-field-in-schema rule", () => {
 
   it("does not report same field in different schema entries", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 define-entity opinion "Opinion entries"
+2026-01-01T01:00Z define-entity opinion "Opinion entries"
   # Metadata
   type: string
 `,
@@ -96,7 +96,7 @@ describe("duplicate-field-in-schema rule", () => {
   it.skip("should report multiple duplicate fields (not implemented)", () => {
     // This test is skipped because the parser/model collapses duplicates
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
   subject: string

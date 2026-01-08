@@ -8,7 +8,7 @@ describe("empty-required-value rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -20,7 +20,7 @@ describe("empty-required-value rule", () => {
 
   it("reports empty value for required field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject:
 `,
@@ -38,7 +38,7 @@ describe("empty-required-value rule", () => {
 
   it("does not report non-empty required field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "my subject"
 `,
@@ -53,7 +53,7 @@ describe("empty-required-value rule", () => {
 
   it("does not report empty value for optional field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   optional:
@@ -69,7 +69,7 @@ describe("empty-required-value rule", () => {
 
   it('reports empty quoted string ""', () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: ""
 `,
@@ -86,7 +86,7 @@ describe("empty-required-value rule", () => {
   it("does not report field with default value", () => {
     const workspaceWithDefaults = new Workspace();
     workspaceWithDefaults.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "fact"
   subject: string
@@ -95,7 +95,7 @@ describe("empty-required-value rule", () => {
     );
 
     workspaceWithDefaults.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type:
   subject: "test"
 `,

@@ -112,7 +112,7 @@ describe("TypeExpr.matchesContent", () => {
       );
       // With time component is not a date
       expect(
-        TypeExpr.matchesContent(datetimeValue("2024-05-11T10:30"), primitive("datetime")),
+        TypeExpr.matchesContent(datetimeValue("2024-05-11T10:30Z"), primitive("datetime")),
       ).toBe(false);
       expect(TypeExpr.matchesContent(quotedValue("2024-05-11"), primitive("datetime"))).toBe(false);
     });
@@ -223,7 +223,7 @@ describe("TypeExpr.matchesContent", () => {
       });
 
       it("rejects datetime with time component", () => {
-        expect(TypeExpr.matchesContent(datetimeValue("2024-05-11T10:30"), type)).toBe(false);
+        expect(TypeExpr.matchesContent(datetimeValue("2024-05-11T10:30Z"), type)).toBe(false);
       });
 
       it("matches value_array of datetimes", () => {
@@ -301,7 +301,7 @@ describe("TypeExpr.matchesDefaultValue", () => {
         TypeExpr.matchesDefaultValue(datetimeDefault("2024-05-11"), primitive("datetime")),
       ).toBe(true);
       expect(
-        TypeExpr.matchesDefaultValue(datetimeDefault("2024-05-11T10:30"), primitive("datetime")),
+        TypeExpr.matchesDefaultValue(datetimeDefault("2024-05-11T10:30Z"), primitive("datetime")),
       ).toBe(false);
       expect(TypeExpr.matchesDefaultValue(quotedDefault("2024-05-11"), primitive("datetime"))).toBe(
         false,

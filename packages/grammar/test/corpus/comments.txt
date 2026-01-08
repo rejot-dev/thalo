@@ -2,7 +2,7 @@
 comment line after metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with comment"
+2026-01-05T18:11Z create lore "Entry with comment"
   type: "fact"
   // this is a comment
 
@@ -27,7 +27,7 @@ comment line after metadata
 comment line between metadata
 ==================
 
-2026-01-05T18:11 create reference "Entry with interleaved comment"
+2026-01-05T18:11Z create reference "Entry with interleaved comment"
   url: "https://example.com"
   // commenting out the next field
   ref-type: "article"
@@ -57,7 +57,7 @@ comment line between metadata
 multiple comment lines
 ==================
 
-2026-01-05T18:11 create lore "Entry with multiple comments"
+2026-01-05T18:11Z create lore "Entry with multiple comments"
   type: "fact"
   // first comment
   // second comment
@@ -90,7 +90,7 @@ multiple comment lines
 unindented comment lines between metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with unindented comments"
+2026-01-05T18:11Z create lore "Entry with unindented comments"
   type: "fact"
 // first comment
 // second comment
@@ -123,7 +123,7 @@ unindented comment lines between metadata
 comment line before content
 ==================
 
-2026-01-05T18:11 create lore "Entry with comment before content"
+2026-01-05T18:11Z create lore "Entry with comment before content"
   type: "fact"
   // TODO: add more metadata later
 
@@ -157,7 +157,7 @@ comment line before content
 comment line in content section
 ==================
 
-2026-01-05T18:11 create opinion "Opinion with comment in content"
+2026-01-05T18:11Z create opinion "Opinion with comment in content"
   confidence: "high"
 
   # Claim
@@ -191,7 +191,7 @@ comment line in content section
 comment line between content sections
 ==================
 
-2026-01-05T18:11 create opinion "Opinion with comments between sections"
+2026-01-05T18:11Z create opinion "Opinion with comments between sections"
   confidence: "high"
 
   # Claim
@@ -233,7 +233,7 @@ comment line between content sections
 comment only in metadata section - allows content after
 ==================
 
-2026-01-05T18:11 create journal "Journal with only comment"
+2026-01-05T18:11Z create journal "Journal with only comment"
   // all metadata commented out
 
   # Thoughts
@@ -262,7 +262,7 @@ comment only in metadata section - allows content after
 inline comment after metadata value (breaks parsing)
 ==================
 
-2026-01-05T18:11 create lore "Entry with inline comment"
+2026-01-05T18:11Z create lore "Entry with inline comment"
   type: "fact" // this is inline
   subject: ^acme
 
@@ -288,7 +288,7 @@ inline comment after metadata value (breaks parsing)
 comment at end of entry
 ==================
 
-2026-01-05T18:11 create lore "Entry ending with comment"
+2026-01-05T18:11Z create lore "Entry ending with comment"
   type: "fact"
   // end comment
 
@@ -313,7 +313,7 @@ comment at end of entry
 comment with special characters
 ==================
 
-2026-01-05T18:11 create lore "Entry with special comment"
+2026-01-05T18:11Z create lore "Entry with special comment"
   type: "fact"
   // TODO: fix this! @user #tag (see: https://example.com)
 
@@ -339,7 +339,7 @@ unindented comment before entry
 ==================
 
 // This is a file-level comment
-2026-01-05T18:11 create lore "Entry after comment"
+2026-01-05T18:11Z create lore "Entry after comment"
   type: "fact"
 
 ---
@@ -362,11 +362,11 @@ unindented comment before entry
 unindented comment between entries
 ==================
 
-2026-01-05T18:11 create lore "First entry"
+2026-01-05T18:11Z create lore "First entry"
   type: "fact"
 
 // Comment between entries
-2026-01-05T18:12 create lore "Second entry"
+2026-01-05T18:12Z create lore "Second entry"
   type: "insight"
 
 ---
@@ -400,7 +400,7 @@ unindented comment between entries
 unindented comment at end of file
 ==================
 
-2026-01-05T18:11 create lore "Entry before comment"
+2026-01-05T18:11Z create lore "Entry before comment"
   type: "fact"
 
 // Comment at end of file
@@ -427,7 +427,7 @@ multiple unindented comments
 
 // First top-level comment
 // Second top-level comment
-2026-01-05T18:11 create lore "Entry with comments"
+2026-01-05T18:11Z create lore "Entry with comments"
   type: "fact"
 
 ---
@@ -451,7 +451,7 @@ multiple unindented comments
 unindented comment directly after entry (no blank line)
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   type: "fact"
 // Comment right after entry
 
@@ -476,7 +476,7 @@ mixed indented and unindented comments
 ==================
 
 // Top-level comment
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   type: "fact"
   // Indented comment in metadata
 
@@ -505,10 +505,10 @@ mixed indented and unindented comments
 unindented comment in metadata ends entry
 ==================
 
-2026-01-05T18:11 create lore "Entry"
+2026-01-05T18:11Z create lore "Entry"
   type: "fact"
 // unindented comment ends entry
-2026-01-05T18:12 create lore "Next entry"
+2026-01-05T18:12Z create lore "Next entry"
   subject: ^acme
 
 ---

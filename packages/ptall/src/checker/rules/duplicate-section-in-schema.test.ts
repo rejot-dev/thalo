@@ -11,7 +11,7 @@ describe("duplicate-section-in-schema rule", () => {
 
   it("reports duplicate section names in same schema entry", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: string
   # Sections
@@ -33,7 +33,7 @@ describe("duplicate-section-in-schema rule", () => {
 
   it("does not report unique section names", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: string
   # Sections
@@ -52,13 +52,13 @@ describe("duplicate-section-in-schema rule", () => {
 
   it("reports duplicates in alter-entity", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: string
   # Sections
   Claim
 
-2026-01-01T01:00 alter-entity opinion "Add sections"
+2026-01-01T01:00Z alter-entity opinion "Add sections"
   # Sections
   Reasoning
   Reasoning
@@ -75,11 +75,11 @@ describe("duplicate-section-in-schema rule", () => {
 
   it("does not report same section in different schema entries", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Sections
   Summary
 
-2026-01-01T01:00 define-entity lore "Lore entries"
+2026-01-01T01:00Z define-entity lore "Lore entries"
   # Sections
   Summary
 `,
@@ -94,7 +94,7 @@ describe("duplicate-section-in-schema rule", () => {
 
   it("reports multiple duplicate sections", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Sections
   Claim
   Reasoning

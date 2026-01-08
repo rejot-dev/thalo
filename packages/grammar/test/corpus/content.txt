@@ -2,7 +2,7 @@
 content with section header
 ==================
 
-2026-01-05T18:11 create lore "Entry with content"
+2026-01-05T18:11Z create lore "Entry with content"
   type: "fact"
   subject: ^acme
 
@@ -38,7 +38,7 @@ content with section header
 multi-line content under section
 ==================
 
-2026-01-05T18:11 create lore "Entry with multi-line content"
+2026-01-05T18:11Z create lore "Entry with multi-line content"
   type: "fact"
 
   # Details
@@ -75,7 +75,7 @@ multi-line content under section
 content with multiple sections
 ==================
 
-2026-01-05T18:11 create opinion "Opinion with multiple sections"
+2026-01-05T18:11Z create opinion "Opinion with multiple sections"
   confidence: "high"
 
   # Claim
@@ -114,7 +114,7 @@ content with multiple sections
 content without metadata
 ==================
 
-2026-01-05T18:11 create journal "Journal entry"
+2026-01-05T18:11Z create journal "Journal entry"
 
   # Thoughts
   Just some thoughts I wanted to write down.
@@ -140,7 +140,7 @@ content without metadata
 content at EOF without trailing newline
 ==================
 
-2026-01-05T18:11 create lore "Entry at EOF"
+2026-01-05T18:11Z create lore "Entry at EOF"
   type: "fact"
 
   # Notes
@@ -173,7 +173,7 @@ content at EOF without trailing newline
 markdown header at EOF without trailing newline
 ==================
 
-2026-01-05T18:11 create opinion "Opinion at EOF"
+2026-01-05T18:11Z create opinion "Opinion at EOF"
   confidence: "high"
 
   # Final Section
@@ -200,7 +200,7 @@ markdown header at EOF without trailing newline
 content directly after header (no blank line)
 ==================
 
-2026-01-05T18:11 create journal "Direct content"
+2026-01-05T18:11Z create journal "Direct content"
   # Summary
   No blank line needed before content section.
 
@@ -225,7 +225,7 @@ content directly after header (no blank line)
 content directly after metadata (no blank line)
 ==================
 
-2026-01-05T18:11 create lore "Direct after metadata"
+2026-01-05T18:11Z create lore "Direct after metadata"
   type: "fact"
   # Description
   Section starts right after metadata.

@@ -11,7 +11,7 @@ describe("invalid-default-value rule", () => {
 
   it("reports default value that does not match enum type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "invalid"
 
@@ -32,7 +32,7 @@ describe("invalid-default-value rule", () => {
 
   it("accepts valid default value for enum type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "fact"
 
@@ -50,7 +50,7 @@ describe("invalid-default-value rule", () => {
 
   it("accepts valid default value with union type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   status: "unread" | "read" | "processed" = "unread"
 
@@ -68,7 +68,7 @@ describe("invalid-default-value rule", () => {
 
   it("accepts any quoted default value for string type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   subject: string = "default subject"
 
@@ -86,7 +86,7 @@ describe("invalid-default-value rule", () => {
 
   it("accepts link default value for link type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   ref: link = ^default-ref
 
@@ -104,7 +104,7 @@ describe("invalid-default-value rule", () => {
 
   it("reports wrong type for link default", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   ref: link = "not-a-link"
 
@@ -123,7 +123,7 @@ describe("invalid-default-value rule", () => {
 
   it("accepts datetime default value for datetime type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   created: datetime = 2026-01-01
 
@@ -141,9 +141,9 @@ describe("invalid-default-value rule", () => {
 
   it("reports datetime with time as invalid for datetime type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
-  created: datetime = 2026-01-01T10:30
+  created: datetime = 2026-01-01T10:30Z
 
   # Sections
   Content
@@ -160,14 +160,14 @@ describe("invalid-default-value rule", () => {
 
   it("checks defaults in alter-entity too", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
   # Sections
   Content
 
-2026-01-01T01:00 alter-entity lore "Add field with bad default"
+2026-01-01T01:00Z alter-entity lore "Add field with bad default"
   # Metadata
   status: "active" | "inactive" = "pending"
 `,
@@ -183,7 +183,7 @@ describe("invalid-default-value rule", () => {
 
   it("does not report fields without defaults", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -202,7 +202,7 @@ describe("invalid-default-value rule", () => {
 
   it("accepts link default for link array type", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   refs: link[] = ^default-ref
 

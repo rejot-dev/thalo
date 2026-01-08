@@ -11,11 +11,11 @@ describe("duplicate-entity-definition rule", () => {
 
   it("reports duplicate entity definitions in same file", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 define-entity lore "Lore entries again"
+2026-01-01T01:00Z define-entity lore "Lore entries again"
   # Metadata
   subject: string
 `,
@@ -33,7 +33,7 @@ describe("duplicate-entity-definition rule", () => {
 
   it("reports duplicate entity definitions across files", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 `,
@@ -41,7 +41,7 @@ describe("duplicate-entity-definition rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-01T01:00 define-entity lore "Lore entries again"
+      `2026-01-01T01:00Z define-entity lore "Lore entries again"
   # Metadata
   subject: string
 `,
@@ -57,11 +57,11 @@ describe("duplicate-entity-definition rule", () => {
 
   it("does not report unique entity definitions", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 define-entity opinion "Opinion entries"
+2026-01-01T01:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: string
 `,
@@ -76,15 +76,15 @@ describe("duplicate-entity-definition rule", () => {
 
   it("reports all instances of duplicate definitions", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "First"
+      `2026-01-01T00:00Z define-entity lore "First"
   # Metadata
   a: string
 
-2026-01-01T01:00 define-entity lore "Second"
+2026-01-01T01:00Z define-entity lore "Second"
   # Metadata
   b: string
 
-2026-01-01T02:00 define-entity lore "Third"
+2026-01-01T02:00Z define-entity lore "Third"
   # Metadata
   c: string
 `,
@@ -100,11 +100,11 @@ describe("duplicate-entity-definition rule", () => {
 
   it("does not confuse define-entity with alter-entity", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 alter-entity lore "Add subject field"
+2026-01-01T01:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,

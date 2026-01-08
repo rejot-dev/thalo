@@ -18,7 +18,7 @@ describe("handleReferences", () => {
     workspace = new Workspace();
 
     // Add documents with cross-references
-    const source1 = `2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript
+    const source1 = `2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript
   type: "fact"
   subject: ^self
 
@@ -26,14 +26,14 @@ describe("handleReferences", () => {
 `;
     workspace.addDocument(source1, { filename: "/file1.ptall" });
 
-    const source2 = `2026-01-05T19:00 create opinion "TypeScript enums are bad" ^enum-opinion #typescript
+    const source2 = `2026-01-05T19:00Z create opinion "TypeScript enums are bad" ^enum-opinion #typescript
   confidence: "high"
   related: ^ts-lore
 
   # Claim
   Enums should be avoided.
 
-2026-01-05T20:00 create journal "Working on TypeScript" #development
+2026-01-05T20:00Z create journal "Working on TypeScript" #development
   type: "reflection"
   subject: ^self
   inspiration: ^ts-lore
@@ -50,7 +50,7 @@ describe("handleReferences", () => {
         "file:///file1.ptall",
       );
 
-      // source1 header: '2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript'
+      // source1 header: '2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript'
       // ^ts-lore starts around character 60
       const position: Position = { line: 0, character: 63 };
       const context: ReferenceContext = { includeDeclaration: true };
@@ -116,7 +116,7 @@ describe("handleReferences", () => {
       );
 
       // Position cursor on #typescript tag
-      // '2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript'
+      // '2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript'
       // #typescript starts at character 72
       const position: Position = { line: 0, character: 75 };
       const context: ReferenceContext = { includeDeclaration: true };
@@ -131,7 +131,7 @@ describe("handleReferences", () => {
 
   describe("entity references", () => {
     it("should find all entries using an entity type", () => {
-      const schemaSource = `2026-01-05T10:00 define-entity lore "Facts and insights"
+      const schemaSource = `2026-01-05T10:00Z define-entity lore "Facts and insights"
   # Metadata
   type: string
 `;
@@ -140,8 +140,8 @@ describe("handleReferences", () => {
       const doc = createDocument(schemaSource, "file:///schema.ptall");
 
       // Position cursor on "lore" in define-entity
-      // "2026-01-05T10:00 define-entity lore" - lore starts at character 31
-      const position: Position = { line: 0, character: 31 };
+      // "2026-01-05T10:00Z define-entity lore" - lore starts at character 32
+      const position: Position = { line: 0, character: 32 };
       const context: ReferenceContext = { includeDeclaration: true };
 
       const result = handleReferences(workspace, doc, position, context);
@@ -158,8 +158,8 @@ describe("handleReferences", () => {
       );
 
       // Position cursor on "lore" entity name in create line
-      // "2026-01-05T18:00 create lore" - lore is at position after "create "
-      const position: Position = { line: 0, character: 24 };
+      // "2026-01-05T18:00Z create lore" - lore starts at character 26
+      const position: Position = { line: 0, character: 26 };
       const context: ReferenceContext = { includeDeclaration: true };
 
       const result = handleReferences(workspace, doc, position, context);
@@ -197,7 +197,7 @@ describe("handleReferences", () => {
       synthesisWorkspace = new Workspace();
 
       // Add a synthesis definition
-      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career
+      const synthesisSource = `2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career
   sources: lore where #career
 
   # Prompt
@@ -206,13 +206,13 @@ describe("handleReferences", () => {
       synthesisWorkspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
 
       // Add an actualize entry referencing the synthesis
-      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^career-summary
-  updated: 2026-01-06T15:00
+      const actualizeSource = `2026-01-06T15:00Z actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00Z
 `;
       synthesisWorkspace.addDocument(actualizeSource, { filename: "/actualize.ptall" });
 
       // Add a lore entry that references the synthesis
-      const loreSource = `2026-01-07T10:00 create lore "Related to career summary" #career
+      const loreSource = `2026-01-07T10:00Z create lore "Related to career summary" #career
   type: "fact"
   related: ^career-summary
 `;
@@ -226,7 +226,7 @@ describe("handleReferences", () => {
       );
 
       // Position cursor on ^career-summary in the definition header
-      // "2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career"
+      // "2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career"
       // ^career-summary starts around character 50
       const position: Position = { line: 0, character: 55 };
       const context: ReferenceContext = { includeDeclaration: true };
@@ -301,7 +301,7 @@ describe("handleReferences", () => {
 
     it("should return null when document is not in workspace", () => {
       const doc = createDocument(
-        `2026-01-06T10:00 create lore "New" #test
+        `2026-01-06T10:00Z create lore "New" #test
   related: ^ts-lore
 `,
         "file:///not-in-workspace.ptall",
@@ -317,7 +317,7 @@ describe("handleReferences", () => {
 
     it("should return empty array for link with no references", () => {
       // Add a document with a link that nothing references
-      const isolatedDoc = `2026-01-06T10:00 create lore "Isolated entry" ^isolated-link #test
+      const isolatedDoc = `2026-01-06T10:00Z create lore "Isolated entry" ^isolated-link #test
   type: "fact"
   subject: ^self
 `;
@@ -338,7 +338,7 @@ describe("handleReferences", () => {
 
     it("should handle unresolved link references", () => {
       const doc = createDocument(
-        `2026-01-06T10:00 create lore "New" #test
+        `2026-01-06T10:00Z create lore "New" #test
   related: ^nonexistent-link
 `,
         "file:///with-bad-link.ptall",

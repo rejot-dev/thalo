@@ -11,13 +11,13 @@ const format = async (code: string): Promise<string> => {
 
 describe("multiple entries", () => {
   it("should separate entries with blank lines", async () => {
-    const input = `2026-01-05T15:00 create journal "First entry" #test
+    const input = `2026-01-05T15:00Z create journal "First entry" #test
   type: "reflection"
 
   # Thoughts
   Some thoughts.
 
-2026-01-05T16:00 create journal "Second entry" #test
+2026-01-05T16:00Z create journal "Second entry" #test
   type: "reflection"
 
   # Thoughts
@@ -26,13 +26,13 @@ describe("multiple entries", () => {
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T15:00 create journal "First entry" #test
+    expect(output).toBe(`2026-01-05T15:00Z create journal "First entry" #test
   type: "reflection"
 
   # Thoughts
   Some thoughts.
 
-2026-01-05T16:00 create journal "Second entry" #test
+2026-01-05T16:00Z create journal "Second entry" #test
   type: "reflection"
 
   # Thoughts
@@ -41,25 +41,25 @@ describe("multiple entries", () => {
   });
 
   it("should handle three or more entries", async () => {
-    const input = `2026-01-05T10:00 create lore "First" #test
+    const input = `2026-01-05T10:00Z create lore "First" #test
   type: "fact"
 
-2026-01-05T11:00 create lore "Second" #test
+2026-01-05T11:00Z create lore "Second" #test
   type: "fact"
 
-2026-01-05T12:00 create lore "Third" #test
+2026-01-05T12:00Z create lore "Third" #test
   type: "fact"
 `;
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T10:00 create lore "First" #test
+    expect(output).toBe(`2026-01-05T10:00Z create lore "First" #test
   type: "fact"
 
-2026-01-05T11:00 create lore "Second" #test
+2026-01-05T11:00Z create lore "Second" #test
   type: "fact"
 
-2026-01-05T12:00 create lore "Third" #test
+2026-01-05T12:00Z create lore "Third" #test
   type: "fact"
 `);
   });

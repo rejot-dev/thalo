@@ -11,7 +11,7 @@ describe("synthesis-missing-sources rule", () => {
 
   it("reports when synthesis has no sources field", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
 
   # Prompt
   Generate a profile.
@@ -30,7 +30,7 @@ describe("synthesis-missing-sources rule", () => {
 
   it("does not report when synthesis has sources", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -47,14 +47,14 @@ describe("synthesis-missing-sources rule", () => {
 
   it("does not report for non-synthesis entries", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore"
+      `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: string
 
   # Sections
   Content
 
-2026-01-07T12:00 create lore "Test" #test
+2026-01-07T12:00Z create lore "Test" #test
   type: fact
 
   # Content

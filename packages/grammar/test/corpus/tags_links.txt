@@ -2,7 +2,7 @@
 single tag
 ==================
 
-2026-01-05T18:11 create lore "Entry with one tag" #architecture
+2026-01-05T18:11Z create lore "Entry with one tag" #architecture
 
 ---
 
@@ -20,7 +20,7 @@ single tag
 multiple tags
 ==================
 
-2026-01-05T18:11 create lore "Entry with multiple tags" #accounting #architecture #payments
+2026-01-05T18:11Z create lore "Entry with multiple tags" #accounting #architecture #payments
 
 ---
 
@@ -40,7 +40,7 @@ multiple tags
 single link
 ==================
 
-2026-01-05T18:11 create lore "Entry with link" ^my-linked-entry
+2026-01-05T18:11Z create lore "Entry with link" ^my-linked-entry
 
 ---
 
@@ -58,7 +58,7 @@ single link
 link and tags
 ==================
 
-2026-01-05T18:11 create lore "Entry with link and tags" ^data-stream #streaming #postgres
+2026-01-05T18:11Z create lore "Entry with link and tags" ^data-stream #streaming #postgres
 
 ---
 
@@ -78,7 +78,7 @@ link and tags
 tags before link
 ==================
 
-2026-01-05T18:11 create opinion "Tags then link" #typescript #enums ^opinion-ts-enums
+2026-01-05T18:11Z create opinion "Tags then link" #typescript #enums ^opinion-ts-enums
 
 ---
 
@@ -98,7 +98,7 @@ tags before link
 tag with dashes and dots
 ==================
 
-2026-01-05T18:11 create lore "Special tag chars" #web-services #version.1.2
+2026-01-05T18:11Z create lore "Special tag chars" #web-services #version.1.2
 
 ---
 
@@ -117,7 +117,7 @@ tag with dashes and dots
 link with dashes
 ==================
 
-2026-01-05T18:11 create lore "Link with dashes" ^my-account-framework
+2026-01-05T18:11Z create lore "Link with dashes" ^my-account-framework
 
 ---
 

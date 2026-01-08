@@ -7,7 +7,7 @@ import { isIdentityMap } from "./source-map.js";
 
 describe("Parser", () => {
   it("parses a ptall file", () => {
-    const source = `2026-01-05T18:00 create lore "Test entry" #test
+    const source = `2026-01-05T18:00Z create lore "Test entry" #test
   type: "fact"
   subject: ^self
 
@@ -21,7 +21,7 @@ describe("Parser", () => {
   });
 
   it("parses using filename heuristic", () => {
-    const source = `2026-01-05T18:00 create lore "Test entry" #test
+    const source = `2026-01-05T18:00Z create lore "Test entry" #test
   type: "fact"
 `;
     const result = parseDocument(source, { filename: "test.ptall" });
@@ -35,14 +35,14 @@ describe("Parser", () => {
 Some text.
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test entry" #test
+2026-01-05T18:00Z create lore "Test entry" #test
   type: "fact"
 \`\`\`
 
 More text.
 
 \`\`\`ptall
-2026-01-05T19:00 create lore "Another entry" #test
+2026-01-05T19:00Z create lore "Another entry" #test
   type: "insight"
 \`\`\`
 `;
@@ -57,7 +57,7 @@ More text.
     const source = `# My Document
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test entry" #test
+2026-01-05T18:00Z create lore "Test entry" #test
   type: "fact"
 \`\`\`
 `;
@@ -69,7 +69,7 @@ More text.
 
 describe("Document", () => {
   it("parses entries from source", () => {
-    const source = `2026-01-05T18:00 create lore "Test entry" ^my-lore #test
+    const source = `2026-01-05T18:00Z create lore "Test entry" ^my-lore #test
   type: "fact"
   subject: ^self
 
@@ -81,7 +81,7 @@ describe("Document", () => {
     expect(doc.instanceEntries).toHaveLength(1);
 
     const entry = doc.instanceEntries[0];
-    expect(entry.timestamp).toBe("2026-01-05T18:00");
+    expect(entry.timestamp).toBe("2026-01-05T18:00Z");
     expect(entry.directive).toBe("create");
     expect(entry.entity).toBe("lore");
     expect(entry.title).toBe("Test entry");
@@ -92,14 +92,14 @@ describe("Document", () => {
   });
 
   it("builds link index", () => {
-    const source = `2026-01-05T18:00 create lore "Test entry" ^my-lore #test
+    const source = `2026-01-05T18:00Z create lore "Test entry" ^my-lore #test
   type: "fact"
   related: ^other-entry
 `;
     const doc = Document.parse(source, { filename: "test.ptall" });
 
     // Only explicit link ID creates a definition (timestamps are not link IDs)
-    expect(doc.linkIndex.definitions.has("2026-01-05T18:00")).toBe(false);
+    expect(doc.linkIndex.definitions.has("2026-01-05T18:00Z")).toBe(false);
     expect(doc.linkIndex.definitions.has("my-lore")).toBe(true);
 
     // Related is a reference
@@ -110,7 +110,7 @@ describe("Document", () => {
 
 describe("SchemaRegistry", () => {
   it("resolves entity schemas", () => {
-    const source = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const source = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -140,14 +140,14 @@ describe("Checker", () => {
     workspace = new Workspace();
 
     // Add schema definitions
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
   # Sections
   Summary
 
-2026-01-01T00:01 define-entity opinion "Opinion entries"
+2026-01-01T00:01Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -159,7 +159,7 @@ describe("Checker", () => {
 
   it("reports unknown entity", () => {
     // "journal" is a valid entity keyword but not defined in our test schema
-    const source = `2026-01-05T18:00 create journal "Test" #test
+    const source = `2026-01-05T18:00Z create journal "Test" #test
   field: "value"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
@@ -171,7 +171,7 @@ describe("Checker", () => {
   });
 
   it("reports missing required field", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 `;
     // Missing "subject" which is required
@@ -184,7 +184,7 @@ describe("Checker", () => {
   });
 
   it("reports unknown field", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   unknown-field: "value"
@@ -198,7 +198,7 @@ describe("Checker", () => {
   });
 
   it("reports invalid field type", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "invalid-value"
   subject: "test"
 `;
@@ -211,7 +211,7 @@ describe("Checker", () => {
   });
 
   it("reports missing required section", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
 
@@ -226,7 +226,7 @@ describe("Checker", () => {
   });
 
   it("reports unresolved link", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   related: ^nonexistent-link
@@ -243,7 +243,7 @@ describe("Checker", () => {
   });
 
   it("passes with valid entry", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
 
@@ -259,7 +259,7 @@ describe("Checker", () => {
   });
 
   it("allows configuring rule severity", () => {
-    const source = `2026-01-05T18:00 create lore "Test" #test
+    const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   unknown-field: "value"

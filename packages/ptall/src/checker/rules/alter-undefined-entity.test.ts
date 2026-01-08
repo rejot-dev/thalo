@@ -11,7 +11,7 @@ describe("alter-undefined-entity rule", () => {
 
   it("reports alter-entity for undefined entity", () => {
     workspace.addDocument(
-      `2026-01-01T01:00 alter-entity lore "Add subject field"
+      `2026-01-01T01:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,
@@ -29,11 +29,11 @@ describe("alter-undefined-entity rule", () => {
 
   it("does not report alter-entity for defined entity", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 alter-entity lore "Add subject field"
+2026-01-01T01:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,
@@ -48,7 +48,7 @@ describe("alter-undefined-entity rule", () => {
 
   it("reports when definition is in different file", () => {
     workspace.addDocument(
-      `2026-01-01T01:00 alter-entity lore "Add subject field"
+      `2026-01-01T01:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,
@@ -66,7 +66,7 @@ describe("alter-undefined-entity rule", () => {
 
   it("finds definition in another file", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 `,
@@ -74,7 +74,7 @@ describe("alter-undefined-entity rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-01T01:00 alter-entity lore "Add subject field"
+      `2026-01-01T01:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,
@@ -89,11 +89,11 @@ describe("alter-undefined-entity rule", () => {
 
   it("reports multiple undefined alters", () => {
     workspace.addDocument(
-      `2026-01-01T01:00 alter-entity lore "Add field"
+      `2026-01-01T01:00Z alter-entity lore "Add field"
   # Metadata
   field: string
 
-2026-01-01T02:00 alter-entity opinion "Add field"
+2026-01-01T02:00Z alter-entity opinion "Add field"
   # Metadata
   confidence: string
 `,

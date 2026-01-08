@@ -48,7 +48,7 @@ describe("file operations - cross-file definition resolution", () => {
       // The LSP should find the definition after the new file is loaded.
 
       // File A references ^new-entry (but definition doesn't exist yet)
-      const fileAContent = `2026-01-06T10:00 create lore "Referencing entry" #test
+      const fileAContent = `2026-01-06T10:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^new-entry
 `;
@@ -61,7 +61,7 @@ describe("file operations - cross-file definition resolution", () => {
       expect(result).toBeNull();
 
       // Now "create" file B with the definition (simulating Save As / external creation)
-      const fileBContent = `2026-01-06T12:00 create lore "The new entry" ^new-entry #test
+      const fileBContent = `2026-01-06T12:00Z create lore "The new entry" ^new-entry #test
   type: "fact"
   subject: ^self
 `;
@@ -76,13 +76,13 @@ describe("file operations - cross-file definition resolution", () => {
 
     it("should resolve references across files after new file is added", () => {
       // Create file A with a definition
-      const fileAContent = `2026-01-06T10:00 create lore "Original entry" ^original-entry #test
+      const fileAContent = `2026-01-06T10:00Z create lore "Original entry" ^original-entry #test
   type: "fact"
 `;
       workspace.addDocument(fileAContent, { filename: "/file-a.ptall" });
 
       // Create file B that references the definition in file A
-      const fileBContent = `2026-01-06T12:00 create lore "Referencing entry" #test
+      const fileBContent = `2026-01-06T12:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^original-entry
 `;
@@ -101,19 +101,19 @@ describe("file operations - cross-file definition resolution", () => {
 
     it("should handle schema definition in external file", () => {
       // File A uses a custom entity type
-      const fileAContent = `2026-01-06T10:00 create custom "Test instance" #test
+      const fileAContent = `2026-01-06T10:00Z create custom "Test instance" #test
   name: test value
 `;
       workspace.addDocument(fileAContent, { filename: "/instance.ptall" });
 
       // Initially, the entity 'custom' is not defined
       const docA = createDocument(fileAContent, "file:///instance.ptall");
-      const positionOnEntity: Position = { line: 0, character: 24 }; // on 'custom'
+      const positionOnEntity: Position = { line: 0, character: 26 }; // on 'custom'
       let result = handleDefinition(workspace, docA, positionOnEntity);
       expect(result).toBeNull();
 
       // Add schema file with define-entity
-      const schemaContent = `2026-01-05T10:00 define-entity custom "Custom entity type"
+      const schemaContent = `2026-01-05T10:00Z define-entity custom "Custom entity type"
   # Metadata
   name: string
 `;
@@ -129,14 +129,14 @@ describe("file operations - cross-file definition resolution", () => {
   describe("file deletion scenarios", () => {
     it("should not find definition after file is removed from workspace", () => {
       // Add file A with reference
-      const fileAContent = `2026-01-06T10:00 create lore "Referencing entry" #test
+      const fileAContent = `2026-01-06T10:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^deleted-entry
 `;
       workspace.addDocument(fileAContent, { filename: "/file-a.ptall" });
 
       // Add file B with definition
-      const fileBContent = `2026-01-06T12:00 create lore "Entry to be deleted" ^deleted-entry #test
+      const fileBContent = `2026-01-06T12:00Z create lore "Entry to be deleted" ^deleted-entry #test
   type: "fact"
 `;
       workspace.addDocument(fileBContent, { filename: "/file-b.ptall" });
@@ -159,14 +159,14 @@ describe("file operations - cross-file definition resolution", () => {
   describe("file rename scenarios", () => {
     it("should find definition after file is renamed (old path removed, new path added)", () => {
       // Add file A with reference
-      const fileAContent = `2026-01-06T10:00 create lore "Referencing entry" #test
+      const fileAContent = `2026-01-06T10:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^renamed-entry
 `;
       workspace.addDocument(fileAContent, { filename: "/file-a.ptall" });
 
       // Add file B with definition at old path
-      const fileBContent = `2026-01-06T12:00 create lore "Entry that will be renamed" ^renamed-entry #test
+      const fileBContent = `2026-01-06T12:00Z create lore "Entry that will be renamed" ^renamed-entry #test
   type: "fact"
 `;
       workspace.addDocument(fileBContent, { filename: "/old-name.ptall" });
@@ -197,13 +197,13 @@ describe("file operations - cross-file definition resolution", () => {
       // 3. Go-to-definition from a reference to ^link-id should find it in file B
 
       // Original file with the entry
-      const originalContent = `2026-01-06T10:00 create lore "Entry with link" ^my-link #test
+      const originalContent = `2026-01-06T10:00Z create lore "Entry with link" ^my-link #test
   type: "fact"
 `;
       workspace.addDocument(originalContent, { filename: "/original.ptall" });
 
       // Another file that references the link
-      const referencingContent = `2026-01-06T11:00 create lore "Referencing entry" #test
+      const referencingContent = `2026-01-06T11:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^my-link
 `;
@@ -218,7 +218,7 @@ describe("file operations - cross-file definition resolution", () => {
 
       // User copies the entry to a new file (Save As)
       // The new file has the same content with the ^my-link definition
-      const copiedContent = `2026-01-06T10:00 create lore "Entry with link" ^my-link #test
+      const copiedContent = `2026-01-06T10:00Z create lore "Entry with link" ^my-link #test
   type: "fact"
 `;
       workspace.addDocument(copiedContent, { filename: "/copied.ptall" });
@@ -232,19 +232,19 @@ describe("file operations - cross-file definition resolution", () => {
 
     it("should find new definition after original is removed", () => {
       // Start with original file only
-      const originalContent = `2026-01-06T10:00 create lore "Original entry" ^moved-link #test
+      const originalContent = `2026-01-06T10:00Z create lore "Original entry" ^moved-link #test
   type: "fact"
 `;
       workspace.addDocument(originalContent, { filename: "/original.ptall" });
 
-      const referencingContent = `2026-01-06T11:00 create lore "Referencing entry" #test
+      const referencingContent = `2026-01-06T11:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^moved-link
 `;
       workspace.addDocument(referencingContent, { filename: "/referencing.ptall" });
 
       // Simulate: user moves entry to new file (copies then deletes original)
-      const movedContent = `2026-01-06T10:00 create lore "Original entry" ^moved-link #test
+      const movedContent = `2026-01-06T10:00Z create lore "Original entry" ^moved-link #test
   type: "fact"
 `;
       workspace.addDocument(movedContent, { filename: "/new-location.ptall" });
@@ -264,7 +264,7 @@ describe("file operations - cross-file definition resolution", () => {
     it("should work with files on disk", () => {
       // Create a real file on disk
       const filePath = path.join(tempDir, "test.ptall");
-      const content = `2026-01-06T10:00 create lore "Disk-based entry" ^disk-entry #test
+      const content = `2026-01-06T10:00Z create lore "Disk-based entry" ^disk-entry #test
   type: "fact"
 `;
       fs.writeFileSync(filePath, content);
@@ -275,7 +275,7 @@ describe("file operations - cross-file definition resolution", () => {
 
       // Create another file that references it
       const refPath = path.join(tempDir, "ref.ptall");
-      const refContent = `2026-01-06T11:00 create lore "Referencing entry" #test
+      const refContent = `2026-01-06T11:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^disk-entry
 `;
@@ -294,7 +294,7 @@ describe("file operations - cross-file definition resolution", () => {
     it("should handle file creation on disk", () => {
       // Start with a reference file
       const refPath = path.join(tempDir, "ref.ptall");
-      const refContent = `2026-01-06T11:00 create lore "Referencing entry" #test
+      const refContent = `2026-01-06T11:00Z create lore "Referencing entry" #test
   type: "fact"
   related: ^future-entry
 `;
@@ -309,7 +309,7 @@ describe("file operations - cross-file definition resolution", () => {
 
       // Create the definition file on disk (simulating Save As)
       const defPath = path.join(tempDir, "definition.ptall");
-      const defContent = `2026-01-06T10:00 create lore "Future entry" ^future-entry #test
+      const defContent = `2026-01-06T10:00Z create lore "Future entry" ^future-entry #test
   type: "fact"
 `;
       fs.writeFileSync(defPath, defContent);

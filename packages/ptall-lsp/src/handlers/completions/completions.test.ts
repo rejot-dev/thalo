@@ -121,7 +121,7 @@ describe("detectContext", () => {
     });
 
     it("returns line_start at empty line after entry", () => {
-      const ctx = detectContextFromMarker(`2026-01-05T18:00 create lore "Test"
+      const ctx = detectContextFromMarker(`2026-01-05T18:00Z create lore "Test"
   type: "fact"
 
 |`);
@@ -131,12 +131,12 @@ describe("detectContext", () => {
 
   describe("after_timestamp", () => {
     it("returns after_timestamp after valid timestamp with space", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z |");
       expect(ctx.kind).toBe("after_timestamp");
     });
 
     it("returns after_timestamp when typing directive", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 cre|");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z cre|");
       expect(ctx.kind).toBe("after_timestamp");
       expect(ctx.partial).toBe("cre");
     });
@@ -144,47 +144,47 @@ describe("detectContext", () => {
 
   describe("after_directive", () => {
     it("returns after_directive after create", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 create |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z create |");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.entry.directive).toBe("create");
     });
 
     it("returns after_directive after update", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 update |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z update |");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.entry.directive).toBe("update");
     });
 
     it("returns after_directive after define-entity", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 define-entity |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z define-entity |");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.entry.directive).toBe("define-entity");
       expect(ctx.entry.isSchemaEntry).toBe(true);
     });
 
     it("returns after_directive after alter-entity", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 alter-entity |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z alter-entity |");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.entry.directive).toBe("alter-entity");
       expect(ctx.entry.isSchemaEntry).toBe(true);
     });
 
     it("returns after_directive after define-synthesis", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 define-synthesis |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z define-synthesis |");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.entry.directive).toBe("define-synthesis");
       expect(ctx.entry.isSynthesisEntry).toBe(true);
     });
 
     it("returns after_directive after actualize-synthesis", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 actualize-synthesis |");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z actualize-synthesis |");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.entry.directive).toBe("actualize-synthesis");
       expect(ctx.entry.isSynthesisEntry).toBe(true);
     });
 
     it("returns after_directive when typing entity", () => {
-      const ctx = detectContextFromMarker("2026-01-06T14:30 create lo|");
+      const ctx = detectContextFromMarker("2026-01-06T14:30Z create lo|");
       expect(ctx.kind).toBe("after_directive");
       expect(ctx.partial).toBe("lo");
     });
@@ -192,33 +192,33 @@ describe("detectContext", () => {
 
   describe("header_suffix", () => {
     it("returns header_suffix after title", () => {
-      const ctx = detectContextFromMarker('2026-01-06T14:30 create lore "Title" |');
+      const ctx = detectContextFromMarker('2026-01-06T14:30Z create lore "Title" |');
       expect(ctx.kind).toBe("header_suffix");
     });
 
     it("returns header_suffix after title with space for tags/links", () => {
-      const ctx = detectContextFromMarker('2026-01-06T14:30 create lore "Title" #test |');
+      const ctx = detectContextFromMarker('2026-01-06T14:30Z create lore "Title" #test |');
       expect(ctx.kind).toBe("header_suffix");
     });
   });
 
   describe("metadata_key", () => {
     it("returns metadata_key on indented line after header", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create lore "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create lore "Title"
   |`);
       expect(ctx.kind).toBe("metadata_key");
       expect(ctx.entry.entity).toBe("lore");
     });
 
     it("returns metadata_key when typing key", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create lore "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create lore "Title"
   typ|`);
       expect(ctx.kind).toBe("metadata_key");
       expect(ctx.partial).toBe("typ");
     });
 
     it("includes existing metadata keys", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create lore "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create lore "Title"
   type: "fact"
   |`);
       expect(ctx.kind).toBe("metadata_key");
@@ -227,7 +227,7 @@ describe("detectContext", () => {
 
     it("returns metadata_key for synthesis entries", () => {
       const ctx =
-        detectContextFromMarker(`2026-01-06T14:30 define-synthesis "Career Summary" ^career-summary
+        detectContextFromMarker(`2026-01-06T14:30Z define-synthesis "Career Summary" ^career-summary
   |`);
       expect(ctx.kind).toBe("metadata_key");
       expect(ctx.entry.isSynthesisEntry).toBe(true);
@@ -235,7 +235,7 @@ describe("detectContext", () => {
     });
 
     it("returns metadata_key for actualize entries", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 actualize-synthesis ^career-summary
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z actualize-synthesis ^career-summary
   |`);
       expect(ctx.kind).toBe("metadata_key");
       expect(ctx.entry.isSynthesisEntry).toBe(true);
@@ -244,14 +244,14 @@ describe("detectContext", () => {
 
   describe("metadata_value", () => {
     it("returns metadata_value after colon", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create lore "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create lore "Title"
   type: |`);
       expect(ctx.kind).toBe("metadata_value");
       expect(ctx.metadataKey).toBe("type");
     });
 
     it("returns metadata_value when typing value", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create lore "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create lore "Title"
   type: fac|`);
       expect(ctx.kind).toBe("metadata_value");
       expect(ctx.metadataKey).toBe("type");
@@ -272,19 +272,19 @@ describe("detectContext", () => {
     });
 
     it("returns link in header position", () => {
-      const ctx = detectContextFromMarker('2026-01-06T14:30 create lore "Title" ^|');
+      const ctx = detectContextFromMarker('2026-01-06T14:30Z create lore "Title" ^|');
       expect(ctx.kind).toBe("link");
     });
   });
 
   describe("tag", () => {
     it("returns tag after # in header (not markdown)", () => {
-      const ctx = detectContextFromMarker('2026-01-06T14:30 create lore "Title" #|');
+      const ctx = detectContextFromMarker('2026-01-06T14:30Z create lore "Title" #|');
       expect(ctx.kind).toBe("tag");
     });
 
     it("returns tag when typing tag name", () => {
-      const ctx = detectContextFromMarker('2026-01-06T14:30 create lore "Title" #type|');
+      const ctx = detectContextFromMarker('2026-01-06T14:30Z create lore "Title" #type|');
       expect(ctx.kind).toBe("tag");
       expect(ctx.partial).toBe("type");
     });
@@ -298,7 +298,7 @@ describe("detectContext", () => {
 
   describe("section_header", () => {
     it("returns section_header for # in content area", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create opinion "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create opinion "Title"
   confidence: "high"
 
   #|`);
@@ -309,7 +309,7 @@ describe("detectContext", () => {
       // Note: After typing more than just "# ", the context becomes harder to detect
       // because we can't easily distinguish section headers from regular markdown content.
       // The completion triggers best right after typing "#"
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 create opinion "Title"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z create opinion "Title"
   confidence: "high"
 
   #|`);
@@ -319,14 +319,14 @@ describe("detectContext", () => {
 
   describe("schema_block_header", () => {
     it("returns schema_block_header in define-entity", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 define-entity myentity "Desc"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z define-entity myentity "Desc"
   #|`);
       expect(ctx.kind).toBe("schema_block_header");
       expect(ctx.entry.isSchemaEntry).toBe(true);
     });
 
     it("returns schema_block_header when typing header", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 define-entity myentity "Desc"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z define-entity myentity "Desc"
   # Meta|`);
       expect(ctx.kind).toBe("schema_block_header");
     });
@@ -334,14 +334,14 @@ describe("detectContext", () => {
 
   describe("field_type", () => {
     it("returns field_type after field name in schema", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 define-entity myentity "Desc"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z define-entity myentity "Desc"
   # Metadata
   myfield: |`);
       expect(ctx.kind).toBe("field_type");
     });
 
     it("returns field_type with optional marker", () => {
-      const ctx = detectContextFromMarker(`2026-01-06T14:30 define-entity myentity "Desc"
+      const ctx = detectContextFromMarker(`2026-01-06T14:30Z define-entity myentity "Desc"
   # Metadata
   myfield?: |`);
       expect(ctx.kind).toBe("field_type");
@@ -423,11 +423,11 @@ describe("EntityProvider", () => {
   });
 
   it("provides entities from schema registry for create directive", () => {
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T00:01 define-entity opinion "Opinion entries"
+2026-01-01T00:01Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: string
 `;
@@ -449,7 +449,7 @@ describe("EntityProvider", () => {
   });
 
   it("provides schema-defined entities for alter-entity", () => {
-    const schemaSource = `2026-01-01T00:00 define-entity custom-entity "Custom"
+    const schemaSource = `2026-01-01T00:00Z define-entity custom-entity "Custom"
   # Metadata
   field: string
 `;
@@ -463,11 +463,11 @@ describe("EntityProvider", () => {
   });
 
   it("filters entities by partial text", () => {
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T00:01 define-entity opinion "Opinion entries"
+2026-01-01T00:01Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: string
 `;
@@ -486,7 +486,7 @@ describe("MetadataKeyProvider", () => {
 
   beforeEach(() => {
     workspace = new Workspace();
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -542,7 +542,7 @@ describe("MetadataValueProvider", () => {
 
   beforeEach(() => {
     workspace = new Workspace();
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string | link
@@ -581,10 +581,10 @@ describe("LinkProvider", () => {
 
   beforeEach(() => {
     workspace = new Workspace();
-    const source = `2026-01-05T18:00 create lore "Test entry" ^my-lore #test
+    const source = `2026-01-05T18:00Z create lore "Test entry" ^my-lore #test
   type: "fact"
 
-2026-01-05T19:00 create opinion "Another entry" ^my-opinion #test
+2026-01-05T19:00Z create opinion "Another entry" ^my-opinion #test
   confidence: "high"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
@@ -598,8 +598,8 @@ describe("LinkProvider", () => {
     // Only explicit link IDs should be suggested (timestamps are not link IDs)
     expect(labels).toContain("^my-lore");
     expect(labels).toContain("^my-opinion");
-    expect(labels).not.toContain("^2026-01-05T18:00");
-    expect(labels).not.toContain("^2026-01-05T19:00");
+    expect(labels).not.toContain("^2026-01-05T18:00Z");
+    expect(labels).not.toContain("^2026-01-05T19:00Z");
   });
 
   it("filters by partial text", () => {
@@ -633,10 +633,10 @@ describe("TagProvider", () => {
 
   beforeEach(() => {
     workspace = new Workspace();
-    const source = `2026-01-05T18:00 create lore "Entry 1" #typescript #testing
+    const source = `2026-01-05T18:00Z create lore "Entry 1" #typescript #testing
   type: "fact"
 
-2026-01-05T19:00 create lore "Entry 2" #typescript #architecture
+2026-01-05T19:00Z create lore "Entry 2" #typescript #architecture
   type: "insight"
 `;
     workspace.addDocument(source, { filename: "test.ptall" });
@@ -678,7 +678,7 @@ describe("SectionProvider", () => {
 
   beforeEach(() => {
     workspace = new Workspace();
-    const schemaSource = `2026-01-01T00:00 define-entity opinion "Opinions"
+    const schemaSource = `2026-01-01T00:00Z define-entity opinion "Opinions"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -799,7 +799,7 @@ describe("handleCompletion integration", () => {
     workspace = new Workspace();
 
     // Add schema definitions
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string | link
@@ -807,7 +807,7 @@ describe("handleCompletion integration", () => {
   # Sections
   Summary?
 
-2026-01-01T00:01 define-entity opinion "Opinion entries"
+2026-01-01T00:01Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -818,7 +818,7 @@ describe("handleCompletion integration", () => {
     workspace.addDocument(schemaSource, { filename: "schemas.ptall" });
 
     // Add some content
-    const contentSource = `2026-01-05T18:00 create lore "Existing lore entry" ^existing-lore #typescript #architecture
+    const contentSource = `2026-01-05T18:00Z create lore "Existing lore entry" ^existing-lore #typescript #architecture
   type: "fact"
   subject: ^test-subject
 
@@ -835,19 +835,19 @@ describe("handleCompletion integration", () => {
     expect(items[0].insertText).toMatch(/\d{4}-\d{2}-\d{2}T/);
 
     // Step 2: After timestamp -> directives
-    items = completeFromMarker(workspace, "2026-01-06T14:30 |");
+    items = completeFromMarker(workspace, "2026-01-06T14:30Z |");
     expect(items.map((i) => i.label)).toContain("create");
     expect(items.map((i) => i.label)).toContain("update");
 
     // Step 3: After create -> entities
-    items = completeFromMarker(workspace, "2026-01-06T14:30 create |");
+    items = completeFromMarker(workspace, "2026-01-06T14:30Z create |");
     expect(items.map((i) => i.label)).toContain("lore");
     expect(items.map((i) => i.label)).toContain("opinion");
 
     // Step 4: Metadata key
     items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   |`,
     );
     expect(items.map((i) => i.label)).toContain("type");
@@ -856,7 +856,7 @@ describe("handleCompletion integration", () => {
     // Step 5: Metadata value
     items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   type: |`,
     );
     expect(items.map((i) => i.label)).toContain("fact");
@@ -865,7 +865,7 @@ describe("handleCompletion integration", () => {
     // Step 6: Section header
     items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   type: "fact"
   subject: ^test
 
@@ -878,7 +878,7 @@ describe("handleCompletion integration", () => {
     // After define-entity -> block headers
     let items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 define-entity myentity "Desc"
+      `2026-01-06T14:30Z define-entity myentity "Desc"
   #|`,
     );
     expect(items.map((i) => i.label)).toContain("# Metadata");
@@ -887,7 +887,7 @@ describe("handleCompletion integration", () => {
     // Field type completion
     items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 define-entity myentity "Desc"
+      `2026-01-06T14:30Z define-entity myentity "Desc"
   # Metadata
   myfield: |`,
     );
@@ -899,14 +899,14 @@ describe("handleCompletion integration", () => {
   it("provides link completions", () => {
     const items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   related: ^|`,
     );
     expect(items.map((i) => i.label)).toContain("^existing-lore");
   });
 
   it("provides tag completions", () => {
-    const items = completeFromMarker(workspace, '2026-01-06T14:30 create lore "Title" #|');
+    const items = completeFromMarker(workspace, '2026-01-06T14:30Z create lore "Title" #|');
     expect(items.map((i) => i.label)).toContain("#typescript");
     expect(items.map((i) => i.label)).toContain("#architecture");
   });
@@ -921,7 +921,7 @@ describe("edge cases", () => {
     const workspace = new Workspace();
     const items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   type: |`,
     );
     // Should not crash, may return empty
@@ -932,7 +932,7 @@ describe("edge cases", () => {
     const workspace = new Workspace();
     const items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   |`,
     );
     // Should not crash, returns empty without schema
@@ -941,7 +941,7 @@ describe("edge cases", () => {
 
   it("handles cursor at various indentation levels", () => {
     const workspace = new Workspace();
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: string
 `;
@@ -950,7 +950,7 @@ describe("edge cases", () => {
     // 2-space indent
     let items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   |`,
     );
     expect(items.length).toBeGreaterThan(0);
@@ -958,7 +958,7 @@ describe("edge cases", () => {
     // 4-space indent
     items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
     |`,
     );
     expect(items.length).toBeGreaterThan(0);
@@ -966,7 +966,7 @@ describe("edge cases", () => {
 
   it("filters completions by partial text correctly", () => {
     const workspace = new Workspace();
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -975,7 +975,7 @@ describe("edge cases", () => {
 
     const items = completeFromMarker(
       workspace,
-      `2026-01-06T14:30 create lore "Title"
+      `2026-01-06T14:30Z create lore "Title"
   type: in|`,
     );
 

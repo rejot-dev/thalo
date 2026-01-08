@@ -11,7 +11,7 @@ const format = async (code: string): Promise<string> => {
 
 describe("instance entry formatting", () => {
   it("should format a simple lore entry", async () => {
-    const input = `2026-01-05T18:00 create lore "MSc Software Engineering" #education
+    const input = `2026-01-05T18:00Z create lore "MSc Software Engineering" #education
   type: "fact"
   subject: ^self
 
@@ -21,7 +21,7 @@ describe("instance entry formatting", () => {
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T18:00 create lore "MSc Software Engineering" #education
+    expect(output).toBe(`2026-01-05T18:00Z create lore "MSc Software Engineering" #education
   type: "fact"
   subject: ^self
 
@@ -31,7 +31,7 @@ describe("instance entry formatting", () => {
   });
 
   it("should format an entry with multiple tags and links", async () => {
-    const input = `2026-01-05T18:11 create lore "Custom event streaming" ^event-streaming #architecture #distributed
+    const input = `2026-01-05T18:11Z create lore "Custom event streaming" ^event-streaming #architecture #distributed
   type: "fact"
   subject: ^acme-corp
 `;
@@ -39,56 +39,56 @@ describe("instance entry formatting", () => {
     const output = await format(input);
 
     expect(output)
-      .toBe(`2026-01-05T18:11 create lore "Custom event streaming" ^event-streaming #architecture #distributed
+      .toBe(`2026-01-05T18:11Z create lore "Custom event streaming" ^event-streaming #architecture #distributed
   type: "fact"
   subject: ^acme-corp
 `);
   });
 
   it("should format an update directive", async () => {
-    const input = `2026-01-10T14:00 update opinion "Revised stance" #typescript
+    const input = `2026-01-10T14:00Z update opinion "Revised stance" #typescript
   confidence: "medium"
 `;
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-10T14:00 update opinion "Revised stance" #typescript
+    expect(output).toBe(`2026-01-10T14:00Z update opinion "Revised stance" #typescript
   confidence: "medium"
 `);
   });
 
   it("should format all entity types", async () => {
-    const input = `2026-01-05T10:00 create lore "Lore entry" #test
+    const input = `2026-01-05T10:00Z create lore "Lore entry" #test
   type: "fact"
 
-2026-01-05T11:00 create opinion "Opinion entry" #test
+2026-01-05T11:00Z create opinion "Opinion entry" #test
   confidence: "high"
 
-2026-01-05T12:00 create reference "Reference entry" #test
+2026-01-05T12:00Z create reference "Reference entry" #test
   ref-type: "article"
 
-2026-01-05T13:00 create journal "Journal entry" #test
+2026-01-05T13:00Z create journal "Journal entry" #test
   mood: "reflective"
 `;
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T10:00 create lore "Lore entry" #test
+    expect(output).toBe(`2026-01-05T10:00Z create lore "Lore entry" #test
   type: "fact"
 
-2026-01-05T11:00 create opinion "Opinion entry" #test
+2026-01-05T11:00Z create opinion "Opinion entry" #test
   confidence: "high"
 
-2026-01-05T12:00 create reference "Reference entry" #test
+2026-01-05T12:00Z create reference "Reference entry" #test
   ref-type: "article"
 
-2026-01-05T13:00 create journal "Journal entry" #test
+2026-01-05T13:00Z create journal "Journal entry" #test
   mood: "reflective"
 `);
   });
 
   it("should format metadata with link values", async () => {
-    const input = `2026-01-05T18:00 create lore "Related entry" #test
+    const input = `2026-01-05T18:00Z create lore "Related entry" #test
   type: "insight"
   subject: ^self
   related: ^other-entry
@@ -96,7 +96,7 @@ describe("instance entry formatting", () => {
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T18:00 create lore "Related entry" #test
+    expect(output).toBe(`2026-01-05T18:00Z create lore "Related entry" #test
   type: "insight"
   subject: ^self
   related: ^other-entry
@@ -104,28 +104,28 @@ describe("instance entry formatting", () => {
   });
 
   it("should format metadata with quoted values", async () => {
-    const input = `2026-01-05T18:00 create reference "Article" #reading
+    const input = `2026-01-05T18:00Z create reference "Article" #reading
   url: "https://example.com/article"
   author: "John Doe"
 `;
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T18:00 create reference "Article" #reading
+    expect(output).toBe(`2026-01-05T18:00Z create reference "Article" #reading
   url: "https://example.com/article"
   author: "John Doe"
 `);
   });
 
   it("should format metadata with date ranges", async () => {
-    const input = `2026-01-05T18:00 create lore "Work period" #career
+    const input = `2026-01-05T18:00Z create lore "Work period" #career
   type: "fact"
   date: 2020 ~ 2024
 `;
 
     const output = await format(input);
 
-    expect(output).toBe(`2026-01-05T18:00 create lore "Work period" #career
+    expect(output).toBe(`2026-01-05T18:00Z create lore "Work period" #career
   type: "fact"
   date: 2020 ~ 2024
 `);

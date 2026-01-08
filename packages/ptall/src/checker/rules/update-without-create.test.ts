@@ -8,7 +8,7 @@ describe("update-without-create rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   supersedes?: link
@@ -19,14 +19,14 @@ describe("update-without-create rule", () => {
 
   it("reports update superseding a non-create entry", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create opinion "Original" ^original #test
+      `2026-01-05T17:00Z create opinion "Original" ^original #test
   confidence: "high"
 
-2026-01-05T18:00 update opinion "First update" ^first-update #test
+2026-01-05T18:00Z update opinion "First update" ^first-update #test
   confidence: "medium"
   supersedes: ^original
 
-2026-01-05T19:00 update opinion "Second update" #test
+2026-01-05T19:00Z update opinion "Second update" #test
   confidence: "low"
   supersedes: ^first-update
 `,
@@ -43,10 +43,10 @@ describe("update-without-create rule", () => {
 
   it("does not report update superseding a create entry", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create opinion "Original" ^original #test
+      `2026-01-05T17:00Z create opinion "Original" ^original #test
   confidence: "high"
 
-2026-01-05T18:00 update opinion "Updated" #test
+2026-01-05T18:00Z update opinion "Updated" #test
   confidence: "medium"
   supersedes: ^original
 `,
@@ -61,7 +61,7 @@ describe("update-without-create rule", () => {
 
   it("does not report update without supersedes field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 update opinion "Update without supersedes" #test
+      `2026-01-05T18:00Z update opinion "Update without supersedes" #test
   confidence: "medium"
 `,
       { filename: "test.ptall" },
@@ -75,7 +75,7 @@ describe("update-without-create rule", () => {
 
   it("reports update superseding different entity type", () => {
     workspace.addDocument(
-      `2026-01-01T00:01 define-entity lore "Lore entries"
+      `2026-01-01T00:01Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   supersedes?: link
@@ -84,10 +84,10 @@ describe("update-without-create rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-05T17:00 create lore "Lore entry" ^my-lore #test
+      `2026-01-05T17:00Z create lore "Lore entry" ^my-lore #test
   type: "fact"
 
-2026-01-05T18:00 update opinion "Opinion update" #test
+2026-01-05T18:00Z update opinion "Opinion update" #test
   confidence: "medium"
   supersedes: ^my-lore
 `,
@@ -103,10 +103,10 @@ describe("update-without-create rule", () => {
 
   it("does not report create entries", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create opinion "First" ^first #test
+      `2026-01-05T17:00Z create opinion "First" ^first #test
   confidence: "high"
 
-2026-01-05T18:00 create opinion "Second" #test
+2026-01-05T18:00Z create opinion "Second" #test
   confidence: "medium"
 `,
       { filename: "test.ptall" },
@@ -120,12 +120,12 @@ describe("update-without-create rule", () => {
 
   it("works with timestamp references", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create opinion "Original" #test
+      `2026-01-05T17:00Z create opinion "Original" #test
   confidence: "high"
 
-2026-01-05T18:00 update opinion "Updated" #test
+2026-01-05T18:00Z update opinion "Updated" #test
   confidence: "medium"
-  supersedes: ^2026-01-05T17:00
+  supersedes: ^2026-01-05T17:00Z
 `,
       { filename: "test.ptall" },
     );

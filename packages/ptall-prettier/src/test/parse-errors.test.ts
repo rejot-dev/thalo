@@ -152,7 +152,7 @@ describe("formatContextDisplay", () => {
 
 describe("formatErrorLocation", () => {
   it("should format simple error location", () => {
-    const source = `2026-01-07T14:00 create lore "Test"
+    const source = `2026-01-07T14:00Z create lore "Test"
   type: "fact"`;
 
     const loc: ErrorLocation = { line: 2, column: 9, lineIndex: 1 };
@@ -163,14 +163,14 @@ describe("formatErrorLocation", () => {
   });
 
   it("should handle end-of-line errors with context", () => {
-    const source = `2026-01-07T14:00 actualize-synthesis ^bio
+    const source = `2026-01-07T14:00Z actualize-synthesis ^bio
   updated: 2026-01-07`;
 
-    // Error past end of first line (line is 41 chars, column 42 is past the end)
-    const loc: ErrorLocation = { line: 1, column: 42, lineIndex: 0 };
+    // Error past end of first line (line is 42 chars, column 43 is past the end)
+    const loc: ErrorLocation = { line: 1, column: 43, lineIndex: 0 };
     const result = formatErrorLocation(source, loc);
 
-    expect(result).toContain("Line 1, column 42");
+    expect(result).toContain("Line 1, column 43");
     expect(result).toContain("error may be on following line");
     expect(result).toContain("updated:");
     expect(result).toContain("check this value");

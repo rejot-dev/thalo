@@ -8,7 +8,7 @@ describe("invalid-field-type rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -22,7 +22,7 @@ describe("invalid-field-type rule", () => {
 
   it("reports invalid enum value", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "invalid-value"
   subject: "test"
 
@@ -42,7 +42,7 @@ describe("invalid-field-type rule", () => {
 
   it("accepts quoted literal value", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
 
@@ -60,7 +60,7 @@ describe("invalid-field-type rule", () => {
 
   it("accepts any quoted string for string type", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "any value here"
 
@@ -83,7 +83,7 @@ describe("invalid-field-type rule - array types", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinions"
+      `2026-01-01T00:00Z define-entity opinion "Opinions"
   # Metadata
   confidence: "high" | "medium" | "low"
   related?: link[]
@@ -99,7 +99,7 @@ describe("invalid-field-type rule - array types", () => {
 
   it("accepts valid link array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
+      `2026-01-05T18:00Z create opinion "Test opinion" #test
   confidence: "high"
   related: ^link1, ^link2
 
@@ -117,7 +117,7 @@ describe("invalid-field-type rule - array types", () => {
 
   it("accepts single link for link array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
+      `2026-01-05T18:00Z create opinion "Test opinion" #test
   confidence: "high"
   related: ^single-link
 
@@ -135,7 +135,7 @@ describe("invalid-field-type rule - array types", () => {
 
   it("accepts valid quoted string array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
+      `2026-01-05T18:00Z create opinion "Test opinion" #test
   confidence: "high"
   tags: "foo", "bar", "baz"
 
@@ -153,7 +153,7 @@ describe("invalid-field-type rule - array types", () => {
 
   it("accepts union array with quoted strings and links", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test opinion" #test
+      `2026-01-05T18:00Z create opinion "Test opinion" #test
   confidence: "high"
   authors: "Jane Doe", ^author-ref, "John Smith"
 
@@ -176,7 +176,7 @@ describe("invalid-field-type rule - datetime fields with datetime_value", () => 
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity reference "References"
+      `2026-01-01T00:00Z define-entity reference "References"
   # Metadata
   ref-type: "article" | "book"
   published?: datetime
@@ -190,7 +190,7 @@ describe("invalid-field-type rule - datetime fields with datetime_value", () => 
 
   it("accepts datetime_value without time for datetime field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create reference "Test" #test
+      `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   published: 2024-05-11
 
@@ -208,9 +208,9 @@ describe("invalid-field-type rule - datetime fields with datetime_value", () => 
 
   it("rejects datetime_value with time for datetime field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create reference "Test" #test
+      `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
-  published: 2024-05-11T12:00
+  published: 2024-05-11T12:00Z
 
   # Summary
   Test summary.
@@ -232,7 +232,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -248,7 +248,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
 
   it("accepts valid datetime array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test lore" #test
+      `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
   subject: "test"
   dates: 2024-01-01, 2024-05-15, 2024-12-31
@@ -267,7 +267,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
 
   it("accepts valid date-range array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test lore" #test
+      `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
   subject: "test"
   periods: 2020 ~ 2022, 2023-01 ~ 2024-06
@@ -286,7 +286,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
 
   it("accepts single date-range for date-range array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test lore" #test
+      `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
   subject: "test"
   periods: 2020-01-01 ~ 2024-12-31
@@ -305,7 +305,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
 
   it("reports invalid date-range array", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test lore" #test
+      `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
   subject: "test"
   periods: "2020", "2024"

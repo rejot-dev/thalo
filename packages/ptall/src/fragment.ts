@@ -33,7 +33,7 @@ const FRAGMENT_WRAPPERS: Record<
 > = {
   // Queries are embedded as metadata values in an instance entry
   query: {
-    wrapper: `2000-01-01T00:00 create lore "x"
+    wrapper: `2000-01-01T00:00Z create lore "x"
   sources: {FRAGMENT}`,
     find: (tree) => {
       // Navigate: source_file > entry > instance_entry > metadata > value > query
@@ -47,7 +47,7 @@ const FRAGMENT_WRAPPERS: Record<
 
   // Generic values are embedded as metadata values
   value: {
-    wrapper: `2000-01-01T00:00 create lore "x"
+    wrapper: `2000-01-01T00:00Z create lore "x"
   key: {FRAGMENT}`,
     find: (tree) => {
       const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
@@ -59,7 +59,7 @@ const FRAGMENT_WRAPPERS: Record<
 
   // Type expressions are embedded in a schema field definition
   type_expression: {
-    wrapper: `2000-01-01T00:00 define-entity test "x"
+    wrapper: `2000-01-01T00:00Z define-entity test "x"
   # Metadata
   field: {FRAGMENT}`,
     find: (tree) => {

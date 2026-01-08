@@ -8,7 +8,7 @@ describe("missing-required-field rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: link
@@ -20,7 +20,7 @@ describe("missing-required-field rule", () => {
 
   it("reports missing required field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 `,
       { filename: "test.ptall" },
@@ -37,7 +37,7 @@ describe("missing-required-field rule", () => {
 
   it("does not report when all required fields present", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: ^test-subject
 `,
@@ -52,7 +52,7 @@ describe("missing-required-field rule", () => {
 
   it("does not report missing optional field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: ^test-subject
 `,
@@ -68,7 +68,7 @@ describe("missing-required-field rule", () => {
 
   it("reports multiple missing required fields", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   optional-field: "something"
 `,
       { filename: "test.ptall" },
@@ -87,7 +87,7 @@ describe("missing-required-field rule", () => {
   it("does not report for field with default value", () => {
     const workspaceWithDefaults = new Workspace();
     workspaceWithDefaults.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight" = "fact"
   subject: link
@@ -96,7 +96,7 @@ describe("missing-required-field rule", () => {
     );
 
     workspaceWithDefaults.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   subject: ^test-subject
 `,
       { filename: "test.ptall" },

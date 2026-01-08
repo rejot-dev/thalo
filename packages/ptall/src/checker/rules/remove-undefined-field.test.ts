@@ -22,12 +22,12 @@ describe("remove-undefined-field rule", () => {
   it.skip("should report removing a field that does not exist (not tested - needs model support)", () => {
     // This test documents intended behavior but needs model.removeFields support
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
   subject: string
 
-2026-01-01T01:00 alter-entity lore "Remove nonexistent field"
+2026-01-01T01:00Z alter-entity lore "Remove nonexistent field"
   # Remove Metadata
   nonexistent
 `,
@@ -42,13 +42,13 @@ describe("remove-undefined-field rule", () => {
 
   it.skip("should not report removing an existing field (not tested - needs model support)", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
   subject: string
   obsolete: string
 
-2026-01-01T01:00 alter-entity lore "Remove obsolete field"
+2026-01-01T01:00Z alter-entity lore "Remove obsolete field"
   # Remove Metadata
   obsolete
 `,
@@ -63,11 +63,11 @@ describe("remove-undefined-field rule", () => {
 
   it.skip("should report multiple undefined field removals (not tested - needs model support)", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 alter-entity lore "Remove fields"
+2026-01-01T01:00Z alter-entity lore "Remove fields"
   # Remove Metadata
   foo
   bar
@@ -83,7 +83,7 @@ describe("remove-undefined-field rule", () => {
 
   it("does not report when entity is undefined (handled by other rule)", () => {
     workspace.addDocument(
-      `2026-01-01T01:00 alter-entity unknown "Remove field from unknown"
+      `2026-01-01T01:00Z alter-entity unknown "Remove field from unknown"
   # Metadata
   type: string
 `,

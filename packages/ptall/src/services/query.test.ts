@@ -11,7 +11,7 @@ describe("query service", () => {
 
     // Add schema
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -23,21 +23,21 @@ describe("query service", () => {
 
     // Add entries
     workspace.addDocument(
-      `2026-01-05T10:00 create lore "Entry 1" ^entry-1 #career #tech
+      `2026-01-05T10:00Z create lore "Entry 1" ^entry-1 #career #tech
   type: "fact"
   subject: "work"
 
   # Summary
   First entry.
 
-2026-01-05T11:00 create lore "Entry 2" ^entry-2 #career
+2026-01-05T11:00Z create lore "Entry 2" ^entry-2 #career
   type: "insight"
   subject: "work"
 
   # Summary
   Second entry.
 
-2026-01-05T12:00 create lore "Entry 3" ^entry-3 #personal
+2026-01-05T12:00Z create lore "Entry 3" ^entry-3 #personal
   type: "fact"
   subject: "life"
 
@@ -160,21 +160,21 @@ describe("query service", () => {
       const results = executeQuery(workspace, query);
 
       expect(results).toHaveLength(3);
-      expect(results[0].timestamp).toBe("2026-01-05T10:00");
-      expect(results[1].timestamp).toBe("2026-01-05T11:00");
-      expect(results[2].timestamp).toBe("2026-01-05T12:00");
+      expect(results[0].timestamp).toBe("2026-01-05T10:00Z");
+      expect(results[1].timestamp).toBe("2026-01-05T11:00Z");
+      expect(results[2].timestamp).toBe("2026-01-05T12:00Z");
     });
 
     it("filters by afterTimestamp", () => {
       const query: Query = { entity: "lore", conditions: [] };
 
       const results = executeQuery(workspace, query, {
-        afterTimestamp: "2026-01-05T10:00",
+        afterTimestamp: "2026-01-05T10:00Z",
       });
 
       expect(results).toHaveLength(2);
-      expect(results[0].timestamp).toBe("2026-01-05T11:00");
-      expect(results[1].timestamp).toBe("2026-01-05T12:00");
+      expect(results[0].timestamp).toBe("2026-01-05T11:00Z");
+      expect(results[1].timestamp).toBe("2026-01-05T12:00Z");
     });
   });
 

@@ -8,7 +8,7 @@ describe("empty-section rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -34,7 +34,7 @@ describe("empty-section rule", () => {
   it("is registered as a rule", () => {
     // The rule should at least be present and not crash
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -52,7 +52,7 @@ describe("empty-section rule", () => {
     // This test is skipped because the model doesn't store section content
     // Before this can pass, the model needs to be updated to preserve section boundaries
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -73,7 +73,7 @@ describe("empty-section rule", () => {
 
   it("does not report sections with content", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim

@@ -8,7 +8,7 @@ describe("unknown-section rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinion entries"
+      `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -21,7 +21,7 @@ describe("unknown-section rule", () => {
 
   it("reports unknown section", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -46,7 +46,7 @@ describe("unknown-section rule", () => {
 
   it("does not report known sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -66,7 +66,7 @@ describe("unknown-section rule", () => {
 
   it("reports multiple unknown sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim
@@ -95,7 +95,7 @@ describe("unknown-section rule", () => {
 
   it("can be configured to error", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create opinion "Test" #test
+      `2026-01-05T18:00Z create opinion "Test" #test
   confidence: high
 
   # Claim

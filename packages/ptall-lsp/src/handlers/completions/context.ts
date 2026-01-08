@@ -68,8 +68,9 @@ export interface CompletionContext {
 // Context Detection
 // ===================
 
-/** Timestamp pattern: YYYY-MM-DDTHH:MM */
-const TIMESTAMP_PREFIX_PATTERN = /^[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d\s+/;
+/** Timestamp pattern: YYYY-MM-DDTHH:MMZ or YYYY-MM-DDTHH:MM±HH:MM */
+const TIMESTAMP_PREFIX_PATTERN =
+  /^[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d)\s+/;
 
 /**
  * Get the text before the cursor on the current line.
@@ -272,7 +273,9 @@ export function detectContext(document: TextDocument, position: Position): Compl
   }
 
   // Check if line starts with timestamp
-  const timestampMatch = textBefore.match(/^([12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d)\s*/);
+  const timestampMatch = textBefore.match(
+    /^([12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d))\s*/,
+  );
   if (timestampMatch) {
     const afterTimestamp = textBefore.slice(timestampMatch[0].length);
 

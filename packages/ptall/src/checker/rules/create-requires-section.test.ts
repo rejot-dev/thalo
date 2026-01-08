@@ -8,7 +8,7 @@ describe("create-requires-section rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -22,7 +22,7 @@ describe("create-requires-section rule", () => {
 
   it("reports error when create has no sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test entry" #test
+      `2026-01-05T18:00Z create lore "Test entry" #test
   type: fact
   subject: test
 
@@ -42,7 +42,7 @@ describe("create-requires-section rule", () => {
 
   it("reports error for create with only metadata", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Metadata only" #test
+      `2026-01-05T18:00Z create lore "Metadata only" #test
   type: fact
   subject: test
 `,
@@ -58,7 +58,7 @@ describe("create-requires-section rule", () => {
 
   it("accepts create with one section", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Valid entry" #test
+      `2026-01-05T18:00Z create lore "Valid entry" #test
   type: fact
   subject: test
 
@@ -76,7 +76,7 @@ describe("create-requires-section rule", () => {
 
   it("accepts create with multiple sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Multi-section entry" #test
+      `2026-01-05T18:00Z create lore "Multi-section entry" #test
   type: insight
   subject: test
 
@@ -97,14 +97,14 @@ describe("create-requires-section rule", () => {
 
   it("does not report error for update without sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Original entry" ^original #test
+      `2026-01-05T18:00Z create lore "Original entry" ^original #test
   type: fact
   subject: test
 
   # Content
   Original content.
 
-2026-01-06T10:00 update lore "Update without sections" #test
+2026-01-06T10:00Z update lore "Update without sections" #test
   supersedes: ^original
 `,
       { filename: "test.ptall" },
@@ -118,11 +118,11 @@ describe("create-requires-section rule", () => {
 
   it("reports multiple errors for multiple creates without sections", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "First entry" #test
+      `2026-01-05T18:00Z create lore "First entry" #test
   type: fact
   subject: test
 
-2026-01-05T19:00 create lore "Second entry" #test
+2026-01-05T19:00Z create lore "Second entry" #test
   type: insight
   subject: test
 `,
@@ -139,7 +139,7 @@ describe("create-requires-section rule", () => {
 
   it("works across multiple files", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "File 1 entry" #test
+      `2026-01-05T18:00Z create lore "File 1 entry" #test
   type: fact
   subject: test
 `,
@@ -147,7 +147,7 @@ describe("create-requires-section rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-05T19:00 create lore "File 2 entry" #test
+      `2026-01-05T19:00Z create lore "File 2 entry" #test
   type: insight
   subject: test
 `,

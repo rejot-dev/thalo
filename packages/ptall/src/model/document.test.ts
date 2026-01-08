@@ -12,7 +12,7 @@ describe("Document type expression parsing", () => {
   describe("primitive types", () => {
     it("parses string type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   name: string
 
@@ -26,7 +26,7 @@ describe("Document type expression parsing", () => {
 
     it("parses link type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   ref: link
 
@@ -40,7 +40,7 @@ describe("Document type expression parsing", () => {
 
     it("parses date type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   published: datetime
 
@@ -54,7 +54,7 @@ describe("Document type expression parsing", () => {
 
     it("parses date-range type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   period: date-range
 
@@ -70,7 +70,7 @@ describe("Document type expression parsing", () => {
   describe("literal types", () => {
     it("parses single literal type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   status: "active"
 
@@ -86,7 +86,7 @@ describe("Document type expression parsing", () => {
   describe("union types", () => {
     it("parses literal union type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   confidence: "high" | "medium" | "low"
 
@@ -107,7 +107,7 @@ describe("Document type expression parsing", () => {
 
     it("parses primitive union type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   author: string | link
 
@@ -129,7 +129,7 @@ describe("Document type expression parsing", () => {
   describe("array types", () => {
     it("parses link[] type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   related: link[]
 
@@ -146,7 +146,7 @@ describe("Document type expression parsing", () => {
 
     it("parses string[] type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   tags: string[]
 
@@ -163,7 +163,7 @@ describe("Document type expression parsing", () => {
 
     it("parses date[] type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   dates: datetime[]
 
@@ -180,7 +180,7 @@ describe("Document type expression parsing", () => {
 
     it("parses date-range[] type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   periods: date-range[]
 
@@ -197,7 +197,7 @@ describe("Document type expression parsing", () => {
 
     it("parses (string | link)[] type", () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   authors: (string | link)[]
 
@@ -220,7 +220,7 @@ describe("Document type expression parsing", () => {
 
     it('parses ("foo" | "bar")[] type', () => {
       const type = getFieldType(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   options: ("foo" | "bar")[]
 
@@ -245,7 +245,7 @@ describe("Document type expression parsing", () => {
   describe("field metadata", () => {
     it("parses optional fields", () => {
       const doc = Document.parse(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   required: string
   optional?: string
@@ -262,7 +262,7 @@ describe("Document type expression parsing", () => {
 
     it("parses default values", () => {
       const doc = Document.parse(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   status?: "active" | "inactive" = "active"
 
@@ -282,7 +282,7 @@ describe("Document type expression parsing", () => {
 
     it("parses descriptions", () => {
       const doc = Document.parse(
-        `2026-01-01T00:00 define-entity test "Test"
+        `2026-01-01T00:00Z define-entity test "Test"
   # Metadata
   name: string ; "The name of the thing"
 
@@ -301,7 +301,7 @@ describe("Document type expression parsing", () => {
 describe("Document instance entry parsing", () => {
   it("parses metadata values", () => {
     const doc = Document.parse(
-      `2026-01-01T00:00 create lore "Test" #tag
+      `2026-01-01T00:00Z create lore "Test" #tag
   type: "fact"
   subject: ^my-subject
   ref: ^my-ref
@@ -321,7 +321,7 @@ describe("Document instance entry parsing", () => {
 
   it("parses array metadata values", () => {
     const doc = Document.parse(
-      `2026-01-01T00:00 create opinion "Test" #tag
+      `2026-01-01T00:00Z create opinion "Test" #tag
   confidence: "high"
   related: ^ref1, ^ref2, ^ref3
 
@@ -339,7 +339,7 @@ describe("Document instance entry parsing", () => {
 describe("Document synthesis entry parsing", () => {
   it("parses basic synthesis entry", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile-synthesis
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile-synthesis
   sources: lore where subject = ^self
 
   # Prompt
@@ -351,14 +351,14 @@ describe("Document synthesis entry parsing", () => {
     expect(doc.synthesisEntries).toHaveLength(1);
     const synth = doc.synthesisEntries[0];
     expect(synth?.kind).toBe("synthesis");
-    expect(synth?.timestamp).toBe("2026-01-07T12:00");
+    expect(synth?.timestamp).toBe("2026-01-07T12:00Z");
     expect(synth?.title).toBe("My Profile");
     expect(synth?.linkId).toBe("profile-synthesis");
   });
 
   it("parses sources query", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -377,7 +377,7 @@ describe("Document synthesis entry parsing", () => {
 
   it("parses multiple source queries", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Bio" ^bio
+      `2026-01-07T12:00Z define-synthesis "Bio" ^bio
   sources: lore where subject = ^self and #career, journal where subject = ^self
 
   # Prompt
@@ -403,7 +403,7 @@ describe("Document synthesis entry parsing", () => {
 
   it("parses prompt content", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -419,7 +419,7 @@ describe("Document synthesis entry parsing", () => {
 
   it("parses tags on synthesis entries", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Profile" ^profile #important #profile
+      `2026-01-07T12:00Z define-synthesis "Profile" ^profile #important #profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -434,7 +434,7 @@ describe("Document synthesis entry parsing", () => {
 
   it("indexes synthesis link definitions", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Profile" ^my-synthesis
+      `2026-01-07T12:00Z define-synthesis "Profile" ^my-synthesis
   sources: lore where subject = ^self
 
   # Prompt
@@ -453,8 +453,8 @@ describe("Document synthesis entry parsing", () => {
 describe("Document actualize entry parsing", () => {
   it("parses basic actualize entry", () => {
     const doc = Document.parse(
-      `2026-01-07T12:01 actualize-synthesis ^profile
-  updated: 2026-01-07T12:01
+      `2026-01-07T12:01Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:01Z
 `,
       { filename: "test.ptall" },
     );
@@ -462,25 +462,25 @@ describe("Document actualize entry parsing", () => {
     expect(doc.actualizeEntries).toHaveLength(1);
     const act = doc.actualizeEntries[0];
     expect(act?.kind).toBe("actualize");
-    expect(act?.timestamp).toBe("2026-01-07T12:01");
+    expect(act?.timestamp).toBe("2026-01-07T12:01Z");
     expect(act?.target).toBe("profile");
   });
 
   it("parses updated timestamp from metadata", () => {
     const doc = Document.parse(
-      `2026-01-07T15:30 actualize-synthesis ^my-synthesis
-  updated: 2026-01-07T15:30
+      `2026-01-07T15:30Z actualize-synthesis ^my-synthesis
+  updated: 2026-01-07T15:30Z
 `,
       { filename: "test.ptall" },
     );
 
     const act = doc.actualizeEntries[0];
-    expect(act?.metadata.get("updated")?.raw).toBe("2026-01-07T15:30");
+    expect(act?.metadata.get("updated")?.raw).toBe("2026-01-07T15:30Z");
   });
 
   it("parses date-only datetime value (without time)", () => {
     const doc = Document.parse(
-      `2026-01-07T15:30 actualize-synthesis ^my-synthesis
+      `2026-01-07T15:30Z actualize-synthesis ^my-synthesis
   updated: 2026-01-07
 `,
       { filename: "test.ptall" },
@@ -493,8 +493,8 @@ describe("Document actualize entry parsing", () => {
 
   it("indexes actualize target references", () => {
     const doc = Document.parse(
-      `2026-01-07T12:01 actualize-synthesis ^target-synth
-  updated: 2026-01-07T12:01
+      `2026-01-07T12:01Z actualize-synthesis ^target-synth
+  updated: 2026-01-07T12:01Z
 `,
       { filename: "test.ptall" },
     );
@@ -507,8 +507,8 @@ describe("Document actualize entry parsing", () => {
 
   it("actualize entries have null linkId", () => {
     const doc = Document.parse(
-      `2026-01-07T12:01 actualize-synthesis ^profile
-  updated: 2026-01-07T12:01
+      `2026-01-07T12:01Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:01Z
 `,
       { filename: "test.ptall" },
     );
@@ -521,16 +521,16 @@ describe("Document actualize entry parsing", () => {
 describe("Document with mixed synthesis and instance entries", () => {
   it("parses file with synthesis, actualize, and instance entries", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
   Generate profile.
 
-2026-01-07T12:01 actualize-synthesis ^profile
-  updated: 2026-01-07T12:01
+2026-01-07T12:01Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:01Z
 
-2026-01-07T12:05 create lore "New fact" #career
+2026-01-07T12:05Z create lore "New fact" #career
   type: "fact"
   subject: ^self
 
@@ -548,7 +548,7 @@ describe("Document with mixed synthesis and instance entries", () => {
 
   it("findEntry works with synthesis linkId", () => {
     const doc = Document.parse(
-      `2026-01-07T12:00 define-synthesis "Profile" ^my-profile
+      `2026-01-07T12:00Z define-synthesis "Profile" ^my-profile
   sources: lore where subject = ^self
 
   # Prompt

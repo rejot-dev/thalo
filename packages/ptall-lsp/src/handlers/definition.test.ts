@@ -18,13 +18,13 @@ describe("handleDefinition", () => {
     workspace = new Workspace();
 
     // Add a document with entries that can be linked to
-    const source = `2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript
+    const source = `2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript
   type: "fact"
   subject: ^self
 
   Some content.
 
-2026-01-05T19:00 create opinion "TypeScript enums are bad" ^enum-opinion #typescript
+2026-01-05T19:00Z create opinion "TypeScript enums are bad" ^enum-opinion #typescript
   confidence: "high"
   related: ^ts-lore
 
@@ -38,7 +38,7 @@ describe("handleDefinition", () => {
     it("should return definition location for explicit link ID", () => {
       // Document with cursor on ^ts-lore reference
       // Line 2: "  related: ^ts-lore" - ^ is at char 11, ts-lore ends at 19
-      const source = `2026-01-06T10:00 create lore "New entry" #test
+      const source = `2026-01-06T10:00Z create lore "New entry" #test
   type: "fact"
   related: ^ts-lore
 `;
@@ -58,9 +58,9 @@ describe("handleDefinition", () => {
 
     it("should return null for timestamp link (timestamps are not link IDs)", () => {
       // Timestamps are not link IDs - only explicit ^link-id creates links
-      const source = `2026-01-06T10:00 create lore "New entry" #test
+      const source = `2026-01-06T10:00Z create lore "New entry" #test
   type: "fact"
-  related: ^2026-01-05T18:00
+  related: ^2026-01-05T18:00Z
 `;
       const doc = createDocument(source, "file:///test2.ptall");
       workspace.addDocument(doc.getText(), { filename: "/test2.ptall" });
@@ -75,7 +75,7 @@ describe("handleDefinition", () => {
     });
 
     it("should return null when cursor is not on a link", () => {
-      const doc = createDocument(`2026-01-06T10:00 create lore "New entry" #test
+      const doc = createDocument(`2026-01-06T10:00Z create lore "New entry" #test
   type: "fact"
   subject: ^test
 `);
@@ -90,7 +90,7 @@ describe("handleDefinition", () => {
     });
 
     it("should return null for unresolved link", () => {
-      const doc = createDocument(`2026-01-06T10:00 create lore "New entry" #test
+      const doc = createDocument(`2026-01-06T10:00Z create lore "New entry" #test
   type: "fact"
   related: ^nonexistent-link
 `);
@@ -107,7 +107,7 @@ describe("handleDefinition", () => {
     it("should return null when document is not in workspace", () => {
       // Create document but don't add to workspace
       const doc = createDocument(
-        `2026-01-06T10:00 create lore "New entry" #test
+        `2026-01-06T10:00Z create lore "New entry" #test
   related: ^ts-lore
 `,
         "file:///not-in-workspace.ptall",
@@ -124,7 +124,7 @@ describe("handleDefinition", () => {
   describe("cross-file navigation", () => {
     it("should navigate to definition in different file", () => {
       // Add another file that references the first
-      const secondFile = `2026-01-06T10:00 create journal "Reflection" #journal
+      const secondFile = `2026-01-06T10:00Z create journal "Reflection" #journal
   type: "reflection"
   subject: ^self
   related: ^enum-opinion
@@ -146,21 +146,21 @@ describe("handleDefinition", () => {
   describe("entity navigation", () => {
     it("should navigate from entity name to define-entity", () => {
       // Add a schema with entity definition
-      const schemaSource = `2026-01-05T10:00 define-entity custom "Custom entity"
+      const schemaSource = `2026-01-05T10:00Z define-entity custom "Custom entity"
   # Metadata
   name: string
 `;
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
-      const instanceSource = `2026-01-06T10:00 create custom "Test custom entry"
+      const instanceSource = `2026-01-06T10:00Z create custom "Test custom entry"
   name: test
 `;
       const doc = createDocument(instanceSource, "file:///instance.ptall");
       workspace.addDocument(doc.getText(), { filename: "/instance.ptall" });
 
       // Position cursor on "custom" entity name in create line
-      // "2026-01-06T10:00 create custom" - custom starts at character 24
-      const position: Position = { line: 0, character: 24 };
+      // "2026-01-06T10:00Z create custom" - custom starts at character 26
+      const position: Position = { line: 0, character: 26 };
 
       const result = handleDefinition(workspace, doc, position);
 
@@ -170,13 +170,13 @@ describe("handleDefinition", () => {
     });
 
     it("should navigate from alter-entity to define-entity", () => {
-      const schemaSource = `2026-01-05T10:00 define-entity lore "Facts and insights"
+      const schemaSource = `2026-01-05T10:00Z define-entity lore "Facts and insights"
   # Metadata
   type: string
 `;
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
-      const alterSource = `2026-01-06T10:00 alter-entity lore "Add subject field"
+      const alterSource = `2026-01-06T10:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `;
@@ -184,8 +184,8 @@ describe("handleDefinition", () => {
       workspace.addDocument(doc.getText(), { filename: "/alter.ptall" });
 
       // Position cursor on "lore" entity name in alter-entity line
-      // "2026-01-06T10:00 alter-entity lore" - lore starts around character 30
-      const position: Position = { line: 0, character: 30 };
+      // "2026-01-06T10:00Z alter-entity lore" - lore starts at character 31
+      const position: Position = { line: 0, character: 31 };
 
       const result = handleDefinition(workspace, doc, position);
 
@@ -196,13 +196,13 @@ describe("handleDefinition", () => {
 
   describe("metadata key navigation", () => {
     it("should navigate from metadata key to field definition", () => {
-      const schemaSource = `2026-01-05T10:00 define-entity opinion "Stances"
+      const schemaSource = `2026-01-05T10:00Z define-entity opinion "Stances"
   # Metadata
   confidence: "high" | "medium" | "low"
 `;
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
-      const instanceSource = `2026-01-06T10:00 create opinion "Test opinion"
+      const instanceSource = `2026-01-06T10:00Z create opinion "Test opinion"
   confidence: "high"
 `;
       const doc = createDocument(instanceSource, "file:///instance.ptall");
@@ -221,7 +221,7 @@ describe("handleDefinition", () => {
 
   describe("section header navigation", () => {
     it("should navigate from section header to section definition", () => {
-      const schemaSource = `2026-01-05T10:00 define-entity opinion "Stances"
+      const schemaSource = `2026-01-05T10:00Z define-entity opinion "Stances"
   # Metadata
   confidence: string
   # Sections
@@ -230,7 +230,7 @@ describe("handleDefinition", () => {
 `;
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
-      const instanceSource = `2026-01-06T10:00 create opinion "Test opinion"
+      const instanceSource = `2026-01-06T10:00Z create opinion "Test opinion"
   confidence: "high"
 
   # Claim
@@ -253,7 +253,7 @@ describe("handleDefinition", () => {
   describe("synthesis entry navigation", () => {
     it("should navigate from actualize-synthesis target to define-synthesis", () => {
       // Add a synthesis definition
-      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career
+      const synthesisSource = `2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career
   sources: lore where #career
 
   # Prompt
@@ -262,14 +262,14 @@ describe("handleDefinition", () => {
       workspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
 
       // Create an actualize entry
-      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^career-summary
-  updated: 2026-01-06T15:00
+      const actualizeSource = `2026-01-06T15:00Z actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00Z
 `;
       const doc = createDocument(actualizeSource, "file:///actualize.ptall");
       workspace.addDocument(doc.getText(), { filename: "/actualize.ptall" });
 
       // Position cursor on ^career-summary target link
-      // "2026-01-06T15:00 actualize-synthesis ^career-summary"
+      // "2026-01-06T15:00Z actualize-synthesis ^career-summary"
       // ^career-summary starts around character 37
       const position: Position = { line: 0, character: 45 };
 
@@ -282,7 +282,7 @@ describe("handleDefinition", () => {
 
     it("should navigate from link reference to synthesis definition", () => {
       // Add a synthesis definition
-      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career
+      const synthesisSource = `2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career
   sources: lore where #career
 
   # Prompt
@@ -291,7 +291,7 @@ describe("handleDefinition", () => {
       workspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
 
       // Reference the synthesis from another entry
-      const referenceSource = `2026-01-06T12:00 create lore "Related lore" #career
+      const referenceSource = `2026-01-06T12:00Z create lore "Related lore" #career
   type: "fact"
   related: ^career-summary
 `;
@@ -308,8 +308,8 @@ describe("handleDefinition", () => {
     });
 
     it("should return null for unresolved synthesis target", () => {
-      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^nonexistent-synthesis
-  updated: 2026-01-06T15:00
+      const actualizeSource = `2026-01-06T15:00Z actualize-synthesis ^nonexistent-synthesis
+  updated: 2026-01-06T15:00Z
 `;
       const doc = createDocument(actualizeSource, "file:///actualize.ptall");
       workspace.addDocument(doc.getText(), { filename: "/actualize.ptall" });

@@ -2,7 +2,7 @@
 simple define-entity with metadata
 ==================
 
-2026-01-05T18:12 define-entity reference "Collected resources"
+2026-01-05T18:12Z define-entity reference "Collected resources"
   # Metadata
   url: string
 
@@ -26,7 +26,7 @@ simple define-entity with metadata
 define-entity with optional field
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   url?: string
 
@@ -51,7 +51,7 @@ define-entity with optional field
 field with description
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   url?: string ; "the url to the resource"
 
@@ -77,7 +77,7 @@ field with description
 literal union type
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   ref-type: "article" | "video" | "tweet"
 
@@ -104,7 +104,7 @@ literal union type
 primitive union type
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   author: string | link
 
@@ -130,7 +130,7 @@ primitive union type
 array type
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   related: link[]
 
@@ -155,7 +155,7 @@ array type
 array of union type (parenthesized)
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   related: (string | link)[]
 
@@ -184,7 +184,7 @@ array of union type (parenthesized)
 array of literals union
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   tags: ("foo" | "bar")[]
 
@@ -213,7 +213,7 @@ array of literals union
 array of string type
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   tags: string[]
 
@@ -238,7 +238,7 @@ array of string type
 array of date type
 ==================
 
-2026-01-05T18:12 define-entity lore "Lore"
+2026-01-05T18:12Z define-entity lore "Lore"
   # Metadata
   dates: datetime[]
 
@@ -263,7 +263,7 @@ array of date type
 array of date-range type
 ==================
 
-2026-01-05T18:12 define-entity lore "Lore"
+2026-01-05T18:12Z define-entity lore "Lore"
   # Metadata
   periods: date-range[]
 
@@ -288,7 +288,7 @@ array of date-range type
 default value with literal
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Metadata
   status?: "unread" | "read" = "unread"
 
@@ -317,7 +317,7 @@ default value with literal
 default value with link
 ==================
 
-2026-01-05T18:12 define-entity lore "Facts"
+2026-01-05T18:12Z define-entity lore "Facts"
   # Metadata
   subject?: link = ^self
 
@@ -344,7 +344,7 @@ default value with link
 default value with datetime
 ==================
 
-2026-01-05T18:12 define-entity event "Events"
+2026-01-05T18:12Z define-entity event "Events"
   # Metadata
   created?: datetime = 2024-01-01
 
@@ -371,7 +371,7 @@ default value with datetime
 default value with string type
 ==================
 
-2026-01-05T18:12 define-entity note "Notes"
+2026-01-05T18:12Z define-entity note "Notes"
   # Metadata
   category?: string = "general"
 
@@ -398,7 +398,7 @@ default value with string type
 sections block
 ==================
 
-2026-01-05T18:12 define-entity opinion "Stances"
+2026-01-05T18:12Z define-entity opinion "Stances"
   # Sections
   Claim
   Reasoning
@@ -421,7 +421,7 @@ sections block
 section names with spaces
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources"
+2026-01-05T18:12Z define-entity reference "Resources"
   # Sections
   Key Takeaways
   Related Entries? ; "Links to related entries"
@@ -447,7 +447,7 @@ section names with spaces
 section names with mixed case words
 ==================
 
-2026-01-05T18:12 define-entity opinion "Stances"
+2026-01-05T18:12Z define-entity opinion "Stances"
   # Sections
   Core Argument
   Supporting evidence?
@@ -472,7 +472,7 @@ section names with mixed case words
 optional section with description
 ==================
 
-2026-01-05T18:12 define-entity opinion "Stances"
+2026-01-05T18:12Z define-entity opinion "Stances"
   # Sections
   Claim ; "Core opinion"
   Caveats? ; "Edge cases"
@@ -500,7 +500,7 @@ optional section with description
 complete define-entity
 ==================
 
-2026-01-05T18:12 define-entity reference "Collected resources" #schema
+2026-01-05T18:12Z define-entity reference "Collected resources" #schema
   # Metadata
   url?: string ; "the url"
   ref-type: "article" | "video"
@@ -569,7 +569,7 @@ complete define-entity
 blank line between metadata and sections
 ==================
 
-2026-01-05T18:12 define-entity reference "Resources with spacing"
+2026-01-05T18:12Z define-entity reference "Resources with spacing"
   # Metadata
   url: string
 
@@ -599,7 +599,7 @@ blank line between metadata and sections
 alter-entity adding metadata
 ==================
 
-2026-01-10T14:00 alter-entity reference "Add published field"
+2026-01-10T14:00Z alter-entity reference "Add published field"
   # Metadata
   published: datetime ; "publication date"
 
@@ -624,7 +624,7 @@ alter-entity adding metadata
 alter-entity removing metadata
 ==================
 
-2026-01-10T14:00 alter-entity reference "Remove legacy field"
+2026-01-10T14:00Z alter-entity reference "Remove legacy field"
   # Remove Metadata
   legacy-field ; "deprecated in favor of new-field"
 
@@ -647,7 +647,7 @@ alter-entity removing metadata
 alter-entity adding sections
 ==================
 
-2026-01-10T14:00 alter-entity reference "Add new section"
+2026-01-10T14:00Z alter-entity reference "Add new section"
   # Sections
   NewSection? ; "added section"
 
@@ -671,7 +671,7 @@ alter-entity adding sections
 alter-entity removing sections
 ==================
 
-2026-01-10T14:00 alter-entity reference "Remove old section"
+2026-01-10T14:00Z alter-entity reference "Remove old section"
   # Remove Sections
   OldSection ; "no longer needed"
 
@@ -694,7 +694,7 @@ alter-entity removing sections
 alter-entity all block types
 ==================
 
-2026-01-10T14:00 alter-entity reference "Major update"
+2026-01-10T14:00Z alter-entity reference "Major update"
   # Metadata
   published: datetime
   # Remove Metadata
@@ -734,7 +734,7 @@ alter-entity all block types
 date-range type
 ==================
 
-2026-01-05T18:12 define-entity lore "Facts"
+2026-01-05T18:12Z define-entity lore "Facts"
   # Metadata
   date?: date-range
 

@@ -8,13 +8,13 @@ describe("findDefinition", () => {
   beforeEach(() => {
     workspace = new Workspace();
 
-    const source1 = `2026-01-05T18:00 create lore "First entry" ^first-entry #test
+    const source1 = `2026-01-05T18:00Z create lore "First entry" ^first-entry #test
   type: fact
   subject: test
 
   Content.
 `;
-    const source2 = `2026-01-05T19:00 create lore "Second entry" #test
+    const source2 = `2026-01-05T19:00Z create lore "Second entry" #test
   type: insight
   subject: test
   related: ^first-entry
@@ -30,12 +30,12 @@ describe("findDefinition", () => {
 
     expect(result).toBeDefined();
     expect(result!.file).toBe("file1.ptall");
-    expect(result!.definition.entry.timestamp).toBe("2026-01-05T18:00");
+    expect(result!.definition.entry.timestamp).toBe("2026-01-05T18:00Z");
   });
 
   it("returns undefined for timestamp (timestamps are not link IDs)", () => {
     // Timestamps are not link IDs - only explicit ^link-id creates links
-    const result = findDefinition(workspace, "2026-01-05T19:00");
+    const result = findDefinition(workspace, "2026-01-05T19:00Z");
 
     expect(result).toBeUndefined();
   });

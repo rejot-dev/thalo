@@ -11,11 +11,11 @@ describe("alter-before-define rule", () => {
 
   it("reports alter-entity with earlier timestamp than define-entity", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 alter-entity lore "Add subject field"
+      `2026-01-01T00:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 
-2026-01-01T01:00 define-entity lore "Lore entries"
+2026-01-01T01:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 `,
@@ -26,18 +26,18 @@ describe("alter-before-define rule", () => {
     const error = diagnostics.find((d) => d.code === "alter-before-define");
 
     expect(error).toBeDefined();
-    expect(error!.message).toContain("2026-01-01T00:00");
+    expect(error!.message).toContain("2026-01-01T00:00Z");
     expect(error!.message).toContain("before the define-entity");
     expect(error!.severity).toBe("error");
   });
 
   it("does not report alter-entity with later timestamp", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T01:00 alter-entity lore "Add subject field"
+2026-01-01T01:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,
@@ -52,7 +52,7 @@ describe("alter-before-define rule", () => {
 
   it("works across files", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 alter-entity lore "Add field early"
+      `2026-01-01T00:00Z alter-entity lore "Add field early"
   # Metadata
   early: string
 `,
@@ -60,7 +60,7 @@ describe("alter-before-define rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-01T01:00 define-entity lore "Lore entries"
+      `2026-01-01T01:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 `,
@@ -75,11 +75,11 @@ describe("alter-before-define rule", () => {
 
   it("does not report alter-entity with same timestamp as define-entity", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
 
-2026-01-01T00:00 alter-entity lore "Add subject field"
+2026-01-01T00:00Z alter-entity lore "Add subject field"
   # Metadata
   subject: string
 `,
@@ -95,15 +95,15 @@ describe("alter-before-define rule", () => {
 
   it("uses earliest define-entity when there are duplicates", () => {
     workspace.addDocument(
-      `2026-01-01T01:00 define-entity lore "First definition"
+      `2026-01-01T01:00Z define-entity lore "First definition"
   # Metadata
   a: string
 
-2026-01-01T03:00 define-entity lore "Second definition (duplicate)"
+2026-01-01T03:00Z define-entity lore "Second definition (duplicate)"
   # Metadata
   b: string
 
-2026-01-01T02:00 alter-entity lore "Alter between definitions"
+2026-01-01T02:00Z alter-entity lore "Alter between definitions"
   # Metadata
   c: string
 `,
@@ -119,7 +119,7 @@ describe("alter-before-define rule", () => {
 
   it("does not report when entity is undefined (handled by other rule)", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 alter-entity unknown "Add field"
+      `2026-01-01T00:00Z alter-entity unknown "Add field"
   # Metadata
   field: string
 `,

@@ -12,7 +12,7 @@ function createDocument(content: string, uri = "file:///test.ptall"): TextDocume
 describe("handleSemanticTokens", () => {
   describe("basic token extraction", () => {
     it("should return tokens for a valid ptall document", () => {
-      const doc = createDocument(`2026-01-05T18:00 create lore "Test entry" ^link-id #tag
+      const doc = createDocument(`2026-01-05T18:00Z create lore "Test entry" ^link-id #tag
   type: "fact"
   subject: ^self
 `);
@@ -50,7 +50,7 @@ describe("handleSemanticTokens", () => {
   describe("file type detection", () => {
     it("should handle .ptall files", () => {
       const doc = createDocument(
-        `2026-01-05T18:00 create lore "Test" #tag`,
+        `2026-01-05T18:00Z create lore "Test" #tag`,
         "file:///document.ptall",
       );
 
@@ -66,7 +66,7 @@ describe("handleSemanticTokens", () => {
 Some text.
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test" #tag
+2026-01-05T18:00Z create lore "Test" #tag
   type: "fact"
 \`\`\`
 
@@ -83,7 +83,7 @@ More text.
 
     it("should handle unknown file extension as ptall", () => {
       const doc = createDocument(
-        `2026-01-05T18:00 create lore "Test" #tag`,
+        `2026-01-05T18:00Z create lore "Test" #tag`,
         "file:///document.unknown",
       );
 
@@ -95,7 +95,7 @@ More text.
 
   describe("token encoding", () => {
     it("should return data as number array", () => {
-      const doc = createDocument(`2026-01-05T18:00 create lore "Test" #tag`);
+      const doc = createDocument(`2026-01-05T18:00Z create lore "Test" #tag`);
 
       const result = handleSemanticTokens(doc);
 
@@ -109,7 +109,7 @@ More text.
     });
 
     it("should produce consistent tokens for same input", () => {
-      const source = `2026-01-05T18:00 create lore "Test entry" #tag
+      const source = `2026-01-05T18:00Z create lore "Test entry" #tag
   type: "fact"
 `;
       const doc1 = createDocument(source);
@@ -124,7 +124,7 @@ More text.
 
   describe("various entry types", () => {
     it("should tokenize instance entries (create)", () => {
-      const doc = createDocument(`2026-01-05T18:00 create lore "Test" #tag
+      const doc = createDocument(`2026-01-05T18:00Z create lore "Test" #tag
   type: "fact"
 `);
 
@@ -134,7 +134,7 @@ More text.
     });
 
     it("should tokenize instance entries (update)", () => {
-      const doc = createDocument(`2026-01-05T18:00 update lore "Updated test" #tag
+      const doc = createDocument(`2026-01-05T18:00Z update lore "Updated test" #tag
   type: "insight"
 `);
 
@@ -144,7 +144,7 @@ More text.
     });
 
     it("should tokenize schema entries (define-entity)", () => {
-      const doc = createDocument(`2026-01-01T00:00 define-entity custom "Custom entity"
+      const doc = createDocument(`2026-01-01T00:00Z define-entity custom "Custom entity"
   # Metadata
   field: string
   optional?: datetime
@@ -156,7 +156,7 @@ More text.
     });
 
     it("should tokenize schema entries (alter-entity)", () => {
-      const doc = createDocument(`2026-01-02T00:00 alter-entity custom "Add field"
+      const doc = createDocument(`2026-01-02T00:00Z alter-entity custom "Add field"
   # Metadata
   new-field: string
 `);
@@ -168,7 +168,7 @@ More text.
 
     it("should tokenize synthesis entries (define-synthesis)", () => {
       const doc =
-        createDocument(`2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career #summary
+        createDocument(`2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career #summary
   sources: lore where #career
 
   # Prompt
@@ -181,8 +181,8 @@ More text.
     });
 
     it("should tokenize synthesis entries (actualize-synthesis)", () => {
-      const doc = createDocument(`2026-01-06T15:00 actualize-synthesis ^career-summary
-  updated: 2026-01-06T15:00
+      const doc = createDocument(`2026-01-06T15:00Z actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00Z
 `);
 
       const result = handleSemanticTokens(doc);
@@ -193,13 +193,13 @@ More text.
 
   describe("complex documents", () => {
     it("should handle multiple entries", () => {
-      const doc = createDocument(`2026-01-05T18:00 create lore "First" #tag1
+      const doc = createDocument(`2026-01-05T18:00Z create lore "First" #tag1
   type: "fact"
   subject: ^test
 
   Content here.
 
-2026-01-05T19:00 create opinion "Second" #tag2
+2026-01-05T19:00Z create opinion "Second" #tag2
   confidence: "high"
 
   # Claim
@@ -216,7 +216,7 @@ More text.
     });
 
     it("should handle entries with sections", () => {
-      const doc = createDocument(`2026-01-05T18:00 create opinion "With sections" #tag
+      const doc = createDocument(`2026-01-05T18:00Z create opinion "With sections" #tag
   confidence: "high"
 
   # Claim
@@ -236,7 +236,7 @@ More text.
     });
 
     it("should handle entries with links", () => {
-      const doc = createDocument(`2026-01-05T18:00 create lore "With links" ^my-link #tag
+      const doc = createDocument(`2026-01-05T18:00Z create lore "With links" ^my-link #tag
   type: "fact"
   subject: ^self
   related: ^other-link
@@ -266,7 +266,7 @@ random text here
     });
 
     it("should handle partial entries gracefully", () => {
-      const doc = createDocument(`2026-01-05T18:00 create`);
+      const doc = createDocument(`2026-01-05T18:00Z create`);
 
       const result = handleSemanticTokens(doc);
 

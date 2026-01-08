@@ -2,7 +2,7 @@
 4-space indentation for metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with 4-space indent"
+2026-01-05T18:11Z create lore "Entry with 4-space indent"
     type: "fact"
     subject: ^acme
 
@@ -29,7 +29,7 @@
 tab indentation for metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with tab indent"
+2026-01-05T18:11Z create lore "Entry with tab indent"
 	type: "fact"
 	subject: ^acme
 
@@ -56,7 +56,7 @@ tab indentation for metadata
 4-space indentation for content
 ==================
 
-2026-01-05T18:11 create journal "Entry with 4-space content"
+2026-01-05T18:11Z create journal "Entry with 4-space content"
 
     # Notes
     This is content with 4-space indent.
@@ -85,7 +85,7 @@ tab indentation for metadata
 tab indentation for content
 ==================
 
-2026-01-05T18:11 create journal "Entry with tab content"
+2026-01-05T18:11Z create journal "Entry with tab content"
 
 	# Notes
 	This is content with tab indent.
@@ -114,7 +114,7 @@ tab indentation for content
 tab indentation for markdown header
 ==================
 
-2026-01-05T18:11 create opinion "Opinion with tab indent"
+2026-01-05T18:11Z create opinion "Opinion with tab indent"
 	confidence: "high"
 
 	# Claim
@@ -145,7 +145,7 @@ tab indentation for markdown header
 3-space indentation for metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with 3-space indent"
+2026-01-05T18:11Z create lore "Entry with 3-space indent"
    type: "fact"
    subject: ^acme
 
@@ -172,7 +172,7 @@ tab indentation for markdown header
 mixed 4-space indent throughout
 ==================
 
-2026-01-05T18:11 create opinion "Full 4-space example"
+2026-01-05T18:11Z create opinion "Full 4-space example"
     confidence: "high"
     related: ^other
 
@@ -215,7 +215,7 @@ mixed 4-space indent throughout
 Empty Whitespace
 ==================
 
-2026-01-05T18:11 create lore "Entry with extra whitespace"
+2026-01-05T18:11Z create lore "Entry with extra whitespace"
    type: "fact"
    subject: ^acme
   
@@ -243,7 +243,7 @@ Empty Whitespace
 1-space indentation for metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with 1-space indent"
+2026-01-05T18:11Z create lore "Entry with 1-space indent"
  type: "fact"
  subject: ^acme
 
@@ -270,7 +270,7 @@ Empty Whitespace
 2-space indentation for metadata
 ==================
 
-2026-01-05T18:11 create lore "Entry with 2-space indent"
+2026-01-05T18:11Z create lore "Entry with 2-space indent"
   type: "fact"
   subject: ^acme
 
@@ -297,7 +297,7 @@ Empty Whitespace
 Content-only entry (no metadata)
 ==================
 
-2026-01-05T18:11 create journal "Just content, no metadata"
+2026-01-05T18:11Z create journal "Just content, no metadata"
 
   # Thoughts
   This entry has no metadata fields.
@@ -326,7 +326,7 @@ Content-only entry (no metadata)
 Multiple consecutive blank lines in content
 ==================
 
-2026-01-05T18:11 create journal "Multiple blank lines"
+2026-01-05T18:11Z create journal "Multiple blank lines"
 
   # Notes
   First paragraph.
@@ -357,7 +357,7 @@ Multiple consecutive blank lines in content
 Entry ending at EOF (no trailing newline)
 ==================
 
-2026-01-05T18:11 create lore "Entry at EOF"
+2026-01-05T18:11Z create lore "Entry at EOF"
   type: "fact"
 ---
 
@@ -378,7 +378,7 @@ Entry ending at EOF (no trailing newline)
 Mixed tabs and spaces in same entry
 ==================
 
-2026-01-05T18:11 create opinion "Mixed indent styles"
+2026-01-05T18:11Z create opinion "Mixed indent styles"
 	confidence: "high"
   related: ^other
 
@@ -414,7 +414,7 @@ Mixed tabs and spaces in same entry
 Content line that looks like metadata
 ==================
 
-2026-01-05T18:11 create journal "Content with colon"
+2026-01-05T18:11Z create journal "Content with colon"
 
   # Notes
   This line has key: value syntax but is content.
@@ -443,7 +443,7 @@ Content line that looks like metadata
 Deeply nested markdown headers
 ==================
 
-2026-01-05T18:11 create journal "Multi-level headers"
+2026-01-05T18:11Z create journal "Multi-level headers"
 
   # Level 1
   Some text.
@@ -483,7 +483,7 @@ Deeply nested markdown headers
 Content directly after header (no blank line)
 ==================
 
-2026-01-05T18:11 create journal "Direct after header"
+2026-01-05T18:11Z create journal "Direct after header"
   # Summary
   Content starts right after header, no blank line needed.
 
@@ -508,7 +508,7 @@ Content directly after header (no blank line)
 Content directly after metadata (no blank line)
 ==================
 
-2026-01-05T18:11 create lore "Direct after metadata"
+2026-01-05T18:11Z create lore "Direct after metadata"
   type: "fact"
   # Description
   Content section starts right after metadata, no blank line needed.

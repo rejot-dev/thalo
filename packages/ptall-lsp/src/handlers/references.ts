@@ -56,7 +56,7 @@ function findEntryHeader(
 
     // Entry header starts with a timestamp
     const headerMatch = text.match(
-      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+(create|update|define-entity|alter-entity|define-synthesis|actualize-synthesis)\s+(\S+)/,
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2}))\s+(create|update|define-entity|alter-entity|define-synthesis|actualize-synthesis)\s+(\S+)/,
     );
     if (headerMatch) {
       const [, timestamp, directive, entity] = headerMatch;
@@ -106,7 +106,7 @@ function detectReferenceContext(
 
   // Check for entry header line (timestamp + directive + entity)
   const headerMatch = lineText.match(
-    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+(create|update)\s+([a-z][a-zA-Z0-9\-_]*)/,
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2}))\s+(create|update)\s+([a-z][a-zA-Z0-9\-_]*)/,
   );
   if (headerMatch) {
     const [fullMatch, , , entityName] = headerMatch;
@@ -121,7 +121,7 @@ function detectReferenceContext(
 
   // Check for define-entity header (find all usages of this entity)
   const defineMatch = lineText.match(
-    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+define-entity\s+([a-z][a-zA-Z0-9\-_]*)/,
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2}))\s+define-entity\s+([a-z][a-zA-Z0-9\-_]*)/,
   );
   if (defineMatch) {
     const [fullMatch, , entityName] = defineMatch;
@@ -135,7 +135,7 @@ function detectReferenceContext(
 
   // Check for alter-entity header (find all usages of this entity)
   const alterMatch = lineText.match(
-    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})\s+alter-entity\s+([a-z][a-zA-Z0-9\-_]*)/,
+    /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2}))\s+alter-entity\s+([a-z][a-zA-Z0-9\-_]*)/,
   );
   if (alterMatch) {
     const [fullMatch, , entityName] = alterMatch;

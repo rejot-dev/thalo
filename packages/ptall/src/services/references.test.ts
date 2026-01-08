@@ -8,13 +8,13 @@ describe("findReferences", () => {
   beforeEach(() => {
     workspace = new Workspace();
 
-    const source1 = `2026-01-05T18:00 create lore "First entry" ^first-entry #test
+    const source1 = `2026-01-05T18:00Z create lore "First entry" ^first-entry #test
   type: "fact"
   subject: ^test
 
   Content.
 `;
-    const source2 = `2026-01-05T19:00 create lore "Second entry" #test
+    const source2 = `2026-01-05T19:00Z create lore "Second entry" #test
   type: "insight"
   subject: ^test
   related: ^first-entry
@@ -38,7 +38,7 @@ describe("findReferences", () => {
   it("finds references for links without definitions", () => {
     // Add a file with a reference to an undefined link
     workspace.addDocument(
-      `2026-01-05T20:00 create lore "Third" #test
+      `2026-01-05T20:00Z create lore "Third" #test
   type: "fact"
   subject: ^test
   see-also: ^undefined-link

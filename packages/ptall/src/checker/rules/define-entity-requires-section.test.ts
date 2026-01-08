@@ -11,7 +11,7 @@ describe("define-entity-requires-section rule", () => {
 
   it("reports error when define-entity has no sections", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -30,7 +30,7 @@ describe("define-entity-requires-section rule", () => {
 
   it("reports error for entity with only metadata", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinions"
+      `2026-01-01T00:00Z define-entity opinion "Opinions"
   # Metadata
   confidence: "high" | "medium" | "low"
 `,
@@ -46,7 +46,7 @@ describe("define-entity-requires-section rule", () => {
 
   it("accepts define-entity with one section", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
 
@@ -64,7 +64,7 @@ describe("define-entity-requires-section rule", () => {
 
   it("accepts define-entity with multiple sections", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity opinion "Opinions"
+      `2026-01-01T00:00Z define-entity opinion "Opinions"
   # Metadata
   confidence: "high" | "medium" | "low"
 
@@ -84,14 +84,14 @@ describe("define-entity-requires-section rule", () => {
 
   it("does not report error for alter-entity without sections", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
 
   # Sections
   Content: The main content
 
-2026-01-02T00:00 alter-entity lore "Add date field"
+2026-01-02T00:00Z alter-entity lore "Add date field"
   # Metadata
   date?: datetime
 `,
@@ -106,11 +106,11 @@ describe("define-entity-requires-section rule", () => {
 
   it("reports multiple errors for multiple entities without sections", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
 
-2026-01-01T00:01 define-entity opinion "Opinions"
+2026-01-01T00:01Z define-entity opinion "Opinions"
   # Metadata
   confidence: "high" | "medium" | "low"
 `,

@@ -8,7 +8,7 @@ describe("missing-title rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
 `,
@@ -18,7 +18,7 @@ describe("missing-title rule", () => {
 
   it("reports missing title on instance entry", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "" #test
+      `2026-01-05T18:00Z create lore "" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -34,7 +34,7 @@ describe("missing-title rule", () => {
 
   it("does not report entry with title", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "My title" #test
+      `2026-01-05T18:00Z create lore "My title" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -48,7 +48,7 @@ describe("missing-title rule", () => {
 
   it("reports whitespace-only title", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "   " #test
+      `2026-01-05T18:00Z create lore "   " #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -63,7 +63,7 @@ describe("missing-title rule", () => {
   it("reports missing title on schema entry", () => {
     const workspaceWithBadSchema = new Workspace();
     workspaceWithBadSchema.addDocument(
-      `2026-01-01T00:00 define-entity lore ""
+      `2026-01-01T00:00Z define-entity lore ""
   # Metadata
   type: string
 `,
@@ -80,7 +80,7 @@ describe("missing-title rule", () => {
   it("reports on both instance and schema entries", () => {
     const workspaceWithMissingTitles = new Workspace();
     workspaceWithMissingTitles.addDocument(
-      `2026-01-01T00:00 define-entity lore ""
+      `2026-01-01T00:00Z define-entity lore ""
   # Metadata
   type: string
 `,
@@ -88,7 +88,7 @@ describe("missing-title rule", () => {
     );
 
     workspaceWithMissingTitles.addDocument(
-      `2026-01-05T18:00 create lore "" #test
+      `2026-01-05T18:00Z create lore "" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -102,7 +102,7 @@ describe("missing-title rule", () => {
 
   it("can be configured to warning", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "" #test
+      `2026-01-05T18:00Z create lore "" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -117,7 +117,7 @@ describe("missing-title rule", () => {
 
   it("can be turned off", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "" #test
+      `2026-01-05T18:00Z create lore "" #test
   type: fact
 `,
       { filename: "test.ptall" },

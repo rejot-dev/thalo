@@ -44,7 +44,7 @@ describe("parse error handling", () => {
 
     it("should show context line with pointer", () => {
       // Invalid directive causes a parse error
-      const source = `2026-01-05T15:30 invalid lore "Title"
+      const source = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
       const tree = parsePtall(source);
       const errorNodes = findErrorNodes(tree.rootNode);
@@ -89,14 +89,14 @@ describe("parse error handling", () => {
     });
 
     it("should throw descriptive error for invalid directive", async () => {
-      const input = `2026-01-05T15:30 invalid lore "Title"
+      const input = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
 
       await expect(format(input)).rejects.toThrow(/Parse error/i);
     });
 
     it("should throw descriptive error for unclosed quote", async () => {
-      const input = `2026-01-05T15:30 create lore "Unclosed title
+      const input = `2026-01-05T15:30Z create lore "Unclosed title
   type: "fact"`;
 
       await expect(format(input)).rejects.toThrow(/Parse error/i);
@@ -116,7 +116,7 @@ describe("parse error handling", () => {
     });
 
     it("should show specific error location", async () => {
-      const input = `2026-01-05T15:30 invalid lore "Title"
+      const input = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
 
       try {
@@ -131,7 +131,7 @@ describe("parse error handling", () => {
     });
 
     it("should not throw for valid input", async () => {
-      const input = `2026-01-05T15:30 create lore "Valid title" #tag
+      const input = `2026-01-05T15:30Z create lore "Valid title" #tag
   type: "fact"
 `;
 
@@ -140,7 +140,7 @@ describe("parse error handling", () => {
 
     it("should not throw for valid input with various indentation", async () => {
       // The grammar actually accepts 1-space indentation
-      const input = `2026-01-05T15:30 create lore "Title"
+      const input = `2026-01-05T15:30Z create lore "Title"
  type: "fact"
 `;
 

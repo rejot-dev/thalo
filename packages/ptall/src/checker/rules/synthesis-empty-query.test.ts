@@ -11,7 +11,7 @@ describe("synthesis-empty-query rule", () => {
 
   it("does not report when synthesis has valid queries", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -28,7 +28,7 @@ describe("synthesis-empty-query rule", () => {
 
   it("does not report when synthesis has multiple valid queries", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self, journal where subject = ^self
 
   # Prompt
@@ -46,7 +46,7 @@ describe("synthesis-empty-query rule", () => {
   it("does not report for synthesis without sources (covered by other rule)", () => {
     // This case is covered by synthesis-missing-sources rule
     workspace.addDocument(
-      `2026-01-07T12:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T12:00Z define-synthesis "My Profile" ^profile
 
   # Prompt
   Generate a profile.

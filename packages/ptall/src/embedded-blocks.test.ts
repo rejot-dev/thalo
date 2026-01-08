@@ -10,7 +10,7 @@ import { isIdentityMap } from "./source-map.js";
 describe("Embedded blocks in markdown", () => {
   describe("Parser", () => {
     it("standalone ptall file has identity sourceMap", () => {
-      const source = `2026-01-05T18:00 create lore "Test" #test
+      const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 `;
       const result = parseDocument(source, { fileType: "ptall" });
@@ -25,7 +25,7 @@ describe("Embedded blocks in markdown", () => {
 Some intro text.
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test" #test
+2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 \`\`\`
 `;
@@ -44,14 +44,14 @@ Some intro text.
       const source = `# Header
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "First" #test
+2026-01-05T18:00Z create lore "First" #test
   type: "fact"
 \`\`\`
 
 More text.
 
 \`\`\`ptall
-2026-01-05T19:00 create lore "Second" #test
+2026-01-05T19:00Z create lore "Second" #test
   type: "insight"
 \`\`\`
 `;
@@ -77,7 +77,7 @@ More text.
       const source = `# Title
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test" #test
+2026-01-05T18:00Z create lore "Test" #test
 \`\`\`
 `;
       // Lines: 0=Title, 1=empty, 2=```ptall, 3=content
@@ -94,7 +94,7 @@ More text.
     const TIMESTAMP_TOKEN_TYPE = 9; // "number" in tokenTypes array
 
     it("tokens in standalone file have correct positions", () => {
-      const source = `2026-01-05T18:00 create lore "Test" #test
+      const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 `;
       const parsed = parseDocument(source, { fileType: "ptall" });
@@ -110,7 +110,7 @@ More text.
       const source = `# Header
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test" #test
+2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 \`\`\`
 `;
@@ -128,12 +128,12 @@ More text.
       const source = `# Header
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "First" #test
+2026-01-05T18:00Z create lore "First" #test
   type: "fact"
 \`\`\`
 
 \`\`\`ptall
-2026-01-05T19:00 create lore "Second" #test
+2026-01-05T19:00Z create lore "Second" #test
   type: "insight"
 \`\`\`
 `;
@@ -159,7 +159,7 @@ More text.
     beforeEach(() => {
       workspace = new Workspace();
       workspace.addDocument(
-        `2026-01-01T00:00 define-entity lore "Lore"
+        `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -171,7 +171,7 @@ More text.
     });
 
     it("diagnostic in standalone file has correct location", () => {
-      const source = `2026-01-05T18:00 create lore "Test" #test
+      const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 `;
       workspace.addDocument(source, { filename: "test.ptall" });
@@ -189,7 +189,7 @@ More text.
 Some introduction.
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test" #test
+2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
 \`\`\`
 `;
@@ -207,7 +207,7 @@ Some introduction.
       const source = `Line 0
 Line 1
 \`\`\`ptall
-2026-01-05T18:00 create lore "Test" #test
+2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   unknown-field: "value"
 \`\`\`
@@ -232,7 +232,7 @@ Line 1
       const source = `# References
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "My Entry" ^my-entry #test
+2026-01-05T18:00Z create lore "My Entry" ^my-entry #test
   type: "fact"
   subject: ^self
 \`\`\`
@@ -256,13 +256,13 @@ Line 1
       const source = `# Notes
 
 \`\`\`ptall
-2026-01-05T18:00 create lore "Original" ^original #test
+2026-01-05T18:00Z create lore "Original" ^original #test
   type: "fact"
   subject: ^self
 \`\`\`
 
 \`\`\`ptall
-2026-01-05T19:00 update lore "Updated" #test
+2026-01-05T19:00Z update lore "Updated" #test
   type: "fact"
   subject: ^self
   supersedes: ^original
@@ -295,7 +295,7 @@ Line 1
 
       // Define in .ptall file
       workspace.addDocument(
-        `2026-01-05T18:00 create lore "Defined" ^defined-in-ptall #test
+        `2026-01-05T18:00Z create lore "Defined" ^defined-in-ptall #test
   type: "fact"
   subject: ^self
 `,
@@ -307,7 +307,7 @@ Line 1
         `# Refs
 
 \`\`\`ptall
-2026-01-05T19:00 create lore "Referencing" #test
+2026-01-05T19:00Z create lore "Referencing" #test
   type: "fact"
   subject: ^self
   related: ^defined-in-ptall

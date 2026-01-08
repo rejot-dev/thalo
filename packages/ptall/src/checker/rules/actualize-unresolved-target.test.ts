@@ -11,8 +11,8 @@ describe("actualize-unresolved-target rule", () => {
 
   it("reports when actualize references undefined synthesis", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 actualize-synthesis ^nonexistent
-  updated: 2026-01-07T12:00
+      `2026-01-07T12:00Z actualize-synthesis ^nonexistent
+  updated: 2026-01-07T12:00Z
 `,
       { filename: "profile.ptall" },
     );
@@ -28,14 +28,14 @@ describe("actualize-unresolved-target rule", () => {
 
   it("does not report when actualize references defined synthesis", () => {
     workspace.addDocument(
-      `2026-01-07T10:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T10:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
   Generate.
 
-2026-01-07T12:00 actualize-synthesis ^profile
-  updated: 2026-01-07T12:00
+2026-01-07T12:00Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:00Z
 `,
       { filename: "profile.ptall" },
     );
@@ -48,21 +48,21 @@ describe("actualize-unresolved-target rule", () => {
 
   it("reports when actualize references non-synthesis entry", () => {
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore"
+      `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: string
 
   # Sections
   Content
 
-2026-01-07T10:00 create lore "A fact" ^my-fact
+2026-01-07T10:00Z create lore "A fact" ^my-fact
   type: fact
 
   # Content
   Some fact.
 
-2026-01-07T12:00 actualize-synthesis ^my-fact
-  updated: 2026-01-07T12:00
+2026-01-07T12:00Z actualize-synthesis ^my-fact
+  updated: 2026-01-07T12:00Z
 `,
       { filename: "entries.ptall" },
     );
@@ -78,7 +78,7 @@ describe("actualize-unresolved-target rule", () => {
 
   it("resolves synthesis across files", () => {
     workspace.addDocument(
-      `2026-01-07T10:00 define-synthesis "My Profile" ^profile
+      `2026-01-07T10:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -88,8 +88,8 @@ describe("actualize-unresolved-target rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-07T12:00 actualize-synthesis ^profile
-  updated: 2026-01-07T12:00
+      `2026-01-07T12:00Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:00Z
 `,
       { filename: "actualize.ptall" },
     );
@@ -102,11 +102,11 @@ describe("actualize-unresolved-target rule", () => {
 
   it("reports multiple unresolved targets", () => {
     workspace.addDocument(
-      `2026-01-07T12:00 actualize-synthesis ^unknown1
-  updated: 2026-01-07T12:00
+      `2026-01-07T12:00Z actualize-synthesis ^unknown1
+  updated: 2026-01-07T12:00Z
 
-2026-01-07T13:00 actualize-synthesis ^unknown2
-  updated: 2026-01-07T13:00
+2026-01-07T13:00Z actualize-synthesis ^unknown2
+  updated: 2026-01-07T13:00Z
 `,
       { filename: "profile.ptall" },
     );

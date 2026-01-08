@@ -18,21 +18,21 @@ describe("handleHover", () => {
     workspace = new Workspace();
 
     // Add documents with various entry types
-    const source = `2026-01-05T18:00 create lore "Test entry about TypeScript" ^ts-lore #typescript #testing
+    const source = `2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript #testing
   type: "fact"
   subject: ^self
   confidence: "high"
 
   Some content here.
 
-2026-01-05T19:00 create opinion "TypeScript enums are bad" ^enum-opinion #typescript #best-practices
+2026-01-05T19:00Z create opinion "TypeScript enums are bad" ^enum-opinion #typescript #best-practices
   confidence: "high"
   related: ^ts-lore
 
   # Claim
   Enums should be avoided.
 
-2026-01-06T10:00 create journal "Working on tests" #testing #development
+2026-01-06T10:00Z create journal "Working on tests" #testing #development
   type: "reflection"
   subject: ^self
 
@@ -41,7 +41,7 @@ describe("handleHover", () => {
     workspace.addDocument(source, { filename: "/test.ptall" });
 
     // Add a schema definition
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries" ^entity-lore #schema
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries" ^entity-lore #schema
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -65,7 +65,7 @@ describe("handleHover", () => {
       expect(content).toContain("Test entry about TypeScript");
       expect(content).toContain("create");
       expect(content).toContain("lore");
-      expect(content).toContain("2026-01-05T18:00");
+      expect(content).toContain("2026-01-05T18:00Z");
     });
 
     it("should show unresolved link warning for timestamp link (timestamps are not link IDs)", () => {
@@ -150,7 +150,7 @@ describe("handleHover", () => {
 
   describe("tag hover", () => {
     it("should show hover info for tag", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New" #typescript`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New" #typescript`);
 
       // Position cursor on #typescript
       const position: Position = { line: 0, character: 40 };
@@ -164,7 +164,7 @@ describe("handleHover", () => {
     });
 
     it("should show entry count for tag", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New" #typescript`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New" #typescript`);
 
       const position: Position = { line: 0, character: 40 };
 
@@ -177,7 +177,7 @@ describe("handleHover", () => {
     });
 
     it("should list entries using the tag", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New" #typescript`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New" #typescript`);
 
       const position: Position = { line: 0, character: 40 };
 
@@ -190,7 +190,7 @@ describe("handleHover", () => {
     });
 
     it("should return null for unused tag", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New" #never-used-tag`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New" #never-used-tag`);
 
       // Position cursor on the unused tag
       const position: Position = { line: 0, character: 42 };
@@ -220,7 +220,7 @@ describe("handleHover", () => {
 
   describe("directive hover", () => {
     it("should show documentation for create directive", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New entry"`);
 
       // Position cursor on "create"
       const position: Position = { line: 0, character: 20 };
@@ -234,7 +234,7 @@ describe("handleHover", () => {
     });
 
     it("should show documentation for define-entity directive", () => {
-      const doc = createDocument(`2026-01-07T10:00 define-entity custom "Custom entity"`);
+      const doc = createDocument(`2026-01-07T10:00Z define-entity custom "Custom entity"`);
 
       // Position cursor on "define-entity"
       const position: Position = { line: 0, character: 22 };
@@ -249,7 +249,7 @@ describe("handleHover", () => {
 
     it("should show documentation for define-synthesis directive", () => {
       const doc = createDocument(
-        `2026-01-07T10:00 define-synthesis "Career Summary" ^career-summary`,
+        `2026-01-07T10:00Z define-synthesis "Career Summary" ^career-summary`,
       );
 
       // Position cursor on "define-synthesis"
@@ -264,7 +264,7 @@ describe("handleHover", () => {
     });
 
     it("should show documentation for actualize-synthesis directive", () => {
-      const doc = createDocument(`2026-01-07T10:00 actualize-synthesis ^career-summary`);
+      const doc = createDocument(`2026-01-07T10:00Z actualize-synthesis ^career-summary`);
 
       // Position cursor on "actualize-synthesis"
       const position: Position = { line: 0, character: 22 };
@@ -280,7 +280,7 @@ describe("handleHover", () => {
 
   describe("entity hover", () => {
     it("should show entity schema for known entity", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New entry"`);
 
       // Position cursor on "lore"
       const position: Position = { line: 0, character: 28 };
@@ -295,7 +295,7 @@ describe("handleHover", () => {
     });
 
     it("should show warning for unknown entity", () => {
-      const doc = createDocument(`2026-01-07T10:00 create unknown-entity "New entry"`);
+      const doc = createDocument(`2026-01-07T10:00Z create unknown-entity "New entry"`);
 
       // Position cursor on "unknown-entity"
       const position: Position = { line: 0, character: 30 };
@@ -311,7 +311,7 @@ describe("handleHover", () => {
 
   describe("metadata key hover", () => {
     it("should show field info for known field", () => {
-      const doc = createDocument(`2026-01-07T10:00 create lore "New entry"\n  type: "fact"`);
+      const doc = createDocument(`2026-01-07T10:00Z create lore "New entry"\n  type: "fact"`);
 
       // Position cursor on "type" key
       const position: Position = { line: 1, character: 4 };
@@ -326,7 +326,7 @@ describe("handleHover", () => {
 
     it("should show message for unknown field", () => {
       const doc = createDocument(
-        `2026-01-07T10:00 create lore "New entry"\n  unknown-field: value`,
+        `2026-01-07T10:00Z create lore "New entry"\n  unknown-field: value`,
       );
 
       // Position cursor on "unknown-field"
@@ -344,7 +344,7 @@ describe("handleHover", () => {
 
   describe("timestamp hover", () => {
     it("should show entry info for timestamp in header", () => {
-      const doc = createDocument(`2026-01-05T18:00 create lore "Test"`);
+      const doc = createDocument(`2026-01-05T18:00Z create lore "Test"`);
 
       // Position cursor on timestamp
       const position: Position = { line: 0, character: 8 };
@@ -354,13 +354,13 @@ describe("handleHover", () => {
       expect(result).not.toBeNull();
       const content = (result!.contents as { value: string }).value;
       expect(content).toContain("Timestamp:");
-      expect(content).toContain("2026-01-05T18:00");
+      expect(content).toContain("2026-01-05T18:00Z");
       // This timestamp exists in workspace, so should show entry
       expect(content).toContain("Test entry about TypeScript");
     });
 
     it("should show hint to add explicit link-id for new timestamp", () => {
-      const doc = createDocument(`2026-01-07T12:00 create lore "New"`);
+      const doc = createDocument(`2026-01-07T12:00Z create lore "New"`);
 
       // Position cursor on timestamp
       const position: Position = { line: 0, character: 8 };
@@ -383,7 +383,7 @@ describe("handleHover", () => {
       synthesisWorkspace = new Workspace();
 
       // Add a synthesis definition
-      const synthesisSource = `2026-01-05T10:00 define-synthesis "Career Summary" ^career-summary #career #summary
+      const synthesisSource = `2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career #summary
   sources: lore where subject = ^self and #career
 
   # Prompt
@@ -392,8 +392,8 @@ describe("handleHover", () => {
       synthesisWorkspace.addDocument(synthesisSource, { filename: "/synthesis.ptall" });
 
       // Add an actualize entry
-      const actualizeSource = `2026-01-06T15:00 actualize-synthesis ^career-summary
-  updated: 2026-01-06T15:00
+      const actualizeSource = `2026-01-06T15:00Z actualize-synthesis ^career-summary
+  updated: 2026-01-06T15:00Z
 `;
       synthesisWorkspace.addDocument(actualizeSource, { filename: "/actualize.ptall" });
     });
@@ -412,7 +412,7 @@ describe("handleHover", () => {
     });
 
     it("should show hover info for actualize-synthesis target link", () => {
-      const doc = createDocument(`2026-01-06T15:00 actualize-synthesis ^career-summary`);
+      const doc = createDocument(`2026-01-06T15:00Z actualize-synthesis ^career-summary`);
 
       // Position cursor on ^career-summary
       const position: Position = { line: 0, character: 45 };

@@ -661,8 +661,9 @@ interface HoverContext {
 }
 
 /** Timestamp pattern */
-const TIMESTAMP_PATTERN = /^[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d$/;
-const TIMESTAMP_LINE_PATTERN = /^([12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d)\s+/;
+const TIMESTAMP_PATTERN = /^[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d)$/;
+const TIMESTAMP_LINE_PATTERN =
+  /^([12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d))\s+/;
 
 /**
  * Find the entry header by scanning backwards from a line

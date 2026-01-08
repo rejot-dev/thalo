@@ -9,7 +9,7 @@ describe("unknown-entity rule", () => {
     workspace = new Workspace();
     // Define a single entity for testing
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
 `,
@@ -19,7 +19,7 @@ describe("unknown-entity rule", () => {
 
   it("reports unknown entity type", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create journal "Test" #test
+      `2026-01-05T18:00Z create journal "Test" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -35,7 +35,7 @@ describe("unknown-entity rule", () => {
 
   it("does not report known entity type", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -49,10 +49,10 @@ describe("unknown-entity rule", () => {
 
   it("reports multiple unknown entities", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create journal "Test 1" #test
+      `2026-01-05T18:00Z create journal "Test 1" #test
   field: value
 
-2026-01-05T19:00 create opinion "Test 2" #test
+2026-01-05T19:00Z create opinion "Test 2" #test
   field: value
 `,
       { filename: "test.ptall" },
@@ -68,7 +68,7 @@ describe("unknown-entity rule", () => {
 
   it("can be configured to warning", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create journal "Test" #test
+      `2026-01-05T18:00Z create journal "Test" #test
   type: fact
 `,
       { filename: "test.ptall" },
@@ -83,7 +83,7 @@ describe("unknown-entity rule", () => {
 
   it("can be turned off", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create journal "Test" #test
+      `2026-01-05T18:00Z create journal "Test" #test
   type: fact
 `,
       { filename: "test.ptall" },

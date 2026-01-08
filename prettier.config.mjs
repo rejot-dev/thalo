@@ -7,7 +7,7 @@ const prettierConfig = {
   printWidth: 100,
   proseWrap: "always",
   trailingComma: "all",
-  plugins: ["@wilco/ptall-prettier"],
+  plugins: ["@rejot-dev/ptall-prettier"],
 };
 
 export default prettierConfig;

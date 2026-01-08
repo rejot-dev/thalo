@@ -8,7 +8,7 @@ describe("unknown-field rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -19,7 +19,7 @@ describe("unknown-field rule", () => {
 
   it("reports unknown field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   unknown-field: "value"
@@ -37,7 +37,7 @@ describe("unknown-field rule", () => {
 
   it("does not report known fields", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
 `,
@@ -52,7 +52,7 @@ describe("unknown-field rule", () => {
 
   it("reports multiple unknown fields", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   foo: "bar"
@@ -72,7 +72,7 @@ describe("unknown-field rule", () => {
 
   it("can be configured to error", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   unknown: "value"
@@ -89,7 +89,7 @@ describe("unknown-field rule", () => {
 
   it("can be turned off", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: "test"
   unknown: "value"

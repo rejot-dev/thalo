@@ -8,7 +8,7 @@ describe("unresolved-link rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -20,7 +20,7 @@ describe("unresolved-link rule", () => {
 
   it("reports unresolved link in metadata", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: fact
   subject: test
   related: ^nonexistent-link
@@ -38,11 +38,11 @@ describe("unresolved-link rule", () => {
 
   it("does not report resolved link by explicit ID", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create lore "First entry" ^my-link #test
+      `2026-01-05T17:00Z create lore "First entry" ^my-link #test
   type: fact
   subject: test
 
-2026-01-05T18:00 create lore "Second entry" #test
+2026-01-05T18:00Z create lore "Second entry" #test
   type: fact
   subject: test
   related: ^my-link
@@ -62,11 +62,11 @@ describe("unresolved-link rule", () => {
     // 2. Even without colons, timestamps are not registered as link definitions
     // Use explicit ^link-id for cross-referencing
     workspace.addDocument(
-      `2026-01-05T17:00 create lore "First entry" #test
+      `2026-01-05T17:00Z create lore "First entry" #test
   type: fact
   subject: test
 
-2026-01-05T18:00 create lore "Second entry" #test
+2026-01-05T18:00Z create lore "Second entry" #test
   type: fact
   subject: test
   related: ^first-entry
@@ -84,7 +84,7 @@ describe("unresolved-link rule", () => {
 
   it("reports multiple unresolved links", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: fact
   subject: ^unknown-subject
   related: ^another-unknown
@@ -103,7 +103,7 @@ describe("unresolved-link rule", () => {
 
   it("resolves links across files", () => {
     workspace.addDocument(
-      `2026-01-05T17:00 create lore "First entry" ^my-link #test
+      `2026-01-05T17:00Z create lore "First entry" ^my-link #test
   type: fact
   subject: test
 `,
@@ -111,7 +111,7 @@ describe("unresolved-link rule", () => {
     );
 
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Second entry" #test
+      `2026-01-05T18:00Z create lore "Second entry" #test
   type: fact
   subject: test
   related: ^my-link
@@ -127,7 +127,7 @@ describe("unresolved-link rule", () => {
 
   it("can be configured to error", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: fact
   subject: test
   related: ^nonexistent

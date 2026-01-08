@@ -8,7 +8,7 @@ describe("invalid-date-range-value rule", () => {
   beforeEach(() => {
     workspace = new Workspace();
     workspace.addDocument(
-      `2026-01-01T00:00 define-entity lore "Lore entries"
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
   period?: date-range
@@ -19,7 +19,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("reports invalid date range format", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: "from 2022 to 2024"
 `,
@@ -37,7 +37,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("accepts YYYY ~ YYYY format", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: 2022 ~ 2024
 `,
@@ -52,7 +52,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("accepts YYYY-MM ~ YYYY-MM format", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: 2022-01 ~ 2024-12
 `,
@@ -67,7 +67,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("accepts YYYY-MM-DD ~ YYYY-MM-DD format", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: 2022-01-01 ~ 2024-12-31
 `,
@@ -82,7 +82,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("accepts mixed precision date ranges", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: 2022 ~ 2024-12-31
 `,
@@ -97,7 +97,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("reports missing tilde separator", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: "2022 - 2024"
 `,
@@ -112,7 +112,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("reports single date for date-range field", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: "2024"
 `,
@@ -127,7 +127,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("does not check non-date-range fields", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "not a date range"
 `,
       { filename: "test.ptall" },
@@ -142,7 +142,7 @@ describe("invalid-date-range-value rule", () => {
 
   it("accepts whitespace around tilde", () => {
     workspace.addDocument(
-      `2026-01-05T18:00 create lore "Test" #test
+      `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   period: 2022~2024
 `,

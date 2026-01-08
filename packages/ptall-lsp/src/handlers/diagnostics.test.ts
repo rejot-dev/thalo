@@ -17,7 +17,7 @@ describe("getDiagnostics", () => {
     workspace = new Workspace();
 
     // Add schema definitions for validation
-    const schemaSource = `2026-01-01T00:00 define-entity lore "Lore entries"
+    const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
   subject: string
@@ -25,7 +25,7 @@ describe("getDiagnostics", () => {
   # Sections
   Summary
 
-2026-01-01T00:01 define-entity opinion "Opinion entries"
+2026-01-01T00:01Z define-entity opinion "Opinion entries"
   # Metadata
   confidence: "high" | "medium" | "low"
   # Sections
@@ -37,7 +37,7 @@ describe("getDiagnostics", () => {
 
   describe("valid documents", () => {
     it("should return no errors for valid entry", () => {
-      const source = `2026-01-05T18:00 create lore "Valid entry" #test
+      const source = `2026-01-05T18:00Z create lore "Valid entry" #test
   type: "fact"
   subject: "test"
 
@@ -57,7 +57,7 @@ describe("getDiagnostics", () => {
   describe("schema validation errors", () => {
     it("should report unknown entity", () => {
       // Use "journal" which is a valid keyword but not defined in our test schema
-      const source = `2026-01-05T18:00 create journal "Test" #test
+      const source = `2026-01-05T18:00Z create journal "Test" #test
   field: value
 `;
       workspace.addDocument(source, { filename: "/test.ptall" });
@@ -71,7 +71,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should report missing required field", () => {
-      const source = `2026-01-05T18:00 create lore "Missing subject" #test
+      const source = `2026-01-05T18:00Z create lore "Missing subject" #test
   type: "fact"
 `;
       // Missing "subject" which is required
@@ -86,7 +86,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should report unknown field", () => {
-      const source = `2026-01-05T18:00 create lore "With unknown field" #test
+      const source = `2026-01-05T18:00Z create lore "With unknown field" #test
   type: "fact"
   subject: ^test
   unknown-field: "value"
@@ -105,7 +105,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should report invalid field type", () => {
-      const source = `2026-01-05T18:00 create lore "Invalid type value" #test
+      const source = `2026-01-05T18:00Z create lore "Invalid type value" #test
   type: "invalid-value"
   subject: ^test
 
@@ -123,7 +123,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should report missing required section", () => {
-      const source = `2026-01-05T18:00 create lore "Missing section" #test
+      const source = `2026-01-05T18:00Z create lore "Missing section" #test
   type: "fact"
   subject: ^test
 
@@ -142,7 +142,7 @@ describe("getDiagnostics", () => {
 
   describe("link validation", () => {
     it("should report unresolved link", () => {
-      const source = `2026-01-05T18:00 create lore "With bad link" #test
+      const source = `2026-01-05T18:00Z create lore "With bad link" #test
   type: "fact"
   subject: "test"
   related: ^nonexistent-link
@@ -162,7 +162,7 @@ describe("getDiagnostics", () => {
 
     it("should not report error for valid link", () => {
       // First add an entry with a link ID
-      const source1 = `2026-01-05T18:00 create lore "First entry" ^first-entry #test
+      const source1 = `2026-01-05T18:00Z create lore "First entry" ^first-entry #test
   type: "fact"
   subject: "test"
 
@@ -172,7 +172,7 @@ describe("getDiagnostics", () => {
       workspace.addDocument(source1, { filename: "/file1.ptall" });
 
       // Then reference it
-      const source2 = `2026-01-05T19:00 create lore "Second entry" #test
+      const source2 = `2026-01-05T19:00Z create lore "Second entry" #test
   type: "fact"
   subject: "test"
   related: ^first-entry
@@ -192,7 +192,7 @@ describe("getDiagnostics", () => {
 
   describe("diagnostic format", () => {
     it("should include proper range information", () => {
-      const source = `2026-01-05T18:00 create lore "Test" #test
+      const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "invalid-value"
   subject: ^test
 
@@ -213,7 +213,7 @@ describe("getDiagnostics", () => {
 
     it("should set source to ptall", () => {
       // Use "journal" - valid keyword but not in test schema
-      const source = `2026-01-05T18:00 create journal "Test" #test
+      const source = `2026-01-05T18:00Z create journal "Test" #test
   field: value
 `;
       workspace.addDocument(source, { filename: "/test.ptall" });
@@ -228,7 +228,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should map severity correctly", () => {
-      const source = `2026-01-05T18:00 create lore "Test" #test
+      const source = `2026-01-05T18:00Z create lore "Test" #test
   type: "fact"
   subject: ^test
   unknown-field: "value"
@@ -251,7 +251,7 @@ describe("getDiagnostics", () => {
   describe("edge cases", () => {
     it("should return empty array when document is not in workspace", () => {
       const doc = createDocument(
-        `2026-01-05T18:00 create lore "Test" #test`,
+        `2026-01-05T18:00Z create lore "Test" #test`,
         "file:///not-in-workspace.ptall",
       );
 
@@ -288,7 +288,7 @@ describe("getDiagnostics", () => {
   describe("cross-file diagnostics", () => {
     it("should report unknown entity when definition is not in workspace", () => {
       // Use 'reference' entity which is a valid keyword but not defined in our test schema
-      const source = `2026-01-05T18:00 create reference "Test entry" #test
+      const source = `2026-01-05T18:00Z create reference "Test entry" #test
   url: "https://example.com"
   ref-type: "article"
 `;
@@ -304,7 +304,7 @@ describe("getDiagnostics", () => {
 
     it("should not report error when entity is defined in another file", () => {
       // File 1: defines 'reference' entity
-      const schemaSource = `2026-01-02T00:00 define-entity reference "Reference entries"
+      const schemaSource = `2026-01-02T00:00Z define-entity reference "Reference entries"
   # Metadata
   url: string
   ref-type: string
@@ -312,7 +312,7 @@ describe("getDiagnostics", () => {
       workspace.addDocument(schemaSource, { filename: "/ref-schema.ptall" });
 
       // File 2: uses 'reference' entity
-      const source = `2026-01-05T18:00 create reference "Test entry" #test
+      const source = `2026-01-05T18:00Z create reference "Test entry" #test
   url: "https://example.com"
   ref-type: "article"
 `;
@@ -327,7 +327,7 @@ describe("getDiagnostics", () => {
 
     it("should report error after entity definition is removed from another file", () => {
       // Step 1: Add schema file with 'reference' entity definition
-      const schemaSource = `2026-01-02T00:00 define-entity reference "Reference entries"
+      const schemaSource = `2026-01-02T00:00Z define-entity reference "Reference entries"
   # Metadata
   url: string
   ref-type: string
@@ -335,7 +335,7 @@ describe("getDiagnostics", () => {
       workspace.addDocument(schemaSource, { filename: "/ref-schema.ptall" });
 
       // Step 2: Add file using 'reference' entity
-      const source = `2026-01-05T18:00 create reference "Test entry" #test
+      const source = `2026-01-05T18:00Z create reference "Test entry" #test
   url: "https://example.com"
   ref-type: "article"
 `;
@@ -361,7 +361,7 @@ describe("getDiagnostics", () => {
 
     it("should resolve error when entity definition is added to another file", () => {
       // Step 1: Add file using 'reference' entity (which doesn't exist yet in our test schema)
-      const source = `2026-01-05T18:00 create reference "Test entry" #test
+      const source = `2026-01-05T18:00Z create reference "Test entry" #test
   url: "https://example.com"
   ref-type: "article"
 `;
@@ -375,7 +375,7 @@ describe("getDiagnostics", () => {
       expect(unknownEntity!.message).toContain("reference");
 
       // Step 3: Add the entity definition in another file
-      const schemaSource = `2026-01-02T00:00 define-entity reference "Reference entries"
+      const schemaSource = `2026-01-02T00:00Z define-entity reference "Reference entries"
   # Metadata
   url: string
   ref-type: string
@@ -390,7 +390,7 @@ describe("getDiagnostics", () => {
 
     it("should update link diagnostics when link definition changes in another file", () => {
       // Step 1: Add file with link definition
-      const file1Source = `2026-01-05T18:00 create lore "First entry" ^my-link #test
+      const file1Source = `2026-01-05T18:00Z create lore "First entry" ^my-link #test
   type: "fact"
   subject: ^test
 
@@ -400,7 +400,7 @@ describe("getDiagnostics", () => {
       workspace.addDocument(file1Source, { filename: "/file1.ptall" });
 
       // Step 2: Add file referencing the link
-      const file2Source = `2026-01-05T19:00 create lore "Second entry" #test
+      const file2Source = `2026-01-05T19:00Z create lore "Second entry" #test
   type: "fact"
   subject: "whatever"
   related: ^my-link
@@ -417,7 +417,7 @@ describe("getDiagnostics", () => {
       expect(unresolvedLink).toBeUndefined();
 
       // Step 4: Remove the link definition by updating file1 (remove ^my-link)
-      const file1Updated = `2026-01-05T18:00 create lore "First entry" #test
+      const file1Updated = `2026-01-05T18:00Z create lore "First entry" #test
   type: "fact"
   subject: ^test
 
@@ -435,20 +435,20 @@ describe("getDiagnostics", () => {
 
     it("should handle multiple files depending on same entity definition", () => {
       // Step 1: Add schema with 'journal' entity (valid grammar keyword, not in beforeEach schema)
-      const schemaSource = `2026-01-02T00:00 define-entity journal "Journal entries"
+      const schemaSource = `2026-01-02T00:00Z define-entity journal "Journal entries"
   # Metadata
   mood: string
 `;
       workspace.addDocument(schemaSource, { filename: "/schema.ptall" });
 
       // Step 2: Add multiple files using 'journal'
-      const file1Source = `2026-01-05T18:00 create journal "Entry 1" #test
+      const file1Source = `2026-01-05T18:00Z create journal "Entry 1" #test
   mood: "happy"
 `;
-      const file2Source = `2026-01-05T18:01 create journal "Entry 2" #test
+      const file2Source = `2026-01-05T18:01Z create journal "Entry 2" #test
   mood: "sad"
 `;
-      const file3Source = `2026-01-05T18:02 create journal "Entry 3" #test
+      const file3Source = `2026-01-05T18:02Z create journal "Entry 3" #test
   mood: "excited"
 `;
       workspace.addDocument(file1Source, { filename: "/file1.ptall" });
@@ -489,7 +489,7 @@ describe("getDiagnostics", () => {
   describe("array type validation", () => {
     beforeEach(() => {
       // Add schema with array field types
-      const schemaSource = `2026-01-01T00:00 define-entity reference "Reference entries"
+      const schemaSource = `2026-01-01T00:00Z define-entity reference "Reference entries"
   # Metadata
   ref-type: "article" | "video" | "other"
   related?: link[]
@@ -505,7 +505,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should accept valid link array", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   related: ^link1, ^link2, ^link3
 
@@ -522,7 +522,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should reject invalid link array (non-link values)", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   related: "not-a-link", "also-not"
 
@@ -541,7 +541,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should accept valid string array (quoted)", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   tags: "foo", "bar", "baz"
 
@@ -558,7 +558,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should reject link array for string field", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   tags: ^link1, ^link2, ^link3
 
@@ -577,7 +577,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should accept valid union array (quoted strings and links)", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   authors: "Jane Doe", ^author-ref, "John Smith"
 
@@ -594,7 +594,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should reject date ranges for union string/link array", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   authors: 2020 ~ 2024, ^author-ref
 
@@ -612,7 +612,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should reject quoted string for link array", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   related: "not-a-link"
 
@@ -631,7 +631,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should accept valid datetime array", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   dates: 2024-01-01, 2024-05-15, 2024-12-31
 
@@ -648,7 +648,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should reject invalid datetime array (links instead of datetimes)", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   dates: ^link1, ^link2
 
@@ -667,7 +667,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should accept valid date-range array", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   periods: 2020 ~ 2022, 2023-01 ~ 2024-06
 
@@ -684,7 +684,7 @@ describe("getDiagnostics", () => {
     });
 
     it("should reject invalid date-range array (quoted dates instead of ranges)", () => {
-      const source = `2026-01-05T18:00 create reference "Test" #test
+      const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   periods: "2020", "2024"
 

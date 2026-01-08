@@ -2,10 +2,10 @@
 two simple entries
 ==================
 
-2026-01-05T18:11 create lore "First entry"
+2026-01-05T18:11Z create lore "First entry"
   type: "fact"
 
-2026-01-05T18:12 create lore "Second entry"
+2026-01-05T18:12Z create lore "Second entry"
   type: "insight"
 
 ---
@@ -38,14 +38,14 @@ two simple entries
 entries with content
 ==================
 
-2026-01-05T18:11 create lore "First entry with content"
+2026-01-05T18:11Z create lore "First entry with content"
   type: "fact"
   subject: ^acme
 
   # Description
   This is the first entry content.
 
-2026-01-05T18:12 create lore "Second entry with content"
+2026-01-05T18:12Z create lore "Second entry with content"
   type: "fact"
   subject: ^acme
 
@@ -102,16 +102,16 @@ entries with content
 three entries mixed
 ==================
 
-2026-01-05T18:11 create lore "Fact entry" ^fact-one #architecture
+2026-01-05T18:11Z create lore "Fact entry" ^fact-one #architecture
   type: "fact"
 
-2026-01-05T18:12 create opinion "Opinion entry" #opinions
+2026-01-05T18:12Z create opinion "Opinion entry" #opinions
   confidence: "high"
 
   # Claim
   This is my claim.
 
-2026-01-05T18:13 create reference "Reference entry"
+2026-01-05T18:13Z create reference "Reference entry"
   ref-type: "article"
   url: "https://example.com"
 
@@ -169,11 +169,11 @@ three entries mixed
 entry with blank lines between
 ==================
 
-2026-01-05T18:11 create lore "Entry one"
+2026-01-05T18:11Z create lore "Entry one"
   type: "fact"
 
 
-2026-01-05T18:12 create lore "Entry two"
+2026-01-05T18:12Z create lore "Entry two"
   type: "fact"
 
 ---

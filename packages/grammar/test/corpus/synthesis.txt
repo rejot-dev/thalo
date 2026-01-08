@@ -2,7 +2,7 @@
 simple define-synthesis
 ==================
 
-2026-01-07T12:00 define-synthesis "Personal profile" ^profile-synthesis
+2026-01-07T12:00Z define-synthesis "Personal profile" ^profile-synthesis
   sources: lore where subject = ^self
 
 ---
@@ -29,7 +29,7 @@ simple define-synthesis
 define-synthesis with tags
 ==================
 
-2026-01-07T12:00 define-synthesis "Bio synthesis" ^bio #profile #career
+2026-01-07T12:00Z define-synthesis "Bio synthesis" ^bio #profile #career
   sources: lore where subject = ^self
 
 ---
@@ -58,7 +58,7 @@ define-synthesis with tags
 define-synthesis with prompt content
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile synthesis" ^profile
+2026-01-07T12:00Z define-synthesis "Profile synthesis" ^profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -94,7 +94,7 @@ define-synthesis with prompt content
 define-synthesis with multiple metadata
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile" ^profile
+2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
   format: "markdown"
 
@@ -135,7 +135,7 @@ define-synthesis with multiple metadata
 define-synthesis with multi-line prompt
 ==================
 
-2026-01-07T12:00 define-synthesis "CV synthesis" ^cv
+2026-01-07T12:00Z define-synthesis "CV synthesis" ^cv
   sources: lore where #career
 
   # Prompt
@@ -179,8 +179,8 @@ define-synthesis with multi-line prompt
 simple actualize-synthesis
 ==================
 
-2026-01-07T12:01 actualize-synthesis ^profile
-  updated: 2026-01-07T12:01
+2026-01-07T12:01Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:01Z
 
 ---
 
@@ -199,8 +199,8 @@ simple actualize-synthesis
 actualize-synthesis with only updated field
 ==================
 
-2026-01-08T10:00 actualize-synthesis ^bio-synthesis
-  updated: 2026-01-08T10:00
+2026-01-08T10:00Z actualize-synthesis ^bio-synthesis
+  updated: 2026-01-08T10:00Z
 
 ---
 
@@ -219,14 +219,14 @@ actualize-synthesis with only updated field
 multiple entries in file
 ==================
 
-2026-01-07T12:00 define-synthesis "Profile" ^profile
+2026-01-07T12:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
 
   # Prompt
   Generate profile.
 
-2026-01-07T12:01 actualize-synthesis ^profile
-  updated: 2026-01-07T12:01
+2026-01-07T12:01Z actualize-synthesis ^profile
+  updated: 2026-01-07T12:01Z
 
 ---
 
@@ -267,7 +267,7 @@ multiple entries in file
 complex sources query
 ==================
 
-2026-01-07T12:00 define-synthesis "Career summary" ^career
+2026-01-07T12:00Z define-synthesis "Career summary" ^career
   sources: lore where subject = ^self and #career, journal where subject = ^self
 
 ---
