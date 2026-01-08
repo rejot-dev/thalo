@@ -1,4 +1,4 @@
-2026-01-07T11:40 define-entity journal "Personal thoughts, reflections, and experiences"
+2026-01-07T11:40Z define-entity journal "Personal thoughts, reflections, and experiences"
   # Metadata
   subject: string | link ; "Subject name/slug (use ^self for personal)"
   type: string ; "idea, reflection, experience, doubt, question, etc."
@@ -8,7 +8,7 @@
   # Sections
   Entry ; "The journal entry content"
 
-2026-01-07T11:40 define-entity opinion "Formed stances on topics"
+2026-01-07T11:40Z define-entity opinion "Formed stances on topics"
   # Metadata
   confidence: "high" | "medium" | "low"
   supersedes?: link ; "Reference to previous stance"
@@ -19,7 +19,7 @@
   Reasoning ; "Bullet points supporting the claim"
   Caveats? ; "Edge cases, limitations, exceptions"
 
-2026-01-07T11:40 define-entity reference "External resources or local files"
+2026-01-07T11:40Z define-entity reference "External resources or local files"
   # Metadata
   url?: string ; "Full URL to external resource"
   file?: string ; "Path to local file"
@@ -33,7 +33,7 @@
   Key Takeaways? ; "Bullet points of main insights"
   Related? ; "Links to related entries"
 
-2026-01-07T11:40 define-entity lore "Facts and insights about subjects or yourself"
+2026-01-07T11:40Z define-entity lore "Facts and insights about subjects or yourself"
   # Metadata
   type: "fact" | "insight" ; "fact = verifiable info, insight = learned wisdom"
   subject: string | link ; "Subject name/slug (use ^self for personal lore)"
@@ -42,6 +42,6 @@
   # Sections
   Description ; "The lore content"
 
-2026-01-07T11:40 define-entity me "Entity to allow for self-references" ^self
+2026-01-07T11:40Z define-entity me "Entity to allow for self-references" ^self
   # Sections
   Bio ; "Need at least one section"
