@@ -1,7 +1,9 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { DefaultValue, TypeExpression } from "../../ast/types.js";
+import type { ModelDefaultValue, ModelTypeExpression } from "../../model/types.js";
+import { TypeExpr } from "../../schema/types.js";
 
 const category: RuleCategory = "schema";
-import { TypeExpr } from "../../schema/types.js";
 
 /**
  * Check that default values in field definitions match their declared types
@@ -16,27 +18,76 @@ export const invalidDefaultValueRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allSchemaEntries()) {
-      for (const field of entry.fields) {
-        if (field.defaultValue === null) {
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
           continue;
         }
 
-        // Use typed default value matching
-        if (!TypeExpr.matchesDefaultValue(field.defaultValue, field.type)) {
-          ctx.report({
-            message: `Invalid default value '${field.defaultValue.raw}' for field '${field.name}'. Expected ${TypeExpr.toString(field.type)}.`,
-            file: entry.file,
-            location: field.location ?? entry.location,
-            sourceMap: entry.sourceMap,
-            data: {
-              fieldName: field.name,
-              defaultValue: field.defaultValue.raw,
-              expectedType: TypeExpr.toString(field.type),
-            },
-          });
+        const fields = entry.metadataBlock?.fields ?? [];
+        for (const field of fields) {
+          if (!field.defaultValue) {
+            continue;
+          }
+
+          // Convert AST default value to model default value format for type checking
+          const defaultValue = convertDefaultValue(field.defaultValue);
+          const fieldType = convertTypeExpression(field.typeExpr);
+
+          // Use typed default value matching
+          if (!TypeExpr.matchesDefaultValue(defaultValue, fieldType)) {
+            ctx.report({
+              message: `Invalid default value '${field.defaultValue.raw}' for field '${field.name.value}'. Expected ${TypeExpr.toString(fieldType)}.`,
+              file: model.file,
+              location: field.defaultValue.location,
+              sourceMap: model.sourceMap,
+              data: {
+                fieldName: field.name.value,
+                defaultValue: field.defaultValue.raw,
+                expectedType: TypeExpr.toString(fieldType),
+              },
+            });
+          }
         }
       }
     }
   },
 };
+
+function convertDefaultValue(dv: DefaultValue): ModelDefaultValue {
+  const raw = dv.raw;
+  switch (dv.content.type) {
+    case "quoted_value":
+      return { kind: "quoted", value: dv.content.value, raw };
+    case "link":
+      return { kind: "link", id: dv.content.id, raw };
+    case "datetime_value":
+      return { kind: "datetime", value: dv.content.value, raw };
+  }
+}
+
+function convertTypeExpression(expr: TypeExpression): ModelTypeExpression {
+  switch (expr.type) {
+    case "primitive_type":
+      return { kind: "primitive", name: expr.name };
+    case "literal_type":
+      return { kind: "literal", value: expr.value };
+    case "array_type":
+      // Safe: array element types cannot be arrays or unions per grammar
+      return {
+        kind: "array",
+        elementType: convertTypeExpression(expr.elementType) as Exclude<
+          ModelTypeExpression,
+          { kind: "array" | "union" }
+        >,
+      };
+    case "union_type":
+      // Safe: union members cannot be unions per grammar
+      return {
+        kind: "union",
+        members: expr.members.map(
+          (m) => convertTypeExpression(m) as Exclude<ModelTypeExpression, { kind: "union" }>,
+        ),
+      };
+  }
+}

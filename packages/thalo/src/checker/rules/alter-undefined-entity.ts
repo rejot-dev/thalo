@@ -17,22 +17,32 @@ export const alterUndefinedEntityRule: Rule = {
 
     // Collect all defined entity names
     const definedEntities = new Set<string>();
-    for (const entry of workspace.allSchemaEntries()) {
-      if (entry.directive === "define-entity") {
-        definedEntities.add(entry.entityName);
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type === "schema_entry" && entry.header.directive === "define-entity") {
+          definedEntities.add(entry.header.entityName.value);
+        }
       }
     }
 
     // Check alter-entity entries
-    for (const entry of workspace.allSchemaEntries()) {
-      if (entry.directive === "alter-entity") {
-        if (!definedEntities.has(entry.entityName)) {
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "alter-entity") {
+          continue;
+        }
+
+        const entityName = entry.header.entityName.value;
+        if (!definedEntities.has(entityName)) {
           ctx.report({
-            message: `Cannot alter undefined entity '${entry.entityName}'. Define it first using 'define-entity ${entry.entityName}'.`,
-            file: entry.file,
+            message: `Cannot alter undefined entity '${entityName}'. Define it first using 'define-entity ${entityName}'.`,
+            file: model.file,
             location: entry.location,
-            sourceMap: entry.sourceMap,
-            data: { entityName: entry.entityName },
+            sourceMap: model.sourceMap,
+            data: { entityName },
           });
         }
       }

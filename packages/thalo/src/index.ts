@@ -12,28 +12,34 @@ export {
 export { parseFragment, parseQuery, type FragmentType, type ParsedFragment } from "./fragment.js";
 
 // Model classes
-export { Document } from "./model/document.js";
 export { Workspace } from "./model/workspace.js";
 export type {
-  ModelEntry,
-  ModelInstanceEntry,
   ModelSchemaEntry,
-  ModelSynthesisEntry,
-  ModelActualizeEntry,
   ModelTypeExpression,
   Query,
   QueryCondition,
-  LinkDefinition,
-  LinkReference,
-  LinkIndex,
 } from "./model/types.js";
+
+// Semantic types (new API - uses AST Entry types)
+export type { SemanticModel, LinkDefinition, LinkReference, LinkIndex } from "./semantic/types.js";
 
 // Schema
 export { TypeExpr } from "./schema/types.js";
 export type { EntitySchema, FieldSchema, SectionSchema } from "./schema/types.js";
 
 // AST types
-export type { Location } from "./ast/types.js";
+export type {
+  Location,
+  Entry,
+  InstanceEntry,
+  SchemaEntry,
+  SynthesisEntry,
+  ActualizeEntry,
+  Timestamp,
+  Query as AstQuery,
+  QueryCondition as AstQueryCondition,
+} from "./ast/types.js";
+export { isSyntaxError, isValidResult } from "./ast/types.js";
 
 // AST node-at-position utility
 export { findNodeAtPosition } from "./ast/node-at-position.js";

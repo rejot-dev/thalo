@@ -1,6 +1,6 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Location } from "../ast/types.js";
-import type { LinkDefinition } from "../model/types.js";
+import type { LinkDefinition } from "../semantic/types.js";
 import { toFileLocation, positionFromOffset } from "../source-map.js";
 import { findNodeAtPosition } from "../ast/node-at-position.js";
 
@@ -29,8 +29,14 @@ export function findDefinition(workspace: Workspace, linkId: string): Definition
     return undefined;
   }
 
+  // Get the model to access the source map
+  const model = workspace.getModel(definition.file);
+  if (!model) {
+    return undefined;
+  }
+
   // Convert block-relative location to file-absolute location
-  const fileLocation = toFileLocation(definition.entry.sourceMap, definition.location);
+  const fileLocation = toFileLocation(model.sourceMap, definition.location);
 
   return {
     file: definition.file,
@@ -52,16 +58,16 @@ export function findDefinitionAtPosition(
   file: string,
   offset: number,
 ): DefinitionResult | undefined {
-  const doc = workspace.getDocument(file);
-  if (!doc) {
+  const model = workspace.getModel(file);
+  if (!model) {
     return undefined;
   }
 
   // Convert offset to position
-  const position = positionFromOffset(doc.source, offset);
+  const position = positionFromOffset(model.source, offset);
 
   // Use AST-based node detection
-  const context = findNodeAtPosition({ blocks: doc.blocks }, position);
+  const context = findNodeAtPosition({ blocks: model.blocks }, position);
 
   // Only handle link contexts
   if (context.kind !== "link") {

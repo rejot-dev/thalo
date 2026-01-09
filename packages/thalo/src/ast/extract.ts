@@ -1,4 +1,5 @@
 import type { SyntaxNode } from "tree-sitter";
+import { buildTimestamp } from "./builder.js";
 import type {
   AstNode,
   Location,
@@ -626,10 +627,7 @@ export function extractContentLine(node: SyntaxNode): ContentLine {
 // ===================
 
 export function extractTimestamp(node: SyntaxNode): Timestamp {
-  return {
-    ...baseNode(node, "timestamp"),
-    value: node.text,
-  };
+  return buildTimestamp(node);
 }
 
 export function extractTitle(node: SyntaxNode): Title {

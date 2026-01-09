@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { parseDocument } from "./parser.js";
-import { Document } from "./model/document.js";
 import { Workspace } from "./model/workspace.js";
 import { check } from "./checker/check.js";
 import { isIdentityMap } from "./source-map.js";
@@ -64,47 +63,6 @@ More text.
     const result = parseDocument(source, { filename: "test.md" });
 
     expect(result.blocks).toHaveLength(1);
-  });
-});
-
-describe("Document", () => {
-  it("parses entries from source", () => {
-    const source = `2026-01-05T18:00Z create lore "Test entry" ^my-lore #test
-  type: "fact"
-  subject: ^self
-
-  Some content here.
-`;
-    const doc = Document.parse(source, { filename: "test.thalo" });
-
-    expect(doc.entries).toHaveLength(1);
-    expect(doc.instanceEntries).toHaveLength(1);
-
-    const entry = doc.instanceEntries[0];
-    expect(entry.timestamp).toBe("2026-01-05T18:00Z");
-    expect(entry.directive).toBe("create");
-    expect(entry.entity).toBe("lore");
-    expect(entry.title).toBe("Test entry");
-    expect(entry.linkId).toBe("my-lore");
-    expect(entry.tags).toEqual(["test"]);
-    expect(entry.metadata.get("type")?.raw).toBe('"fact"');
-    expect(entry.metadata.get("subject")?.linkId).toBe("self");
-  });
-
-  it("builds link index", () => {
-    const source = `2026-01-05T18:00Z create lore "Test entry" ^my-lore #test
-  type: "fact"
-  related: ^other-entry
-`;
-    const doc = Document.parse(source, { filename: "test.thalo" });
-
-    // Only explicit link ID creates a definition (timestamps are not link IDs)
-    expect(doc.linkIndex.definitions.has("2026-01-05T18:00Z")).toBe(false);
-    expect(doc.linkIndex.definitions.has("my-lore")).toBe(true);
-
-    // Related is a reference
-    expect(doc.linkIndex.references.has("other-entry")).toBe(true);
-    expect(doc.linkIndex.references.get("other-entry")).toHaveLength(1);
   });
 });
 

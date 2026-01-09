@@ -1,6 +1,26 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { InstanceEntry } from "../../ast/types.js";
 
 const category: RuleCategory = "instance";
+
+/**
+ * Get metadata link value for a given key
+ */
+function getMetadataLink(
+  entry: InstanceEntry,
+  key: string,
+): { id: string; location: import("../../ast/types.js").Location } | null {
+  const meta = entry.metadata.find((m) => m.key.value === key);
+  if (!meta) {
+    return null;
+  }
+
+  const content = meta.value.content;
+  if (content.type === "link_value") {
+    return { id: content.link.id, location: content.link.location };
+  }
+  return null;
+}
 
 /**
  * Check for 'update' entries that reference (via supersedes) a non-existent create entry
@@ -15,52 +35,55 @@ export const updateWithoutCreateRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      if (entry.directive !== "update") {
-        continue;
-      }
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "update") {
+          continue;
+        }
 
-      // Check if there's a supersedes field
-      const supersedes = entry.metadata.get("supersedes");
-      if (!supersedes?.linkId) {
-        continue;
-      }
+        // Check if there's a supersedes field
+        const supersedes = getMetadataLink(entry, "supersedes");
+        if (!supersedes) {
+          continue;
+        }
 
-      // Check if the superseded entry exists
-      const linkId = supersedes.linkId;
-      const definition = workspace.getLinkDefinition(linkId);
+        // Check if the superseded entry exists
+        const definition = workspace.getLinkDefinition(supersedes.id);
+        if (!definition) {
+          // This will be caught by unresolved-link rule, but we can add context
+          continue;
+        }
 
-      if (!definition) {
-        // This will be caught by unresolved-link rule, but we can add context
-        continue;
-      }
-
-      // Check if the superseded entry is a create of the same entity type
-      const supersededEntry = definition.entry;
-      if (supersededEntry.kind === "instance") {
-        if (supersededEntry.directive !== "create") {
-          ctx.report({
-            message: `'update' entry supersedes another '${supersededEntry.directive}' entry. Consider pointing to the original 'create' entry instead.`,
-            file: entry.file,
-            location: supersedes.location,
-            sourceMap: entry.sourceMap,
-            data: {
-              linkId,
-              supersededDirective: supersededEntry.directive,
-            },
-          });
-        } else if (supersededEntry.entity !== entry.entity) {
-          ctx.report({
-            message: `'update ${entry.entity}' supersedes a '${supersededEntry.entity}' entry. Entity types should match.`,
-            file: entry.file,
-            location: supersedes.location,
-            sourceMap: entry.sourceMap,
-            data: {
-              linkId,
-              expectedEntity: entry.entity,
-              actualEntity: supersededEntry.entity,
-            },
-          });
+        // Check if the superseded entry is a create of the same entity type
+        const supersededEntry = definition.entry;
+        if (supersededEntry.type === "instance_entry") {
+          if (supersededEntry.header.directive !== "create") {
+            ctx.report({
+              message: `'update' entry supersedes another '${supersededEntry.header.directive}' entry. Consider pointing to the original 'create' entry instead.`,
+              file: model.file,
+              location: supersedes.location,
+              sourceMap: model.sourceMap,
+              data: {
+                linkId: supersedes.id,
+                supersededDirective: supersededEntry.header.directive,
+              },
+            });
+          } else if (supersededEntry.header.entity !== entry.header.entity) {
+            ctx.report({
+              message: `'update ${entry.header.entity}' supersedes a '${supersededEntry.header.entity}' entry. Entity types should match.`,
+              file: model.file,
+              location: supersedes.location,
+              sourceMap: model.sourceMap,
+              data: {
+                linkId: supersedes.id,
+                expectedEntity: entry.header.entity,
+                actualEntity: supersededEntry.header.entity,
+              },
+            });
+          }
         }
       }
     }

@@ -21,7 +21,7 @@ import type {
   Metadata,
   Identifier,
 } from "../ast/types.js";
-import { analyze, analyzeDocument } from "./analyzer.js";
+import { analyze } from "./analyzer.js";
 import type { LinkIndex } from "./types.js";
 import type { SourceMap } from "../source-map.js";
 
@@ -33,6 +33,7 @@ function getLinkIndex(ast: SourceFile, file: string): LinkIndex {
     file,
     source: "",
     sourceMap: mockSourceMap(),
+    blocks: [],
   }).linkIndex;
 }
 
@@ -75,10 +76,35 @@ function mockSourceMap(): SourceMap {
  * Create a mock Timestamp for testing.
  */
 function mockTimestamp(value: string): Timestamp {
+  const loc = mockLocation(0, value.length);
   return {
     type: "timestamp",
     value,
-    location: mockLocation(0, value.length),
+    date: {
+      type: "date_part",
+      value: "2026-01-05",
+      year: 2026,
+      month: 1,
+      day: 5,
+      location: loc,
+      syntaxNode: mockSyntaxNode(),
+    },
+    time: {
+      type: "time_part",
+      value: "18:00",
+      hour: 18,
+      minute: 0,
+      location: loc,
+      syntaxNode: mockSyntaxNode(),
+    },
+    timezone: {
+      type: "timezone_part",
+      value: "Z",
+      offsetMinutes: 0,
+      location: loc,
+      syntaxNode: mockSyntaxNode(),
+    },
+    location: loc,
     syntaxNode: mockSyntaxNode(),
   };
 }
@@ -362,6 +388,7 @@ describe("analyze", () => {
       file: "test.thalo",
       source: "",
       sourceMap: mockSourceMap(),
+      blocks: [],
     });
 
     expect(model.ast).toBe(ast);
@@ -391,6 +418,7 @@ describe("analyze", () => {
       file: "test.thalo",
       source: "",
       sourceMap: mockSourceMap(),
+      blocks: [],
     });
 
     expect(model.schemaEntries).toHaveLength(1);
@@ -416,6 +444,7 @@ describe("analyze", () => {
       file: "test.thalo",
       source: "",
       sourceMap: mockSourceMap(),
+      blocks: [],
     });
 
     expect(model.schemaEntries).toHaveLength(2);
@@ -703,34 +732,5 @@ describe("link indexing", () => {
       expect(index.definitions.has("career-summary")).toBe(true);
       expect(index.references.has("career-summary")).toBe(true);
     });
-  });
-});
-
-describe("analyzeDocument", () => {
-  it("should produce same results as analyze", () => {
-    const entry = mockInstanceEntry({
-      timestamp: "2026-01-05T10:00Z",
-      directive: "create",
-      entity: "lore",
-      title: "My lore",
-      link: "my-lore",
-      metadata: [mockMetadata("subject", mockLinkValue("self"))],
-    });
-
-    const ast = mockSourceFile([entry]);
-    const options = {
-      file: "test.thalo",
-      source: "test source",
-      sourceMap: mockSourceMap(),
-    };
-
-    const model1 = analyze(ast, options);
-    const model2 = analyzeDocument(ast, options);
-
-    expect(model2.file).toBe(model1.file);
-    expect(model2.source).toBe(model1.source);
-    expect(model2.ast).toBe(model1.ast);
-    expect(model2.linkIndex.definitions.size).toBe(model1.linkIndex.definitions.size);
-    expect(model2.linkIndex.references.size).toBe(model1.linkIndex.references.size);
   });
 });

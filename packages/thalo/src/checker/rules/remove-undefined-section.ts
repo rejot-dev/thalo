@@ -16,27 +16,37 @@ export const removeUndefinedSectionRule: Rule = {
     const { workspace } = ctx;
     const registry = workspace.schemaRegistry;
 
-    for (const entry of workspace.allSchemaEntries()) {
-      if (entry.directive !== "alter-entity" || entry.removeSections.length === 0) {
-        continue;
-      }
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "alter-entity") {
+          continue;
+        }
 
-      // Get the schema as it was BEFORE this alter-entity
-      const schema = registry.get(entry.entityName);
-      if (!schema) {
-        continue; // Will be caught by alter-undefined-entity rule
-      }
+        const removeSections = entry.removeSectionsBlock?.sections ?? [];
+        if (removeSections.length === 0) {
+          continue;
+        }
 
-      for (const sectionName of entry.removeSections) {
-        // Check if this section exists in the current resolved schema
-        if (!schema.sections.has(sectionName)) {
-          ctx.report({
-            message: `Cannot remove section '${sectionName}' from entity '${entry.entityName}': section does not exist.`,
-            file: entry.file,
-            location: entry.location,
-            sourceMap: entry.sourceMap,
-            data: { sectionName, entityName: entry.entityName },
-          });
+        const entityName = entry.header.entityName.value;
+        const schema = registry.get(entityName);
+        if (!schema) {
+          continue;
+        } // Will be caught by alter-undefined-entity rule
+
+        for (const removal of removeSections) {
+          const sectionName = removal.name.value;
+          if (!schema.sections.has(sectionName)) {
+            ctx.report({
+              message: `Cannot remove section '${sectionName}' from entity '${entityName}': section does not exist.`,
+              file: model.file,
+              location: removal.location,
+              sourceMap: model.sourceMap,
+              data: { sectionName, entityName },
+            });
+          }
         }
       }
     }

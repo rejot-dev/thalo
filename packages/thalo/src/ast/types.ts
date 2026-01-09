@@ -351,10 +351,9 @@ export interface TimezonePart extends AstNode {
 }
 
 /**
- * A timestamp value, either with decomposed parts (from AST builder) or
- * just a raw value (from legacy extraction).
+ * A timestamp value with decomposed parts.
  *
- * When decomposed, the timezone can be a SyntaxErrorNode if missing.
+ * The timezone can be a SyntaxErrorNode if missing.
  *
  * @example
  * // Fully decomposed timestamp:
@@ -378,24 +377,14 @@ export interface TimezonePart extends AstNode {
  */
 export interface Timestamp extends AstNode {
   type: "timestamp";
-  /** The full timestamp string (for backward compatibility) */
+  /** The full timestamp string */
   value: string;
-  /**
-   * Decomposed date part (optional for backward compatibility with legacy extraction).
-   * Populated by the AST builder.
-   */
-  date?: DatePart;
-  /**
-   * Decomposed time part (optional for backward compatibility with legacy extraction).
-   * Populated by the AST builder.
-   */
-  time?: TimePart;
-  /**
-   * Decomposed timezone part, or SyntaxErrorNode if missing.
-   * Optional for backward compatibility with legacy extraction.
-   * Populated by the AST builder.
-   */
-  timezone?: Result<TimezonePart, "missing_timezone">;
+  /** Decomposed date part */
+  date: DatePart;
+  /** Decomposed time part */
+  time: TimePart;
+  /** Decomposed timezone part, or SyntaxErrorNode if missing */
+  timezone: Result<TimezonePart, "missing_timezone">;
 }
 
 export interface Title extends AstNode {

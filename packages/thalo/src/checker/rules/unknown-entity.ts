@@ -16,15 +16,22 @@ export const unknownEntityRule: Rule = {
     const { workspace } = ctx;
     const registry = workspace.schemaRegistry;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      if (!registry.has(entry.entity)) {
-        ctx.report({
-          message: `Unknown entity type '${entry.entity}'. Define it using 'define-entity ${entry.entity}'.`,
-          file: entry.file,
-          location: entry.location,
-          sourceMap: entry.sourceMap,
-          data: { entity: entry.entity },
-        });
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
+        }
+
+        const entity = entry.header.entity;
+        if (!registry.has(entity)) {
+          ctx.report({
+            message: `Unknown entity type '${entity}'. Define it using 'define-entity ${entity}'.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { entity },
+          });
+        }
       }
     }
   },

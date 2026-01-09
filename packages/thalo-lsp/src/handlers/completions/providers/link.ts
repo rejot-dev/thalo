@@ -1,18 +1,78 @@
 import type { CompletionItem, CompletionItemKind } from "vscode-languageserver";
-import type { Workspace, ModelEntry, LinkDefinition } from "@rejot-dev/thalo";
+import type { Workspace, Entry, Timestamp } from "@rejot-dev/thalo";
+import { isSyntaxError } from "@rejot-dev/thalo";
+import type { LinkDefinition } from "@rejot-dev/thalo";
 import type { CompletionContext } from "../context.js";
 import type { CompletionProvider } from "../types.js";
 
 /**
+ * Format a timestamp to string
+ */
+function formatTimestamp(ts: Timestamp): string {
+  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
+  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
+  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
+  return `${date}T${time}${tz}`;
+}
+
+/**
  * Get sort text for an entry (prefer recent entries).
  */
-function getSortText(entry: ModelEntry): string {
+function getSortText(entry: Entry): string {
   // Sort by timestamp descending (recent first)
-  // Timestamps are ISO format, so we can invert them for sorting
-  return entry.timestamp
+  let ts: Timestamp;
+  switch (entry.type) {
+    case "instance_entry":
+      ts = entry.header.timestamp;
+      break;
+    case "schema_entry":
+      ts = entry.header.timestamp;
+      break;
+    case "synthesis_entry":
+      ts = entry.header.timestamp;
+      break;
+    case "actualize_entry":
+      ts = entry.header.timestamp;
+      break;
+  }
+  const timestamp = formatTimestamp(ts);
+  // Invert for sorting
+  return timestamp
     .split("")
     .map((c) => String.fromCharCode(126 - c.charCodeAt(0)))
     .join("");
+}
+
+/**
+ * Get title from an entry
+ */
+function getEntryTitle(entry: Entry): string {
+  switch (entry.type) {
+    case "instance_entry":
+      return entry.header.title?.value ?? "(no title)";
+    case "synthesis_entry":
+      return entry.header.title?.value ?? "(no title)";
+    case "actualize_entry":
+      return `actualize-synthesis ^${entry.header.target.id}`;
+    case "schema_entry":
+      return entry.header.title?.value ?? "(no title)";
+  }
+}
+
+/**
+ * Get entity description from an entry
+ */
+function getEntryEntity(entry: Entry): string {
+  switch (entry.type) {
+    case "instance_entry":
+      return entry.header.entity;
+    case "synthesis_entry":
+      return "synthesis";
+    case "actualize_entry":
+      return "actualize";
+    case "schema_entry":
+      return entry.header.entityName.value;
+  }
 }
 
 /**
@@ -20,20 +80,24 @@ function getSortText(entry: ModelEntry): string {
  */
 function formatLinkCompletion(linkId: string, definition: LinkDefinition): CompletionItem {
   const entry = definition.entry;
-  const title =
-    entry.kind === "instance" || entry.kind === "synthesis"
-      ? entry.title
-      : entry.kind === "actualize"
-        ? `actualize-synthesis ^${entry.target}`
-        : entry.title;
-  const entity =
-    entry.kind === "instance"
-      ? entry.entity
-      : entry.kind === "synthesis"
-        ? "synthesis"
-        : entry.kind === "actualize"
-          ? "actualize"
-          : entry.entityName;
+  const title = getEntryTitle(entry);
+  const entity = getEntryEntity(entry);
+  let ts: Timestamp;
+  switch (entry.type) {
+    case "instance_entry":
+      ts = entry.header.timestamp;
+      break;
+    case "schema_entry":
+      ts = entry.header.timestamp;
+      break;
+    case "synthesis_entry":
+      ts = entry.header.timestamp;
+      break;
+    case "actualize_entry":
+      ts = entry.header.timestamp;
+      break;
+  }
+  const timestamp = formatTimestamp(ts);
 
   return {
     label: `^${linkId}`,
@@ -41,7 +105,7 @@ function formatLinkCompletion(linkId: string, definition: LinkDefinition): Compl
     detail: title,
     documentation: {
       kind: "markdown",
-      value: `**${title}**\n\n${entry.timestamp} • ${entity}\n\n*${definition.file}*`,
+      value: `**${title}**\n\n${timestamp} • ${entity}\n\n*${definition.file}*`,
     },
     insertText: linkId,
     sortText: getSortText(entry),
@@ -75,12 +139,7 @@ export const linkProvider: CompletionProvider = {
       if (partial && !linkId.toLowerCase().includes(partial)) {
         // Also check title
         const entry = definition.entry;
-        const title =
-          entry.kind === "instance" || entry.kind === "synthesis"
-            ? entry.title
-            : entry.kind === "actualize"
-              ? `actualize-synthesis ^${entry.target}`
-              : entry.title;
+        const title = getEntryTitle(entry);
         if (!title.toLowerCase().includes(partial)) {
           continue;
         }

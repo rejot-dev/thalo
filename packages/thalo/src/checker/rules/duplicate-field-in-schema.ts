@@ -15,22 +15,31 @@ export const duplicateFieldInSchemaRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allSchemaEntries()) {
-      const seenFields = new Map<string, number>();
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
 
-      for (const field of entry.fields) {
-        const fieldLine = field.location?.startPosition.row ?? 0;
-        const existingLine = seenFields.get(field.name);
-        if (existingLine !== undefined) {
-          ctx.report({
-            message: `Duplicate field '${field.name}' in schema entry. First defined at line ${existingLine}.`,
-            file: entry.file,
-            location: field.location ?? entry.location,
-            sourceMap: entry.sourceMap,
-            data: { fieldName: field.name, firstLine: existingLine },
-          });
-        } else {
-          seenFields.set(field.name, fieldLine + 1);
+        const fields = entry.metadataBlock?.fields ?? [];
+        const seenFields = new Map<string, number>();
+
+        for (const field of fields) {
+          const fieldName = field.name.value;
+          const fieldLine = field.location?.startPosition.row ?? 0;
+          const existingLine = seenFields.get(fieldName);
+
+          if (existingLine !== undefined) {
+            ctx.report({
+              message: `Duplicate field '${fieldName}' in schema entry. First defined at line ${existingLine}.`,
+              file: model.file,
+              location: field.location,
+              sourceMap: model.sourceMap,
+              data: { fieldName, firstLine: existingLine },
+            });
+          } else {
+            seenFields.set(fieldName, fieldLine + 1);
+          }
         }
       }
     }

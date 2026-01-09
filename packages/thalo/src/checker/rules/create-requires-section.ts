@@ -15,19 +15,30 @@ export const createRequiresSectionRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      if (entry.directive !== "create") {
-        continue;
-      }
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "create") {
+          continue;
+        }
 
-      if (entry.sections.length === 0) {
-        ctx.report({
-          message: `Create entry '${entry.title}' must use at least one section.`,
-          file: entry.file,
-          location: entry.location,
-          sourceMap: entry.sourceMap,
-          data: { title: entry.title, entity: entry.entity },
-        });
+        // Count markdown headers (sections) in content
+        const content = entry.content;
+        const sectionCount =
+          content?.children.filter((c) => c.type === "markdown_header").length ?? 0;
+
+        if (sectionCount === 0) {
+          const title = entry.header.title?.value ?? "(no title)";
+          ctx.report({
+            message: `Create entry '${title}' must use at least one section.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { title, entity: entry.header.entity },
+          });
+        }
       }
     }
   },

@@ -1,7 +1,13 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { SchemaEntry } from "../../ast/types.js";
+import type { SemanticModel } from "../../semantic/types.js";
 
 const category: RuleCategory = "schema";
-import type { ModelSchemaEntry } from "../../model/types.js";
+
+interface SchemaEntryContext {
+  entry: SchemaEntry;
+  model: SemanticModel;
+}
 
 /**
  * Check for multiple define-entity entries for the same entity name
@@ -17,30 +23,38 @@ export const duplicateEntityDefinitionRule: Rule = {
     const { workspace } = ctx;
 
     // Track all define-entity entries by entity name
-    const definesByName = new Map<string, ModelSchemaEntry[]>();
+    const definesByName = new Map<string, SchemaEntryContext[]>();
 
-    for (const entry of workspace.allSchemaEntries()) {
-      if (entry.directive === "define-entity") {
-        const defs = definesByName.get(entry.entityName) ?? [];
-        defs.push(entry);
-        definesByName.set(entry.entityName, defs);
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "define-entity") {
+          continue;
+        }
+
+        const entityName = entry.header.entityName.value;
+        const defs = definesByName.get(entityName) ?? [];
+        defs.push({ entry, model });
+        definesByName.set(entityName, defs);
       }
     }
 
     // Report duplicates
     for (const [entityName, defs] of definesByName) {
       if (defs.length > 1) {
-        for (const def of defs) {
+        for (const { entry, model } of defs) {
           const otherLocations = defs
-            .filter((d) => d !== def)
-            .map((d) => `${d.file}:${d.location.startPosition.row + 1}`)
+            .filter((d) => d.entry !== entry)
+            .map((d) => `${d.model.file}:${d.entry.location.startPosition.row + 1}`)
             .join(", ");
 
           ctx.report({
             message: `Duplicate definition for entity '${entityName}'. Also defined at: ${otherLocations}`,
-            file: def.file,
-            location: def.location,
-            sourceMap: def.sourceMap,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
             data: { entityName, otherLocations },
           });
         }

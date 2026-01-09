@@ -1,6 +1,6 @@
 import type { Location } from "../ast/types.js";
 import type { Workspace } from "../model/workspace.js";
-import type { Document } from "../model/document.js";
+import type { SemanticModel } from "../semantic/types.js";
 import type { SourceMap } from "../source-map.js";
 
 /**
@@ -64,8 +64,8 @@ export interface PartialDiagnostic {
 export interface CheckContext {
   /** The workspace being checked */
   workspace: Workspace;
-  /** The document being checked (for document-scoped rules) */
-  document?: Document;
+  /** The model being checked (for document-scoped rules) */
+  model?: SemanticModel;
   /** Report a diagnostic. If sourceMap is provided, location will be converted to file-absolute. */
   report(diagnostic: PartialDiagnostic): void;
 }
@@ -101,4 +101,12 @@ export interface CheckConfig {
  */
 export function getEffectiveSeverity(rule: Rule, config: CheckConfig): Severity {
   return config.rules?.[rule.code] ?? rule.defaultSeverity;
+}
+
+/**
+ * Context for an entry within a model, bundling file and sourceMap for diagnostics
+ */
+export interface EntryContext {
+  file: string;
+  sourceMap: SourceMap;
 }

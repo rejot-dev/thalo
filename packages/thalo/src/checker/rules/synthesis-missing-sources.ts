@@ -16,15 +16,23 @@ export const synthesisMissingSourcesRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const doc of workspace.allDocuments()) {
-      for (const synthesis of doc.synthesisEntries) {
-        if (synthesis.sources.length === 0) {
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "synthesis_entry") {
+          continue;
+        }
+
+        const title = entry.header.title.value;
+        const linkId = entry.header.linkId.id;
+        const sourcesMetadata = entry.metadata.find((m) => m.key.value === "sources");
+
+        if (!sourcesMetadata) {
           ctx.report({
-            message: `Synthesis '${synthesis.title}' is missing a 'sources:' field. Add a query like 'sources: lore where subject = ^self'.`,
-            file: synthesis.file,
-            location: synthesis.location,
-            sourceMap: synthesis.sourceMap,
-            data: { title: synthesis.title, linkId: synthesis.linkId },
+            message: `Synthesis '${title}' is missing a 'sources:' field. Add a query like 'sources: lore where subject = ^self'.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { title, linkId },
           });
         }
       }

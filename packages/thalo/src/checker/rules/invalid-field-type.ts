@@ -1,7 +1,7 @@
 import type { Rule, RuleCategory } from "../types.js";
+import { TypeExpr } from "../../schema/types.js";
 
 const category: RuleCategory = "instance";
-import { TypeExpr } from "../../schema/types.js";
 
 /**
  * Check that metadata values match their declared types
@@ -17,31 +17,39 @@ export const invalidFieldTypeRule: Rule = {
     const { workspace } = ctx;
     const registry = workspace.schemaRegistry;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      const schema = registry.get(entry.entity);
-      if (!schema) {
-        continue;
-      } // Will be caught by unknown-entity rule
-
-      for (const [fieldName, value] of entry.metadata) {
-        const fieldSchema = schema.fields.get(fieldName);
-        if (!fieldSchema) {
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
           continue;
-        } // Will be caught by unknown-field rule
+        }
 
-        // Check if value matches the type using grammar-parsed content
-        if (!TypeExpr.matchesContent(value.content, fieldSchema.type)) {
-          ctx.report({
-            message: `Invalid value '${value.raw}' for field '${fieldName}'. Expected ${TypeExpr.toString(fieldSchema.type)}.`,
-            file: entry.file,
-            location: value.location,
-            sourceMap: entry.sourceMap,
-            data: {
-              field: fieldName,
-              value: value.raw,
-              expectedType: TypeExpr.toString(fieldSchema.type),
-            },
-          });
+        const entity = entry.header.entity;
+        const schema = registry.get(entity);
+        if (!schema) {
+          continue;
+        } // Will be caught by unknown-entity rule
+
+        for (const meta of entry.metadata) {
+          const fieldName = meta.key.value;
+          const fieldSchema = schema.fields.get(fieldName);
+          if (!fieldSchema) {
+            continue;
+          } // Will be caught by unknown-field rule
+
+          // Check if value matches the type using grammar-parsed content
+          if (!TypeExpr.matchesContent(meta.value.content, fieldSchema.type)) {
+            ctx.report({
+              message: `Invalid value '${meta.value.raw}' for field '${fieldName}'. Expected ${TypeExpr.toString(fieldSchema.type)}.`,
+              file: model.file,
+              location: meta.value.location,
+              sourceMap: model.sourceMap,
+              data: {
+                field: fieldName,
+                value: meta.value.raw,
+                expectedType: TypeExpr.toString(fieldSchema.type),
+              },
+            });
+          }
         }
       }
     }

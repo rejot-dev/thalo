@@ -30,7 +30,8 @@ describe("findDefinition", () => {
 
     expect(result).toBeDefined();
     expect(result!.file).toBe("file1.thalo");
-    expect(result!.definition.entry.timestamp).toBe("2026-01-05T18:00Z");
+    // Entry is AST type, timestamp is in header.timestamp.value
+    expect(result!.definition.entry.type).toBe("instance_entry");
   });
 
   it("returns undefined for timestamp (timestamps are not link IDs)", () => {

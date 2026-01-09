@@ -16,29 +16,37 @@ export const removeUndefinedFieldRule: Rule = {
     const { workspace } = ctx;
     const registry = workspace.schemaRegistry;
 
-    for (const entry of workspace.allSchemaEntries()) {
-      if (entry.directive !== "alter-entity" || entry.removeFields.length === 0) {
-        continue;
-      }
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "alter-entity") {
+          continue;
+        }
 
-      // Get the schema as it was BEFORE this alter-entity
-      // We need to check what fields existed at the time
-      const schema = registry.get(entry.entityName);
-      if (!schema) {
-        continue; // Will be caught by alter-undefined-entity rule
-      }
+        const removeFields = entry.removeMetadataBlock?.fields ?? [];
+        if (removeFields.length === 0) {
+          continue;
+        }
 
-      for (const fieldName of entry.removeFields) {
-        // Check if this field exists in the current resolved schema
-        // Note: This is a simplification - ideally we'd check the state before this alter
-        if (!schema.fields.has(fieldName)) {
-          ctx.report({
-            message: `Cannot remove field '${fieldName}' from entity '${entry.entityName}': field does not exist.`,
-            file: entry.file,
-            location: entry.location,
-            sourceMap: entry.sourceMap,
-            data: { fieldName, entityName: entry.entityName },
-          });
+        const entityName = entry.header.entityName.value;
+        const schema = registry.get(entityName);
+        if (!schema) {
+          continue;
+        } // Will be caught by alter-undefined-entity rule
+
+        for (const removal of removeFields) {
+          const fieldName = removal.name.value;
+          if (!schema.fields.has(fieldName)) {
+            ctx.report({
+              message: `Cannot remove field '${fieldName}' from entity '${entityName}': field does not exist.`,
+              file: model.file,
+              location: removal.location,
+              sourceMap: model.sourceMap,
+              data: { fieldName, entityName },
+            });
+          }
         }
       }
     }
