@@ -100,15 +100,20 @@ describe("parse error handling", () => {
       expect(warnSpy).toHaveBeenCalled();
     });
 
-    it("should return original source and warn for unclosed quote", async () => {
+    it("should format successfully for unclosed quote (newline acts as recovery)", async () => {
+      // Grammar now treats newline as recovery point for unclosed quotes
       const input = `2026-01-05T15:30Z create lore "Unclosed title
   type: "fact"`;
 
       const result = await format(input);
 
-      // Should return original source unchanged
-      expect(result).toBe(input + "\n");
-      expect(warnSpy).toHaveBeenCalled();
+      // Should format successfully without warnings (unclosed quote recovers at newline)
+      expect(result).toMatchInlineSnapshot(`
+        "2026-01-05T15:30Z create lore "Unclosed title
+          type: "fact"
+        "
+      `);
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
     it("should include hint about metadata values in warning", async () => {

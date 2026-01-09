@@ -1,5 +1,5 @@
 ==================
-still typing #2 (description)
+unclosed title quote (recovers at newline)
 ==================
 
 2026-01-05T18:11Z create lore "Hello
@@ -11,12 +11,11 @@ still typing #2 (description)
     (data_entry
       (timestamp)
       (data_directive)
-      (identifier)))
-  (ERROR
-    (UNEXPECTED '\0')))
+      (identifier)
+      (title))))
 
 ==================
-missing ending quote #2
+unclosed title quote with content (recovers at newline)
 ==================
 
 
@@ -34,5 +33,14 @@ missing ending quote #2
       (timestamp)
       (data_directive)
       (identifier)
-      (title)))
-  (ERROR))
+      (title)
+      (metadata
+        (key)
+        (value
+          (quoted_value)))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))

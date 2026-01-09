@@ -175,7 +175,8 @@ export default grammar({
 
     _nl: (_) => /\r?\n/,
     timestamp: (_) => token(/[12]\d{3}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d)/),
-    title: (_) => token(/"[^"]*"/),
+    // Allow unclosed quotes to terminate at newline for error recovery
+    title: (_) => token(/"[^"\r\n]*"?/),
     link: (_) => token(/\^[A-Za-z0-9\-_/.]+/),
     tag: (_) => token(/#[A-Za-z0-9\-_/.]+/),
     key: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),

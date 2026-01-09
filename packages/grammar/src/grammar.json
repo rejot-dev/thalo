@@ -957,7 +957,7 @@
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\"[^\"]*\""
+        "value": "\"[^\"\\r\\n]*\"?"
       }
     },
     "link": {

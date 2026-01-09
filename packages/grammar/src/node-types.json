@@ -716,11 +716,6 @@
     }
   },
   {
-    "type": "title",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "type_expression",
     "named": true,
     "fields": {},
@@ -950,6 +945,10 @@
   },
   {
     "type": "timestamp",
+    "named": true
+  },
+  {
+    "type": "title",
     "named": true
   },
   {

@@ -368,6 +368,20 @@ function findChildEndingAt(node: SyntaxNode, point: Point): SyntaxNode | null {
 }
 
 /**
+ * Check if a node is inside an ERROR context (parse error recovery)
+ */
+function isInsideErrorNode(node: SyntaxNode): boolean {
+  let current: SyntaxNode | null = node;
+  while (current) {
+    if (current.type === "ERROR") {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+/**
  * Classify a syntax node into a semantic context
  */
 function classifyNode(node: SyntaxNode, point: Point, block: ParsedBlock): NodeContext {
@@ -419,13 +433,23 @@ function classifyNode(node: SyntaxNode, point: Point, block: ParsedBlock): NodeC
     case "section_name":
       return classifySectionNameNode(node, sourceMap);
 
-    case "title":
+    case "title": {
+      // Don't provide hover for titles inside ERROR contexts - they may be misidentified
+      // during error recovery (e.g., "fact" in `type: "fact"` without entry header)
+      if (isInsideErrorNode(node)) {
+        return { kind: "unknown" };
+      }
+      // Handle both closed ("text") and unclosed ("text) titles
+      const text = node.text;
+      const hasClosingQuote = text.endsWith('"') && text.length > 1;
+      const title = hasClosingQuote ? text.slice(1, -1) : text.slice(1);
       return {
         kind: "title",
-        title: node.text.slice(1, -1), // Remove quotes
+        title,
         location: extractLocation(node),
         sourceMap,
       };
+    }
 
     case "identifier":
       // Could be entity name in schema header
