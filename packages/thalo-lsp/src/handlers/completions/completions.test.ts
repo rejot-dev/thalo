@@ -360,8 +360,8 @@ describe("TimestampProvider", () => {
     const items = timestampProvider.getCompletions(ctx, workspace);
 
     expect(items).toHaveLength(1);
-    expect(items[0].insertText).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2} $/);
-    expect(items[0].label).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+    expect(items[0].insertText).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z $/);
+    expect(items[0].label).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/);
   });
 });
 
