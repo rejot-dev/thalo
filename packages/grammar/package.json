@@ -5,16 +5,25 @@
   "type": "module",
   "main": "bindings/node/index.js",
   "types": "bindings/node/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./bindings/node/index.d.ts",
+      "default": "./bindings/node/index.js"
+    },
+    "./tree-sitter-thalo.wasm": "./tree-sitter-thalo.wasm"
+  },
   "files": [
     "grammar.js",
     "binding.gyp",
     "prebuilds/**",
     "bindings/node/*",
     "queries/*",
-    "src/**"
+    "src/**",
+    "tree-sitter-thalo.wasm"
   ],
   "scripts": {
     "build": "tree-sitter generate && node scripts/check-rebuild.mjs --fix",
+    "build:wasm": "tree-sitter build --wasm --output tree-sitter-thalo.wasm",
     "build:native": "pnpm exec node-gyp rebuild",
     "check:native": "node scripts/check-rebuild.mjs",
     "test": "tree-sitter test",

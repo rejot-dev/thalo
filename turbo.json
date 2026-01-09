@@ -5,6 +5,9 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "build:wasm": {
+      "outputs": ["tree-sitter-thalo.wasm"]
+    },
     "types:check": {
       "dependsOn": ["^build"]
     },

@@ -164,12 +164,66 @@ if (match) {
 | Export                      | Description                                                |
 | --------------------------- | ---------------------------------------------------------- |
 | `@rejot-dev/thalo`          | Main entry (parser, workspace, checker, services, types)   |
+| `@rejot-dev/thalo/native`   | Native parser factory (`createParser`)                     |
+| `@rejot-dev/thalo/web`      | WASM parser factory (`createParser`) for browsers          |
 | `@rejot-dev/thalo/ast`      | AST types, builder, visitor, extraction                    |
 | `@rejot-dev/thalo/model`    | Workspace, Document, LineIndex, model types                |
 | `@rejot-dev/thalo/semantic` | SemanticModel, analyzer, link index types                  |
 | `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types                         |
 | `@rejot-dev/thalo/checker`  | Validation rules, visitor pattern, check functions         |
 | `@rejot-dev/thalo/services` | Definition, references, hover, query execution, entity nav |
+
+## Parser API
+
+Both `/native` and `/web` exports provide a `createParser()` function that returns a `ThaloParser`
+instance with a consistent API:
+
+```typescript
+// Native (Node.js) - synchronous
+import { createParser } from "@rejot-dev/thalo/native";
+const parser = createParser();
+
+// Web (WASM) - asynchronous, requires WASM binaries
+import { createParser } from "@rejot-dev/thalo/web";
+
+const [treeSitterWasm, languageWasm] = await Promise.all([
+  fetch("/wasm/web-tree-sitter.wasm").then((r) => r.arrayBuffer()),
+  fetch("/wasm/tree-sitter-thalo.wasm").then((r) => r.arrayBuffer()),
+]);
+
+const parser = await createParser({
+  treeSitterWasm: new Uint8Array(treeSitterWasm),
+  languageWasm: new Uint8Array(languageWasm),
+});
+
+// Both return the same ThaloParser interface
+const tree = parser.parse(source);
+const doc = parser.parseDocument(source, { fileType: "thalo" });
+const tree2 = parser.parseIncremental(newSource, tree);
+```
+
+### Vite Usage
+
+For Vite projects, you can import the WASM files directly using Vite's `?url` suffix:
+
+```typescript
+import { createParser } from "@rejot-dev/thalo/web";
+import treeSitterWasmUrl from "web-tree-sitter/web-tree-sitter.wasm?url";
+import languageWasmUrl from "@rejot-dev/tree-sitter-thalo/tree-sitter-thalo.wasm?url";
+
+const [treeSitterWasm, languageWasm] = await Promise.all([
+  fetch(treeSitterWasmUrl).then((r) => r.arrayBuffer()),
+  fetch(languageWasmUrl).then((r) => r.arrayBuffer()),
+]);
+
+const parser = await createParser({
+  treeSitterWasm: new Uint8Array(treeSitterWasm),
+  languageWasm: new Uint8Array(languageWasm),
+});
+```
+
+The main entry (`@rejot-dev/thalo`) provides convenience functions that use a singleton native
+parser internally for backwards compatibility.
 
 ## Validation Rules
 
@@ -228,7 +282,10 @@ from checker rules.
 
 ```
 src/
-├── parser.ts          # Parse thalo source, extract from markdown
+├── parser.ts          # Default parser using native singleton (backwards compat)
+├── parser.native.ts   # Native parser factory (createParser)
+├── parser.web.ts      # WASM parser factory (createParser)
+├── parser.shared.ts   # Shared parser logic (ThaloParser interface, createThaloParser)
 ├── fragment.ts        # Parse individual expressions (query, value, type)
 ├── source-map.ts      # Position mapping for embedded blocks
 ├── constants.ts       # Language constants (directives, types)
