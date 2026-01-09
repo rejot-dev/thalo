@@ -64,14 +64,14 @@ function convertDiagnostic(diagnostic: ThaloDiagnostic): LspDiagnostic {
  */
 export function getDiagnostics(workspace: Workspace, textDocument: TextDocument): LspDiagnostic[] {
   const path = uriToPath(textDocument.uri);
-  const document = workspace.getDocument(path);
+  const model = workspace.getModel(path);
 
-  if (!document) {
+  if (!model) {
     return [];
   }
 
   try {
-    const thaloDiagnostics = checkDocument(document, workspace);
+    const thaloDiagnostics = checkDocument(path, workspace);
     return thaloDiagnostics.map(convertDiagnostic);
   } catch (error) {
     // Return a diagnostic for parse errors

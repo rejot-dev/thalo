@@ -45,10 +45,7 @@ describe("handleReferences", () => {
 
   describe("finding references", () => {
     it("should find all references to a link including definition", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // source1 header: '2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript'
       // ^ts-lore starts around character 60
@@ -69,10 +66,7 @@ describe("handleReferences", () => {
     });
 
     it("should find references without definition when requested", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position cursor on ^ts-lore (character 63 is inside the link)
       const position: Position = { line: 0, character: 63 };
@@ -91,10 +85,7 @@ describe("handleReferences", () => {
     });
 
     it("should find references from a reference location", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file2.thalo")!.source,
-        "file:///file2.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file2.thalo")!.source, "file:///file2.thalo");
 
       // Position cursor on ^ts-lore in the "related:" field (line 2: "  related: ^ts-lore")
       const position: Position = { line: 2, character: 14 };
@@ -110,10 +101,7 @@ describe("handleReferences", () => {
 
   describe("tag references", () => {
     it("should find all entries with a tag", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position cursor on #typescript tag
       // '2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript'
@@ -152,10 +140,7 @@ describe("handleReferences", () => {
     });
 
     it("should find entity references from instance entry", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position cursor on "lore" entity name in create line
       // "2026-01-05T18:00Z create lore" - lore starts at character 26
@@ -172,10 +157,7 @@ describe("handleReferences", () => {
 
   describe("metadata key references", () => {
     it("should find all entries using a metadata key", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position cursor on "type" metadata key
       // "  type: "fact"" - type starts at character 2
@@ -221,7 +203,7 @@ describe("handleReferences", () => {
 
     it("should find all references to a synthesis entry", () => {
       const doc = createDocument(
-        synthesisWorkspace.getDocument("/synthesis.thalo")!.source,
+        synthesisWorkspace.getModel("/synthesis.thalo")!.source,
         "file:///synthesis.thalo",
       );
 
@@ -240,7 +222,7 @@ describe("handleReferences", () => {
 
     it("should find synthesis definition from actualize-synthesis target", () => {
       const doc = createDocument(
-        synthesisWorkspace.getDocument("/actualize.thalo")!.source,
+        synthesisWorkspace.getModel("/actualize.thalo")!.source,
         "file:///actualize.thalo",
       );
 
@@ -261,7 +243,7 @@ describe("handleReferences", () => {
 
     it("should find synthesis references without definition when requested", () => {
       const doc = createDocument(
-        synthesisWorkspace.getDocument("/synthesis.thalo")!.source,
+        synthesisWorkspace.getModel("/synthesis.thalo")!.source,
         "file:///synthesis.thalo",
       );
 
@@ -285,10 +267,7 @@ describe("handleReferences", () => {
 
   describe("edge cases", () => {
     it("should return null when cursor is not on a navigable element", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position cursor in whitespace at start of line (not on any element)
       const position: Position = { line: 1, character: 0 };
@@ -363,10 +342,7 @@ describe("handleReferences", () => {
 
   describe("URI handling", () => {
     it("should return proper file:// URIs", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position inside ^ts-lore link
       const position: Position = { line: 0, character: 63 };
@@ -381,10 +357,7 @@ describe("handleReferences", () => {
     });
 
     it("should include valid range information", () => {
-      const doc = createDocument(
-        workspace.getDocument("/file1.thalo")!.source,
-        "file:///file1.thalo",
-      );
+      const doc = createDocument(workspace.getModel("/file1.thalo")!.source, "file:///file1.thalo");
 
       // Position inside ^ts-lore link
       const position: Position = { line: 0, character: 63 };

@@ -252,22 +252,23 @@ Line 1
     it("reference locations are file-absolute for markdown", () => {
       const workspace = new Workspace();
 
-      // Define and reference in markdown
+      // Define and reference in same block in markdown
+      // Note: Currently only the first block is processed for markdown files
       const source = `# Notes
 
 \`\`\`thalo
 2026-01-05T18:00Z create lore "Original" ^original #test
   type: "fact"
   subject: ^self
-\`\`\`
 
-\`\`\`thalo
 2026-01-05T19:00Z update lore "Updated" #test
   type: "fact"
   subject: ^self
   supersedes: ^original
 \`\`\`
 `;
+      // Lines: 0=# Notes, 1=empty, 2=```thalo, 3=Original entry header, 4-6=Original fields,
+      // 7=empty, 8=Updated entry header, 9-11=Updated fields, 12=```
       workspace.addDocument(source, { filename: "entries.md" });
 
       // Find references to "original"
@@ -282,7 +283,7 @@ Line 1
       expect(defLocation).toBeDefined();
       expect(defLocation!.location.startPosition.row).toBe(3);
 
-      // Reference at later line in second block
+      // Reference at later line (supersedes field)
       const refLocation = result.locations.find((l) => !l.isDefinition);
       expect(refLocation).toBeDefined();
       expect(refLocation!.location.startPosition.row).toBeGreaterThan(

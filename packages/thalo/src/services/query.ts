@@ -1,5 +1,6 @@
 import type { Workspace } from "../model/workspace.js";
-import type { ModelInstanceEntry, Query, QueryCondition } from "../model/types.js";
+import type { InstanceEntry, Timestamp } from "../ast/types.js";
+import type { Query, QueryCondition } from "../model/types.js";
 
 /**
  * Options for executing queries
@@ -13,26 +14,66 @@ export interface QueryOptions {
 }
 
 /**
+ * Result entry with file context for sorting and deduplication
+ */
+interface QueryResultEntry {
+  entry: InstanceEntry;
+  file: string;
+  timestampStr: string;
+}
+
+/**
+ * Format a timestamp for comparison
+ */
+function formatTimestamp(ts: Timestamp): string {
+  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
+  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
+  return `${date}T${time}`;
+}
+
+/**
+ * Get metadata value as string for a given key.
+ * Returns the raw value (with quotes for quoted strings) to match query syntax.
+ */
+function getMetadataValue(entry: InstanceEntry, key: string): string | undefined {
+  const meta = entry.metadata.find((m) => m.key.value === key);
+  if (!meta) {
+    return undefined;
+  }
+
+  // Return the raw value to match query syntax (which includes quotes)
+  return meta.value.raw;
+}
+
+/**
  * Check if a single entry matches a query condition.
  */
-function matchCondition(entry: ModelInstanceEntry, condition: QueryCondition): boolean {
+function matchCondition(entry: InstanceEntry, condition: QueryCondition): boolean {
   switch (condition.kind) {
     case "field": {
-      const value = entry.metadata.get(condition.field)?.raw;
+      const value = getMetadataValue(entry, condition.field);
       return value === condition.value;
     }
     case "tag": {
-      return entry.tags.includes(condition.tag);
+      return entry.header.tags.some((t) => t.name === condition.tag);
     }
     case "link": {
       // Check if entry has this link in header
-      if (entry.linkId === condition.link) {
+      if (entry.header.link?.id === condition.link) {
         return true;
       }
       // Also check metadata values for links
-      for (const meta of entry.metadata.values()) {
-        if (meta.linkId === condition.link) {
+      for (const meta of entry.metadata) {
+        const content = meta.value.content;
+        if (content.type === "link_value" && content.link.id === condition.link) {
           return true;
+        }
+        if (content.type === "value_array") {
+          for (const elem of content.elements) {
+            if (elem.type === "link" && elem.id === condition.link) {
+              return true;
+            }
+          }
         }
       }
       return false;
@@ -48,9 +89,9 @@ function matchCondition(entry: ModelInstanceEntry, condition: QueryCondition): b
  * @param query - The query to match against
  * @returns true if the entry matches all conditions
  */
-export function entryMatchesQuery(entry: ModelInstanceEntry, query: Query): boolean {
+export function entryMatchesQuery(entry: InstanceEntry, query: Query): boolean {
   // Check entity type
-  if (entry.entity !== query.entity) {
+  if (entry.header.entity !== query.entity) {
     return false;
   }
 
@@ -70,7 +111,7 @@ export function executeQuery(
   workspace: Workspace,
   query: Query,
   options: QueryOptions = {},
-): ModelInstanceEntry[] {
+): InstanceEntry[] {
   return executeQueries(workspace, [query], options);
 }
 
@@ -87,28 +128,34 @@ export function executeQueries(
   workspace: Workspace,
   queries: Query[],
   options: QueryOptions = {},
-): ModelInstanceEntry[] {
+): InstanceEntry[] {
   const { afterTimestamp } = options;
-  const results: ModelInstanceEntry[] = [];
+  const results: QueryResultEntry[] = [];
   const seen = new Set<string>(); // Track by file:timestamp to avoid duplicates
 
-  for (const doc of workspace.allDocuments()) {
-    for (const entry of doc.instanceEntries) {
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (entry.type !== "instance_entry") {
+        continue;
+      }
+
+      const timestampStr = formatTimestamp(entry.header.timestamp);
+      const key = `${model.file}:${timestampStr}`;
+
       // Skip if we've already seen this entry
-      const key = `${entry.file}:${entry.timestamp}`;
       if (seen.has(key)) {
         continue;
       }
 
       // Skip if entry is before the cutoff
-      if (afterTimestamp && entry.timestamp <= afterTimestamp) {
+      if (afterTimestamp && timestampStr <= afterTimestamp) {
         continue;
       }
 
       // Check if entry matches any of the queries
       for (const query of queries) {
         if (entryMatchesQuery(entry, query)) {
-          results.push(entry);
+          results.push({ entry, file: model.file, timestampStr });
           seen.add(key);
           break; // Entry matched, no need to check other queries
         }
@@ -117,9 +164,9 @@ export function executeQueries(
   }
 
   // Sort by timestamp
-  results.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  results.sort((a, b) => a.timestampStr.localeCompare(b.timestampStr));
 
-  return results;
+  return results.map((r) => r.entry);
 }
 
 /**

@@ -1,16 +1,18 @@
 import type { Workspace } from "../model/workspace.js";
-import type {
-  ModelEntry,
-  ModelInstanceEntry,
-  ModelSchemaEntry,
-  ModelSynthesisEntry,
-  ModelActualizeEntry,
-} from "../model/types.js";
 import type { EntitySchema, FieldSchema, SectionSchema } from "../schema/types.js";
 import { TypeExpr } from "../schema/types.js";
-import type { Location } from "../ast/types.js";
+import type {
+  Location,
+  Entry,
+  InstanceEntry,
+  SchemaEntry,
+  SynthesisEntry,
+  ActualizeEntry,
+  Timestamp,
+} from "../ast/types.js";
 import type { NodeContext } from "../ast/node-at-position.js";
 import { toFileLocation } from "../source-map.js";
+import { isSyntaxError } from "../ast/types.js";
 
 // ===================
 // Types
@@ -27,45 +29,78 @@ export interface HoverResult {
 }
 
 // ===================
+// Timestamp Formatting
+// ===================
+
+function formatTimestamp(ts: Timestamp): string {
+  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
+  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
+  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
+  return `${date}T${time}${tz}`;
+}
+
+// ===================
 // Entry Formatting
 // ===================
 
 /**
+ * Get tags from an entry
+ */
+function getEntryTags(entry: Entry): string[] {
+  switch (entry.type) {
+    case "instance_entry":
+      return entry.header.tags.map((t) => t.name);
+    case "schema_entry":
+      return entry.header.tags.map((t) => t.name);
+    case "synthesis_entry":
+      return entry.header.tags.map((t) => t.name);
+    case "actualize_entry":
+      // Actualize entries don't have tags
+      return [];
+  }
+}
+
+/**
  * Format an entry for hover display
  */
-export function formatEntryHover(entry: ModelEntry): string {
-  if (entry.kind === "instance") {
-    return formatInstanceEntry(entry);
-  } else if (entry.kind === "synthesis") {
-    return formatSynthesisEntry(entry);
-  } else if (entry.kind === "actualize") {
-    return formatActualizeEntry(entry);
-  } else {
-    return formatSchemaEntry(entry);
+export function formatEntryHover(entry: Entry, file: string): string {
+  switch (entry.type) {
+    case "instance_entry":
+      return formatInstanceEntry(entry, file);
+    case "synthesis_entry":
+      return formatSynthesisEntry(entry, file);
+    case "actualize_entry":
+      return formatActualizeEntry(entry, file);
+    case "schema_entry":
+      return formatSchemaEntry(entry, file);
   }
 }
 
 /**
  * Format an instance entry for hover
  */
-export function formatInstanceEntry(entry: ModelInstanceEntry): string {
+export function formatInstanceEntry(entry: InstanceEntry, file: string): string {
   const lines: string[] = [];
 
+  const title = entry.header.title?.value ?? "(no title)";
+  const timestamp = formatTimestamp(entry.header.timestamp);
+
   // Header
-  lines.push(`### ${entry.title}`);
+  lines.push(`### ${title}`);
   lines.push("");
-  lines.push(`**${entry.directive}** ${entry.entity} • ${entry.timestamp}`);
+  lines.push(`**${entry.header.directive}** ${entry.header.entity} • ${timestamp}`);
 
   // Tags
-  if (entry.tags.length > 0) {
+  const tags = getEntryTags(entry);
+  if (tags.length > 0) {
     lines.push("");
-    lines.push(`Tags: ${entry.tags.map((t) => `\`#${t}\``).join(" ")}`);
+    lines.push(`Tags: ${tags.map((t) => `\`#${t}\``).join(" ")}`);
   }
 
   // Link ID
-  if (entry.linkId) {
+  if (entry.header.link) {
     lines.push("");
-    lines.push(`Link: \`^${entry.linkId}\``);
+    lines.push(`Link: \`^${entry.header.link.id}\``);
   }
 
   // Key metadata
@@ -73,9 +108,9 @@ export function formatInstanceEntry(entry: ModelInstanceEntry): string {
   const shownMetadata: string[] = [];
 
   for (const key of metadataToShow) {
-    const value = entry.metadata.get(key);
-    if (value) {
-      shownMetadata.push(`**${key}:** ${value.raw}`);
+    const meta = entry.metadata.find((m) => m.key.value === key);
+    if (meta) {
+      shownMetadata.push(`**${key}:** ${meta.value.raw}`);
     }
   }
 
@@ -86,7 +121,7 @@ export function formatInstanceEntry(entry: ModelInstanceEntry): string {
 
   // File location
   lines.push("");
-  lines.push(`*${entry.file}*`);
+  lines.push(`*${file}*`);
 
   return lines.join("\n");
 }
@@ -94,35 +129,42 @@ export function formatInstanceEntry(entry: ModelInstanceEntry): string {
 /**
  * Format a schema entry for hover
  */
-export function formatSchemaEntry(entry: ModelSchemaEntry): string {
+export function formatSchemaEntry(entry: SchemaEntry, file: string): string {
   const lines: string[] = [];
 
+  const title = entry.header.title?.value ?? "(no title)";
+  const timestamp = formatTimestamp(entry.header.timestamp);
+  const entityName = entry.header.entityName.value;
+
   // Header
-  lines.push(`### ${entry.title}`);
+  lines.push(`### ${title}`);
   lines.push("");
-  lines.push(`**${entry.directive}** \`${entry.entityName}\` • ${entry.timestamp}`);
+  lines.push(`**${entry.header.directive}** \`${entityName}\` • ${timestamp}`);
 
   // Tags
-  if (entry.tags.length > 0) {
+  const tags = getEntryTags(entry);
+  if (tags.length > 0) {
     lines.push("");
-    lines.push(`Tags: ${entry.tags.map((t) => `\`#${t}\``).join(" ")}`);
+    lines.push(`Tags: ${tags.map((t) => `\`#${t}\``).join(" ")}`);
   }
 
   // Fields summary
-  if (entry.fields.length > 0) {
+  const fields = entry.metadataBlock?.fields ?? [];
+  if (fields.length > 0) {
     lines.push("");
-    lines.push(`**Fields:** ${entry.fields.map((f) => `\`${f.name}\``).join(", ")}`);
+    lines.push(`**Fields:** ${fields.map((f) => `\`${f.name.value}\``).join(", ")}`);
   }
 
   // Sections summary
-  if (entry.sections.length > 0) {
+  const sections = entry.sectionsBlock?.sections ?? [];
+  if (sections.length > 0) {
     lines.push("");
-    lines.push(`**Sections:** ${entry.sections.map((s) => `\`${s.name}\``).join(", ")}`);
+    lines.push(`**Sections:** ${sections.map((s) => `\`${s.name.value}\``).join(", ")}`);
   }
 
   // File location
   lines.push("");
-  lines.push(`*${entry.file}*`);
+  lines.push(`*${file}*`);
 
   return lines.join("\n");
 }
@@ -130,29 +172,34 @@ export function formatSchemaEntry(entry: ModelSchemaEntry): string {
 /**
  * Format a synthesis entry for hover
  */
-export function formatSynthesisEntry(entry: ModelSynthesisEntry): string {
+export function formatSynthesisEntry(entry: SynthesisEntry, file: string): string {
   const lines: string[] = [];
 
+  const title = entry.header.title?.value ?? "(no title)";
+  const timestamp = formatTimestamp(entry.header.timestamp);
+
   // Header
-  lines.push(`### ${entry.title}`);
+  lines.push(`### ${title}`);
   lines.push("");
-  lines.push(`**define-synthesis** synthesis • ${entry.timestamp}`);
+  lines.push(`**define-synthesis** synthesis • ${timestamp}`);
 
   // Tags
-  if (entry.tags.length > 0) {
+  const tags = getEntryTags(entry);
+  if (tags.length > 0) {
     lines.push("");
-    lines.push(`Tags: ${entry.tags.map((t) => `\`#${t}\``).join(" ")}`);
+    lines.push(`Tags: ${tags.map((t) => `\`#${t}\``).join(" ")}`);
   }
 
-  // Sources
-  if (entry.sources.length > 0) {
+  // Sources - extract from metadata
+  const sourcesMeta = entry.metadata.find((m) => m.key.value === "sources");
+  if (sourcesMeta && sourcesMeta.value.content.type === "query_value") {
     lines.push("");
-    lines.push(`**Sources:** ${entry.sources.map((q) => q.entity).join(", ")}`);
+    lines.push(`**Sources:** ${sourcesMeta.value.content.query.entity}`);
   }
 
   // File location
   lines.push("");
-  lines.push(`*${entry.file}*`);
+  lines.push(`*${file}*`);
 
   return lines.join("\n");
 }
@@ -160,24 +207,26 @@ export function formatSynthesisEntry(entry: ModelSynthesisEntry): string {
 /**
  * Format an actualize entry for hover
  */
-export function formatActualizeEntry(entry: ModelActualizeEntry): string {
+export function formatActualizeEntry(entry: ActualizeEntry, file: string): string {
   const lines: string[] = [];
+
+  const timestamp = formatTimestamp(entry.header.timestamp);
 
   // Header
   lines.push(`### actualize-synthesis`);
   lines.push("");
-  lines.push(`**actualize-synthesis** ^${entry.target} • ${entry.timestamp}`);
+  lines.push(`**actualize-synthesis** ^${entry.header.target.id} • ${timestamp}`);
 
   // Updated timestamp
-  const updated = entry.metadata.get("updated");
+  const updated = entry.metadata.find((m) => m.key.value === "updated");
   if (updated) {
     lines.push("");
-    lines.push(`**Updated:** ${updated.raw}`);
+    lines.push(`**Updated:** ${updated.value.raw}`);
   }
 
   // File location
   lines.push("");
-  lines.push(`*${entry.file}*`);
+  lines.push(`*${file}*`);
 
   return lines.join("\n");
 }
@@ -514,7 +563,7 @@ export function getPrimitiveTypeDocumentation(typeName: string): string | null {
 /**
  * Format tag hover information
  */
-export function formatTagHover(tag: string, entries: ModelEntry[]): string {
+export function formatTagHover(tag: string, entries: { entry: Entry; file: string }[]): string {
   const lines: string[] = [];
 
   lines.push(`### Tag: \`#${tag}\``);
@@ -524,14 +573,29 @@ export function formatTagHover(tag: string, entries: ModelEntry[]): string {
 
   // Show first few entries
   const toShow = entries.slice(0, 5);
-  for (const entry of toShow) {
-    const title =
-      entry.kind === "instance" || entry.kind === "synthesis"
-        ? entry.title
-        : entry.kind === "actualize"
-          ? `actualize-synthesis ^${entry.target}`
-          : entry.title;
-    lines.push(`- ${title} *(${entry.timestamp})*`);
+  for (const { entry } of toShow) {
+    let title: string;
+    let timestamp: string;
+
+    switch (entry.type) {
+      case "instance_entry":
+        title = entry.header.title?.value ?? "(no title)";
+        timestamp = formatTimestamp(entry.header.timestamp);
+        break;
+      case "synthesis_entry":
+        title = entry.header.title?.value ?? "(no title)";
+        timestamp = formatTimestamp(entry.header.timestamp);
+        break;
+      case "actualize_entry":
+        title = `actualize-synthesis ^${entry.header.target.id}`;
+        timestamp = formatTimestamp(entry.header.timestamp);
+        break;
+      case "schema_entry":
+        title = entry.header.title?.value ?? "(no title)";
+        timestamp = formatTimestamp(entry.header.timestamp);
+        break;
+    }
+    lines.push(`- ${title} *(${timestamp})*`);
   }
 
   if (entries.length > 5) {
@@ -548,7 +612,11 @@ export function formatTagHover(tag: string, entries: ModelEntry[]): string {
 /**
  * Format timestamp hover
  */
-export function formatTimestampHover(timestamp: string, entry: ModelEntry | undefined): string {
+export function formatTimestampHover(
+  timestamp: string,
+  entry: Entry | undefined,
+  _file?: string,
+): string {
   const lines: string[] = [];
 
   lines.push(`### Timestamp: \`${timestamp}\``);
@@ -557,23 +625,31 @@ export function formatTimestampHover(timestamp: string, entry: ModelEntry | unde
   if (entry) {
     lines.push("This timestamp identifies an entry:");
     lines.push("");
-    const title =
-      entry.kind === "instance" || entry.kind === "synthesis"
-        ? entry.title
-        : entry.kind === "actualize"
-          ? `actualize-synthesis ^${entry.target}`
-          : entry.title;
+    let title: string;
+    let directiveInfo: string;
+
+    switch (entry.type) {
+      case "instance_entry":
+        title = entry.header.title?.value ?? "(no title)";
+        directiveInfo = `\`${entry.header.directive}\` ${entry.header.entity}`;
+        break;
+      case "synthesis_entry":
+        title = entry.header.title?.value ?? "(no title)";
+        directiveInfo = "`define-synthesis` synthesis";
+        break;
+      case "actualize_entry":
+        title = `actualize-synthesis ^${entry.header.target.id}`;
+        directiveInfo = `\`actualize-synthesis\` ^${entry.header.target.id}`;
+        break;
+      case "schema_entry":
+        title = entry.header.title?.value ?? "(no title)";
+        directiveInfo = `\`${entry.header.directive}\` ${entry.header.entityName.value}`;
+        break;
+    }
+
     lines.push(`**${title}**`);
     lines.push("");
-    if (entry.kind === "instance") {
-      lines.push(`\`${entry.directive}\` ${entry.entity}`);
-    } else if (entry.kind === "synthesis") {
-      lines.push("`define-synthesis` synthesis");
-    } else if (entry.kind === "actualize") {
-      lines.push(`\`actualize-synthesis\` ^${entry.target}`);
-    } else {
-      lines.push(`\`${entry.directive}\` ${entry.entityName}`);
-    }
+    lines.push(directiveInfo);
     lines.push("");
     lines.push(`Reference with: \`^${timestamp}\``);
   } else {
@@ -606,7 +682,7 @@ export function getHoverInfo(workspace: Workspace, context: NodeContext): HoverR
       const definition = workspace.getLinkDefinition(context.linkId);
       if (definition) {
         return {
-          content: formatEntryHover(definition.entry),
+          content: formatEntryHover(definition.entry, definition.file),
           range: toFileLocation(context.sourceMap, context.node.location),
         };
       }
@@ -618,7 +694,14 @@ export function getHoverInfo(workspace: Workspace, context: NodeContext): HoverR
 
     // Tag (#tag)
     case "tag": {
-      const entries = workspace.allEntries().filter((e) => e.tags.includes(context.tagName));
+      const entries: { entry: Entry; file: string }[] = [];
+      for (const model of workspace.allModels()) {
+        for (const entry of model.ast.entries) {
+          if (getEntryTags(entry).includes(context.tagName)) {
+            entries.push({ entry, file: model.file });
+          }
+        }
+      }
       if (entries.length > 0) {
         return {
           content: formatTagHover(context.tagName, entries),
@@ -693,9 +776,38 @@ export function getHoverInfo(workspace: Workspace, context: NodeContext): HoverR
 
     // Timestamp
     case "timestamp": {
-      const entry = workspace.findEntry(context.value);
+      // Find entry by timestamp
+      let foundEntry: Entry | undefined;
+      let foundFile: string | undefined;
+      for (const model of workspace.allModels()) {
+        for (const entry of model.ast.entries) {
+          let ts: Timestamp;
+          switch (entry.type) {
+            case "instance_entry":
+              ts = entry.header.timestamp;
+              break;
+            case "schema_entry":
+              ts = entry.header.timestamp;
+              break;
+            case "synthesis_entry":
+              ts = entry.header.timestamp;
+              break;
+            case "actualize_entry":
+              ts = entry.header.timestamp;
+              break;
+          }
+          if (formatTimestamp(ts) === context.value || ts.value === context.value) {
+            foundEntry = entry;
+            foundFile = model.file;
+            break;
+          }
+        }
+        if (foundEntry) {
+          break;
+        }
+      }
       return {
-        content: formatTimestampHover(context.value, entry),
+        content: formatTimestampHover(context.value, foundEntry, foundFile),
         range: toFileLocation(context.sourceMap, context.node.location),
       };
     }

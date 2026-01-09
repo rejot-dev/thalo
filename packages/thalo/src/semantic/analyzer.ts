@@ -1,5 +1,6 @@
 import type { SourceFile, Entry, SchemaEntry, Metadata } from "../ast/types.js";
 import type { SourceMap } from "../source-map.js";
+import type { ParsedBlock } from "../parser.js";
 import type { SemanticModel, LinkIndex, LinkDefinition, LinkReference } from "./types.js";
 
 /**
@@ -12,6 +13,8 @@ export interface AnalyzeOptions {
   source: string;
   /** Source map for position translation */
   sourceMap: SourceMap;
+  /** The parsed blocks (containing tree-sitter trees) */
+  blocks: ParsedBlock[];
 }
 
 /**
@@ -23,13 +26,14 @@ export interface AnalyzeOptions {
  * - Schema entries for later resolution by SchemaRegistry
  */
 export function analyze(ast: SourceFile, options: AnalyzeOptions): SemanticModel {
-  const { file, source, sourceMap } = options;
+  const { file, source, sourceMap, blocks } = options;
 
   return {
     ast,
     file,
     source,
     sourceMap,
+    blocks,
     linkIndex: buildLinkIndex(ast, file),
     schemaEntries: collectSchemaEntries(ast),
   };
@@ -159,8 +163,3 @@ function addReference(references: Map<string, LinkReference[]>, ref: LinkReferen
 function collectSchemaEntries(ast: SourceFile): SchemaEntry[] {
   return ast.entries.filter((e): e is SchemaEntry => e.type === "schema_entry");
 }
-
-/**
- * Alias for analyze() for backward compatibility.
- */
-export const analyzeDocument = analyze;

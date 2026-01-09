@@ -1,6 +1,18 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { Timestamp } from "../../ast/types.js";
+import { isSyntaxError } from "../../ast/types.js";
 
 const category: RuleCategory = "metadata";
+
+/**
+ * Format a timestamp for display
+ */
+function formatTimestamp(ts: Timestamp): string {
+  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
+  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
+  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
+  return `${date}T${time}${tz}`;
+}
 
 /**
  * Check that actualize-synthesis entries have an updated field
@@ -15,17 +27,23 @@ export const actualizeMissingUpdatedRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const doc of workspace.allDocuments()) {
-      for (const actualize of doc.actualizeEntries) {
-        const updatedField = actualize.metadata.get("updated");
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "actualize_entry") {
+          continue;
+        }
+
+        const target = entry.header.target.id;
+        const timestamp = formatTimestamp(entry.header.timestamp);
+        const updatedField = entry.metadata.find((m) => m.key.value === "updated");
 
         if (!updatedField) {
           ctx.report({
-            message: `Actualize entry is missing 'updated:' field. Add 'updated: ${actualize.timestamp}' to track when this synthesis was last run.`,
-            file: actualize.file,
-            location: actualize.location,
-            sourceMap: actualize.sourceMap,
-            data: { target: actualize.target, suggestedTimestamp: actualize.timestamp },
+            message: `Actualize entry is missing 'updated:' field. Add 'updated: ${timestamp}' to track when this synthesis was last run.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { target, suggestedTimestamp: timestamp },
           });
         }
       }

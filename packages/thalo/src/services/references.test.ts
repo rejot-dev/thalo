@@ -31,7 +31,7 @@ describe("findReferences", () => {
     expect(result.definition).toBeDefined();
     expect(result.references).toHaveLength(1);
     expect(result.references[0].file).toBe("file2.thalo");
-    expect(result.references[0].metadataKey).toBe("related");
+    expect(result.references[0].context).toBe("related");
     expect(result.locations).toHaveLength(2); // definition + 1 reference
   });
 

@@ -15,25 +15,30 @@ export const actualizeUnresolvedTargetRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const doc of workspace.allDocuments()) {
-      for (const actualize of doc.actualizeEntries) {
-        const targetDef = workspace.getLinkDefinition(actualize.target);
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "actualize_entry") {
+          continue;
+        }
+
+        const targetId = entry.header.target.id;
+        const targetDef = workspace.getLinkDefinition(targetId);
 
         if (!targetDef) {
           ctx.report({
-            message: `Actualize references undefined synthesis '^${actualize.target}'. Define a synthesis with this link ID first.`,
-            file: actualize.file,
-            location: actualize.location,
-            sourceMap: actualize.sourceMap,
-            data: { target: actualize.target },
+            message: `Actualize references undefined synthesis '^${targetId}'. Define a synthesis with this link ID first.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { target: targetId },
           });
-        } else if (targetDef.entry.kind !== "synthesis") {
+        } else if (targetDef.entry.type !== "synthesis_entry") {
           ctx.report({
-            message: `Actualize target '^${actualize.target}' is not a synthesis definition (found '${targetDef.entry.kind}' entry).`,
-            file: actualize.file,
-            location: actualize.location,
-            sourceMap: actualize.sourceMap,
-            data: { target: actualize.target, actualKind: targetDef.entry.kind },
+            message: `Actualize target '^${targetId}' is not a synthesis definition (found '${targetDef.entry.type}' entry).`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { target: targetId, actualKind: targetDef.entry.type },
           });
         }
       }

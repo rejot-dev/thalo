@@ -115,7 +115,7 @@ function loadWorkspaceFiles(state: ServerState): void {
 
     for (const file of files) {
       // Skip if already loaded (e.g., from an open document)
-      if (state.workspace.getDocument(file)) {
+      if (state.workspace.getModel(file)) {
         continue;
       }
 

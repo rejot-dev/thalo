@@ -15,19 +15,26 @@ export const defineEntityRequiresSectionRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allSchemaEntries()) {
-      if (entry.directive !== "define-entity") {
-        continue;
-      }
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+        if (entry.header.directive !== "define-entity") {
+          continue;
+        }
 
-      if (entry.sections.length === 0) {
-        ctx.report({
-          message: `Entity definition '${entry.entityName}' must have at least one section.`,
-          file: entry.file,
-          location: entry.location,
-          sourceMap: entry.sourceMap,
-          data: { entityName: entry.entityName },
-        });
+        const sectionCount = entry.sectionsBlock?.sections.length ?? 0;
+        if (sectionCount === 0) {
+          const entityName = entry.header.entityName.value;
+          ctx.report({
+            message: `Entity definition '${entityName}' must have at least one section.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { entityName },
+          });
+        }
       }
     }
   },

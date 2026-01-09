@@ -1,6 +1,6 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Location } from "../ast/types.js";
-import type { LinkReference, LinkDefinition } from "../model/types.js";
+import type { LinkReference, LinkDefinition } from "../semantic/types.js";
 import { toFileLocation, positionFromOffset } from "../source-map.js";
 import { findNodeAtPosition } from "../ast/node-at-position.js";
 
@@ -50,24 +50,30 @@ export function findReferences(
 
   // Add definition first if requested
   if (includeDefinition && definition) {
-    // Convert block-relative to file-absolute location
-    const fileLocation = toFileLocation(definition.entry.sourceMap, definition.location);
-    locations.push({
-      file: definition.file,
-      location: fileLocation,
-      isDefinition: true,
-    });
+    // Get source map from model
+    const model = workspace.getModel(definition.file);
+    if (model) {
+      const fileLocation = toFileLocation(model.sourceMap, definition.location);
+      locations.push({
+        file: definition.file,
+        location: fileLocation,
+        isDefinition: true,
+      });
+    }
   }
 
   // Add all references
   for (const ref of references) {
-    // Convert block-relative to file-absolute location
-    const fileLocation = toFileLocation(ref.entry.sourceMap, ref.location);
-    locations.push({
-      file: ref.file,
-      location: fileLocation,
-      isDefinition: false,
-    });
+    // Get source map from model
+    const model = workspace.getModel(ref.file);
+    if (model) {
+      const fileLocation = toFileLocation(model.sourceMap, ref.location);
+      locations.push({
+        file: ref.file,
+        location: fileLocation,
+        isDefinition: false,
+      });
+    }
   }
 
   return {
@@ -93,16 +99,16 @@ export function findReferencesAtPosition(
   offset: number,
   includeDefinition = true,
 ): ReferencesResult | undefined {
-  const doc = workspace.getDocument(file);
-  if (!doc) {
+  const model = workspace.getModel(file);
+  if (!model) {
     return undefined;
   }
 
   // Convert offset to position
-  const position = positionFromOffset(doc.source, offset);
+  const position = positionFromOffset(model.source, offset);
 
   // Use AST-based node detection
-  const context = findNodeAtPosition({ blocks: doc.blocks }, position);
+  const context = findNodeAtPosition({ blocks: model.blocks }, position);
 
   // Only handle link contexts
   if (context.kind !== "link") {

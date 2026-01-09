@@ -1,6 +1,17 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { InstanceEntry, MarkdownHeader } from "../../ast/types.js";
 
 const category: RuleCategory = "content";
+
+/**
+ * Extract markdown headers from entry content
+ */
+function getMarkdownHeaders(entry: InstanceEntry): MarkdownHeader[] {
+  if (!entry.content) {
+    return [];
+  }
+  return entry.content.children.filter((c): c is MarkdownHeader => c.type === "markdown_header");
+}
 
 /**
  * Check for duplicate section headings within a single entry's content
@@ -15,23 +26,32 @@ export const duplicateSectionHeadingRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      const seenSections = new Map<string, number>();
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
+        }
 
-      for (let i = 0; i < entry.sections.length; i++) {
-        const sectionName = entry.sections[i];
-        const existingIndex = seenSections.get(sectionName);
+        const headers = getMarkdownHeaders(entry);
+        const seenSections = new Map<string, MarkdownHeader>();
 
-        if (existingIndex !== undefined) {
-          ctx.report({
-            message: `Duplicate section heading '# ${sectionName}' in entry content.`,
-            file: entry.file,
-            location: entry.location, // Ideally we'd have the section's location
-            sourceMap: entry.sourceMap,
-            data: { sectionName },
-          });
-        } else {
-          seenSections.set(sectionName, i);
+        for (const header of headers) {
+          // Extract section name from "# SectionName" format
+          const match = header.text.match(/^#+\s*(.+)$/);
+          const sectionName = match ? match[1].trim() : header.text;
+          const existing = seenSections.get(sectionName);
+
+          if (existing) {
+            ctx.report({
+              message: `Duplicate section heading '# ${sectionName}' in entry content.`,
+              file: model.file,
+              location: header.location,
+              sourceMap: model.sourceMap,
+              data: { sectionName },
+            });
+          } else {
+            seenSections.set(sectionName, header);
+          }
         }
       }
     }

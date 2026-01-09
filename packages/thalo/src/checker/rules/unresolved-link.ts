@@ -23,11 +23,14 @@ export const unresolvedLinkRule: Rule = {
       if (!definition) {
         // No definition found - report for each reference
         for (const ref of refs) {
+          // Get source map from the model
+          const model = workspace.getModel(ref.file);
+
           ctx.report({
             message: `Unresolved link '^${linkId}'. No entry defines this link ID.`,
             file: ref.file,
             location: ref.location,
-            sourceMap: ref.entry.sourceMap,
+            sourceMap: model?.sourceMap,
             data: { linkId },
           });
         }

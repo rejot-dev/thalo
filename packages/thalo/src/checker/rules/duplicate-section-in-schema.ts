@@ -15,22 +15,31 @@ export const duplicateSectionInSchemaRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const entry of workspace.allSchemaEntries()) {
-      const seenSections = new Map<string, number>();
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
 
-      for (const section of entry.sections) {
-        const sectionLine = section.location?.startPosition.row ?? 0;
-        const existingLine = seenSections.get(section.name);
-        if (existingLine !== undefined) {
-          ctx.report({
-            message: `Duplicate section '${section.name}' in schema entry. First defined at line ${existingLine}.`,
-            file: entry.file,
-            location: section.location ?? entry.location,
-            sourceMap: entry.sourceMap,
-            data: { sectionName: section.name, firstLine: existingLine },
-          });
-        } else {
-          seenSections.set(section.name, sectionLine + 1);
+        const sections = entry.sectionsBlock?.sections ?? [];
+        const seenSections = new Map<string, number>();
+
+        for (const section of sections) {
+          const sectionName = section.name.value;
+          const sectionLine = section.location?.startPosition.row ?? 0;
+          const existingLine = seenSections.get(sectionName);
+
+          if (existingLine !== undefined) {
+            ctx.report({
+              message: `Duplicate section '${sectionName}' in schema entry. First defined at line ${existingLine}.`,
+              file: model.file,
+              location: section.location,
+              sourceMap: model.sourceMap,
+              data: { sectionName, firstLine: existingLine },
+            });
+          } else {
+            seenSections.set(sectionName, sectionLine + 1);
+          }
         }
       }
     }

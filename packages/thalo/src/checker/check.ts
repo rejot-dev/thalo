@@ -1,5 +1,5 @@
 import type { Workspace } from "../model/workspace.js";
-import type { Document } from "../model/document.js";
+import type { SemanticModel } from "../semantic/types.js";
 import type {
   Diagnostic,
   CheckConfig,
@@ -32,10 +32,10 @@ export function check(workspace: Workspace, config: CheckConfig = {}): Diagnosti
 }
 
 /**
- * Check a single document for issues
+ * Check a single model for issues
  */
-export function checkDocument(
-  document: Document,
+export function checkModel(
+  model: SemanticModel,
   workspace: Workspace,
   config: CheckConfig = {},
 ): Diagnostic[] {
@@ -47,12 +47,27 @@ export function checkDocument(
       continue;
     }
 
-    const ctx = createDocumentContext(workspace, document, rule, severity, diagnostics);
+    const ctx = createModelContext(workspace, model, rule, severity, diagnostics);
     rule.check(ctx);
   }
 
-  // Filter to only diagnostics from this document
-  return diagnostics.filter((d) => d.file === document.file);
+  // Filter to only diagnostics from this model's file
+  return diagnostics.filter((d) => d.file === model.file);
+}
+
+/**
+ * Check a single document for issues (alias for checkModel that gets model from workspace)
+ */
+export function checkDocument(
+  file: string,
+  workspace: Workspace,
+  config: CheckConfig = {},
+): Diagnostic[] {
+  const model = workspace.getModel(file);
+  if (!model) {
+    return [];
+  }
+  return checkModel(model, workspace, config);
 }
 
 /**
@@ -97,18 +112,18 @@ function createContext(
 }
 
 /**
- * Create a check context for document-scoped checking
+ * Create a check context for model-scoped checking
  */
-function createDocumentContext(
+function createModelContext(
   workspace: Workspace,
-  document: Document,
+  model: SemanticModel,
   rule: Rule,
   severity: Exclude<Severity, "off">,
   diagnostics: Diagnostic[],
 ): CheckContext {
   return {
     workspace,
-    document,
+    model,
     report(partial) {
       diagnostics.push(createDiagnostic(partial, rule.code, severity));
     },

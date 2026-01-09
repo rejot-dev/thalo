@@ -1,4 +1,5 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { ModelTypeExpression } from "../../model/types.js";
 
 const category: RuleCategory = "metadata";
 
@@ -19,44 +20,53 @@ export const invalidDateRangeValueRule: Rule = {
     // Date range format: DATE ~ DATE where DATE is YYYY, YYYY-MM, or YYYY-MM-DD
     const dateRangePattern = /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      const schema = registry.get(entry.entity);
-      if (!schema) {
-        continue; // Will be caught by unknown-entity rule
-      }
-
-      for (const [fieldName, value] of entry.metadata) {
-        const fieldSchema = schema.fields.get(fieldName);
-        if (!fieldSchema) {
-          continue; // Will be caught by unknown-field rule
-        }
-
-        // Check if this field expects a date-range type
-        if (!isDateRangeType(fieldSchema.type)) {
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
           continue;
         }
 
-        // Validate the date-range format
-        // For date_range content type, it's already validated by the parser
-        if (value.content.type === "date_range") {
-          // The grammar already validated the format, nothing more to check
+        const entity = entry.header.entity;
+        const schema = registry.get(entity);
+        if (!schema) {
           continue;
-        }
+        } // Will be caught by unknown-entity rule
 
-        // For quoted values, extract and validate
-        let rangeValue = value.raw.trim();
-        if (value.content.type === "quoted_value") {
-          rangeValue = value.content.value;
-        }
+        for (const meta of entry.metadata) {
+          const fieldName = meta.key.value;
+          const fieldSchema = schema.fields.get(fieldName);
+          if (!fieldSchema) {
+            continue;
+          } // Will be caught by unknown-field rule
 
-        if (rangeValue && !dateRangePattern.test(rangeValue)) {
-          ctx.report({
-            message: `Invalid date range format '${rangeValue}' for field '${fieldName}'. Expected 'DATE ~ DATE' where DATE is YYYY, YYYY-MM, or YYYY-MM-DD.`,
-            file: entry.file,
-            location: value.location,
-            sourceMap: entry.sourceMap,
-            data: { fieldName, value: rangeValue },
-          });
+          // Check if this field expects a date-range type
+          if (!isDateRangeType(fieldSchema.type)) {
+            continue;
+          }
+
+          // Validate the date-range format
+          const content = meta.value.content;
+
+          // For date_range content type, it's already validated by the parser
+          if (content.type === "date_range") {
+            continue;
+          }
+
+          // For quoted values, extract and validate
+          let rangeValue = meta.value.raw.trim();
+          if (content.type === "quoted_value") {
+            rangeValue = content.value;
+          }
+
+          if (rangeValue && !dateRangePattern.test(rangeValue)) {
+            ctx.report({
+              message: `Invalid date range format '${rangeValue}' for field '${fieldName}'. Expected 'DATE ~ DATE' where DATE is YYYY, YYYY-MM, or YYYY-MM-DD.`,
+              file: model.file,
+              location: meta.value.location,
+              sourceMap: model.sourceMap,
+              data: { fieldName, value: rangeValue },
+            });
+          }
         }
       }
     }
@@ -66,15 +76,11 @@ export const invalidDateRangeValueRule: Rule = {
 /**
  * Check if a type expression is or contains a date-range type
  */
-function isDateRangeType(type: {
-  kind: string;
-  name?: string;
-  members?: Array<{ kind: string; name?: string }>;
-}): boolean {
+function isDateRangeType(type: ModelTypeExpression): boolean {
   if (type.kind === "primitive" && type.name === "date-range") {
     return true;
   }
-  if (type.kind === "union" && type.members) {
+  if (type.kind === "union") {
     return type.members.some((m) => m.kind === "primitive" && m.name === "date-range");
   }
   return false;

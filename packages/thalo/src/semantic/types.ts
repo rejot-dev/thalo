@@ -1,5 +1,6 @@
 import type { Location, SourceFile, Entry, SchemaEntry } from "../ast/types.js";
 import type { SourceMap } from "../source-map.js";
+import type { ParsedBlock } from "../parser.js";
 
 // ===================
 // Link Index Types
@@ -67,6 +68,8 @@ export interface SemanticModel {
   source: string;
   /** Source map for position translation (block-relative to file-absolute) */
   sourceMap: SourceMap;
+  /** The parsed blocks (containing tree-sitter trees) for CST operations */
+  blocks: ParsedBlock[];
 
   /**
    * Link index for this document.

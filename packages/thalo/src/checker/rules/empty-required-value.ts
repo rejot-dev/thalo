@@ -16,30 +16,38 @@ export const emptyRequiredValueRule: Rule = {
     const { workspace } = ctx;
     const registry = workspace.schemaRegistry;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      const schema = registry.get(entry.entity);
-      if (!schema) {
-        continue; // Will be caught by unknown-entity rule
-      }
-
-      for (const [fieldName, value] of entry.metadata) {
-        const fieldSchema = schema.fields.get(fieldName);
-        if (!fieldSchema) {
-          continue; // Will be caught by unknown-field rule
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
         }
 
-        // Check if the field is required and has an empty value
-        if (!fieldSchema.optional && fieldSchema.defaultValue === null) {
-          const trimmedValue = value.raw.trim();
-          // Check for empty or effectively empty values
-          if (trimmedValue === "" || trimmedValue === '""') {
-            ctx.report({
-              message: `Required field '${fieldName}' has an empty value.`,
-              file: entry.file,
-              location: value.location,
-              sourceMap: entry.sourceMap,
-              data: { fieldName, entity: entry.entity },
-            });
+        const entity = entry.header.entity;
+        const schema = registry.get(entity);
+        if (!schema) {
+          continue;
+        } // Will be caught by unknown-entity rule
+
+        for (const meta of entry.metadata) {
+          const fieldName = meta.key.value;
+          const fieldSchema = schema.fields.get(fieldName);
+          if (!fieldSchema) {
+            continue;
+          } // Will be caught by unknown-field rule
+
+          // Check if the field is required and has an empty value
+          if (!fieldSchema.optional && fieldSchema.defaultValue === null) {
+            const rawValue = meta.value.raw.trim();
+            // Check for empty or effectively empty values
+            if (rawValue === "" || rawValue === '""') {
+              ctx.report({
+                message: `Required field '${fieldName}' has an empty value.`,
+                file: model.file,
+                location: meta.value.location,
+                sourceMap: model.sourceMap,
+                data: { fieldName, entity },
+              });
+            }
           }
         }
       }

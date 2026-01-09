@@ -10,6 +10,7 @@ import {
 } from "./visitor.js";
 import type {
   AstNode,
+  Location,
   SourceFile,
   InstanceEntry,
   InstanceHeader,
@@ -28,7 +29,7 @@ import type {
 // Test Helpers
 // ===================
 
-const mockLocation = (start = 0, end = 10) => ({
+const mockLocation = (start = 0, end = 10): Location => ({
   startIndex: start,
   endIndex: end,
   startPosition: { row: 0, column: start },
@@ -45,14 +46,43 @@ const mockSyntaxNode = () =>
     endPosition: { row: 0, column: 10 },
   }) as unknown as SyntaxNode;
 
-// Create a minimal AST for testing
-function createTestAst(): SourceFile {
-  const timestamp: Timestamp = {
+// Create a mock timestamp with all required fields
+function createMockTimestamp(value: string, loc: Location): Timestamp {
+  return {
     type: "timestamp",
-    value: "2026-01-05T18:00Z",
-    location: mockLocation(0, 17),
+    value,
+    date: {
+      type: "date_part",
+      value: "2026-01-05",
+      year: 2026,
+      month: 1,
+      day: 5,
+      location: loc,
+      syntaxNode: mockSyntaxNode(),
+    },
+    time: {
+      type: "time_part",
+      value: "18:00",
+      hour: 18,
+      minute: 0,
+      location: loc,
+      syntaxNode: mockSyntaxNode(),
+    },
+    timezone: {
+      type: "timezone_part",
+      value: "Z",
+      offsetMinutes: 0,
+      location: loc,
+      syntaxNode: mockSyntaxNode(),
+    },
+    location: loc,
     syntaxNode: mockSyntaxNode(),
   };
+}
+
+// Create a minimal AST for testing
+function createTestAst(): SourceFile {
+  const timestamp = createMockTimestamp("2026-01-05T18:00Z", mockLocation(0, 17));
 
   const title: Title = {
     type: "title",
@@ -251,9 +281,9 @@ describe("getChildren", () => {
   it("should return empty array for terminal nodes", () => {
     const ast = createTestAst();
     const entry = ast.entries[0] as InstanceEntry;
-    const timestamp = entry.header.timestamp;
-    // Note: timestamp without decomposed parts has no children
-    const children = getChildren(timestamp);
+    // Tags are terminal nodes (no children)
+    const tag = entry.header.tags[0];
+    const children = getChildren(tag);
     expect(children).toHaveLength(0);
   });
 

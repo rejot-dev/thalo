@@ -1,6 +1,5 @@
 import type { Workspace } from "../model/workspace.js";
-import type { Location } from "../ast/types.js";
-import type { ModelSchemaEntry, ModelInstanceEntry, ModelEntry } from "../model/types.js";
+import type { Location, Entry, SchemaEntry, InstanceEntry } from "../ast/types.js";
 
 // ===================
 // Entity Navigation
@@ -15,7 +14,7 @@ export interface EntityDefinitionResult {
   /** Location of the definition */
   location: Location;
   /** The schema entry that defines this entity */
-  entry: ModelSchemaEntry;
+  entry: SchemaEntry;
 }
 
 /**
@@ -27,7 +26,7 @@ export interface EntityReferenceLocation {
   /** Location of the entry using this entity */
   location: Location;
   /** The instance entry using this entity */
-  entry: ModelInstanceEntry;
+  entry: InstanceEntry | SchemaEntry;
   /** Whether this is the definition (always false for entity refs) */
   isDefinition: boolean;
 }
@@ -57,14 +56,19 @@ export function findEntityDefinition(
   workspace: Workspace,
   entityName: string,
 ): EntityDefinitionResult | undefined {
-  // Look for define-entity entry with this name
-  for (const entry of workspace.allSchemaEntries()) {
-    if (entry.directive === "define-entity" && entry.entityName === entityName) {
-      return {
-        file: entry.file,
-        location: entry.location,
-        entry,
-      };
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (
+        entry.type === "schema_entry" &&
+        entry.header.directive === "define-entity" &&
+        entry.header.entityName.value === entityName
+      ) {
+        return {
+          file: model.file,
+          location: entry.location,
+          entry,
+        };
+      }
     }
   }
   return undefined;
@@ -87,26 +91,31 @@ export function findEntityReferences(
 
   // Find all instance entries using this entity
   const references: EntityReferenceLocation[] = [];
-  for (const entry of workspace.allInstanceEntries()) {
-    if (entry.entity === entityName) {
-      references.push({
-        file: entry.file,
-        location: entry.location,
-        entry,
-        isDefinition: false,
-      });
-    }
-  }
 
-  // Also find alter-entity entries that reference this entity
-  for (const entry of workspace.allSchemaEntries()) {
-    if (entry.directive === "alter-entity" && entry.entityName === entityName) {
-      references.push({
-        file: entry.file,
-        location: entry.location,
-        entry: entry as unknown as ModelInstanceEntry, // Type cast for location purposes
-        isDefinition: false,
-      });
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (entry.type === "instance_entry" && entry.header.entity === entityName) {
+        references.push({
+          file: model.file,
+          location: entry.location,
+          entry,
+          isDefinition: false,
+        });
+      }
+
+      // Also find alter-entity entries that reference this entity
+      if (
+        entry.type === "schema_entry" &&
+        entry.header.directive === "alter-entity" &&
+        entry.header.entityName.value === entityName
+      ) {
+        references.push({
+          file: model.file,
+          location: entry.location,
+          entry,
+          isDefinition: false,
+        });
+      }
     }
   }
 
@@ -137,7 +146,7 @@ export interface TagReferenceLocation {
   /** Location of the entry with this tag */
   location: Location;
   /** The entry with this tag */
-  entry: ModelEntry;
+  entry: Entry;
 }
 
 /**
@@ -151,6 +160,23 @@ export interface TagReferencesResult {
 }
 
 /**
+ * Get tags from an entry
+ */
+function getEntryTags(entry: Entry): string[] {
+  switch (entry.type) {
+    case "instance_entry":
+      return entry.header.tags.map((t) => t.name);
+    case "schema_entry":
+      return entry.header.tags.map((t) => t.name);
+    case "synthesis_entry":
+      return entry.header.tags.map((t) => t.name);
+    case "actualize_entry":
+      // Actualize entries don't have tags
+      return [];
+  }
+}
+
+/**
  * Find all entries with a given tag
  *
  * @param workspace - The workspace to search in
@@ -160,13 +186,15 @@ export interface TagReferencesResult {
 export function findTagReferences(workspace: Workspace, tagName: string): TagReferencesResult {
   const references: TagReferenceLocation[] = [];
 
-  for (const entry of workspace.allEntries()) {
-    if (entry.tags.includes(tagName)) {
-      references.push({
-        file: entry.file,
-        location: entry.location,
-        entry,
-      });
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (getEntryTags(entry).includes(tagName)) {
+        references.push({
+          file: model.file,
+          location: entry.location,
+          entry,
+        });
+      }
     }
   }
 
@@ -191,7 +219,7 @@ export interface FieldDefinitionResult {
   /** The entity name this field belongs to */
   entityName: string;
   /** The schema entry containing this field */
-  schemaEntry: ModelSchemaEntry;
+  schemaEntry: SchemaEntry;
 }
 
 /**
@@ -203,7 +231,7 @@ export interface FieldReferenceLocation {
   /** Location of the metadata line */
   location: Location;
   /** The instance entry using this field */
-  entry: ModelInstanceEntry;
+  entry: InstanceEntry;
 }
 
 /**
@@ -240,12 +268,19 @@ export function findFieldDefinition(
       const field = schema.fields.get(fieldName);
       if (field) {
         // Find the schema entry that defines this field
-        for (const entry of workspace.allSchemaEntries()) {
-          if (entry.entityName === entityName) {
-            const fieldDef = entry.fields.find((f) => f.name === fieldName);
+        for (const model of workspace.allModels()) {
+          for (const entry of model.ast.entries) {
+            if (entry.type !== "schema_entry") {
+              continue;
+            }
+            if (entry.header.entityName.value !== entityName) {
+              continue;
+            }
+
+            const fieldDef = entry.metadataBlock?.fields.find((f) => f.name.value === fieldName);
             if (fieldDef) {
               return {
-                file: entry.file,
+                file: model.file,
                 location: fieldDef.location,
                 entityName,
                 schemaEntry: entry,
@@ -285,19 +320,26 @@ export function findFieldReferences(
   const definition = findFieldDefinition(workspace, fieldName, entityName);
 
   const references: FieldReferenceLocation[] = [];
-  for (const entry of workspace.allInstanceEntries()) {
-    // If entityName is specified, only look at entries of that entity type
-    if (entityName && entry.entity !== entityName) {
-      continue;
-    }
 
-    const metadataValue = entry.metadata.get(fieldName);
-    if (metadataValue) {
-      references.push({
-        file: entry.file,
-        location: metadataValue.location,
-        entry,
-      });
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (entry.type !== "instance_entry") {
+        continue;
+      }
+
+      // If entityName is specified, only look at entries of that entity type
+      if (entityName && entry.header.entity !== entityName) {
+        continue;
+      }
+
+      const meta = entry.metadata.find((m) => m.key.value === fieldName);
+      if (meta) {
+        references.push({
+          file: model.file,
+          location: meta.location,
+          entry,
+        });
+      }
     }
   }
 
@@ -324,7 +366,7 @@ export interface SectionDefinitionResult {
   /** The entity name this section belongs to */
   entityName: string;
   /** The schema entry containing this section */
-  schemaEntry: ModelSchemaEntry;
+  schemaEntry: SchemaEntry;
 }
 
 /**
@@ -336,7 +378,7 @@ export interface SectionReferenceLocation {
   /** Location of the entry with this section */
   location: Location;
   /** The instance entry with this section */
-  entry: ModelInstanceEntry;
+  entry: InstanceEntry;
 }
 
 /**
@@ -351,6 +393,22 @@ export interface SectionReferencesResult {
   definition: SectionDefinitionResult | undefined;
   /** All instance entries with this section */
   references: SectionReferenceLocation[];
+}
+
+/**
+ * Get section names from an instance entry
+ */
+function getEntrySections(entry: InstanceEntry): string[] {
+  if (!entry.content) {
+    return [];
+  }
+  return entry.content.children
+    .filter((c) => c.type === "markdown_header")
+    .map((h) => {
+      // Extract section name from "# SectionName" format
+      const match = h.text.match(/^#+\s*(.+)$/);
+      return match ? match[1].trim() : h.text;
+    });
 }
 
 /**
@@ -373,12 +431,21 @@ export function findSectionDefinition(
       const section = schema.sections.get(sectionName);
       if (section) {
         // Find the schema entry that defines this section
-        for (const entry of workspace.allSchemaEntries()) {
-          if (entry.entityName === entityName) {
-            const sectionDef = entry.sections.find((s) => s.name === sectionName);
+        for (const model of workspace.allModels()) {
+          for (const entry of model.ast.entries) {
+            if (entry.type !== "schema_entry") {
+              continue;
+            }
+            if (entry.header.entityName.value !== entityName) {
+              continue;
+            }
+
+            const sectionDef = entry.sectionsBlock?.sections.find(
+              (s) => s.name.value === sectionName,
+            );
             if (sectionDef) {
               return {
-                file: entry.file,
+                file: model.file,
                 location: sectionDef.location,
                 entityName,
                 schemaEntry: entry,
@@ -418,18 +485,25 @@ export function findSectionReferences(
   const definition = findSectionDefinition(workspace, sectionName, entityName);
 
   const references: SectionReferenceLocation[] = [];
-  for (const entry of workspace.allInstanceEntries()) {
-    // If entityName is specified, only look at entries of that entity type
-    if (entityName && entry.entity !== entityName) {
-      continue;
-    }
 
-    if (entry.sections.includes(sectionName)) {
-      references.push({
-        file: entry.file,
-        location: entry.location,
-        entry,
-      });
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (entry.type !== "instance_entry") {
+        continue;
+      }
+
+      // If entityName is specified, only look at entries of that entity type
+      if (entityName && entry.header.entity !== entityName) {
+        continue;
+      }
+
+      if (getEntrySections(entry).includes(sectionName)) {
+        references.push({
+          file: model.file,
+          location: entry.location,
+          entry,
+        });
+      }
     }
   }
 

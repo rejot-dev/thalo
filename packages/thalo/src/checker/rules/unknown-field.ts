@@ -16,21 +16,30 @@ export const unknownFieldRule: Rule = {
     const { workspace } = ctx;
     const registry = workspace.schemaRegistry;
 
-    for (const entry of workspace.allInstanceEntries()) {
-      const schema = registry.get(entry.entity);
-      if (!schema) {
-        continue;
-      } // Will be caught by unknown-entity rule
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
+        }
 
-      for (const [fieldName, value] of entry.metadata) {
-        if (!schema.fields.has(fieldName)) {
-          ctx.report({
-            message: `Unknown field '${fieldName}' for entity '${entry.entity}'.`,
-            file: entry.file,
-            location: value.location,
-            sourceMap: entry.sourceMap,
-            data: { field: fieldName, entity: entry.entity },
-          });
+        const entity = entry.header.entity;
+        const schema = registry.get(entity);
+        if (!schema) {
+          continue;
+        } // Will be caught by unknown-entity rule
+
+        for (const meta of entry.metadata) {
+          const fieldName = meta.key.value;
+          if (!schema.fields.has(fieldName)) {
+            ctx.report({
+              message: `Unknown field '${fieldName}' for entity '${entity}'.`,
+              file: model.file,
+              // Use key.location to point to the field name, not the leading indent
+              location: meta.key.location,
+              sourceMap: model.sourceMap,
+              data: { field: fieldName, entity },
+            });
+          }
         }
       }
     }

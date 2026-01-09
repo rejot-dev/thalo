@@ -16,15 +16,41 @@ export const synthesisMissingPromptRule: Rule = {
   check(ctx) {
     const { workspace } = ctx;
 
-    for (const doc of workspace.allDocuments()) {
-      for (const synthesis of doc.synthesisEntries) {
-        if (!synthesis.prompt || synthesis.prompt.trim() === "") {
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "synthesis_entry") {
+          continue;
+        }
+
+        const title = entry.header.title.value;
+        const linkId = entry.header.linkId.id;
+        const content = entry.content;
+
+        // Check if there's a # Prompt section with content
+        let hasPromptWithContent = false;
+        if (content) {
+          let foundPromptHeader = false;
+          for (const child of content.children) {
+            if (child.type === "markdown_header" && child.text.toLowerCase().includes("prompt")) {
+              foundPromptHeader = true;
+            } else if (foundPromptHeader && child.type === "content_line") {
+              // Found content after the prompt header
+              hasPromptWithContent = true;
+              break;
+            } else if (foundPromptHeader && child.type === "markdown_header") {
+              // Hit another header before finding content - prompt section is empty
+              break;
+            }
+          }
+        }
+
+        if (!hasPromptWithContent) {
           ctx.report({
-            message: `Synthesis '${synthesis.title}' is missing a '# Prompt' section. Add instructions for the LLM.`,
-            file: synthesis.file,
-            location: synthesis.location,
-            sourceMap: synthesis.sourceMap,
-            data: { title: synthesis.title, linkId: synthesis.linkId },
+            message: `Synthesis '${title}' is missing a '# Prompt' section. Add instructions for the LLM.`,
+            file: model.file,
+            location: entry.location,
+            sourceMap: model.sourceMap,
+            data: { title, linkId },
           });
         }
       }

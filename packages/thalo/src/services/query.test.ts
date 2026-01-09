@@ -2,6 +2,29 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { Workspace } from "../model/workspace.js";
 import { executeQuery, executeQueries, entryMatchesQuery, formatQuery } from "./query.js";
 import type { Query } from "../model/types.js";
+import type { InstanceEntry, Timestamp } from "../ast/types.js";
+import { isSyntaxError } from "../ast/types.js";
+
+/**
+ * Helper to format timestamp for comparisons
+ */
+function formatTimestamp(ts: Timestamp): string {
+  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
+  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
+  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
+  return `${date}T${time}${tz}`;
+}
+
+/**
+ * Helper to get instance entries from workspace
+ */
+function getInstanceEntries(workspace: Workspace, filename: string): InstanceEntry[] {
+  const model = workspace.getModel(filename);
+  if (!model) {
+    return [];
+  }
+  return model.ast.entries.filter((e): e is InstanceEntry => e.type === "instance_entry");
+}
 
 describe("query service", () => {
   let workspace: Workspace;
@@ -50,71 +73,71 @@ describe("query service", () => {
 
   describe("entryMatchesQuery", () => {
     it("matches by entity type", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = { entity: "lore", conditions: [] };
 
-      expect(entryMatchesQuery(entry, query)).toBe(true);
+      expect(entryMatchesQuery(entries[0], query)).toBe(true);
     });
 
     it("rejects wrong entity type", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = { entity: "opinion", conditions: [] };
 
-      expect(entryMatchesQuery(entry, query)).toBe(false);
+      expect(entryMatchesQuery(entries[0], query)).toBe(false);
     });
 
     it("matches by tag condition", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [{ kind: "tag", tag: "career" }],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(true);
+      expect(entryMatchesQuery(entries[0], query)).toBe(true);
     });
 
     it("rejects missing tag", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [{ kind: "tag", tag: "personal" }],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(false);
+      expect(entryMatchesQuery(entries[0], query)).toBe(false);
     });
 
     it("matches by field condition", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [{ kind: "field", field: "type", value: '"fact"' }],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(true);
+      expect(entryMatchesQuery(entries[0], query)).toBe(true);
     });
 
     it("rejects wrong field value", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [{ kind: "field", field: "type", value: '"insight"' }],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(false);
+      expect(entryMatchesQuery(entries[0], query)).toBe(false);
     });
 
     it("matches by link condition on linkId", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [{ kind: "link", link: "entry-1" }],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(true);
+      expect(entryMatchesQuery(entries[0], query)).toBe(true);
     });
 
     it("matches multiple conditions (AND)", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [
@@ -123,11 +146,11 @@ describe("query service", () => {
         ],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(true);
+      expect(entryMatchesQuery(entries[0], query)).toBe(true);
     });
 
     it("rejects if any condition fails", () => {
-      const entry = workspace.allDocuments()[1].instanceEntries[0];
+      const entries = getInstanceEntries(workspace, "entries.thalo");
       const query: Query = {
         entity: "lore",
         conditions: [
@@ -136,7 +159,7 @@ describe("query service", () => {
         ],
       };
 
-      expect(entryMatchesQuery(entry, query)).toBe(false);
+      expect(entryMatchesQuery(entries[0], query)).toBe(false);
     });
   });
 
@@ -150,8 +173,8 @@ describe("query service", () => {
       const results = executeQuery(workspace, query);
 
       expect(results).toHaveLength(2);
-      expect(results[0].title).toBe("Entry 1");
-      expect(results[1].title).toBe("Entry 2");
+      expect(results[0].header.title?.value).toBe("Entry 1");
+      expect(results[1].header.title?.value).toBe("Entry 2");
     });
 
     it("returns entries sorted by timestamp", () => {
@@ -160,9 +183,9 @@ describe("query service", () => {
       const results = executeQuery(workspace, query);
 
       expect(results).toHaveLength(3);
-      expect(results[0].timestamp).toBe("2026-01-05T10:00Z");
-      expect(results[1].timestamp).toBe("2026-01-05T11:00Z");
-      expect(results[2].timestamp).toBe("2026-01-05T12:00Z");
+      expect(formatTimestamp(results[0].header.timestamp)).toBe("2026-01-05T10:00Z");
+      expect(formatTimestamp(results[1].header.timestamp)).toBe("2026-01-05T11:00Z");
+      expect(formatTimestamp(results[2].header.timestamp)).toBe("2026-01-05T12:00Z");
     });
 
     it("filters by afterTimestamp", () => {
@@ -173,8 +196,8 @@ describe("query service", () => {
       });
 
       expect(results).toHaveLength(2);
-      expect(results[0].timestamp).toBe("2026-01-05T11:00Z");
-      expect(results[1].timestamp).toBe("2026-01-05T12:00Z");
+      expect(formatTimestamp(results[0].header.timestamp)).toBe("2026-01-05T11:00Z");
+      expect(formatTimestamp(results[1].header.timestamp)).toBe("2026-01-05T12:00Z");
     });
   });
 
@@ -188,8 +211,8 @@ describe("query service", () => {
       const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(2);
-      expect(results[0].title).toBe("Entry 1"); // has #tech
-      expect(results[1].title).toBe("Entry 3"); // has #personal
+      expect(results[0].header.title?.value).toBe("Entry 1"); // has #tech
+      expect(results[1].header.title?.value).toBe("Entry 3"); // has #personal
     });
 
     it("deduplicates entries matching multiple queries", () => {

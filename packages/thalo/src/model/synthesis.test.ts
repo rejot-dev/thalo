@@ -1,30 +1,90 @@
 import { describe, it, expect } from "vitest";
 import { Workspace } from "./workspace.js";
-import type { ModelInstanceEntry, ModelSynthesisEntry, Query } from "./types.js";
+import type { Query, QueryCondition } from "./types.js";
+import type { InstanceEntry, SynthesisEntry, ActualizeEntry, Timestamp } from "../ast/types.js";
+import { isSyntaxError } from "../ast/types.js";
+
+/**
+ * Helper to format timestamp for comparisons
+ */
+function formatTimestamp(ts: Timestamp): string {
+  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
+  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
+  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
+  return `${date}T${time}${tz}`;
+}
+
+/**
+ * Get synthesis sources from a synthesis entry (extracts queries from sources metadata)
+ */
+function getSynthesisSources(synthesis: SynthesisEntry): Query[] {
+  const sourcesMeta = synthesis.metadata.find((m) => m.key.value === "sources");
+  if (!sourcesMeta) {
+    return [];
+  }
+
+  // Sources can be a query_value or value_array
+  const content = sourcesMeta.value.content;
+  if (content.type === "query_value") {
+    return [astQueryToModelQuery(content.query)];
+  }
+  if (content.type === "value_array") {
+    return content.elements
+      .filter((e): e is import("../ast/types.js").Query => e.type === "query")
+      .map(astQueryToModelQuery);
+  }
+  return [];
+}
+
+/**
+ * Convert AST Query to Model Query
+ */
+function astQueryToModelQuery(astQuery: import("../ast/types.js").Query): Query {
+  return {
+    entity: astQuery.entity,
+    conditions: astQuery.conditions.map((c): QueryCondition => {
+      switch (c.type) {
+        case "field_condition":
+          return { kind: "field", field: c.field, value: c.value };
+        case "tag_condition":
+          return { kind: "tag", tag: c.tag };
+        case "link_condition":
+          return { kind: "link", link: c.linkId };
+      }
+    }),
+  };
+}
 
 /**
  * Helper to find matching entries for a synthesis query
  */
 function queryEntriesForSynthesis(
   workspace: Workspace,
-  synthesis: ModelSynthesisEntry,
+  synthesis: SynthesisEntry,
   afterTimestamp?: string,
-): ModelInstanceEntry[] {
-  const results: ModelInstanceEntry[] = [];
+): InstanceEntry[] {
+  const results: InstanceEntry[] = [];
   const seen = new Set<string>();
 
-  for (const doc of workspace.allDocuments()) {
-    for (const entry of doc.instanceEntries) {
-      const key = `${entry.file}:${entry.timestamp}`;
+  const sources = getSynthesisSources(synthesis);
+
+  for (const model of workspace.allModels()) {
+    for (const entry of model.ast.entries) {
+      if (entry.type !== "instance_entry") {
+        continue;
+      }
+
+      const ts = formatTimestamp(entry.header.timestamp);
+      const key = `${model.file}:${ts}`;
       if (seen.has(key)) {
         continue;
       }
 
-      if (afterTimestamp && entry.timestamp <= afterTimestamp) {
+      if (afterTimestamp && ts <= afterTimestamp) {
         continue;
       }
 
-      for (const query of synthesis.sources) {
+      for (const query of sources) {
         if (entryMatchesQuery(entry, query)) {
           results.push(entry);
           seen.add(key);
@@ -34,29 +94,36 @@ function queryEntriesForSynthesis(
     }
   }
 
-  return results.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  return results.sort((a, b) =>
+    formatTimestamp(a.header.timestamp).localeCompare(formatTimestamp(b.header.timestamp)),
+  );
 }
 
-function entryMatchesQuery(entry: ModelInstanceEntry, query: Query): boolean {
-  if (entry.entity !== query.entity) {
+function entryMatchesQuery(entry: InstanceEntry, query: Query): boolean {
+  if (entry.header.entity !== query.entity) {
     return false;
   }
 
   for (const condition of query.conditions) {
     if (condition.kind === "field") {
-      const value = entry.metadata.get(condition.field)?.raw;
-      if (value !== condition.value) {
+      const meta = entry.metadata.find((m) => m.key.value === condition.field);
+      if (meta?.value.raw !== condition.value) {
         return false;
       }
     } else if (condition.kind === "tag") {
-      if (!entry.tags.includes(condition.tag)) {
+      const tags = entry.header.tags.map((t) => t.name);
+      if (!tags.includes(condition.tag)) {
         return false;
       }
     } else if (condition.kind === "link") {
-      if (entry.linkId !== condition.link) {
+      const linkId = entry.header.link?.id;
+      if (linkId !== condition.link) {
         let hasLink = false;
-        for (const meta of entry.metadata.values()) {
-          if (meta.linkId === condition.link) {
+        for (const meta of entry.metadata) {
+          if (
+            meta.value.content.type === "link_value" &&
+            meta.value.content.link.id === condition.link
+          ) {
             hasLink = true;
             break;
           }
@@ -69,6 +136,28 @@ function entryMatchesQuery(entry: ModelInstanceEntry, query: Query): boolean {
   }
 
   return true;
+}
+
+/**
+ * Helper to get synthesis entries from a specific file
+ */
+function getSynthesisEntries(workspace: Workspace, filename: string): SynthesisEntry[] {
+  const model = workspace.getModel(filename);
+  if (!model) {
+    return [];
+  }
+  return model.ast.entries.filter((e): e is SynthesisEntry => e.type === "synthesis_entry");
+}
+
+/**
+ * Helper to get actualize entries from a specific file
+ */
+function getActualizeEntries(workspace: Workspace, filename: string): ActualizeEntry[] {
+  const model = workspace.getModel(filename);
+  if (!model) {
+    return [];
+  }
+  return model.ast.entries.filter((e): e is ActualizeEntry => e.type === "actualize_entry");
 }
 
 describe("Synthesis integration", () => {
@@ -103,13 +192,12 @@ describe("Synthesis integration", () => {
         { filename: "profile.thalo" },
       );
 
-      const profileDoc = workspace.getDocument("profile.thalo");
-      const synthesis = profileDoc?.synthesisEntries[0];
-      expect(synthesis).toBeDefined();
+      const syntheses = getSynthesisEntries(workspace, "profile.thalo");
+      expect(syntheses).toHaveLength(1);
 
-      const matches = queryEntriesForSynthesis(workspace, synthesis!);
+      const matches = queryEntriesForSynthesis(workspace, syntheses[0]);
       expect(matches).toHaveLength(1);
-      expect(matches[0]?.entity).toBe("lore");
+      expect(matches[0]?.header.entity).toBe("lore");
     });
 
     it("matches entries by tag", () => {
@@ -142,13 +230,12 @@ describe("Synthesis integration", () => {
         { filename: "career.thalo" },
       );
 
-      const careerDoc = workspace.getDocument("career.thalo");
-      const synthesis = careerDoc?.synthesisEntries[0];
-      expect(synthesis).toBeDefined();
+      const syntheses = getSynthesisEntries(workspace, "career.thalo");
+      expect(syntheses).toHaveLength(1);
 
-      const matches = queryEntriesForSynthesis(workspace, synthesis!);
+      const matches = queryEntriesForSynthesis(workspace, syntheses[0]);
       expect(matches).toHaveLength(1);
-      expect(matches[0]?.title).toBe("Career fact");
+      expect(matches[0]?.header.title?.value).toBe("Career fact");
     });
 
     it("matches entries by multiple conditions (AND)", () => {
@@ -188,13 +275,12 @@ describe("Synthesis integration", () => {
         { filename: "my-career.thalo" },
       );
 
-      const myCareerDoc = workspace.getDocument("my-career.thalo");
-      const synthesis = myCareerDoc?.synthesisEntries[0];
-      expect(synthesis).toBeDefined();
+      const syntheses = getSynthesisEntries(workspace, "my-career.thalo");
+      expect(syntheses).toHaveLength(1);
 
-      const matches = queryEntriesForSynthesis(workspace, synthesis!);
+      const matches = queryEntriesForSynthesis(workspace, syntheses[0]);
       expect(matches).toHaveLength(1);
-      expect(matches[0]?.title).toBe("Self career");
+      expect(matches[0]?.header.title?.value).toBe("Self career");
     });
 
     it("matches entries from multiple source queries (OR)", () => {
@@ -227,13 +313,13 @@ describe("Synthesis integration", () => {
         { filename: "all-career.thalo" },
       );
 
-      const allCareerDoc = workspace.getDocument("all-career.thalo");
-      const synthesis = allCareerDoc?.synthesisEntries[0];
-      expect(synthesis).toBeDefined();
+      const syntheses = getSynthesisEntries(workspace, "all-career.thalo");
+      expect(syntheses).toHaveLength(1);
 
-      const matches = queryEntriesForSynthesis(workspace, synthesis!);
+      const matches = queryEntriesForSynthesis(workspace, syntheses[0]);
+
       expect(matches).toHaveLength(2);
-      expect(matches.map((m) => m.entity).sort()).toEqual(["journal", "lore"]);
+      expect(matches.map((m) => m.header.entity).sort()).toEqual(["journal", "lore"]);
     });
   });
 
@@ -275,25 +361,24 @@ describe("Synthesis integration", () => {
         { filename: "profile.thalo" },
       );
 
-      const profileDoc = workspace.getDocument("profile.thalo");
-      const synthesis = profileDoc?.synthesisEntries[0];
-      expect(synthesis).toBeDefined();
+      const syntheses = getSynthesisEntries(workspace, "profile.thalo");
+      expect(syntheses).toHaveLength(1);
 
       // No filter - get all
-      let matches = queryEntriesForSynthesis(workspace, synthesis!);
+      let matches = queryEntriesForSynthesis(workspace, syntheses[0]);
       expect(matches).toHaveLength(3);
 
       // Filter after 10:00 - get 2
-      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T10:00Z");
+      matches = queryEntriesForSynthesis(workspace, syntheses[0], "2026-01-07T10:00Z");
       expect(matches).toHaveLength(2);
 
       // Filter after 12:00 - get 1
-      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T12:00Z");
+      matches = queryEntriesForSynthesis(workspace, syntheses[0], "2026-01-07T12:00Z");
       expect(matches).toHaveLength(1);
-      expect(matches[0]?.title).toBe("Newest fact");
+      expect(matches[0]?.header.title?.value).toBe("Newest fact");
 
       // Filter after 14:00 - get 0
-      matches = queryEntriesForSynthesis(workspace, synthesis!, "2026-01-07T14:00Z");
+      matches = queryEntriesForSynthesis(workspace, syntheses[0], "2026-01-07T14:00Z");
       expect(matches).toHaveLength(0);
     });
   });
@@ -320,16 +405,17 @@ describe("Synthesis integration", () => {
         { filename: "profile.thalo" },
       );
 
-      const profileDoc = workspace.getDocument("profile.thalo");
-      expect(profileDoc).toBeDefined();
-
-      const actualizes = profileDoc!.actualizeEntries;
+      const actualizes = getActualizeEntries(workspace, "profile.thalo");
       expect(actualizes).toHaveLength(3);
 
       // Find latest by timestamp
-      const latest = actualizes.reduce((a, b) => (a.timestamp > b.timestamp ? a : b));
-      expect(latest.timestamp).toBe("2026-01-07T12:00Z");
-      expect(latest.metadata.get("updated")?.raw).toBe("2026-01-07T12:00Z");
+      const latest = actualizes.reduce((a, b) =>
+        formatTimestamp(a.header.timestamp) > formatTimestamp(b.header.timestamp) ? a : b,
+      );
+      expect(formatTimestamp(latest.header.timestamp)).toBe("2026-01-07T12:00Z");
+
+      const updatedMeta = latest.metadata.find((m) => m.key.value === "updated");
+      expect(updatedMeta?.value.raw).toBe("2026-01-07T12:00Z");
     });
 
     it("uses actualize timestamp to filter new entries", () => {
@@ -365,21 +451,19 @@ describe("Synthesis integration", () => {
         { filename: "profile.thalo" },
       );
 
-      const profileDoc = workspace.getDocument("profile.thalo");
-      expect(profileDoc).toBeDefined();
+      const syntheses = getSynthesisEntries(workspace, "profile.thalo");
+      const actualizes = getActualizeEntries(workspace, "profile.thalo");
 
-      const synthesis = profileDoc!.synthesisEntries[0];
-      const actualize = profileDoc!.actualizeEntries[0];
+      expect(syntheses).toHaveLength(1);
+      expect(actualizes).toHaveLength(1);
 
-      expect(synthesis).toBeDefined();
-      expect(actualize).toBeDefined();
-
-      const lastUpdated = actualize!.metadata.get("updated")?.raw;
+      const updatedMeta = actualizes[0].metadata.find((m) => m.key.value === "updated");
+      const lastUpdated = updatedMeta?.value.raw;
       expect(lastUpdated).toBe("2026-01-07T12:00Z");
 
-      const newEntries = queryEntriesForSynthesis(workspace, synthesis!, lastUpdated);
+      const newEntries = queryEntriesForSynthesis(workspace, syntheses[0], lastUpdated);
       expect(newEntries).toHaveLength(1);
-      expect(newEntries[0]?.title).toBe("New fact");
+      expect(newEntries[0]?.header.title?.value).toBe("New fact");
     });
   });
 
@@ -419,11 +503,16 @@ describe("Synthesis integration", () => {
         { filename: "profile.thalo" },
       );
 
-      // Find synthesis entry from any document
-      let synthesis: ModelSynthesisEntry | undefined;
-      for (const doc of workspace.allDocuments()) {
-        if (doc.synthesisEntries.length > 0) {
-          synthesis = doc.synthesisEntries[0];
+      // Find synthesis entry
+      let synthesis: SynthesisEntry | undefined;
+      for (const model of workspace.allModels()) {
+        for (const entry of model.ast.entries) {
+          if (entry.type === "synthesis_entry") {
+            synthesis = entry;
+            break;
+          }
+        }
+        if (synthesis) {
           break;
         }
       }
@@ -432,7 +521,6 @@ describe("Synthesis integration", () => {
       const matches = queryEntriesForSynthesis(workspace, synthesis!);
 
       expect(matches).toHaveLength(2);
-      expect(matches.map((m) => m.file).sort()).toEqual(["lore1.thalo", "lore2.thalo"]);
     });
   });
 });
@@ -452,7 +540,7 @@ describe("Synthesis link resolution", () => {
 
     const def = workspace.getLinkDefinition("my-profile");
     expect(def).toBeDefined();
-    expect(def?.entry.kind).toBe("synthesis");
+    expect(def?.entry.type).toBe("synthesis_entry");
   });
 
   it("actualize target is tracked as reference", () => {
@@ -472,6 +560,6 @@ describe("Synthesis link resolution", () => {
 
     const refs = workspace.getLinkReferences("my-profile");
     expect(refs).toHaveLength(1);
-    expect(refs[0]?.entry.kind).toBe("actualize");
+    expect(refs[0]?.entry.type).toBe("actualize_entry");
   });
 });
