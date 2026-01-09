@@ -21,6 +21,79 @@ export interface AstNode {
 }
 
 // ===================
+// Syntax Errors
+// ===================
+
+/**
+ * Known syntax error codes that can be emitted by the AST builder.
+ * These represent recoverable syntax errors where we can still produce a partial AST.
+ */
+export type SyntaxErrorCode =
+  | "missing_timezone"
+  | "missing_entity"
+  | "missing_title"
+  | "missing_link_id"
+  | "invalid_directive"
+  | "invalid_timestamp"
+  | "malformed_metadata";
+
+/**
+ * A syntax error node that can appear inline in the AST.
+ * Represents recoverable syntax errors that don't prevent further parsing.
+ *
+ * @example
+ * // A timestamp without timezone would have:
+ * timestamp: {
+ *   type: "timestamp",
+ *   value: "2026-01-05T18:00",
+ *   date: { ... },
+ *   time: { ... },
+ *   timezone: {
+ *     type: "syntax_error",
+ *     code: "missing_timezone",
+ *     message: "Timestamp requires timezone",
+ *     text: "2026-01-05T18:00"
+ *   }
+ * }
+ */
+export interface SyntaxErrorNode<Code extends SyntaxErrorCode = SyntaxErrorCode> extends AstNode {
+  type: "syntax_error";
+  /** The specific error code */
+  code: Code;
+  /** Human-readable error message */
+  message: string;
+  /** The malformed source text that caused the error */
+  text: string;
+}
+
+/**
+ * Result type for AST nodes that may contain syntax errors.
+ * Used to represent optional or validated fields that can fail gracefully.
+ *
+ * @example
+ * // In Timestamp type:
+ * timezone: Result<TimezonePart, "missing_timezone">
+ * // Can be either a valid TimezonePart or a SyntaxErrorNode with code "missing_timezone"
+ */
+export type Result<T, E extends SyntaxErrorCode> = T | SyntaxErrorNode<E>;
+
+/**
+ * Type guard to check if a Result is a SyntaxErrorNode
+ */
+export function isSyntaxError<T, E extends SyntaxErrorCode>(
+  result: Result<T, E>,
+): result is SyntaxErrorNode<E> {
+  return (result as SyntaxErrorNode).type === "syntax_error";
+}
+
+/**
+ * Type guard to check if a Result is a valid value (not a SyntaxErrorNode)
+ */
+export function isValidResult<T, E extends SyntaxErrorCode>(result: Result<T, E>): result is T {
+  return (result as SyntaxErrorNode).type !== "syntax_error";
+}
+
+// ===================
 // Source File
 // ===================
 
@@ -239,9 +312,90 @@ export interface ContentLine extends AstNode {
 // Terminal Nodes
 // ===================
 
+// ===================
+// Timestamp Parts (decomposed)
+// ===================
+
+/**
+ * The date portion of a timestamp (YYYY-MM-DD)
+ */
+export interface DatePart extends AstNode {
+  type: "date_part";
+  year: number;
+  month: number;
+  day: number;
+  /** The formatted date string (YYYY-MM-DD) */
+  value: string;
+}
+
+/**
+ * The time portion of a timestamp (HH:MM)
+ */
+export interface TimePart extends AstNode {
+  type: "time_part";
+  hour: number;
+  minute: number;
+  /** The formatted time string (HH:MM) */
+  value: string;
+}
+
+/**
+ * The timezone portion of a timestamp (e.g., "Z", "+05:30", "-08:00")
+ */
+export interface TimezonePart extends AstNode {
+  type: "timezone_part";
+  /** The timezone string (e.g., "Z", "+05:30", "-08:00") */
+  value: string;
+  /** Offset from UTC in minutes (0 for Z, positive for east, negative for west) */
+  offsetMinutes: number;
+}
+
+/**
+ * A timestamp value, either with decomposed parts (from AST builder) or
+ * just a raw value (from legacy extraction).
+ *
+ * When decomposed, the timezone can be a SyntaxErrorNode if missing.
+ *
+ * @example
+ * // Fully decomposed timestamp:
+ * {
+ *   type: "timestamp",
+ *   value: "2026-01-05T18:00Z",
+ *   date: { type: "date_part", year: 2026, month: 1, day: 5, value: "2026-01-05", ... },
+ *   time: { type: "time_part", hour: 18, minute: 0, value: "18:00", ... },
+ *   timezone: { type: "timezone_part", value: "Z", offsetMinutes: 0, ... }
+ * }
+ *
+ * @example
+ * // Timestamp with missing timezone (syntax error):
+ * {
+ *   type: "timestamp",
+ *   value: "2026-01-05T18:00",
+ *   date: { ... },
+ *   time: { ... },
+ *   timezone: { type: "syntax_error", code: "missing_timezone", message: "...", text: "..." }
+ * }
+ */
 export interface Timestamp extends AstNode {
   type: "timestamp";
+  /** The full timestamp string (for backward compatibility) */
   value: string;
+  /**
+   * Decomposed date part (optional for backward compatibility with legacy extraction).
+   * Populated by the AST builder.
+   */
+  date?: DatePart;
+  /**
+   * Decomposed time part (optional for backward compatibility with legacy extraction).
+   * Populated by the AST builder.
+   */
+  time?: TimePart;
+  /**
+   * Decomposed timezone part, or SyntaxErrorNode if missing.
+   * Optional for backward compatibility with legacy extraction.
+   * Populated by the AST builder.
+   */
+  timezone?: Result<TimezonePart, "missing_timezone">;
 }
 
 export interface Title extends AstNode {
