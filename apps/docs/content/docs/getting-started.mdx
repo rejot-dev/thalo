@@ -1,0 +1,108 @@
+---
+title: Getting Started
+description: Install Thalo and create your first knowledge base
+---
+
+# Getting Started
+
+Welcome to Thalo! This guide will help you get up and running with your first knowledge base.
+
+## Installation
+
+Thalo is distributed as a CLI tool. Install it globally using your preferred package manager:
+
+```bash
+# Using pnpm (recommended)
+pnpm add -g @rejot-dev/thalo-cli
+
+# Using npm
+npm install -g @rejot-dev/thalo-cli
+
+# Using yarn
+yarn global add @rejot-dev/thalo-cli
+```
+
+Verify the installation:
+
+```bash
+thalo --version
+```
+
+## Initialize Your Knowledge Base
+
+Create a new directory for your knowledge base and initialize it:
+
+```bash
+mkdir my-knowledge
+cd my-knowledge
+thalo init
+```
+
+This creates:
+
+- `entities.thalo` - Entity schema definitions
+- `entries.thalo` - Your knowledge entries
+- `syntheses.thalo` - Query definitions for synthesizing knowledge
+
+## Your First Entry
+
+Open `entries.thalo` and add your first entry:
+
+```text
+2026-01-08T14:30Z create opinion "Plain text is powerful" ^first-opinion #pkm
+  confidence: "high"
+
+  # Claim
+  Plain text formats are the most durable and flexible way to store knowledge.
+
+  # Reasoning
+  - Works with any tool
+  - Version control friendly
+  - Human and machine readable
+```
+
+## Validate Your Entries
+
+Check your entries against the schema:
+
+```bash
+thalo check
+```
+
+This validates:
+
+- Syntax correctness
+- Required metadata fields
+- Entity type definitions
+- Link references
+
+## Next Steps
+
+- Learn about [Thalo syntax](/docs/syntax)
+- Explore [entity definitions](/docs/entities)
+- Check out the [CLI reference](/docs/cli)
+- See [examples](/docs/examples)
+
+## Editor Support
+
+For the best experience, install the VSCode extension:
+
+1. Open VSCode
+2. Go to Extensions (Cmd/Ctrl + Shift + X)
+3. Search for "Thalo"
+4. Install the official extension
+
+The extension provides:
+
+- Syntax highlighting
+- Autocomplete
+- Diagnostics
+- Go-to-definition for links
+
+## What's Next?
+
+Now that you have Thalo set up, start capturing your knowledge! The language is designed to be
+simple enough to jot down thoughts quickly, while being structured enough to query and synthesize
+later.
+
+Your knowledge base grows with you—start simple and add structure as you need it.

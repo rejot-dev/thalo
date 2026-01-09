@@ -20,6 +20,12 @@ pnpm build
 - `pnpm exec turbo run types:check build test`
   - (types:check, build, test are individual tasks)
 
+After changing the grammar, run:
+
+```bash
+node scripts/check-rebuild.mjs --fix
+```
+
 ## Package Structure
 
 ### `packages/`
@@ -39,6 +45,7 @@ pnpm build
 | App         | Description                                               |
 | ----------- | --------------------------------------------------------- |
 | `thalo-cli` | CLI tool (`init`, `check`, `actualize`, `rules` commands) |
+| `docs`      | Documentation site (React Router + Fumadocs + Cloudflare) |
 
 ## Tech Stack
 

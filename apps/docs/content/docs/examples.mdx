@@ -1,0 +1,199 @@
+---
+title: Examples
+description: Real-world examples of Thalo knowledge bases
+---
+
+# Examples
+
+See how Thalo is used in practice with these real-world examples.
+
+## Opinion Entry
+
+Capture your stances on topics:
+
+```text
+2026-01-08T14:30Z create opinion "Premature abstraction is worse than duplication" ^opinion-abstraction #programming #architecture
+  confidence: "high"
+  related: ^no-abstraction, ^pragmatic-programmer
+
+  # Claim
+  Abstracting too early creates rigid, hard-to-change code. It's better to tolerate
+  some duplication until patterns clearly emerge.
+
+  # Reasoning
+  - Abstractions encode assumptions about what varies together
+  - Early abstractions often encode the wrong assumptions
+  - Changing a wrong abstraction is harder than merging duplicated code
+  - The Rule of Three exists for a reason: wait for the third instance
+
+  # Caveats
+  - This doesn't excuse copy-paste programming
+  - Some abstractions (like API boundaries) need to be designed upfront
+  - Experience helps you recognize when abstraction is appropriate
+```
+
+## Reference Entry
+
+Track external resources:
+
+```text
+2026-01-07T10:18Z create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
+  ref-type: "book"
+  author: "Robert C. Martin"
+  published: 2008-08-01
+  status: "read"
+
+  # Summary
+  A handbook of agile software craftsmanship that emphasizes writing readable,
+  maintainable code through meaningful names, small functions, and clear structure.
+
+  # Key Takeaways
+  - Functions should do one thing and do it well
+  - Names should reveal intent
+  - Comments are often a sign of failure to express yourself in code
+  - Boy Scout Rule: Leave the code cleaner than you found it
+```
+
+## Journal Entry
+
+Record personal thoughts and reflections:
+
+```text
+2026-01-07T10:18Z create journal "Reflecting on abstractions in software design" #programming #reflection
+  subject: ^self
+  type: "reflection"
+  mood: "contemplative"
+  context: "Reading discussions about clean code vs. pragmatic code"
+
+  # Entry
+
+  I've been thinking about how my views on abstraction have evolved. Early in my
+  career, I was obsessed with eliminating duplication and creating "elegant"
+  abstractions. Now I see that often those abstractions were premature.
+
+  The best code I've written recently has been almost embarrassingly simple. Functions
+  that do exactly one thing, with obvious names, minimal indirection. Code that a
+  junior developer could understand in minutes.
+
+  Maybe that's the real test: can someone else change this code confidently?
+```
+
+## Lore Entry
+
+Capture facts and insights:
+
+```text
+2026-01-07T10:18Z create lore "Simple code is often better than clever code" #programming #insights
+  type: "insight"
+  subject: ^self
+  date: 2024 ~ 2026
+
+  # Description
+  Through years of maintaining production systems, I've learned that boring,
+  obvious code outlasts clever abstractions. The code that's easiest to debug
+  at 3 AM is code with minimal indirection and clear data flow.
+```
+
+## Synthesis Definition
+
+Query and synthesize knowledge:
+
+```text
+2026-01-08T14:30Z define-synthesis "My Programming Philosophy" ^prog-philosophy #programming
+  sources: opinion where #programming, lore where #insights
+
+  # Prompt
+  Synthesize my programming opinions and insights into a coherent philosophy.
+  Note any contradictions or evolution in my thinking. Highlight recurring
+  themes and principles that guide my approach to software development.
+```
+
+## Complete Example: Programming Knowledge Base
+
+Here's a complete example of entity definitions and entries:
+
+### entities.thalo
+
+```text
+2026-01-07T11:40Z define-entity opinion "Formed stances on topics"
+  # Metadata
+  confidence: "high" | "medium" | "low"
+  supersedes?: link ; "Reference to previous stance"
+  related?: link[] ; "Related entries"
+
+  # Sections
+  Claim ; "Core opinion in 1-2 sentences"
+  Reasoning ; "Bullet points supporting the claim"
+  Caveats? ; "Edge cases, limitations, exceptions"
+
+2026-01-07T11:40Z define-entity reference "External resources or local files"
+  # Metadata
+  url?: string ; "Full URL to external resource"
+  file?: string ; "Path to local file"
+  ref-type: "article" | "video" | "tweet" | "paper" | "book" | "other"
+  author?: string | link ; "Creator/author name"
+  published?: datetime ; "Publication date"
+  status?: "unread" | "read" | "processed" = "unread"
+
+  # Sections
+  Summary? ; "Brief summary of the content"
+  Key Takeaways? ; "Bullet points of main insights"
+  Related? ; "Links to related entries"
+
+2026-01-07T11:40Z define-entity me "Entity to allow for self-references" ^self
+  # Sections
+  Bio ; "Need at least one section"
+```
+
+### entries.thalo
+
+```text
+2026-01-07T10:18Z create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
+  ref-type: "book"
+  author: "Robert C. Martin"
+  published: 2008-08-01
+  status: "read"
+
+  # Summary
+  A handbook of agile software craftsmanship that emphasizes writing readable,
+  maintainable code through meaningful names, small functions, and clear structure.
+
+  # Key Takeaways
+  - Functions should do one thing and do it well
+  - Names should reveal intent
+  - Comments are often a sign of failure to express yourself in code
+
+2026-01-08T14:30Z create opinion "Comments explain why, not what" ^opinion-comments #programming #documentation
+  confidence: "high"
+  related: ^clean-code
+
+  # Claim
+  Comments should explain intent, constraints, and non-obvious decisions—not describe
+  what the code does, which should be self-evident.
+
+  # Reasoning
+  - Code describes "what" better than comments ever could
+  - Comments explaining "what" go stale as code changes
+  - "Why" comments capture context that code cannot express
+  - Business rules, workarounds, and trade-offs deserve comments
+
+  # Caveats
+  - Complex algorithms may need "what" explanations
+  - Public API documentation is a different category
+  - Regex and obscure syntax benefit from inline explanation
+```
+
+## Tips for Your Knowledge Base
+
+1. **Start simple**: Begin with basic entries and add structure as needed
+2. **Link liberally**: Connect related entries to build a web of knowledge
+3. **Tag consistently**: Establish tag conventions early
+4. **Use syntheses**: Query and synthesize your knowledge regularly
+5. **Version control**: Commit your `.thalo` files to git
+6. **Iterate on schemas**: Refine entity definitions as your needs evolve
+
+## Next Steps
+
+- Learn about [syntax](/docs/syntax)
+- Explore [entity definitions](/docs/entities)
+- Check the [CLI reference](/docs/cli)

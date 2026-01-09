@@ -1,0 +1,208 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.5rem;
+  --spacing: 0.2rem;
+
+  /* Light theme: warm parchment with rich sepia ink - like a journal */
+  --background: oklch(0.98 0.01 85);
+  --foreground: oklch(0.22 0.03 50);
+  --card: oklch(0.995 0.008 85);
+  --card-foreground: oklch(0.22 0.03 50);
+  --popover: oklch(0.995 0.008 85);
+  --popover-foreground: oklch(0.22 0.03 50);
+
+  /* Primary: warm amber/ochre */
+  --primary: oklch(0.55 0.15 55);
+  --primary-foreground: oklch(0.99 0.01 85);
+  --secondary: oklch(0.95 0.015 85);
+  --secondary-foreground: oklch(0.25 0.03 50);
+  --muted: oklch(0.94 0.015 85);
+  --muted-foreground: oklch(0.5 0.03 50);
+  --accent: oklch(0.92 0.04 55);
+  --accent-foreground: oklch(0.25 0.03 50);
+
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(0.88 0.02 75);
+  --input: oklch(0.92 0.015 85);
+  --ring: oklch(0.6 0.12 55);
+
+  /* Charts: earthy palette */
+  --chart-1: oklch(0.55 0.15 55);
+  --chart-2: oklch(0.5 0.12 150);
+  --chart-3: oklch(0.55 0.1 25);
+  --chart-4: oklch(0.6 0.15 85);
+  --chart-5: oklch(0.5 0.08 200);
+
+  /* Sidebar: slightly warmer */
+  --sidebar: oklch(0.97 0.012 85);
+  --sidebar-foreground: oklch(0.22 0.03 50);
+  --sidebar-primary: oklch(0.55 0.15 55);
+  --sidebar-primary-foreground: oklch(0.99 0.01 85);
+  --sidebar-accent: oklch(0.92 0.04 55);
+  --sidebar-accent-foreground: oklch(0.25 0.03 50);
+  --sidebar-border: oklch(0.88 0.02 75);
+  --sidebar-ring: oklch(0.6 0.12 55);
+}
+
+.dark {
+  /* Dark theme: deep charcoal with warm amber accents - like writing by candlelight */
+  --background: oklch(0.14 0.015 50);
+  --foreground: oklch(0.92 0.02 85);
+  --card: oklch(0.18 0.015 50);
+  --card-foreground: oklch(0.92 0.02 85);
+  --popover: oklch(0.18 0.015 50);
+  --popover-foreground: oklch(0.92 0.02 85);
+
+  /* Primary: warm amber glow */
+  --primary: oklch(0.72 0.14 55);
+  --primary-foreground: oklch(0.16 0.015 50);
+  --secondary: oklch(0.22 0.015 50);
+  --secondary-foreground: oklch(0.92 0.02 85);
+  --muted: oklch(0.24 0.015 50);
+  --muted-foreground: oklch(0.68 0.02 85);
+  --accent: oklch(0.28 0.04 55);
+  --accent-foreground: oklch(0.92 0.02 85);
+
+  --destructive: oklch(0.65 0.18 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.72 0.1 55);
+
+  --chart-1: oklch(0.72 0.14 55);
+  --chart-2: oklch(0.7 0.12 150);
+  --chart-3: oklch(0.75 0.1 25);
+  --chart-4: oklch(0.7 0.15 85);
+  --chart-5: oklch(0.65 0.08 200);
+
+  --sidebar: oklch(0.16 0.015 50);
+  --sidebar-foreground: oklch(0.92 0.02 85);
+  --sidebar-primary: oklch(0.72 0.14 55);
+  --sidebar-primary-foreground: oklch(0.16 0.015 50);
+  --sidebar-accent: oklch(0.28 0.04 55);
+  --sidebar-accent-foreground: oklch(0.92 0.02 85);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.72 0.1 55);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    font-family:
+      "Space Grotesk",
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      "Noto Sans",
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Segoe UI Symbol",
+      sans-serif;
+    font-optical-sizing: auto;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    /* Subtle paper texture effect */
+    background-image:
+      radial-gradient(ellipse 1400px 700px at 30% -15%, oklch(0.92 0.04 55 / 25%), transparent 65%),
+      radial-gradient(ellipse 800px 400px at 85% 10%, oklch(0.88 0.06 85 / 20%), transparent 55%);
+  }
+  .dark body {
+    background-image:
+      radial-gradient(ellipse 1400px 700px at 30% -15%, oklch(0.55 0.12 55 / 18%), transparent 65%),
+      radial-gradient(ellipse 800px 400px at 85% 10%, oklch(0.45 0.08 85 / 12%), transparent 55%);
+  }
+
+  ::selection {
+    background: oklch(0.65 0.12 55 / 35%);
+  }
+  .dark ::selection {
+    background: oklch(0.72 0.14 55 / 35%);
+  }
+}
+
+/* Custom scrollbar for code blocks */
+pre::-webkit-scrollbar {
+  height: 6px;
+}
+pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+pre::-webkit-scrollbar-thumb {
+  background: oklch(0.7 0.05 55 / 30%);
+  border-radius: 3px;
+}
+pre::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.6 0.08 55 / 50%);
+}
+
+/* Syntax highlighting adjustments for thalo-like content */
+.prose pre {
+  @apply border border-border/50;
+}
+
+/* Animation for code examples */
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.typewriter-line {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typewriter 2s steps(40) forwards;
+}

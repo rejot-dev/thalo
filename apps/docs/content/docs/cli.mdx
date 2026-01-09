@@ -1,0 +1,229 @@
+---
+title: CLI Reference
+description: Complete reference for the Thalo command-line interface
+---
+
+# CLI Reference
+
+The Thalo CLI (`thalo`) provides commands for managing your knowledge base.
+
+## Installation
+
+```bash
+pnpm add -g @rejot-dev/thalo-cli
+```
+
+## Commands
+
+### `thalo init`
+
+Initialize a new Thalo knowledge base in the current directory.
+
+```bash
+thalo init
+```
+
+Creates:
+
+- `entities.thalo` - Entity schema definitions
+- `entries.thalo` - Your knowledge entries
+- `syntheses.thalo` - Synthesis query definitions
+
+**Options:**
+
+- None
+
+**Example:**
+
+```bash
+mkdir my-knowledge
+cd my-knowledge
+thalo init
+```
+
+### `thalo check`
+
+Validate Thalo files against their schemas.
+
+```bash
+thalo check [files...]
+```
+
+**Options:**
+
+- `files` - Specific files to check (defaults to all `.thalo` files in current directory)
+
+**What it validates:**
+
+- Syntax correctness
+- Required metadata fields
+- Field type compatibility
+- Required sections
+- Link references
+- Enum value validity
+
+**Example:**
+
+```bash
+# Check all files
+thalo check
+
+# Check specific files
+thalo check entries.thalo entities.thalo
+```
+
+**Exit codes:**
+
+- `0` - All checks passed
+- `1` - Validation errors found
+
+### `thalo actualize`
+
+Generate synthesized content from syntheses.
+
+```bash
+thalo actualize [synthesis-id]
+```
+
+**Options:**
+
+- `synthesis-id` - Specific synthesis to actualize (optional)
+
+**Example:**
+
+```bash
+# Actualize all syntheses
+thalo actualize
+
+# Actualize specific synthesis
+thalo actualize ^prog-philosophy
+```
+
+### `thalo rules`
+
+Display validation rules for your knowledge base.
+
+```bash
+thalo rules
+```
+
+Shows all entity definitions and their validation rules.
+
+**Example:**
+
+```bash
+thalo rules
+```
+
+## Global Options
+
+### `--help`, `-h`
+
+Display help information.
+
+```bash
+thalo --help
+thalo check --help
+```
+
+### `--version`, `-v`
+
+Display version information.
+
+```bash
+thalo --version
+```
+
+## Workflow Examples
+
+### Daily Workflow
+
+```bash
+# 1. Check your entries before committing
+thalo check
+
+# 2. If valid, commit to git
+git add entries.thalo
+git commit -m "Add new opinion on TypeScript"
+```
+
+### Setting Up a New Knowledge Base
+
+```bash
+# 1. Create directory
+mkdir my-knowledge
+cd my-knowledge
+
+# 2. Initialize
+thalo init
+
+# 3. Edit entries.thalo with your content
+
+# 4. Validate
+thalo check
+```
+
+### Working with Syntheses
+
+```bash
+# 1. Define a synthesis in syntheses.thalo
+# 2. Actualize it
+thalo actualize
+
+# 3. Review generated content
+```
+
+## Error Messages
+
+The CLI provides helpful error messages:
+
+```
+Error: Missing required field 'confidence' in entry at line 5
+  Entity: opinion
+  Entry: ^ts-enums
+  File: entries.thalo
+```
+
+Common errors:
+
+- **Missing required field** - Add the required metadata field
+- **Invalid type** - Check the field type matches the schema
+- **Missing required section** - Add the required section
+- **Invalid link reference** - Ensure the linked entry exists
+- **Invalid enum value** - Use one of the allowed enum values
+
+## Integration with Git
+
+Thalo files are plain text, making them perfect for version control:
+
+```bash
+# Add .thalo files to git
+git add *.thalo
+
+# Commit changes
+git commit -m "Add new knowledge entries"
+
+# View history
+git log -- entries.thalo
+```
+
+## Editor Integration
+
+For the best experience, use the VSCode extension which provides:
+
+- Real-time validation
+- Autocomplete
+- Diagnostics
+- Go-to-definition
+
+The CLI is still useful for:
+
+- CI/CD validation
+- Batch operations
+- Scripting workflows
+
+## Next Steps
+
+- Learn about [syntax](/docs/syntax)
+- Explore [entity definitions](/docs/entities)
+- See [examples](/docs/examples)
