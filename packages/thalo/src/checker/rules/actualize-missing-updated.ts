@@ -1,4 +1,5 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor } from "../visitor.js";
 import type { Timestamp } from "../../ast/types.js";
 import { isSyntaxError } from "../../ast/types.js";
 
@@ -14,6 +15,24 @@ function formatTimestamp(ts: Timestamp): string {
   return `${date}T${time}${tz}`;
 }
 
+const visitor: RuleVisitor = {
+  visitActualizeEntry(entry, ctx) {
+    const target = entry.header.target.id;
+    const timestamp = formatTimestamp(entry.header.timestamp);
+    const updatedField = entry.metadata.find((m) => m.key.value === "updated");
+
+    if (!updatedField) {
+      ctx.report({
+        message: `Actualize entry is missing 'updated:' field. Add 'updated: ${timestamp}' to track when this synthesis was last run.`,
+        file: ctx.file,
+        location: entry.location,
+        sourceMap: ctx.sourceMap,
+        data: { target, suggestedTimestamp: timestamp },
+      });
+    }
+  },
+};
+
 /**
  * Check that actualize-synthesis entries have an updated field
  */
@@ -23,30 +42,6 @@ export const actualizeMissingUpdatedRule: Rule = {
   description: "An actualize-synthesis entry must have an 'updated:' field with a timestamp",
   category,
   defaultSeverity: "error",
-
-  check(ctx) {
-    const { workspace } = ctx;
-
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "actualize_entry") {
-          continue;
-        }
-
-        const target = entry.header.target.id;
-        const timestamp = formatTimestamp(entry.header.timestamp);
-        const updatedField = entry.metadata.find((m) => m.key.value === "updated");
-
-        if (!updatedField) {
-          ctx.report({
-            message: `Actualize entry is missing 'updated:' field. Add 'updated: ${timestamp}' to track when this synthesis was last run.`,
-            file: model.file,
-            location: entry.location,
-            sourceMap: model.sourceMap,
-            data: { target, suggestedTimestamp: timestamp },
-          });
-        }
-      }
-    }
-  },
+  dependencies: { scope: "entry" },
+  visitor,
 };

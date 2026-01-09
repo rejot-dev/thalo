@@ -1,4 +1,5 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor } from "../visitor.js";
 import type { InstanceEntry } from "../../ast/types.js";
 
 const category: RuleCategory = "instance";
@@ -22,6 +23,56 @@ function getMetadataLink(
   return null;
 }
 
+const visitor: RuleVisitor = {
+  visitInstanceEntry(entry, ctx) {
+    if (entry.header.directive !== "update") {
+      return;
+    }
+
+    // Check if there's a supersedes field
+    const supersedes = getMetadataLink(entry, "supersedes");
+    if (!supersedes) {
+      return;
+    }
+
+    // Check if the superseded entry exists
+    const definition = ctx.workspace.getLinkDefinition(supersedes.id);
+    if (!definition) {
+      // This will be caught by unresolved-link rule
+      return;
+    }
+
+    // Check if the superseded entry is a create of the same entity type
+    const supersededEntry = definition.entry;
+    if (supersededEntry.type === "instance_entry") {
+      if (supersededEntry.header.directive !== "create") {
+        ctx.report({
+          message: `'update' entry supersedes another '${supersededEntry.header.directive}' entry. Consider pointing to the original 'create' entry instead.`,
+          file: ctx.file,
+          location: supersedes.location,
+          sourceMap: ctx.sourceMap,
+          data: {
+            linkId: supersedes.id,
+            supersededDirective: supersededEntry.header.directive,
+          },
+        });
+      } else if (supersededEntry.header.entity !== entry.header.entity) {
+        ctx.report({
+          message: `'update ${entry.header.entity}' supersedes a '${supersededEntry.header.entity}' entry. Entity types should match.`,
+          file: ctx.file,
+          location: supersedes.location,
+          sourceMap: ctx.sourceMap,
+          data: {
+            linkId: supersedes.id,
+            expectedEntity: entry.header.entity,
+            actualEntity: supersededEntry.header.entity,
+          },
+        });
+      }
+    }
+  },
+};
+
 /**
  * Check for 'update' entries that reference (via supersedes) a non-existent create entry
  */
@@ -31,61 +82,6 @@ export const updateWithoutCreateRule: Rule = {
   description: "update entry supersedes wrong directive/entity type",
   category,
   defaultSeverity: "warning",
-
-  check(ctx) {
-    const { workspace } = ctx;
-
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "instance_entry") {
-          continue;
-        }
-        if (entry.header.directive !== "update") {
-          continue;
-        }
-
-        // Check if there's a supersedes field
-        const supersedes = getMetadataLink(entry, "supersedes");
-        if (!supersedes) {
-          continue;
-        }
-
-        // Check if the superseded entry exists
-        const definition = workspace.getLinkDefinition(supersedes.id);
-        if (!definition) {
-          // This will be caught by unresolved-link rule, but we can add context
-          continue;
-        }
-
-        // Check if the superseded entry is a create of the same entity type
-        const supersededEntry = definition.entry;
-        if (supersededEntry.type === "instance_entry") {
-          if (supersededEntry.header.directive !== "create") {
-            ctx.report({
-              message: `'update' entry supersedes another '${supersededEntry.header.directive}' entry. Consider pointing to the original 'create' entry instead.`,
-              file: model.file,
-              location: supersedes.location,
-              sourceMap: model.sourceMap,
-              data: {
-                linkId: supersedes.id,
-                supersededDirective: supersededEntry.header.directive,
-              },
-            });
-          } else if (supersededEntry.header.entity !== entry.header.entity) {
-            ctx.report({
-              message: `'update ${entry.header.entity}' supersedes a '${supersededEntry.header.entity}' entry. Entity types should match.`,
-              file: model.file,
-              location: supersedes.location,
-              sourceMap: model.sourceMap,
-              data: {
-                linkId: supersedes.id,
-                expectedEntity: entry.header.entity,
-                actualEntity: supersededEntry.header.entity,
-              },
-            });
-          }
-        }
-      }
-    }
-  },
+  dependencies: { scope: "entry", links: true },
+  visitor,
 };

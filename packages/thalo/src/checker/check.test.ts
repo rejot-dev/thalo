@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type { SyntaxNode } from "tree-sitter";
 import { Workspace } from "../model/workspace.js";
-import { check, checkModel, checkDocument } from "./check.js";
+import { check, checkModel, checkDocument, checkIncremental } from "./check.js";
 import type {
   SourceFile,
   InstanceEntry,
@@ -104,6 +104,7 @@ function createAstWithSyntaxError(): SourceFile {
   return {
     type: "source_file",
     entries: [entry],
+    syntaxErrors: [],
     location: mockLocation(0, 33),
     syntaxNode: mockSyntaxNode(),
   };
@@ -172,6 +173,52 @@ describe("check", () => {
 
       // Restore original AST
       Object.assign(model, { ast: originalAst });
+    });
+  });
+
+  describe("root-level syntax errors", () => {
+    it("should report syntax errors for entries with invalid timestamp (missing timezone)", () => {
+      // This entry has an invalid timestamp missing the timezone (e.g., Z or +05:30)
+      // The parser will create an ERROR node at the root level for this
+      workspace.addDocument(
+        `2026-01-09T16:07 create lore "Invalid entry" #test
+`,
+        { filename: "test.thalo" },
+      );
+
+      const diagnostics = check(workspace);
+      const syntaxErrors = diagnostics.filter((d) => d.code.startsWith("syntax-"));
+
+      expect(syntaxErrors.length).toBeGreaterThanOrEqual(1);
+      expect(syntaxErrors[0].severity).toBe("error");
+    });
+
+    it("should report syntax errors for malformed entries mixed with valid ones", () => {
+      workspace.addDocument(
+        `2026-01-01T00:00Z define-entity lore "Lore entries"
+  # Metadata
+  type: "fact"
+
+  # Sections
+  Description
+
+2026-01-05T18:00Z create lore "Valid entry" #test
+  type: "fact"
+
+  # Description
+  Valid content here.
+
+2026-01-09T16:07 create lore "Invalid entry" #invalid
+`,
+        { filename: "test.thalo" },
+      );
+
+      const diagnostics = check(workspace);
+      const syntaxErrors = diagnostics.filter((d) => d.code.startsWith("syntax-"));
+
+      expect(syntaxErrors.length).toBeGreaterThanOrEqual(1);
+      // Should report the syntax error
+      expect(syntaxErrors[0].severity).toBe("error");
     });
   });
 
@@ -299,5 +346,172 @@ describe("checkDocument", () => {
     // Should report unknown-entity since journal isn't defined
     const unknownEntity = diagnostics.find((d) => d.code === "unknown-entity");
     expect(unknownEntity).toBeDefined();
+  });
+});
+
+describe("checkIncremental", () => {
+  let workspace: Workspace;
+
+  // Helper to create InvalidationResult
+  const createInvalidation = (
+    overrides: Partial<{
+      schemasChanged: boolean;
+      linksChanged: boolean;
+      affectedFiles: string[];
+      changedEntityNames: string[];
+      changedLinkIds: string[];
+    }> = {},
+  ) => ({
+    affectedFiles: [],
+    schemasChanged: false,
+    linksChanged: false,
+    changedEntityNames: [],
+    changedLinkIds: [],
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    workspace = new Workspace();
+  });
+
+  it("should return empty array for non-existent file", () => {
+    const diagnostics = checkIncremental(
+      workspace,
+      "nonexistent.thalo",
+      [],
+      createInvalidation(),
+    );
+    expect(diagnostics).toHaveLength(0);
+  });
+
+  it("should check changed entries when schemas unchanged", () => {
+    // Add schema
+    workspace.addDocument(
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
+  # Metadata
+  type: "fact"
+`,
+      { filename: "schema.thalo" },
+    );
+
+    // Add document with valid entry
+    workspace.addDocument(
+      `2026-01-05T18:00Z create lore "Test entry"
+  type: "fact"
+`,
+      { filename: "test.thalo" },
+    );
+
+    const model = workspace.getModel("test.thalo")!;
+    const changedEntries = model.ast.entries;
+
+    const diagnostics = checkIncremental(
+      workspace,
+      "test.thalo",
+      changedEntries,
+      createInvalidation(),
+    );
+
+    // Should not have unknown-entity error since lore is defined
+    const unknownEntity = diagnostics.find((d) => d.code === "unknown-entity");
+    expect(unknownEntity).toBeUndefined();
+  });
+
+  it("should only return diagnostics for the changed file", () => {
+    // Add schema
+    workspace.addDocument(
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
+  # Metadata
+  type: "fact"
+`,
+      { filename: "schema.thalo" },
+    );
+
+    // Add document with unknown entity
+    workspace.addDocument(
+      `2026-01-05T18:00Z create journal "Test" #test
+  type: "fact"
+`,
+      { filename: "test.thalo" },
+    );
+
+    const model = workspace.getModel("test.thalo")!;
+    const changedEntries = model.ast.entries;
+
+    const diagnostics = checkIncremental(
+      workspace,
+      "test.thalo",
+      changedEntries,
+      createInvalidation(),
+    );
+
+    // All diagnostics should be for test.thalo only
+    for (const d of diagnostics) {
+      expect(d.file).toBe("test.thalo");
+    }
+  });
+
+  it("should run workspace-scoped rules when schemas changed", () => {
+    // Add two define-entity entries for the same entity (duplicate)
+    workspace.addDocument(
+      `2026-01-01T00:00Z define-entity lore "Lore entity"
+  # Metadata
+  type: "fact"
+
+2026-01-01T00:01Z define-entity lore "Duplicate lore"
+  # Metadata
+  other: string
+`,
+      { filename: "schema.thalo" },
+    );
+
+    const model = workspace.getModel("schema.thalo")!;
+    const changedEntries = model.ast.entries;
+
+    const diagnostics = checkIncremental(
+      workspace,
+      "schema.thalo",
+      changedEntries,
+      createInvalidation({ schemasChanged: true }),
+    );
+
+    // Should detect duplicate entity definition
+    const duplicateEntity = diagnostics.find((d) => d.code === "duplicate-entity-definition");
+    expect(duplicateEntity).toBeDefined();
+  });
+
+  it("should run link-scoped rules when links changed", () => {
+    // Add schema
+    workspace.addDocument(
+      `2026-01-01T00:00Z define-entity lore "Lore entries"
+  # Metadata
+  type: "fact"
+  related?: link
+`,
+      { filename: "schema.thalo" },
+    );
+
+    // Add entry with unresolved link
+    workspace.addDocument(
+      `2026-01-05T18:00Z create lore "Test entry"
+  type: "fact"
+  related: ^nonexistent
+`,
+      { filename: "test.thalo" },
+    );
+
+    const model = workspace.getModel("test.thalo")!;
+    const changedEntries = model.ast.entries;
+
+    const diagnostics = checkIncremental(
+      workspace,
+      "test.thalo",
+      changedEntries,
+      createInvalidation({ linksChanged: true }),
+    );
+
+    // Should detect unresolved link
+    const unresolvedLink = diagnostics.find((d) => d.code === "unresolved-link");
+    expect(unresolvedLink).toBeDefined();
   });
 });

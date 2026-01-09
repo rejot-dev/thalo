@@ -1,6 +1,34 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor } from "../visitor.js";
 
 const category: RuleCategory = "instance";
+
+const visitor: RuleVisitor = {
+  visitSynthesisEntry(entry, ctx) {
+    const title = entry.header.title.value;
+    const sourcesMetadata = entry.metadata.find((m) => m.key.value === "sources");
+
+    if (!sourcesMetadata) {
+      // Missing sources is handled by synthesis-missing-sources rule
+      return;
+    }
+
+    // Check if sources value is empty or just whitespace
+    const sourcesValue = sourcesMetadata.value;
+    if (
+      sourcesValue.content.type === "quoted_value" &&
+      sourcesValue.content.value.trim() === ""
+    ) {
+      ctx.report({
+        message: `Synthesis '${title}' has an empty query. Specify an entity type like 'lore', 'journal', 'opinion', or 'reference'.`,
+        file: ctx.file,
+        location: entry.location,
+        sourceMap: ctx.sourceMap,
+        data: { title },
+      });
+    }
+  },
+};
 
 /**
  * Check that synthesis queries have at least an entity type
@@ -15,39 +43,6 @@ export const synthesisEmptyQueryRule: Rule = {
   description: "A synthesis source query must specify an entity type",
   category,
   defaultSeverity: "error",
-
-  check(ctx) {
-    const { workspace } = ctx;
-
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "synthesis_entry") {
-          continue;
-        }
-
-        const title = entry.header.title.value;
-        const sourcesMetadata = entry.metadata.find((m) => m.key.value === "sources");
-
-        if (!sourcesMetadata) {
-          // Missing sources is handled by synthesis-missing-sources rule
-          continue;
-        }
-
-        // Check if sources value is empty or just whitespace
-        const sourcesValue = sourcesMetadata.value;
-        if (
-          sourcesValue.content.type === "quoted_value" &&
-          sourcesValue.content.value.trim() === ""
-        ) {
-          ctx.report({
-            message: `Synthesis '${title}' has an empty query. Specify an entity type like 'lore', 'journal', 'opinion', or 'reference'.`,
-            file: model.file,
-            location: entry.location,
-            sourceMap: model.sourceMap,
-            data: { title },
-          });
-        }
-      }
-    }
-  },
+  dependencies: { scope: "entry" },
+  visitor,
 };

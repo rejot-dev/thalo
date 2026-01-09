@@ -1,7 +1,13 @@
 import type { SourceFile, Entry, SchemaEntry, Metadata } from "../ast/types.js";
 import type { SourceMap } from "../source-map.js";
 import type { ParsedBlock } from "../parser.js";
-import type { SemanticModel, LinkIndex, LinkDefinition, LinkReference } from "./types.js";
+import type {
+  SemanticModel,
+  LinkIndex,
+  LinkDefinition,
+  LinkReference,
+  SemanticUpdateResult,
+} from "./types.js";
 
 /**
  * Options for analyzing a document
@@ -162,4 +168,251 @@ function addReference(references: Map<string, LinkReference[]>, ref: LinkReferen
  */
 function collectSchemaEntries(ast: SourceFile): SchemaEntry[] {
   return ast.entries.filter((e): e is SchemaEntry => e.type === "schema_entry");
+}
+
+// ===================
+// Incremental Updates
+// ===================
+
+/**
+ * Update a semantic model incrementally when the AST changes.
+ *
+ * This function compares the old and new ASTs, identifies what changed,
+ * and updates the model's indexes accordingly. This is more efficient
+ * than rebuilding the entire model from scratch.
+ *
+ * @param model - The existing semantic model to update
+ * @param newAst - The new AST after changes
+ * @param newSource - The new source text
+ * @param newSourceMap - The new source map
+ * @param newBlocks - The new parsed blocks
+ * @returns Information about what changed
+ */
+export function updateSemanticModel(
+  model: SemanticModel,
+  newAst: SourceFile,
+  newSource: string,
+  newSourceMap: SourceMap,
+  newBlocks: ParsedBlock[],
+): SemanticUpdateResult {
+  const oldAst = model.ast;
+  const file = model.file;
+
+  // Track what changed
+  const result: SemanticUpdateResult = {
+    addedLinkDefinitions: [],
+    removedLinkDefinitions: [],
+    changedLinkReferences: [],
+    schemaEntriesChanged: false,
+    changedEntityNames: [],
+  };
+
+  // Build entry sets for comparison (using position as identity)
+  const oldEntryKeys = new Set(oldAst.entries.map(entryKey));
+  const newEntryKeys = new Set(newAst.entries.map(entryKey));
+
+  // Find added and removed entries
+  const addedEntries: Entry[] = [];
+  const removedEntries: Entry[] = [];
+
+  for (const entry of oldAst.entries) {
+    if (!newEntryKeys.has(entryKey(entry))) {
+      removedEntries.push(entry);
+    }
+  }
+
+  for (const entry of newAst.entries) {
+    if (!oldEntryKeys.has(entryKey(entry))) {
+      addedEntries.push(entry);
+    }
+  }
+
+  // Update link index
+  const linkResult = updateLinkIndex(model.linkIndex, file, removedEntries, addedEntries);
+  result.addedLinkDefinitions = linkResult.addedDefinitions;
+  result.removedLinkDefinitions = linkResult.removedDefinitions;
+  result.changedLinkReferences = linkResult.changedReferences;
+
+  // Update schema entries
+  const oldSchemaEntries = model.schemaEntries;
+  const newSchemaEntries = collectSchemaEntries(newAst);
+
+  // Check if schema entries changed
+  if (!schemaEntriesEqual(oldSchemaEntries, newSchemaEntries)) {
+    result.schemaEntriesChanged = true;
+
+    // Find changed entity names
+    const oldEntityNames = new Set(oldSchemaEntries.map((e) => e.header.entityName.value));
+    const newEntityNames = new Set(newSchemaEntries.map((e) => e.header.entityName.value));
+
+    for (const name of oldEntityNames) {
+      if (!newEntityNames.has(name)) {
+        result.changedEntityNames.push(name);
+      }
+    }
+    for (const name of newEntityNames) {
+      if (!oldEntityNames.has(name)) {
+        result.changedEntityNames.push(name);
+      }
+    }
+
+    // Also check for modified entries (same name but different content)
+    for (const oldEntry of oldSchemaEntries) {
+      const newEntry = newSchemaEntries.find(
+        (e) => e.header.entityName.value === oldEntry.header.entityName.value,
+      );
+      if (newEntry && !schemaEntryEqual(oldEntry, newEntry)) {
+        if (!result.changedEntityNames.includes(oldEntry.header.entityName.value)) {
+          result.changedEntityNames.push(oldEntry.header.entityName.value);
+        }
+      }
+    }
+  }
+
+  // Update the model in place
+  model.ast = newAst;
+  model.source = newSource;
+  model.sourceMap = newSourceMap;
+  model.blocks = newBlocks;
+  model.schemaEntries = newSchemaEntries;
+  model.dirty = {
+    linkIndex: false,
+    schemaEntries: false,
+  };
+
+  return result;
+}
+
+/**
+ * Create a unique key for an entry based on its type and position.
+ */
+function entryKey(entry: Entry): string {
+  return `${entry.type}:${entry.location.startIndex}:${entry.location.endIndex}`;
+}
+
+/**
+ * Update the link index based on removed and added entries.
+ */
+function updateLinkIndex(
+  linkIndex: LinkIndex,
+  file: string,
+  removedEntries: Entry[],
+  addedEntries: Entry[],
+): { addedDefinitions: string[]; removedDefinitions: string[]; changedReferences: string[] } {
+  const addedDefinitions: string[] = [];
+  const removedDefinitions: string[] = [];
+  const changedReferences = new Set<string>();
+
+  // Remove links from removed entries
+  for (const entry of removedEntries) {
+    const linkDef = getEntryLinkDefinition(entry);
+    if (linkDef) {
+      linkIndex.definitions.delete(linkDef.id);
+      removedDefinitions.push(linkDef.id);
+    }
+
+    // Remove references from this entry
+    removeEntryReferences(linkIndex.references, entry, changedReferences);
+  }
+
+  // Add links from added entries
+  for (const entry of addedEntries) {
+    indexEntryLinks(entry, file, linkIndex.definitions, linkIndex.references);
+
+    const linkDef = getEntryLinkDefinition(entry);
+    if (linkDef) {
+      addedDefinitions.push(linkDef.id);
+    }
+
+    // Track changed references
+    trackEntryReferences(entry, changedReferences);
+  }
+
+  return {
+    addedDefinitions,
+    removedDefinitions,
+    changedReferences: Array.from(changedReferences),
+  };
+}
+
+/**
+ * Remove all references from a specific entry.
+ */
+function removeEntryReferences(
+  references: Map<string, LinkReference[]>,
+  entry: Entry,
+  changedReferences: Set<string>,
+): void {
+  for (const [linkId, refs] of references) {
+    const filtered = refs.filter((ref) => ref.entry !== entry);
+    if (filtered.length !== refs.length) {
+      changedReferences.add(linkId);
+      if (filtered.length === 0) {
+        references.delete(linkId);
+      } else {
+        references.set(linkId, filtered);
+      }
+    }
+  }
+}
+
+/**
+ * Track which link IDs are referenced by an entry.
+ */
+function trackEntryReferences(entry: Entry, changedReferences: Set<string>): void {
+  if (entry.type === "instance_entry" || entry.type === "synthesis_entry") {
+    for (const m of entry.metadata) {
+      const content = m.value.content;
+      if (content.type === "link_value") {
+        changedReferences.add(content.link.id);
+      } else if (content.type === "value_array") {
+        for (const element of content.elements) {
+          if (element.type === "link") {
+            changedReferences.add(element.id);
+          }
+        }
+      }
+    }
+  } else if (entry.type === "actualize_entry") {
+    changedReferences.add(entry.header.target.id);
+    for (const m of entry.metadata) {
+      const content = m.value.content;
+      if (content.type === "link_value") {
+        changedReferences.add(content.link.id);
+      } else if (content.type === "value_array") {
+        for (const element of content.elements) {
+          if (element.type === "link") {
+            changedReferences.add(element.id);
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Check if two arrays of schema entries are equal.
+ */
+function schemaEntriesEqual(a: SchemaEntry[], b: SchemaEntry[]): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (!schemaEntryEqual(a[i], b[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Check if two schema entries are equal (by entity name and directive).
+ */
+function schemaEntryEqual(a: SchemaEntry, b: SchemaEntry): boolean {
+  return (
+    a.header.entityName.value === b.header.entityName.value &&
+    a.header.directive === b.header.directive &&
+    a.location.startIndex === b.location.startIndex &&
+    a.location.endIndex === b.location.endIndex
+  );
 }

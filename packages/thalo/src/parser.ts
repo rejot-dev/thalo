@@ -22,6 +22,23 @@ export const parseThalo = (source: string): Tree => {
 };
 
 /**
+ * Parse a thalo source string with optional incremental parsing.
+ *
+ * When an oldTree is provided, tree-sitter can reuse unchanged parts of the
+ * parse tree, making parsing much faster for small edits.
+ *
+ * Note: Before calling this with an oldTree, you must call oldTree.edit()
+ * to inform tree-sitter about the changes made to the source.
+ *
+ * @param source - The thalo source code to parse
+ * @param oldTree - Optional previous tree for incremental parsing
+ * @returns The parsed tree-sitter Tree
+ */
+export const parseThaloIncremental = (source: string, oldTree?: Tree): Tree => {
+  return getParser().parse(source, oldTree);
+};
+
+/**
  * A parsed thalo block with its source, source map for position translation, and parse tree.
  */
 export interface ParsedBlock {

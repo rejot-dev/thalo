@@ -1,4 +1,5 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor } from "../visitor.js";
 import type { InstanceEntry } from "../../ast/types.js";
 
 const category: RuleCategory = "instance";
@@ -19,6 +20,30 @@ function getSectionNames(entry: InstanceEntry): string[] {
     });
 }
 
+const visitor: RuleVisitor = {
+  visitInstanceEntry(entry, ctx) {
+    const registry = ctx.workspace.schemaRegistry;
+    const entity = entry.header.entity;
+    const schema = registry.get(entity);
+
+    if (!schema) {
+      return; // Will be caught by unknown-entity rule
+    }
+
+    for (const sectionName of getSectionNames(entry)) {
+      if (!schema.sections.has(sectionName)) {
+        ctx.report({
+          message: `Unknown section '${sectionName}' for entity '${entity}'.`,
+          file: ctx.file,
+          location: entry.location, // Ideally we'd have the section's location
+          sourceMap: ctx.sourceMap,
+          data: { section: sectionName, entity },
+        });
+      }
+    }
+  },
+};
+
 /**
  * Check for sections in content not defined in the entity schema
  */
@@ -28,35 +53,6 @@ export const unknownSectionRule: Rule = {
   description: "Section not defined in entity schema",
   category,
   defaultSeverity: "warning",
-
-  check(ctx) {
-    const { workspace } = ctx;
-    const registry = workspace.schemaRegistry;
-
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "instance_entry") {
-          continue;
-        }
-
-        const entity = entry.header.entity;
-        const schema = registry.get(entity);
-        if (!schema) {
-          continue;
-        } // Will be caught by unknown-entity rule
-
-        for (const sectionName of getSectionNames(entry)) {
-          if (!schema.sections.has(sectionName)) {
-            ctx.report({
-              message: `Unknown section '${sectionName}' for entity '${entity}'.`,
-              file: model.file,
-              location: entry.location, // Ideally we'd have the section's location
-              sourceMap: model.sourceMap,
-              data: { section: sectionName, entity },
-            });
-          }
-        }
-      }
-    }
-  },
+  dependencies: { scope: "entry", schemas: true },
+  visitor,
 };

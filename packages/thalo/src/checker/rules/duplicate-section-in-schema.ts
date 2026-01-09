@@ -1,6 +1,32 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor } from "../visitor.js";
 
 const category: RuleCategory = "schema";
+
+const visitor: RuleVisitor = {
+  visitSchemaEntry(entry, ctx) {
+    const sections = entry.sectionsBlock?.sections ?? [];
+    const seenSections = new Map<string, number>();
+
+    for (const section of sections) {
+      const sectionName = section.name.value;
+      const sectionLine = section.location?.startPosition.row ?? 0;
+      const existingLine = seenSections.get(sectionName);
+
+      if (existingLine !== undefined) {
+        ctx.report({
+          message: `Duplicate section '${sectionName}' in schema entry. First defined at line ${existingLine}.`,
+          file: ctx.file,
+          location: section.location,
+          sourceMap: ctx.sourceMap,
+          data: { sectionName, firstLine: existingLine },
+        });
+      } else {
+        seenSections.set(sectionName, sectionLine + 1);
+      }
+    }
+  },
+};
 
 /**
  * Check for duplicate section names within a single schema entry
@@ -11,37 +37,6 @@ export const duplicateSectionInSchemaRule: Rule = {
   description: "Same section defined twice in a schema entry",
   category,
   defaultSeverity: "error",
-
-  check(ctx) {
-    const { workspace } = ctx;
-
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "schema_entry") {
-          continue;
-        }
-
-        const sections = entry.sectionsBlock?.sections ?? [];
-        const seenSections = new Map<string, number>();
-
-        for (const section of sections) {
-          const sectionName = section.name.value;
-          const sectionLine = section.location?.startPosition.row ?? 0;
-          const existingLine = seenSections.get(sectionName);
-
-          if (existingLine !== undefined) {
-            ctx.report({
-              message: `Duplicate section '${sectionName}' in schema entry. First defined at line ${existingLine}.`,
-              file: model.file,
-              location: section.location,
-              sourceMap: model.sourceMap,
-              data: { sectionName, firstLine: existingLine },
-            });
-          } else {
-            seenSections.set(sectionName, sectionLine + 1);
-          }
-        }
-      }
-    }
-  },
+  dependencies: { scope: "entry" },
+  visitor,
 };

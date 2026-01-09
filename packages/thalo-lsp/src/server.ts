@@ -165,35 +165,46 @@ function publishDiagnosticsForDocument(state: ServerState, doc: TextDocument): v
 }
 
 /**
- * Refresh diagnostics for all open documents.
- * This is needed because changes in one file (e.g., removing a define-entity)
- * can affect diagnostics in other files that depend on it.
+ * Refresh diagnostics for specific files based on invalidation result.
+ * Only refreshes open documents that are in the affected files list.
  */
-function refreshAllDiagnostics(state: ServerState): void {
+function refreshDiagnosticsForFiles(
+  state: ServerState,
+  affectedFiles: string[],
+  changedFile: string,
+): void {
+  const affectedSet = new Set(affectedFiles);
+
+  // Always refresh the changed file
   for (const doc of state.documents.values()) {
-    publishDiagnosticsForDocument(state, doc);
+    const docPath = uriToPath(doc.uri);
+    if (docPath === changedFile || affectedSet.has(docPath)) {
+      publishDiagnosticsForDocument(state, doc);
+    }
   }
 }
 
 /**
- * Update a document in the workspace and publish diagnostics for all open documents
+ * Update a document in the workspace and publish diagnostics
  */
 function updateDocument(state: ServerState, doc: TextDocument): void {
-  const path = uriToPath(doc.uri);
-  const fileType = getFileType(doc.uri);
+  const filePath = uriToPath(doc.uri);
 
   try {
-    state.workspace.addDocument(doc.getText(), {
-      filename: path,
-      fileType,
-    });
+    // Use the new updateDocument method which returns affected files
+    const invalidation = state.workspace.updateDocument(filePath, doc.getText());
 
-    // Refresh diagnostics for all open documents since changes in one file
-    // can affect diagnostics in other files (e.g., entity definitions, links)
-    refreshAllDiagnostics(state);
+    // Refresh diagnostics for affected files only (more efficient)
+    if (invalidation.schemasChanged || invalidation.linksChanged) {
+      // If schemas or links changed, we might affect other files
+      refreshDiagnosticsForFiles(state, invalidation.affectedFiles, filePath);
+    } else {
+      // Only the changed file is affected
+      publishDiagnosticsForDocument(state, doc);
+    }
   } catch (error) {
     // Log parse errors but don't crash
-    console.error(`[thalo-lsp] Parse error in ${path}:`, error);
+    console.error(`[thalo-lsp] Parse error in ${filePath}:`, error);
 
     // Send a parse error diagnostic for the changed document
     state.connection.sendDiagnostics({
@@ -311,6 +322,8 @@ export function startServer(connection: Connection = createConnection()): void {
 
   // File watcher notifications - handles external file changes
   connection.onDidChangeWatchedFiles((params) => {
+    const allAffectedFiles: string[] = [];
+
     for (const change of params.changes) {
       const filePath = uriToPath(change.uri);
 
@@ -331,8 +344,8 @@ export function startServer(connection: Connection = createConnection()): void {
           try {
             if (fs.existsSync(filePath)) {
               const source = fs.readFileSync(filePath, "utf-8");
-              const fileType = getFileType(change.uri);
-              state.workspace.addDocument(source, { filename: filePath, fileType });
+              const invalidation = state.workspace.updateDocument(filePath, source);
+              allAffectedFiles.push(...invalidation.affectedFiles);
               console.error(`[thalo-lsp] Loaded external file: ${filePath}`);
             }
           } catch (err) {
@@ -343,6 +356,9 @@ export function startServer(connection: Connection = createConnection()): void {
           break;
         }
         case FileChangeType.Deleted: {
+          // Get affected files before removing
+          const affected = state.workspace.getAffectedFiles(filePath);
+          allAffectedFiles.push(...affected);
           state.workspace.removeDocument(filePath);
           console.error(`[thalo-lsp] Removed deleted file: ${filePath}`);
           break;
@@ -350,12 +366,21 @@ export function startServer(connection: Connection = createConnection()): void {
       }
     }
 
-    // Refresh diagnostics for open documents since file changes may affect them
-    refreshAllDiagnostics(state);
+    // Refresh diagnostics only for affected open documents
+    if (allAffectedFiles.length > 0) {
+      const affectedSet = new Set(allAffectedFiles);
+      for (const doc of state.documents.values()) {
+        if (affectedSet.has(uriToPath(doc.uri))) {
+          publishDiagnosticsForDocument(state, doc);
+        }
+      }
+    }
   });
 
   // File operation notifications - handles user-initiated file operations in the editor
   connection.workspace.onDidCreateFiles((params) => {
+    const allAffectedFiles: string[] = [];
+
     for (const file of params.files) {
       const filePath = uriToPath(file.uri);
 
@@ -368,8 +393,8 @@ export function startServer(connection: Connection = createConnection()): void {
       try {
         if (fs.existsSync(filePath)) {
           const source = fs.readFileSync(filePath, "utf-8");
-          const fileType = getFileType(file.uri);
-          state.workspace.addDocument(source, { filename: filePath, fileType });
+          const invalidation = state.workspace.updateDocument(filePath, source);
+          allAffectedFiles.push(...invalidation.affectedFiles);
           console.error(`[thalo-lsp] Loaded created file: ${filePath}`);
         }
       } catch (err) {
@@ -379,11 +404,20 @@ export function startServer(connection: Connection = createConnection()): void {
       }
     }
 
-    // Refresh diagnostics since new files may resolve broken references
-    refreshAllDiagnostics(state);
+    // Refresh diagnostics for affected files
+    if (allAffectedFiles.length > 0) {
+      const affectedSet = new Set(allAffectedFiles);
+      for (const doc of state.documents.values()) {
+        if (affectedSet.has(uriToPath(doc.uri))) {
+          publishDiagnosticsForDocument(state, doc);
+        }
+      }
+    }
   });
 
   connection.workspace.onDidDeleteFiles((params) => {
+    const allAffectedFiles: string[] = [];
+
     for (const file of params.files) {
       const filePath = uriToPath(file.uri);
 
@@ -392,15 +426,27 @@ export function startServer(connection: Connection = createConnection()): void {
         continue;
       }
 
+      // Get affected files before removing
+      const affected = state.workspace.getAffectedFiles(filePath);
+      allAffectedFiles.push(...affected);
       state.workspace.removeDocument(filePath);
       console.error(`[thalo-lsp] Removed file: ${filePath}`);
     }
 
-    // Refresh diagnostics since deleted files may break references
-    refreshAllDiagnostics(state);
+    // Refresh diagnostics for affected files
+    if (allAffectedFiles.length > 0) {
+      const affectedSet = new Set(allAffectedFiles);
+      for (const doc of state.documents.values()) {
+        if (affectedSet.has(uriToPath(doc.uri))) {
+          publishDiagnosticsForDocument(state, doc);
+        }
+      }
+    }
   });
 
   connection.workspace.onDidRenameFiles((params) => {
+    const allAffectedFiles: string[] = [];
+
     for (const file of params.files) {
       const oldPath = uriToPath(file.oldUri);
       const newPath = uriToPath(file.newUri);
@@ -410,6 +456,9 @@ export function startServer(connection: Connection = createConnection()): void {
       const newIsThalo = newPath.endsWith(".thalo") || newPath.endsWith(".md");
 
       if (oldIsThalo) {
+        // Get affected files before removing
+        const affected = state.workspace.getAffectedFiles(oldPath);
+        allAffectedFiles.push(...affected);
         state.workspace.removeDocument(oldPath);
         console.error(`[thalo-lsp] Removed renamed file: ${oldPath}`);
       }
@@ -419,8 +468,8 @@ export function startServer(connection: Connection = createConnection()): void {
         try {
           if (fs.existsSync(newPath)) {
             const source = fs.readFileSync(newPath, "utf-8");
-            const fileType = getFileType(file.newUri);
-            state.workspace.addDocument(source, { filename: newPath, fileType });
+            const invalidation = state.workspace.updateDocument(newPath, source);
+            allAffectedFiles.push(...invalidation.affectedFiles);
             console.error(`[thalo-lsp] Loaded renamed file: ${newPath}`);
           }
         } catch (err) {
@@ -431,8 +480,15 @@ export function startServer(connection: Connection = createConnection()): void {
       }
     }
 
-    // Refresh diagnostics since renames may affect references
-    refreshAllDiagnostics(state);
+    // Refresh diagnostics for affected files
+    if (allAffectedFiles.length > 0) {
+      const affectedSet = new Set(allAffectedFiles);
+      for (const doc of state.documents.values()) {
+        if (affectedSet.has(uriToPath(doc.uri))) {
+          publishDiagnosticsForDocument(state, doc);
+        }
+      }
+    }
   });
 
   // Go to Definition

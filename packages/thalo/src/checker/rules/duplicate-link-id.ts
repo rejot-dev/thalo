@@ -1,19 +1,11 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor, VisitorContext } from "../visitor.js";
 import type { LinkDefinition } from "../../semantic/types.js";
 
 const category: RuleCategory = "link";
 
-/**
- * Check for duplicate link ID definitions
- */
-export const duplicateLinkIdRule: Rule = {
-  code: "duplicate-link-id",
-  name: "Duplicate Link ID",
-  description: "Same explicit ^link-id defined multiple times",
-  category,
-  defaultSeverity: "error",
-
-  check(ctx) {
+const visitor: RuleVisitor = {
+  afterCheck(ctx: VisitorContext) {
     const { workspace } = ctx;
 
     // Track all definitions we've seen for each link ID
@@ -64,4 +56,17 @@ export const duplicateLinkIdRule: Rule = {
       }
     }
   },
+};
+
+/**
+ * Check for duplicate link ID definitions
+ */
+export const duplicateLinkIdRule: Rule = {
+  code: "duplicate-link-id",
+  name: "Duplicate Link ID",
+  description: "Same explicit ^link-id defined multiple times",
+  category,
+  defaultSeverity: "error",
+  dependencies: { scope: "workspace", links: true },
+  visitor,
 };

@@ -1,15 +1,10 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor, VisitorContext } from "../visitor.js";
 import type { SchemaEntry, Timestamp } from "../../ast/types.js";
 import { isSyntaxError } from "../../ast/types.js";
-import type { SemanticModel } from "../../semantic/types.js";
+import type { IndexedEntry } from "../workspace-index.js";
 
 const category: RuleCategory = "schema";
-
-interface SchemaEntryContext {
-  entry: SchemaEntry;
-  model: SemanticModel;
-  timestampStr: string;
-}
 
 /**
  * Format a timestamp for comparison
@@ -21,6 +16,51 @@ function formatTimestamp(ts: Timestamp): string {
   return `${date}T${time}${tz}`;
 }
 
+const visitor: RuleVisitor = {
+  afterCheck(ctx: VisitorContext) {
+    const { index } = ctx;
+
+    // For each entity with alter entries, check against define entries
+    for (const [entityName, alterEntries] of index.alterEntitiesByName) {
+      const defineEntries = index.defineEntitiesByName.get(entityName);
+      if (!defineEntries || defineEntries.length === 0) {
+        continue; // No define - handled by alter-undefined-entity rule
+      }
+
+      // Find the earliest define timestamp
+      let earliestDefine: IndexedEntry<SchemaEntry> | null = null;
+      let earliestDefineTs = "";
+
+      for (const entry of defineEntries) {
+        const ts = formatTimestamp(entry.entry.header.timestamp);
+        if (!earliestDefine || ts < earliestDefineTs) {
+          earliestDefine = entry;
+          earliestDefineTs = ts;
+        }
+      }
+
+      // Check each alter entry
+      for (const { entry, file, sourceMap } of alterEntries) {
+        const alterTs = formatTimestamp(entry.header.timestamp);
+
+        if (alterTs < earliestDefineTs) {
+          ctx.report({
+            message: `alter-entity for '${entityName}' has timestamp ${alterTs} which is before the define-entity at ${earliestDefineTs}.`,
+            file,
+            location: entry.location,
+            sourceMap,
+            data: {
+              entityName,
+              alterTimestamp: alterTs,
+              defineTimestamp: earliestDefineTs,
+            },
+          });
+        }
+      }
+    }
+  },
+};
+
 /**
  * Check for alter-entity entries with timestamps earlier than the define-entity
  */
@@ -30,60 +70,6 @@ export const alterBeforeDefineRule: Rule = {
   description: "alter-entity timestamp before define-entity",
   category,
   defaultSeverity: "error",
-
-  check(ctx) {
-    const { workspace } = ctx;
-
-    // Collect define-entity timestamps
-    const defineTimestamps = new Map<string, SchemaEntryContext>();
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "schema_entry") {
-          continue;
-        }
-        if (entry.header.directive !== "define-entity") {
-          continue;
-        }
-
-        const entityName = entry.header.entityName.value;
-        const timestampStr = formatTimestamp(entry.header.timestamp);
-
-        // If there are duplicates, use the earliest one
-        const existing = defineTimestamps.get(entityName);
-        if (!existing || timestampStr < existing.timestampStr) {
-          defineTimestamps.set(entityName, { entry, model, timestampStr });
-        }
-      }
-    }
-
-    // Check alter-entity entries
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "schema_entry") {
-          continue;
-        }
-        if (entry.header.directive !== "alter-entity") {
-          continue;
-        }
-
-        const entityName = entry.header.entityName.value;
-        const timestampStr = formatTimestamp(entry.header.timestamp);
-        const defineEntry = defineTimestamps.get(entityName);
-
-        if (defineEntry && timestampStr < defineEntry.timestampStr) {
-          ctx.report({
-            message: `alter-entity for '${entityName}' has timestamp ${timestampStr} which is before the define-entity at ${defineEntry.timestampStr}.`,
-            file: model.file,
-            location: entry.location,
-            sourceMap: model.sourceMap,
-            data: {
-              entityName,
-              alterTimestamp: timestampStr,
-              defineTimestamp: defineEntry.timestampStr,
-            },
-          });
-        }
-      }
-    }
-  },
+  dependencies: { scope: "workspace", schemas: true },
+  visitor,
 };

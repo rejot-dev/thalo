@@ -21,8 +21,8 @@ import type {
   Metadata,
   Identifier,
 } from "../ast/types.js";
-import { analyze } from "./analyzer.js";
-import type { LinkIndex } from "./types.js";
+import { analyze, updateSemanticModel } from "./analyzer.js";
+import type { LinkIndex, SemanticModel } from "./types.js";
 import type { SourceMap } from "../source-map.js";
 
 /**
@@ -248,7 +248,9 @@ function mockInstanceEntry(options: {
   link?: string;
   tags?: string[];
   metadata?: Metadata[];
+  startIndex?: number;
 }): InstanceEntry {
+  const startIndex = options.startIndex ?? 0;
   const header: InstanceHeader = {
     type: "instance_header",
     timestamp: mockTimestamp(options.timestamp),
@@ -256,10 +258,10 @@ function mockInstanceEntry(options: {
     entity: options.entity,
     title: mockTitle(options.title),
     link: options.link
-      ? mockLink(options.link, mockLocation(50, 50 + options.link.length + 1))
+      ? mockLink(options.link, mockLocation(startIndex + 50, startIndex + 50 + options.link.length + 1))
       : null,
     tags: (options.tags ?? []).map(mockTag),
-    location: mockLocation(0, 100),
+    location: mockLocation(startIndex, startIndex + 100),
     syntaxNode: mockSyntaxNode(),
   };
 
@@ -268,7 +270,7 @@ function mockInstanceEntry(options: {
     header,
     metadata: options.metadata ?? [],
     content: null,
-    location: mockLocation(0, 200),
+    location: mockLocation(startIndex, startIndex + 200),
     syntaxNode: mockSyntaxNode(),
   };
 }
@@ -372,6 +374,7 @@ function mockSourceFile(entries: Entry[]): SourceFile {
   return {
     type: "source_file",
     entries,
+    syntaxErrors: [],
     location: mockLocation(0, 1000),
     syntaxNode: mockSyntaxNode(),
   };
@@ -731,6 +734,230 @@ describe("link indexing", () => {
       // career-summary is both defined and referenced
       expect(index.definitions.has("career-summary")).toBe(true);
       expect(index.references.has("career-summary")).toBe(true);
+    });
+  });
+});
+
+describe("updateSemanticModel", () => {
+  /**
+   * Helper to create a basic SemanticModel for testing.
+   */
+  function createModel(entries: Entry[], file: string = "test.thalo"): SemanticModel {
+    const ast = mockSourceFile(entries);
+    return analyze(ast, {
+      file,
+      source: "",
+      sourceMap: mockSourceMap(),
+      blocks: [],
+    });
+  }
+
+  describe("link definition changes", () => {
+    it("should detect added link definitions", () => {
+      const oldEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry without link",
+        startIndex: 0,
+      });
+
+      const model = createModel([oldEntry]);
+
+      const newEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T11:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry with link",
+        link: "new-link",
+        startIndex: 300, // Different location
+      });
+
+      const newAst = mockSourceFile([oldEntry, newEntry]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.addedLinkDefinitions).toContain("new-link");
+      expect(model.linkIndex.definitions.has("new-link")).toBe(true);
+    });
+
+    it("should detect removed link definitions", () => {
+      const entry1 = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry 1",
+        link: "link-1",
+        startIndex: 0,
+      });
+      const entry2 = mockInstanceEntry({
+        timestamp: "2026-01-05T11:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry 2",
+        link: "link-2",
+        startIndex: 300, // Different location
+      });
+
+      const model = createModel([entry1, entry2]);
+      expect(model.linkIndex.definitions.has("link-1")).toBe(true);
+      expect(model.linkIndex.definitions.has("link-2")).toBe(true);
+
+      // Remove entry2
+      const newAst = mockSourceFile([entry1]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.removedLinkDefinitions).toContain("link-2");
+      expect(model.linkIndex.definitions.has("link-2")).toBe(false);
+      expect(model.linkIndex.definitions.has("link-1")).toBe(true);
+    });
+  });
+
+  describe("link reference changes", () => {
+    it("should detect added link references", () => {
+      const oldEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry without refs",
+        startIndex: 0,
+      });
+
+      const model = createModel([oldEntry]);
+
+      const newEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T11:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry with refs",
+        metadata: [mockMetadata("subject", mockLinkValue("new-ref"))],
+        startIndex: 300, // Different location
+      });
+
+      const newAst = mockSourceFile([oldEntry, newEntry]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.changedLinkReferences).toContain("new-ref");
+      expect(model.linkIndex.references.has("new-ref")).toBe(true);
+    });
+
+    it("should detect removed link references", () => {
+      const entry1 = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry with ref",
+        metadata: [mockMetadata("subject", mockLinkValue("my-ref"))],
+        startIndex: 0,
+      });
+
+      const model = createModel([entry1]);
+      expect(model.linkIndex.references.has("my-ref")).toBe(true);
+
+      // Remove the entry
+      const newAst = mockSourceFile([]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.changedLinkReferences).toContain("my-ref");
+      expect(model.linkIndex.references.has("my-ref")).toBe(false);
+    });
+  });
+
+  describe("schema entry changes", () => {
+    it("should detect added schema entries", () => {
+      const model = createModel([]);
+
+      const newSchemaEntry = mockSchemaEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "define-entity",
+        entityName: "person",
+        title: "Person entity",
+      });
+
+      const newAst = mockSourceFile([newSchemaEntry]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.schemaEntriesChanged).toBe(true);
+      expect(result.changedEntityNames).toContain("person");
+      expect(model.schemaEntries).toHaveLength(1);
+    });
+
+    it("should detect removed schema entries", () => {
+      const schemaEntry = mockSchemaEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "define-entity",
+        entityName: "person",
+        title: "Person entity",
+      });
+
+      const model = createModel([schemaEntry]);
+      expect(model.schemaEntries).toHaveLength(1);
+
+      const newAst = mockSourceFile([]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.schemaEntriesChanged).toBe(true);
+      expect(result.changedEntityNames).toContain("person");
+      expect(model.schemaEntries).toHaveLength(0);
+    });
+
+    it("should not mark unchanged schema entries as changed", () => {
+      const schemaEntry = mockSchemaEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "define-entity",
+        entityName: "person",
+        title: "Person entity",
+      });
+      const instanceEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T11:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Some lore",
+      });
+
+      const model = createModel([schemaEntry, instanceEntry]);
+
+      // Add another instance entry, but keep schema the same
+      const newInstanceEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T12:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "More lore",
+        link: "more-lore",
+      });
+
+      const newAst = mockSourceFile([schemaEntry, instanceEntry, newInstanceEntry]);
+      const result = updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(result.schemaEntriesChanged).toBe(false);
+      expect(result.changedEntityNames).toHaveLength(0);
+    });
+  });
+
+  describe("model update", () => {
+    it("should update the model's AST", () => {
+      const model = createModel([]);
+      const newEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "New entry",
+      });
+      const newAst = mockSourceFile([newEntry]);
+
+      updateSemanticModel(model, newAst, "new source", mockSourceMap(), []);
+
+      expect(model.ast).toBe(newAst);
+      expect(model.source).toBe("new source");
+    });
+
+    it("should clear dirty flags after update", () => {
+      const model = createModel([]);
+      const newAst = mockSourceFile([]);
+
+      updateSemanticModel(model, newAst, "", mockSourceMap(), []);
+
+      expect(model.dirty?.linkIndex).toBe(false);
+      expect(model.dirty?.schemaEntries).toBe(false);
     });
   });
 });

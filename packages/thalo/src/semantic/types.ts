@@ -83,4 +83,36 @@ export interface SemanticModel {
    * to build resolved entity schemas.
    */
   schemaEntries: SchemaEntry[];
+
+  /**
+   * Dirty flags for incremental updates.
+   * When true, the corresponding index needs to be rebuilt.
+   */
+  dirty?: SemanticModelDirtyFlags;
+}
+
+/**
+ * Dirty flags indicating which parts of the semantic model need rebuilding.
+ */
+export interface SemanticModelDirtyFlags {
+  /** Link index needs rebuild (definitions or references changed) */
+  linkIndex: boolean;
+  /** Schema entries need re-extraction (schema entries changed) */
+  schemaEntries: boolean;
+}
+
+/**
+ * Result of an incremental semantic model update.
+ */
+export interface SemanticUpdateResult {
+  /** Link IDs that were added (new definitions) */
+  addedLinkDefinitions: string[];
+  /** Link IDs that were removed (deleted definitions) */
+  removedLinkDefinitions: string[];
+  /** Link IDs whose references changed */
+  changedLinkReferences: string[];
+  /** Whether schema entries changed */
+  schemaEntriesChanged: boolean;
+  /** Entity names whose schema definitions changed */
+  changedEntityNames: string[];
 }

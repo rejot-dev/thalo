@@ -51,6 +51,7 @@ import type {
   SectionName,
   Description,
   DefaultValue,
+  SyntaxErrorNode,
 } from "./types.js";
 
 /**
@@ -131,18 +132,30 @@ export function extractSourceFile(node: SyntaxNode): SourceFile {
   }
 
   const entries: Entry[] = [];
+  const syntaxErrors: SyntaxErrorNode[] = [];
+
   for (const child of node.namedChildren) {
     if (child.type === "entry") {
       const entry = extractEntry(child);
       if (entry) {
         entries.push(entry);
       }
+    } else if (child.type === "ERROR") {
+      syntaxErrors.push({
+        type: "syntax_error",
+        code: "parse_error",
+        message: `Parse error: unexpected content "${child.text.slice(0, 50)}${child.text.length > 50 ? "..." : ""}"`,
+        text: child.text,
+        location: extractLocation(child),
+        syntaxNode: child,
+      });
     }
   }
 
   return {
     ...baseNode(node, "source_file"),
     entries,
+    syntaxErrors,
   };
 }
 

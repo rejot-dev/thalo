@@ -159,6 +159,7 @@ function createTestAst(): SourceFile {
   return {
     type: "source_file",
     entries: [entry],
+    syntaxErrors: [],
     location: mockLocation(0, 68),
     syntaxNode: mockSyntaxNode(),
   };
@@ -231,6 +232,7 @@ function createAstWithError(): SourceFile {
   return {
     type: "source_file",
     entries: [entry],
+    syntaxErrors: [],
     location: mockLocation(0, 33),
     syntaxNode: mockSyntaxNode(),
   };

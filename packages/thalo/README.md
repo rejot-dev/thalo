@@ -6,11 +6,12 @@ analysis, validation, and workspace management for `.thalo` files.
 ## Features
 
 - **Parser**: Parse `.thalo` files and extract thalo blocks from Markdown
+- **Incremental Parsing**: Efficient incremental updates via Tree-sitter's edit API
 - **Fragment Parsing**: Parse individual expressions (queries, values, type expressions)
 - **AST**: Strongly-typed abstract syntax tree with inline syntax error nodes
 - **Semantic Analysis**: Build semantic models with link indexes and schema resolution
 - **Schema**: Entity schema registry with `define-entity` / `alter-entity` support
-- **Checker**: Configurable validation rules (syntax + semantic errors)
+- **Checker**: Visitor-based validation rules with incremental checking support
 - **Services**: Definition lookup, references, hover, query execution, and semantic tokens
 - **Source Mapping**: Position translation for embedded blocks in Markdown files
 
@@ -40,6 +41,38 @@ console.log(model.ast.entries); // Array of parsed entries
 // Query links across workspace
 const linkDef = workspace.getLinkDefinition("my-link-id");
 const refs = workspace.getLinkReferences("my-link-id");
+```
+
+### Incremental Document Updates
+
+The workspace supports efficient incremental updates:
+
+```typescript
+import { Workspace } from "@rejot-dev/thalo";
+
+const workspace = new Workspace();
+workspace.addDocument(source, { filename: "test.thalo" });
+
+// Apply an incremental edit (more efficient than re-adding)
+const invalidation = workspace.applyEdit(
+  "test.thalo",
+  startLine,
+  startColumn,
+  endLine,
+  endColumn,
+  newText,
+);
+
+// Check what was invalidated
+if (invalidation.schemasChanged) {
+  // Entity schemas changed - may affect other files
+}
+if (invalidation.linksChanged) {
+  // Link definitions/references changed
+}
+
+// Get files affected by changes in a specific file
+const affected = workspace.getAffectedFiles("test.thalo");
 ```
 
 ### Validating with the Checker
@@ -132,32 +165,29 @@ if (match) {
 | --------------------------- | ---------------------------------------------------------- |
 | `@rejot-dev/thalo`          | Main entry (parser, workspace, checker, services, types)   |
 | `@rejot-dev/thalo/ast`      | AST types, builder, visitor, extraction                    |
-| `@rejot-dev/thalo/model`    | Workspace, model types                                     |
+| `@rejot-dev/thalo/model`    | Workspace, Document, LineIndex, model types                |
 | `@rejot-dev/thalo/semantic` | SemanticModel, analyzer, link index types                  |
 | `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types                         |
-| `@rejot-dev/thalo/checker`  | Validation rules and check function                        |
+| `@rejot-dev/thalo/checker`  | Validation rules, visitor pattern, check functions         |
 | `@rejot-dev/thalo/services` | Definition, references, hover, query execution, entity nav |
 
 ## Validation Rules
 
-The checker includes 31 validation rules across 6 categories:
+The checker validates documents using rules organized into categories:
 
-| Category  | Count | Examples                                                                |
-| --------- | ----- | ----------------------------------------------------------------------- |
-| Instance  | 10    | unknown-entity, missing-required-field, update-without-create           |
-| Link      | 2     | unresolved-link, duplicate-link-id                                      |
-| Schema    | 9     | duplicate-entity-definition, alter-before-define, invalid-default-value |
-| Metadata  | 3     | duplicate-metadata-key, empty-required-value, invalid-date-range-value  |
-| Content   | 2     | duplicate-section-heading, empty-section                                |
-| Synthesis | 5     | synthesis-missing-sources, actualize-unresolved-target                  |
+- **Instance**: Validates instance entries — entity types, required fields, field types, sections
+- **Link**: Validates link references and definitions — unresolved links, duplicate IDs
+- **Schema**: Validates entity schema definitions — duplicates, alter/define ordering, defaults
+- **Metadata**: Validates metadata values — empty values, date range formats
+- **Content**: Validates entry content structure — duplicate section headings
 
-To see all available rules with descriptions, use the CLI:
+Rules use a visitor pattern for efficient single-pass execution. Each rule declares a scope (entry,
+document, or workspace) to enable incremental checking when documents change.
+
+To see all available rules, use the CLI:
 
 ```bash
 thalo rules list
-thalo rules list --severity error
-thalo rules list --category schema
-thalo rules list --json
 ```
 
 ## Architecture
@@ -172,6 +202,17 @@ Source → Tree-sitter → CST → AST Builder → AST → Semantic Analyzer →
                                                                         ↓
                                                                     Services
 ```
+
+### Incremental Processing
+
+The workspace supports incremental updates at multiple levels:
+
+1. **Document Level**: The `Document` class wraps source text with a `LineIndex` for efficient
+   position lookups and tracks Tree-sitter trees per block
+2. **Semantic Level**: `updateSemanticModel` incrementally updates link indexes and schema entries
+3. **Workspace Level**: Dependency tracking (`linkDependencies`, `entityDependencies`) enables
+   targeted invalidation
+4. **Rule Level**: Rules declare their scope and dependencies, enabling incremental checking
 
 ### Error Separation
 
@@ -202,13 +243,17 @@ src/
 │   └── analyzer.ts    # Build SemanticModel from AST (indexes links, collects schemas)
 ├── model/
 │   ├── types.ts       # Model types (ModelSchemaEntry for SchemaRegistry)
-│   └── workspace.ts   # Multi-document workspace, aggregates SemanticModels
+│   ├── document.ts    # Document class with LineIndex and incremental edit support
+│   ├── line-index.ts  # Fast offset↔position conversion
+│   └── workspace.ts   # Multi-document workspace with dependency tracking
 ├── schema/
 │   ├── types.ts       # Schema types (EntitySchema, FieldSchema, TypeExpr)
 │   └── registry.ts    # Schema registry with define/alter resolution
 ├── checker/
-│   ├── types.ts       # Rule and diagnostic types
-│   ├── check.ts       # Main check function (collects syntax + semantic errors)
+│   ├── types.ts       # Rule, diagnostic, and dependency types
+│   ├── check.ts       # Main check functions (check, checkDocument, checkIncremental)
+│   ├── visitor.ts     # RuleVisitor interface and visitor execution
+│   ├── workspace-index.ts # Pre-computed indices for efficient rule execution
 │   └── rules/         # Individual validation rules (27 rules)
 └── services/
     ├── definition.ts       # Go-to-definition lookup
@@ -248,6 +293,8 @@ The Tree-Sitter grammar parses all values into typed AST nodes:
 - ✅ Query execution engine for synthesis entries
 - ✅ Decomposed timestamps with date/time/timezone parts
 - ✅ Inline syntax error nodes for recoverable parse errors
+- ✅ Incremental parsing and semantic analysis
+- ✅ Visitor-based rule system with dependency declarations
 
 **Remaining work:**
 
@@ -258,9 +305,6 @@ The Tree-Sitter grammar parses all values into typed AST nodes:
 
 1. **Cross-file link resolution**: Currently, link references are validated within the workspace.
    Future work could include import/export semantics for external references.
-
-2. **Incremental parsing**: Large workspaces could benefit from incremental document updates instead
-   of full re-parsing.
 
 ### Validation Rules
 

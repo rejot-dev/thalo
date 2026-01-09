@@ -2,6 +2,7 @@
 export {
   parseDocument,
   parseThalo,
+  parseThaloIncremental,
   type ParsedBlock,
   type ParsedDocument,
   type ParseOptions,
@@ -13,6 +14,10 @@ export { parseFragment, parseQuery, type FragmentType, type ParsedFragment } fro
 
 // Model classes
 export { Workspace } from "./model/workspace.js";
+export { Document, LineIndex, computeEdit } from "./model/index.js";
+export type { DocumentBlock, EditRange, EditResult } from "./model/document.js";
+export type { Position as LinePosition } from "./model/line-index.js";
+export type { InvalidationResult } from "./model/workspace.js";
 export type {
   ModelSchemaEntry,
   ModelTypeExpression,
@@ -21,7 +26,15 @@ export type {
 } from "./model/types.js";
 
 // Semantic types (new API - uses AST Entry types)
-export type { SemanticModel, LinkDefinition, LinkReference, LinkIndex } from "./semantic/types.js";
+export { updateSemanticModel } from "./semantic/analyzer.js";
+export type {
+  SemanticModel,
+  LinkDefinition,
+  LinkReference,
+  LinkIndex,
+  SemanticModelDirtyFlags,
+  SemanticUpdateResult,
+} from "./semantic/types.js";
 
 // Schema
 export { TypeExpr } from "./schema/types.js";
@@ -86,7 +99,6 @@ export type {
   Diagnostic,
   Severity,
   CheckConfig,
-  CheckContext,
   Rule,
   RuleCategory,
 } from "./checker/types.js";

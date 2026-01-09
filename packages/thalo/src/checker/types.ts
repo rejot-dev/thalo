@@ -1,6 +1,4 @@
 import type { Location } from "../ast/types.js";
-import type { Workspace } from "../model/workspace.js";
-import type { SemanticModel } from "../semantic/types.js";
 import type { SourceMap } from "../source-map.js";
 
 /**
@@ -59,15 +57,27 @@ export interface PartialDiagnostic {
 }
 
 /**
- * Context provided to rules during checking
+ * Rule scope - determines when a rule needs to re-run.
+ *
+ * - "entry": Rule only looks at individual entries, can run incrementally on changed entries
+ * - "document": Rule looks at entries within a single document, runs on full document
+ * - "workspace": Rule looks across multiple documents, runs on full workspace
  */
-export interface CheckContext {
-  /** The workspace being checked */
-  workspace: Workspace;
-  /** The model being checked (for document-scoped rules) */
-  model?: SemanticModel;
-  /** Report a diagnostic. If sourceMap is provided, location will be converted to file-absolute. */
-  report(diagnostic: PartialDiagnostic): void;
+export type RuleScope = "entry" | "document" | "workspace";
+
+/**
+ * Dependency declaration for a rule.
+ * Used for incremental checking to determine when a rule needs to re-run.
+ */
+export interface RuleDependencies {
+  /** Rule scope - determines when rule needs to re-run */
+  scope: RuleScope;
+  /** Rule needs schema registry data */
+  schemas?: boolean;
+  /** Rule needs link index data */
+  links?: boolean;
+  /** Entity names this rule cares about (for targeted invalidation) */
+  entities?: "all" | string[];
 }
 
 /**
@@ -84,8 +94,17 @@ export interface Rule {
   category: RuleCategory;
   /** Default severity for this rule */
   defaultSeverity: Severity;
-  /** Run the rule and report diagnostics */
-  check(ctx: CheckContext): void;
+
+  /**
+   * Dependency declaration for incremental checking.
+   */
+  dependencies: RuleDependencies;
+
+  /**
+   * Visitor-based implementation.
+   * Allows single-pass checking with other rules.
+   */
+  visitor: import("./visitor.js").RuleVisitor;
 }
 
 /**
@@ -101,12 +120,4 @@ export interface CheckConfig {
  */
 export function getEffectiveSeverity(rule: Rule, config: CheckConfig): Severity {
   return config.rules?.[rule.code] ?? rule.defaultSeverity;
-}
-
-/**
- * Context for an entry within a model, bundling file and sourceMap for diagnostics
- */
-export interface EntryContext {
-  file: string;
-  sourceMap: SourceMap;
 }

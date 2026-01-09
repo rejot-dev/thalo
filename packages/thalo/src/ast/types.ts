@@ -35,7 +35,8 @@ export type SyntaxErrorCode =
   | "missing_link_id"
   | "invalid_directive"
   | "invalid_timestamp"
-  | "malformed_metadata";
+  | "malformed_metadata"
+  | "parse_error";
 
 /**
  * A syntax error node that can appear inline in the AST.
@@ -100,6 +101,8 @@ export function isValidResult<T, E extends SyntaxErrorCode>(result: Result<T, E>
 export interface SourceFile extends AstNode {
   type: "source_file";
   entries: Entry[];
+  /** Root-level syntax errors (malformed entries that couldn't be parsed) */
+  syntaxErrors: SyntaxErrorNode[];
 }
 
 // ===================

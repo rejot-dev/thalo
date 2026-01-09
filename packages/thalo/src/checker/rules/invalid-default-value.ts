@@ -1,9 +1,41 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor } from "../visitor.js";
 import type { DefaultValue, TypeExpression } from "../../ast/types.js";
 import type { ModelDefaultValue, ModelTypeExpression } from "../../model/types.js";
 import { TypeExpr } from "../../schema/types.js";
 
 const category: RuleCategory = "schema";
+
+const visitor: RuleVisitor = {
+  visitSchemaEntry(entry, ctx) {
+    const fields = entry.metadataBlock?.fields ?? [];
+
+    for (const field of fields) {
+      if (!field.defaultValue) {
+        continue;
+      }
+
+      // Convert AST default value to model default value format for type checking
+      const defaultValue = convertDefaultValue(field.defaultValue);
+      const fieldType = convertTypeExpression(field.typeExpr);
+
+      // Use typed default value matching
+      if (!TypeExpr.matchesDefaultValue(defaultValue, fieldType)) {
+        ctx.report({
+          message: `Invalid default value '${field.defaultValue.raw}' for field '${field.name.value}'. Expected ${TypeExpr.toString(fieldType)}.`,
+          file: ctx.file,
+          location: field.defaultValue.location,
+          sourceMap: ctx.sourceMap,
+          data: {
+            fieldName: field.name.value,
+            defaultValue: field.defaultValue.raw,
+            expectedType: TypeExpr.toString(fieldType),
+          },
+        });
+      }
+    }
+  },
+};
 
 /**
  * Check that default values in field definitions match their declared types
@@ -14,44 +46,8 @@ export const invalidDefaultValueRule: Rule = {
   description: "Default value doesn't match field's declared type",
   category,
   defaultSeverity: "error",
-
-  check(ctx) {
-    const { workspace } = ctx;
-
-    for (const model of workspace.allModels()) {
-      for (const entry of model.ast.entries) {
-        if (entry.type !== "schema_entry") {
-          continue;
-        }
-
-        const fields = entry.metadataBlock?.fields ?? [];
-        for (const field of fields) {
-          if (!field.defaultValue) {
-            continue;
-          }
-
-          // Convert AST default value to model default value format for type checking
-          const defaultValue = convertDefaultValue(field.defaultValue);
-          const fieldType = convertTypeExpression(field.typeExpr);
-
-          // Use typed default value matching
-          if (!TypeExpr.matchesDefaultValue(defaultValue, fieldType)) {
-            ctx.report({
-              message: `Invalid default value '${field.defaultValue.raw}' for field '${field.name.value}'. Expected ${TypeExpr.toString(fieldType)}.`,
-              file: model.file,
-              location: field.defaultValue.location,
-              sourceMap: model.sourceMap,
-              data: {
-                fieldName: field.name.value,
-                defaultValue: field.defaultValue.raw,
-                expectedType: TypeExpr.toString(fieldType),
-              },
-            });
-          }
-        }
-      }
-    }
-  },
+  dependencies: { scope: "entry" },
+  visitor,
 };
 
 function convertDefaultValue(dv: DefaultValue): ModelDefaultValue {

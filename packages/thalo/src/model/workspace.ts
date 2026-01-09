@@ -19,13 +19,20 @@ import type {
   DefaultValue as AstDefaultValue,
 } from "../ast/types.js";
 import { isSyntaxError } from "../ast/types.js";
-import type { SemanticModel, LinkIndex, LinkDefinition, LinkReference } from "../semantic/types.js";
+import type {
+  SemanticModel,
+  LinkIndex,
+  LinkDefinition,
+  LinkReference,
+} from "../semantic/types.js";
 import type { FileType } from "../parser.js";
 import { parseDocument } from "../parser.js";
 import { extractSourceFile } from "../ast/extract.js";
-import { analyze } from "../semantic/analyzer.js";
+import { analyze, updateSemanticModel } from "../semantic/analyzer.js";
 import { SchemaRegistry } from "../schema/registry.js";
 import { identitySourceMap, type SourceMap } from "../source-map.js";
+import { Document, type EditResult } from "./document.js";
+import { LineIndex, computeEdit } from "./line-index.js";
 
 /**
  * Options for adding a document to the workspace
@@ -38,16 +45,40 @@ export interface AddDocumentOptions {
 }
 
 /**
+ * Result of applying an edit or update to the workspace.
+ * Used for incremental diagnostics and targeted invalidation.
+ */
+export interface InvalidationResult {
+  /** Files whose diagnostics may have changed */
+  affectedFiles: string[];
+  /** Whether schema definitions changed (affects type checking) */
+  schemasChanged: boolean;
+  /** Whether link definitions changed (affects link resolution) */
+  linksChanged: boolean;
+  /** Entity names whose schemas changed */
+  changedEntityNames: string[];
+  /** Link IDs that were added or removed */
+  changedLinkIds: string[];
+}
+
+/**
  * A workspace containing multiple thalo documents.
  * Provides cross-file link resolution and schema management.
  */
 export class Workspace {
   private models = new Map<string, SemanticModel>();
+  private documents = new Map<string, Document>();
   private _schemaRegistry = new SchemaRegistry();
   private _linkIndex: LinkIndex = {
     definitions: new Map(),
     references: new Map(),
   };
+
+  // Dependency tracking for targeted invalidation
+  // linkId -> Set of files that reference this link
+  private linkDependencies = new Map<string, Set<string>>();
+  // entityName -> Set of files that use this entity (as instances)
+  private entityDependencies = new Map<string, Set<string>>();
 
   /**
    * Get the schema registry for this workspace
@@ -87,6 +118,7 @@ export class Workspace {
         ast: {
           type: "source_file",
           entries: [],
+          syntaxErrors: [],
           location: emptyLocation,
           // Safe: empty documents have no syntax tree; this is only used for empty file edge case
           syntaxNode: null as unknown as import("tree-sitter").SyntaxNode,
@@ -223,15 +255,137 @@ export class Workspace {
   }
 
   /**
+   * Get the Document instance for incremental editing.
+   * Returns undefined if the document hasn't been added with incremental support.
+   */
+  getDocument(file: string): Document | undefined {
+    return this.documents.get(file);
+  }
+
+  /**
+   * Apply an incremental edit to a document.
+   * This is more efficient than addDocument() for small edits.
+   *
+   * @param filename - The file to edit
+   * @param startLine - 0-based start line
+   * @param startColumn - 0-based start column
+   * @param endLine - 0-based end line
+   * @param endColumn - 0-based end column
+   * @param newText - The replacement text
+   * @returns Information about what was invalidated
+   */
+  applyEdit(
+    filename: string,
+    startLine: number,
+    startColumn: number,
+    endLine: number,
+    endColumn: number,
+    newText: string,
+  ): InvalidationResult {
+    const doc = this.documents.get(filename);
+    if (!doc) {
+      // Fall back to full re-parse if document wasn't initialized with incremental support
+      const model = this.models.get(filename);
+      if (!model) {
+        return {
+          affectedFiles: [],
+          schemasChanged: false,
+          linksChanged: false,
+          changedEntityNames: [],
+          changedLinkIds: [],
+        };
+      }
+
+      // Apply the edit to get new source and do full re-parse
+      const lineIndex = new LineIndex(model.source);
+      const edit = computeEdit(lineIndex, startLine, startColumn, endLine, endColumn, newText);
+      const newSource =
+        model.source.slice(0, edit.startIndex) + newText + model.source.slice(edit.oldEndIndex);
+      return this.updateDocument(filename, newSource);
+    }
+
+    // Apply incremental edit to the Document
+    const editResult = doc.applyEdit(startLine, startColumn, endLine, endColumn, newText);
+
+    // Update the semantic model
+    return this.updateModelFromDocument(filename, doc, editResult);
+  }
+
+  /**
+   * Update a document with new content.
+   * This replaces the entire document and recalculates all dependencies.
+   *
+   * @param filename - The file to update
+   * @param newSource - The new source content
+   * @returns Information about what was invalidated
+   */
+  updateDocument(filename: string, newSource: string): InvalidationResult {
+    // Get or create the Document
+    let doc = this.documents.get(filename);
+    if (doc) {
+      doc.replaceContent(newSource);
+    } else {
+      doc = new Document(filename, newSource);
+      this.documents.set(filename, doc);
+    }
+
+    // Update the semantic model
+    return this.updateModelFromDocument(filename, doc, {
+      blockBoundariesChanged: true,
+      modifiedBlockIndices: doc.blocks.map((_, i) => i),
+      fullReparse: true,
+    });
+  }
+
+  /**
+   * Get files that would be affected by changes in a specific file.
+   * Useful for targeted diagnostics refresh.
+   */
+  getAffectedFiles(filename: string): string[] {
+    const model = this.models.get(filename);
+    if (!model) {
+      return [filename];
+    }
+
+    const affected = new Set<string>([filename]);
+
+    // Files that reference links defined in this file
+    for (const [linkId] of model.linkIndex.definitions) {
+      const dependents = this.linkDependencies.get(linkId);
+      if (dependents) {
+        for (const dep of dependents) {
+          affected.add(dep);
+        }
+      }
+    }
+
+    // Files that use entities defined in this file
+    for (const entry of model.schemaEntries) {
+      const entityName = entry.header.entityName.value;
+      const dependents = this.entityDependencies.get(entityName);
+      if (dependents) {
+        for (const dep of dependents) {
+          affected.add(dep);
+        }
+      }
+    }
+
+    return Array.from(affected);
+  }
+
+  /**
    * Clear all documents
    */
   clear(): void {
     this.models.clear();
+    this.documents.clear();
     this._schemaRegistry.clear();
     this._linkIndex = {
       definitions: new Map(),
       references: new Map(),
     };
+    this.linkDependencies.clear();
+    this.entityDependencies.clear();
   }
 
   /**
@@ -243,6 +397,8 @@ export class Workspace {
       definitions: new Map(),
       references: new Map(),
     };
+    this.linkDependencies.clear();
+    this.entityDependencies.clear();
 
     for (const model of this.models.values()) {
       // Add schema entries
@@ -253,8 +409,11 @@ export class Workspace {
         }
       }
 
-      // Merge links
+      // Merge links and track dependencies
       this.mergeLinks(model);
+
+      // Track entity dependencies
+      this.updateEntityDependencies(model);
     }
   }
 
@@ -267,12 +426,215 @@ export class Workspace {
       this._linkIndex.definitions.set(id, def);
     }
 
-    // Merge references
+    // Merge references and track dependencies
     for (const [id, refs] of model.linkIndex.references) {
       const existing = this._linkIndex.references.get(id) ?? [];
       existing.push(...refs);
       this._linkIndex.references.set(id, existing);
+
+      // Track that this file depends on this link
+      let deps = this.linkDependencies.get(id);
+      if (!deps) {
+        deps = new Set();
+        this.linkDependencies.set(id, deps);
+      }
+      deps.add(model.file);
     }
+  }
+
+  /**
+   * Update entity dependencies for a model
+   */
+  private updateEntityDependencies(model: SemanticModel): void {
+    // Track which entities this file uses
+    for (const entry of model.ast.entries) {
+      if (entry.type === "instance_entry") {
+        const entityName = entry.header.entity;
+        let deps = this.entityDependencies.get(entityName);
+        if (!deps) {
+          deps = new Set();
+          this.entityDependencies.set(entityName, deps);
+        }
+        deps.add(model.file);
+      }
+    }
+  }
+
+  /**
+   * Remove a file's dependencies from the tracking maps
+   */
+  private removeDependencies(file: string): void {
+    // Remove from link dependencies
+    for (const deps of this.linkDependencies.values()) {
+      deps.delete(file);
+    }
+
+    // Remove from entity dependencies
+    for (const deps of this.entityDependencies.values()) {
+      deps.delete(file);
+    }
+  }
+
+  /**
+   * Update the semantic model from a Document's parse results.
+   */
+  private updateModelFromDocument(
+    filename: string,
+    doc: Document,
+    editResult: EditResult,
+  ): InvalidationResult {
+    const result: InvalidationResult = {
+      affectedFiles: [filename],
+      schemasChanged: false,
+      linksChanged: false,
+      changedEntityNames: [],
+      changedLinkIds: [],
+    };
+
+    if (doc.blocks.length === 0) {
+      // Empty document - remove existing model
+      const oldModel = this.models.get(filename);
+      if (oldModel) {
+        // Track removed links
+        for (const [linkId] of oldModel.linkIndex.definitions) {
+          result.changedLinkIds.push(linkId);
+          result.linksChanged = true;
+        }
+        // Track removed schemas
+        for (const entry of oldModel.schemaEntries) {
+          result.changedEntityNames.push(entry.header.entityName.value);
+          result.schemasChanged = true;
+        }
+        // Remove dependencies
+        this.removeDependencies(filename);
+      }
+
+      // Create empty model
+      const emptyLocation = {
+        startIndex: 0,
+        endIndex: 0,
+        startPosition: { row: 0, column: 0 },
+        endPosition: { row: 0, column: 0 },
+      };
+      const model: SemanticModel = {
+        ast: {
+          type: "source_file",
+          entries: [],
+          syntaxErrors: [],
+          location: emptyLocation,
+          // Safe: empty documents have no syntax tree; this is only used for empty file edge case
+          syntaxNode: null as unknown as import("tree-sitter").SyntaxNode,
+        },
+        file: filename,
+        source: doc.source,
+        sourceMap: identitySourceMap(),
+        blocks: [],
+        linkIndex: { definitions: new Map(), references: new Map() },
+        schemaEntries: [],
+      };
+      this.models.set(filename, model);
+      this.rebuild();
+
+      result.affectedFiles = this.getAffectedFiles(filename);
+      return result;
+    }
+
+    // Parse the first block
+    const block = doc.blocks[0];
+    const newAst = extractSourceFile(block.tree.rootNode);
+    const newSourceMap = block.sourceMap;
+    const newBlocks = doc.blocks.map((b) => ({
+      source: b.source,
+      sourceMap: b.sourceMap,
+      tree: b.tree,
+    }));
+
+    const oldModel = this.models.get(filename);
+    if (oldModel && !editResult.fullReparse) {
+      // Use incremental update
+      const updateResult = updateSemanticModel(
+        oldModel,
+        newAst,
+        doc.source,
+        newSourceMap,
+        newBlocks,
+      );
+
+      result.linksChanged =
+        updateResult.addedLinkDefinitions.length > 0 ||
+        updateResult.removedLinkDefinitions.length > 0;
+      result.changedLinkIds = [
+        ...updateResult.addedLinkDefinitions,
+        ...updateResult.removedLinkDefinitions,
+      ];
+      result.schemasChanged = updateResult.schemaEntriesChanged;
+      result.changedEntityNames = updateResult.changedEntityNames;
+
+      // Rebuild workspace indices if needed
+      if (result.schemasChanged || result.linksChanged) {
+        this.rebuild();
+      }
+    } else {
+      // Full re-analyze
+      const model = analyze(newAst, {
+        file: filename,
+        source: doc.source,
+        sourceMap: newSourceMap,
+        blocks: newBlocks,
+      });
+
+      // Track what changed compared to old model
+      if (oldModel) {
+        // Check for link changes
+        for (const [linkId] of oldModel.linkIndex.definitions) {
+          if (!model.linkIndex.definitions.has(linkId)) {
+            result.changedLinkIds.push(linkId);
+            result.linksChanged = true;
+          }
+        }
+        for (const [linkId] of model.linkIndex.definitions) {
+          if (!oldModel.linkIndex.definitions.has(linkId)) {
+            result.changedLinkIds.push(linkId);
+            result.linksChanged = true;
+          }
+        }
+
+        // Check for schema changes
+        const oldEntityNames = new Set(oldModel.schemaEntries.map((e) => e.header.entityName.value));
+        const newEntityNames = new Set(model.schemaEntries.map((e) => e.header.entityName.value));
+
+        for (const name of oldEntityNames) {
+          if (!newEntityNames.has(name)) {
+            result.changedEntityNames.push(name);
+            result.schemasChanged = true;
+          }
+        }
+        for (const name of newEntityNames) {
+          if (!oldEntityNames.has(name)) {
+            result.changedEntityNames.push(name);
+            result.schemasChanged = true;
+          }
+        }
+      } else {
+        // New document - everything is new
+        for (const [linkId] of model.linkIndex.definitions) {
+          result.changedLinkIds.push(linkId);
+        }
+        for (const entry of model.schemaEntries) {
+          result.changedEntityNames.push(entry.header.entityName.value);
+        }
+        result.linksChanged = result.changedLinkIds.length > 0;
+        result.schemasChanged = result.changedEntityNames.length > 0;
+      }
+
+      this.models.set(filename, model);
+      this.rebuild();
+    }
+
+    // Calculate affected files
+    result.affectedFiles = this.getAffectedFiles(filename);
+
+    return result;
   }
 }
 

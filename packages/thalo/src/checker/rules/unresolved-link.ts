@@ -1,20 +1,11 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor, VisitorContext } from "../visitor.js";
 
 const category: RuleCategory = "link";
 
-/**
- * Check for link references that don't resolve to any definition
- */
-export const unresolvedLinkRule: Rule = {
-  code: "unresolved-link",
-  name: "Unresolved Link",
-  description: "Link reference (^id) has no definition",
-  category,
-  defaultSeverity: "warning",
-
-  check(ctx) {
-    const { workspace } = ctx;
-    const linkIndex = workspace.linkIndex;
+const visitor: RuleVisitor = {
+  afterCheck(ctx: VisitorContext) {
+    const linkIndex = ctx.workspace.linkIndex;
 
     // Check all references to see if they have definitions
     for (const [linkId, refs] of linkIndex.references) {
@@ -24,7 +15,7 @@ export const unresolvedLinkRule: Rule = {
         // No definition found - report for each reference
         for (const ref of refs) {
           // Get source map from the model
-          const model = workspace.getModel(ref.file);
+          const model = ctx.workspace.getModel(ref.file);
 
           ctx.report({
             message: `Unresolved link '^${linkId}'. No entry defines this link ID.`,
@@ -37,4 +28,17 @@ export const unresolvedLinkRule: Rule = {
       }
     }
   },
+};
+
+/**
+ * Check for link references that don't resolve to any definition
+ */
+export const unresolvedLinkRule: Rule = {
+  code: "unresolved-link",
+  name: "Unresolved Link",
+  description: "Link reference (^id) has no definition",
+  category,
+  defaultSeverity: "warning",
+  dependencies: { scope: "workspace", links: true },
+  visitor,
 };

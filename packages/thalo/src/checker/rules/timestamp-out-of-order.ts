@@ -1,4 +1,5 @@
 import type { Rule, RuleCategory } from "../types.js";
+import type { RuleVisitor, VisitorContext } from "../visitor.js";
 import type { Timestamp } from "../../ast/types.js";
 import { isSyntaxError } from "../../ast/types.js";
 
@@ -23,17 +24,8 @@ function compareTimestamps(a: Timestamp, b: Timestamp): number {
   return aStr.localeCompare(bStr);
 }
 
-/**
- * Check for timestamps that are out of chronological order within a document
- */
-export const timestampOutOfOrderRule: Rule = {
-  code: "timestamp-out-of-order",
-  name: "Timestamp Out of Order",
-  description: "Entry timestamp is earlier than the previous entry",
-  category,
-  defaultSeverity: "warning",
-
-  check(ctx) {
+const visitor: RuleVisitor = {
+  afterCheck(ctx: VisitorContext) {
     const { workspace } = ctx;
 
     for (const model of workspace.allModels()) {
@@ -82,4 +74,17 @@ export const timestampOutOfOrderRule: Rule = {
       }
     }
   },
+};
+
+/**
+ * Check for timestamps that are out of chronological order within a document
+ */
+export const timestampOutOfOrderRule: Rule = {
+  code: "timestamp-out-of-order",
+  name: "Timestamp Out of Order",
+  description: "Entry timestamp is earlier than the previous entry",
+  category,
+  defaultSeverity: "warning",
+  dependencies: { scope: "document" },
+  visitor,
 };
