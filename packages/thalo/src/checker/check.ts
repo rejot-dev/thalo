@@ -1,5 +1,6 @@
 import type { Workspace } from "../model/workspace.js";
 import type { SemanticModel } from "../semantic/types.js";
+import type { SourceFile } from "../ast/types.js";
 import type {
   Diagnostic,
   CheckConfig,
@@ -10,13 +11,32 @@ import type {
 } from "./types.js";
 import { getEffectiveSeverity } from "./types.js";
 import { allRules } from "./rules/index.js";
-import { toFileLocation } from "../source-map.js";
+import { toFileLocation, type SourceMap } from "../source-map.js";
+import { collectSyntaxErrors as collectSyntaxErrorNodes } from "../ast/visitor.js";
+
+/**
+ * Collect syntax errors from an AST and convert them to diagnostics.
+ */
+function collectSyntaxErrors(ast: SourceFile, file: string, sourceMap?: SourceMap): Diagnostic[] {
+  const errors = collectSyntaxErrorNodes(ast);
+  return errors.map((error) => ({
+    code: `syntax-${error.code}`,
+    severity: "error" as const,
+    message: error.message,
+    file,
+    location: sourceMap ? toFileLocation(sourceMap, error.location) : error.location,
+  }));
+}
 
 /**
  * Check a workspace for issues using all configured rules
  */
 export function check(workspace: Workspace, config: CheckConfig = {}): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
+
+  for (const model of workspace.allModels()) {
+    diagnostics.push(...collectSyntaxErrors(model.ast, model.file, model.sourceMap));
+  }
 
   for (const rule of allRules) {
     const severity = getEffectiveSeverity(rule, config);
@@ -41,6 +61,8 @@ export function checkModel(
 ): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
 
+  diagnostics.push(...collectSyntaxErrors(model.ast, model.file, model.sourceMap));
+
   for (const rule of allRules) {
     const severity = getEffectiveSeverity(rule, config);
     if (severity === "off") {
@@ -51,7 +73,6 @@ export function checkModel(
     rule.check(ctx);
   }
 
-  // Filter to only diagnostics from this model's file
   return diagnostics.filter((d) => d.file === model.file);
 }
 

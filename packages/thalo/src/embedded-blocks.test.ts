@@ -253,7 +253,6 @@ Line 1
       const workspace = new Workspace();
 
       // Define and reference in same block in markdown
-      // Note: Currently only the first block is processed for markdown files
       const source = `# Notes
 
 \`\`\`thalo

@@ -256,7 +256,7 @@ function getUpdatedTimestamp(actualize: ActualizeInfo | null): string | null {
 /**
  * Find which file an entry belongs to by matching location
  */
-function findEntryFile(workspace: Workspace, entry: InstanceEntry): string {
+function findEntryFile(workspace: Workspace, entry: InstanceEntry): string | undefined {
   for (const model of workspace.allModels()) {
     for (const e of model.ast.entries) {
       if (
@@ -268,7 +268,7 @@ function findEntryFile(workspace: Workspace, entry: InstanceEntry): string {
       }
     }
   }
-  return "";
+  return undefined;
 }
 
 /**
@@ -359,9 +359,12 @@ function actualizeAction(ctx: CommandContext): void {
     console.log();
     console.log(pc.bold(`--- New Entries (${newEntries.length}) ---`));
     for (const entry of newEntries) {
-      // Find which file this entry is in by looking up the entry's location
       const entryFile = findEntryFile(workspace, entry);
       console.log();
+      if (!entryFile) {
+        console.log(pc.dim("[Could not locate entry file]"));
+        continue;
+      }
       console.log(getEntryRawText(entry, entryFile));
     }
 

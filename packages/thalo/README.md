@@ -7,10 +7,10 @@ analysis, validation, and workspace management for `.thalo` files.
 
 - **Parser**: Parse `.thalo` files and extract thalo blocks from Markdown
 - **Fragment Parsing**: Parse individual expressions (queries, values, type expressions)
-- **AST**: Strongly-typed abstract syntax tree for thalo entries
-- **Model**: Document and workspace management with link indexing
+- **AST**: Strongly-typed abstract syntax tree with inline syntax error nodes
+- **Semantic Analysis**: Build semantic models with link indexes and schema resolution
 - **Schema**: Entity schema registry with `define-entity` / `alter-entity` support
-- **Checker**: Configurable validation rules with error/warning severity
+- **Checker**: Configurable validation rules (syntax + semantic errors)
 - **Services**: Definition lookup, references, hover, query execution, and semantic tokens
 - **Source Mapping**: Position translation for embedded blocks in Markdown files
 
@@ -22,27 +22,10 @@ pnpm add @rejot-dev/thalo
 
 ## Usage
 
-### Parsing a Document
-
-```typescript
-import { Document } from "@rejot-dev/thalo/model";
-
-const source = `
-2026-01-05T15:30 create lore "My first entry" #example
-  type: fact
-  subject: ^self
-
-  Some content here.
-`;
-
-const doc = Document.parse(source, { filename: "example.thalo" });
-console.log(doc.entries); // Array of parsed entries
-```
-
 ### Working with a Workspace
 
 ```typescript
-import { Workspace } from "@rejot-dev/thalo/model";
+import { Workspace } from "@rejot-dev/thalo";
 
 const workspace = new Workspace();
 
@@ -50,22 +33,29 @@ const workspace = new Workspace();
 workspace.addDocument(schemaSource, { filename: "entities.thalo" });
 workspace.addDocument(instanceSource, { filename: "entries.thalo" });
 
-// Query the workspace
-const entry = workspace.findEntry("2026-01-05T15:30");
+// Access semantic models
+const model = workspace.getModel("entries.thalo");
+console.log(model.ast.entries); // Array of parsed entries
+
+// Query links across workspace
 const linkDef = workspace.getLinkDefinition("my-link-id");
+const refs = workspace.getLinkReferences("my-link-id");
 ```
 
 ### Validating with the Checker
 
+The checker reports both syntax errors (from AST) and semantic errors (from rules):
+
 ```typescript
-import { Workspace } from "@rejot-dev/thalo/model";
-import { check } from "@rejot-dev/thalo/checker";
+import { Workspace, check } from "@rejot-dev/thalo";
 
 const workspace = new Workspace();
 workspace.addDocument(source, { filename: "test.thalo" });
 
 const diagnostics = check(workspace);
 for (const d of diagnostics) {
+  // Syntax errors have codes like "syntax-missing_timezone"
+  // Semantic errors have codes like "unknown-entity", "unresolved-link"
   console.log(`${d.severity}: ${d.message} (${d.code})`);
 }
 ```
@@ -73,7 +63,7 @@ for (const d of diagnostics) {
 ### Configuring Rule Severity
 
 ```typescript
-import { check } from "@rejot-dev/thalo/checker";
+import { check } from "@rejot-dev/thalo";
 
 const diagnostics = check(workspace, {
   rules: {
@@ -105,8 +95,7 @@ const typeResult = parseFragment("type_expression", 'string | "literal"');
 Query entries in a workspace based on synthesis source definitions:
 
 ```typescript
-import { Workspace } from "@rejot-dev/thalo/model";
-import { executeQuery } from "@rejot-dev/thalo/services";
+import { Workspace, executeQuery } from "@rejot-dev/thalo";
 
 const workspace = new Workspace();
 // ... add documents ...
@@ -139,37 +128,95 @@ if (match) {
 
 ## Module Exports
 
-| Export                      | Description                                                                    |
-| --------------------------- | ------------------------------------------------------------------------------ |
-| `@rejot-dev/thalo`          | Main entry (parser, fragment parsing, source mapping, checker, services, etc.) |
-| `@rejot-dev/thalo/ast`      | AST types and extraction                                                       |
-| `@rejot-dev/thalo/model`    | Document, Workspace, model types                                               |
-| `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types                                             |
-| `@rejot-dev/thalo/checker`  | Validation rules and check function                                            |
-| `@rejot-dev/thalo/services` | Definition, references, hover, query execution, entity navigation              |
+| Export                      | Description                                                |
+| --------------------------- | ---------------------------------------------------------- |
+| `@rejot-dev/thalo`          | Main entry (parser, workspace, checker, services, types)   |
+| `@rejot-dev/thalo/ast`      | AST types, builder, visitor, extraction                    |
+| `@rejot-dev/thalo/model`    | Workspace, model types                                     |
+| `@rejot-dev/thalo/semantic` | SemanticModel, analyzer, link index types                  |
+| `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types                         |
+| `@rejot-dev/thalo/checker`  | Validation rules and check function                        |
+| `@rejot-dev/thalo/services` | Definition, references, hover, query execution, entity nav |
 
 ## Validation Rules
 
-The checker includes 30 validation rules across 6 categories: instance entry, link, schema
-definition, metadata value, content, and synthesis rules.
+The checker includes 31 validation rules across 6 categories:
+
+| Category  | Count | Examples                                                                |
+| --------- | ----- | ----------------------------------------------------------------------- |
+| Instance  | 10    | unknown-entity, missing-required-field, update-without-create           |
+| Link      | 2     | unresolved-link, duplicate-link-id                                      |
+| Schema    | 9     | duplicate-entity-definition, alter-before-define, invalid-default-value |
+| Metadata  | 3     | duplicate-metadata-key, empty-required-value, invalid-date-range-value  |
+| Content   | 2     | duplicate-section-heading, empty-section                                |
+| Synthesis | 5     | synthesis-missing-sources, actualize-unresolved-target                  |
 
 To see all available rules with descriptions, use the CLI:
 
 ```bash
 thalo rules list
-```
-
-Filter by severity or category:
-
-```bash
 thalo rules list --severity error
 thalo rules list --category schema
+thalo rules list --json
 ```
 
-Or get JSON output:
+## Architecture
 
-```bash
-thalo rules list --json
+The library follows a clear pipeline from source to services:
+
+```
+Source → Tree-sitter → CST → AST Builder → AST → Semantic Analyzer → SemanticModel
+                        ↓                                                   ↓
+                    Formatter                                           Checker
+                   (CST only)                                    (syntax + semantic)
+                                                                        ↓
+                                                                    Services
+```
+
+### Error Separation
+
+| Error Type   | Created In    | Examples                                      |
+| ------------ | ------------- | --------------------------------------------- |
+| **Syntax**   | AST Builder   | Missing timezone, missing entity name         |
+| **Semantic** | Checker Rules | Unresolved link, unknown field, type mismatch |
+
+Syntax errors are inline `SyntaxErrorNode` instances in the AST. Semantic errors are diagnostics
+from checker rules.
+
+### Directory Structure
+
+```
+src/
+├── parser.ts          # Parse thalo source, extract from markdown
+├── fragment.ts        # Parse individual expressions (query, value, type)
+├── source-map.ts      # Position mapping for embedded blocks
+├── constants.ts       # Language constants (directives, types)
+├── ast/
+│   ├── types.ts       # AST node types (Entry, Timestamp, SyntaxErrorNode, etc.)
+│   ├── extract.ts     # Extract AST from tree-sitter CST
+│   ├── builder.ts     # Build decomposed types (timestamps with parts)
+│   ├── visitor.ts     # AST traversal utilities (walkAst, collectSyntaxErrors)
+│   └── node-at-position.ts # Find semantic context at cursor position
+├── semantic/
+│   ├── types.ts       # SemanticModel, LinkIndex, LinkDefinition, LinkReference
+│   └── analyzer.ts    # Build SemanticModel from AST (indexes links, collects schemas)
+├── model/
+│   ├── types.ts       # Model types (ModelSchemaEntry for SchemaRegistry)
+│   └── workspace.ts   # Multi-document workspace, aggregates SemanticModels
+├── schema/
+│   ├── types.ts       # Schema types (EntitySchema, FieldSchema, TypeExpr)
+│   └── registry.ts    # Schema registry with define/alter resolution
+├── checker/
+│   ├── types.ts       # Rule and diagnostic types
+│   ├── check.ts       # Main check function (collects syntax + semantic errors)
+│   └── rules/         # Individual validation rules (27 rules)
+└── services/
+    ├── definition.ts       # Go-to-definition lookup
+    ├── references.ts       # Find-all-references
+    ├── hover.ts            # Hover information (entries, types, directives)
+    ├── query.ts            # Query execution engine
+    ├── entity-navigation.ts # Entity/tag/field/section navigation
+    └── semantic-tokens.ts   # LSP semantic tokens
 ```
 
 ## Development
@@ -188,38 +235,6 @@ pnpm test
 pnpm test:watch
 ```
 
-## Architecture
-
-```
-src/
-├── parser.ts          # Parse thalo source, extract from markdown
-├── fragment.ts        # Parse individual expressions (query, value, type)
-├── source-map.ts      # Position mapping for embedded blocks
-├── constants.ts       # Language constants (directives, types)
-├── ast/
-│   ├── types.ts       # AST node types
-│   ├── extract.ts     # Extract AST from tree-sitter
-│   └── node-at-position.ts # Find semantic context at position
-├── model/
-│   ├── types.ts       # Model types (entries, links, queries)
-│   ├── document.ts    # Single document representation
-│   └── workspace.ts   # Multi-document workspace
-├── schema/
-│   ├── types.ts       # Schema types (EntitySchema, FieldSchema)
-│   └── registry.ts    # Schema registry with alter support
-├── checker/
-│   ├── types.ts       # Rule and diagnostic types
-│   ├── check.ts       # Main check function
-│   └── rules/         # Individual validation rules (30 rules)
-└── services/
-    ├── definition.ts       # Go-to-definition lookup
-    ├── references.ts       # Find-all-references
-    ├── hover.ts            # Hover information (entries, types, directives)
-    ├── query.ts            # Query execution engine
-    ├── entity-navigation.ts # Entity/tag/field/section navigation
-    └── semantic-tokens.ts   # LSP semantic tokens
-```
-
 ## Future Work
 
 ### Grammar-Based Type System
@@ -231,12 +246,13 @@ The Tree-Sitter grammar parses all values into typed AST nodes:
 - ✅ Proper array element validation
 - ✅ Typed default values (`quoted_value`, `link`, `datetime_value`)
 - ✅ Query execution engine for synthesis entries
+- ✅ Decomposed timestamps with date/time/timezone parts
+- ✅ Inline syntax error nodes for recoverable parse errors
 
 **Remaining work:**
 
 1. **Entity-only queries**: The grammar requires `where` for query expressions. Supporting
-   entity-only queries (e.g., `sources: lore`) would require grammar changes to avoid ambiguity with
-   plain values.
+   entity-only queries (e.g., `sources: lore`) would require grammar changes to avoid ambiguity.
 
 ### Semantic Analysis
 
@@ -248,8 +264,7 @@ The Tree-Sitter grammar parses all values into typed AST nodes:
 
 ### Validation Rules
 
-1. **Cyclic reference detection**: Links can form cycles; detection would prevent infinite loops in
-   processing.
+1. **Cyclic reference detection**: Links can form cycles; detection would prevent infinite loops.
 
 2. **Schema evolution validation**: `alter-entity` changes could be validated for backwards
    compatibility.
