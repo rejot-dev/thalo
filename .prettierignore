@@ -3,3 +3,5 @@ dist/
 .turbo/
 node_modules/
 tsconfig.tsbuildinfo
+packages/grammar/src/grammar.json
+packages/grammar/src/node-types.json

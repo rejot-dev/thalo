@@ -1243,7 +1243,11 @@
       "value": " "
     }
   ],
-  "conflicts": [["data_entry"]],
+  "conflicts": [
+    [
+      "data_entry"
+    ]
+  ],
   "precedences": [],
   "externals": [
     {
