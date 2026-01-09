@@ -13,12 +13,11 @@ content with section header
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -50,12 +49,11 @@ multi-line content under section
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -88,12 +86,11 @@ content with multiple sections
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -123,12 +120,11 @@ content without metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -150,12 +146,11 @@ content at EOF without trailing newline
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -181,12 +176,11 @@ markdown header at EOF without trailing newline
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -208,12 +202,11 @@ content directly after header (no blank line)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -234,12 +227,11 @@ content directly after metadata (no blank line)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value

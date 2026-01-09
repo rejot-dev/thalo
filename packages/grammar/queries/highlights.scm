@@ -2,11 +2,8 @@
 (timestamp) @number
 
 ; Directives - keywords for entry types
-(instance_directive) @keyword
+(data_directive) @keyword
 (schema_directive) @keyword
-
-; Entity types
-(entity) @type
 
 ; Entity identifier in schema definitions
 (identifier) @type

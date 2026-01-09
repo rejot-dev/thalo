@@ -6,11 +6,13 @@ analysis, validation, and workspace management for `.thalo` files.
 ## Features
 
 - **Parser**: Parse `.thalo` files and extract thalo blocks from Markdown
+- **Fragment Parsing**: Parse individual expressions (queries, values, type expressions)
 - **AST**: Strongly-typed abstract syntax tree for thalo entries
 - **Model**: Document and workspace management with link indexing
 - **Schema**: Entity schema registry with `define-entity` / `alter-entity` support
 - **Checker**: Configurable validation rules with error/warning severity
-- **Services**: Definition lookup, references, and semantic tokens
+- **Services**: Definition lookup, references, hover, query execution, and semantic tokens
+- **Source Mapping**: Position translation for embedded blocks in Markdown files
 
 ## Installation
 
@@ -81,21 +83,75 @@ const diagnostics = check(workspace, {
 });
 ```
 
+### Parsing Fragments
+
+Parse individual expressions without a full document context:
+
+```typescript
+import { parseFragment, parseQuery } from "@rejot-dev/thalo";
+
+// Parse a query expression
+const queryResult = parseQuery("lore where subject = ^self and #career");
+if (queryResult.valid) {
+  console.log(queryResult.node.type); // "query"
+}
+
+// Parse a type expression
+const typeResult = parseFragment("type_expression", 'string | "literal"');
+```
+
+### Executing Queries
+
+Query entries in a workspace based on synthesis source definitions:
+
+```typescript
+import { Workspace } from "@rejot-dev/thalo/model";
+import { executeQuery } from "@rejot-dev/thalo/services";
+
+const workspace = new Workspace();
+// ... add documents ...
+
+const results = executeQuery(workspace, {
+  entity: "lore",
+  conditions: [
+    { kind: "field", field: "subject", value: "^self" },
+    { kind: "tag", tag: "career" },
+  ],
+});
+```
+
+### Source Mapping for Embedded Blocks
+
+Handle positions in markdown files with embedded thalo blocks:
+
+```typescript
+import { parseDocument, findBlockAtPosition, toFileLocation } from "@rejot-dev/thalo";
+
+const parsed = parseDocument(markdownSource, { filename: "notes.md" });
+
+// Find which block contains a file position
+const match = findBlockAtPosition(parsed.blocks, { line: 10, column: 5 });
+if (match) {
+  // Convert block-relative location to file-absolute
+  const fileLocation = toFileLocation(match.block.sourceMap, entryLocation);
+}
+```
+
 ## Module Exports
 
-| Export                      | Description                             |
-| --------------------------- | --------------------------------------- |
-| `@rejot-dev/thalo`          | Main entry (parser, constants)          |
-| `@rejot-dev/thalo/ast`      | AST types and extraction                |
-| `@rejot-dev/thalo/model`    | Document, Workspace, model types        |
-| `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types      |
-| `@rejot-dev/thalo/checker`  | Validation rules and check function     |
-| `@rejot-dev/thalo/services` | Definition, references, semantic tokens |
+| Export                      | Description                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| `@rejot-dev/thalo`          | Main entry (parser, fragment parsing, source mapping, checker, services, etc.) |
+| `@rejot-dev/thalo/ast`      | AST types and extraction                                                       |
+| `@rejot-dev/thalo/model`    | Document, Workspace, model types                                               |
+| `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types                                             |
+| `@rejot-dev/thalo/checker`  | Validation rules and check function                                            |
+| `@rejot-dev/thalo/services` | Definition, references, hover, query execution, entity navigation              |
 
 ## Validation Rules
 
-The checker includes 25 validation rules across 5 categories: instance entry, link, schema
-definition, metadata value, and content rules.
+The checker includes 30 validation rules across 6 categories: instance entry, link, schema
+definition, metadata value, content, and synthesis rules.
 
 To see all available rules with descriptions, use the CLI:
 
@@ -137,12 +193,15 @@ pnpm test:watch
 ```
 src/
 ├── parser.ts          # Parse thalo source, extract from markdown
+├── fragment.ts        # Parse individual expressions (query, value, type)
+├── source-map.ts      # Position mapping for embedded blocks
 ├── constants.ts       # Language constants (directives, types)
 ├── ast/
 │   ├── types.ts       # AST node types
-│   └── extract.ts     # Extract AST from tree-sitter
+│   ├── extract.ts     # Extract AST from tree-sitter
+│   └── node-at-position.ts # Find semantic context at position
 ├── model/
-│   ├── types.ts       # Model types (entries, links)
+│   ├── types.ts       # Model types (entries, links, queries)
 │   ├── document.ts    # Single document representation
 │   └── workspace.ts   # Multi-document workspace
 ├── schema/
@@ -151,11 +210,14 @@ src/
 ├── checker/
 │   ├── types.ts       # Rule and diagnostic types
 │   ├── check.ts       # Main check function
-│   └── rules/         # Individual validation rules
+│   └── rules/         # Individual validation rules (30 rules)
 └── services/
-    ├── definition.ts  # Go-to-definition lookup
-    ├── references.ts  # Find-all-references
-    └── semantic-tokens.ts # LSP semantic tokens
+    ├── definition.ts       # Go-to-definition lookup
+    ├── references.ts       # Find-all-references
+    ├── hover.ts            # Hover information (entries, types, directives)
+    ├── query.ts            # Query execution engine
+    ├── entity-navigation.ts # Entity/tag/field/section navigation
+    └── semantic-tokens.ts   # LSP semantic tokens
 ```
 
 ## Future Work
@@ -168,6 +230,7 @@ The Tree-Sitter grammar parses all values into typed AST nodes:
 - ✅ Query parsing at the grammar level
 - ✅ Proper array element validation
 - ✅ Typed default values (`quoted_value`, `link`, `datetime_value`)
+- ✅ Query execution engine for synthesis entries
 
 **Remaining work:**
 
@@ -180,10 +243,7 @@ The Tree-Sitter grammar parses all values into typed AST nodes:
 1. **Cross-file link resolution**: Currently, link references are validated within the workspace.
    Future work could include import/export semantics for external references.
 
-2. **Query execution**: The grammar parses query syntax, but there's no query execution engine yet.
-   Queries are currently only used for synthesis entries.
-
-3. **Incremental parsing**: Large workspaces could benefit from incremental document updates instead
+2. **Incremental parsing**: Large workspaces could benefit from incremental document updates instead
    of full re-parsing.
 
 ### Validation Rules

@@ -219,30 +219,32 @@ function findContainingEntry(node: SyntaxNode): SyntaxNode | null {
  * Get the entity context (entity type name) from an entry node
  */
 function getEntityContextFromEntry(entryNode: SyntaxNode): string | undefined {
-  // entry contains one of: instance_entry, schema_entry, synthesis_entry, actualize_entry
+  // entry contains one of: data_entry, schema_entry
   const child = entryNode.namedChildren[0];
   if (!child) {
     return undefined;
   }
 
-  if (child.type === "instance_entry") {
-    const header = child.namedChildren.find((n) => n.type === "instance_header");
-    if (header) {
-      const entityNode = header.childForFieldName("entity");
-      if (entityNode) {
-        return entityNode.text;
-      }
+  if (child.type === "data_entry") {
+    // In the new grammar, header fields are directly on data_entry
+    // The directive tells us what kind of entry it is
+    const directiveNode = child.childForFieldName("directive");
+    const directive = directiveNode?.text;
+
+    if (directive === "define-synthesis" || directive === "actualize-synthesis") {
+      return "synthesis";
+    }
+    // For create/update, the argument field is the entity (identifier)
+    const argumentNode = child.childForFieldName("argument");
+    if (argumentNode?.type === "identifier") {
+      return argumentNode.text;
     }
   } else if (child.type === "schema_entry") {
-    const header = child.namedChildren.find((n) => n.type === "schema_header");
-    if (header) {
-      const entityNameNode = header.childForFieldName("entity_name");
-      if (entityNameNode) {
-        return entityNameNode.text;
-      }
+    // In the new grammar, header fields are directly on schema_entry
+    const argumentNode = child.childForFieldName("argument");
+    if (argumentNode) {
+      return argumentNode.text;
     }
-  } else if (child.type === "synthesis_entry" || child.type === "actualize_entry") {
-    return "synthesis";
   }
 
   return undefined;
@@ -271,22 +273,18 @@ function isPositionInNode(point: Point, node: SyntaxNode): boolean {
 // ===================
 
 /**
- * Check if position is on a directive keyword within a header
+ * Check if position is on a directive keyword within an entry
  */
 function checkForDirective(
   node: SyntaxNode,
   point: Point,
   sourceMap: SourceMap,
 ): DirectiveContext | null {
-  // Walk up to find header
+  // Walk up to find entry node (data_entry or schema_entry)
   let current: SyntaxNode | null = node;
   while (current) {
-    if (
-      current.type === "instance_header" ||
-      current.type === "schema_header" ||
-      current.type === "synthesis_header" ||
-      current.type === "actualize_header"
-    ) {
+    if (current.type === "data_entry" || current.type === "schema_entry") {
+      // In the new grammar, directive is directly on the entry node
       const directiveNode = current.childForFieldName("directive");
       if (directiveNode && isPositionInNode(point, directiveNode)) {
         return {
@@ -296,68 +294,11 @@ function checkForDirective(
           sourceMap,
         };
       }
-      // For synthesis_header, check if on "define-synthesis" text
-      if (current.type === "synthesis_header") {
-        const timestampNode = current.childForFieldName("timestamp");
-        if (timestampNode) {
-          const afterTimestamp = timestampNode.endPosition;
-          const titleNode = current.childForFieldName("title");
-          if (
-            titleNode &&
-            point.row === afterTimestamp.row &&
-            point.column > afterTimestamp.column &&
-            point.column < titleNode.startPosition.column
-          ) {
-            return {
-              kind: "directive",
-              directive: "define-synthesis",
-              location: {
-                startIndex: timestampNode.endIndex + 1,
-                endIndex: titleNode.startIndex - 1,
-                startPosition: { row: afterTimestamp.row, column: afterTimestamp.column + 1 },
-                endPosition: {
-                  row: titleNode.startPosition.row,
-                  column: titleNode.startPosition.column - 1,
-                },
-              },
-              sourceMap,
-            };
-          }
-        }
-      }
-      // For actualize_header, check if on "actualize-synthesis" text
-      if (current.type === "actualize_header") {
-        const timestampNode = current.childForFieldName("timestamp");
-        const targetNode = current.childForFieldName("target");
-        if (timestampNode && targetNode) {
-          const afterTimestamp = timestampNode.endPosition;
-          // "actualize-synthesis" is between timestamp and target
-          if (
-            point.row === afterTimestamp.row &&
-            point.column > afterTimestamp.column &&
-            point.column < targetNode.startPosition.column
-          ) {
-            return {
-              kind: "directive",
-              directive: "actualize-synthesis",
-              location: {
-                startIndex: timestampNode.endIndex + 1,
-                endIndex: targetNode.startIndex - 1,
-                startPosition: { row: afterTimestamp.row, column: afterTimestamp.column + 1 },
-                endPosition: {
-                  row: targetNode.startPosition.row,
-                  column: targetNode.startPosition.column - 1,
-                },
-              },
-              sourceMap,
-            };
-          }
-        }
-      }
       break;
     }
     current = current.parent;
   }
+
   return null;
 }
 
@@ -504,27 +445,37 @@ function classifyNode(node: SyntaxNode, point: Point, block: ParsedBlock): NodeC
   // Check parent nodes for context
   let current: SyntaxNode | null = node;
   while (current) {
-    // Check for entity in instance header
-    if (current.type === "instance_header") {
-      const entityNode = current.childForFieldName("entity");
-      if (entityNode && isPositionInNode(point, entityNode)) {
-        return {
-          kind: "entity",
-          entityName: entityNode.text,
-          location: extractLocation(entityNode),
-          sourceMap,
-        };
+    // Check for entity in data_entry (argument field for create/update)
+    if (current.type === "data_entry") {
+      const directiveNode = current.childForFieldName("directive");
+      const directive = directiveNode?.text;
+
+      // For create/update directives, the argument is the entity name
+      if (directive === "create" || directive === "update") {
+        const argumentNode = current.childForFieldName("argument");
+        if (
+          argumentNode &&
+          argumentNode.type === "identifier" &&
+          isPositionInNode(point, argumentNode)
+        ) {
+          return {
+            kind: "entity",
+            entityName: argumentNode.text,
+            location: extractLocation(argumentNode),
+            sourceMap,
+          };
+        }
       }
     }
 
-    // Check for entity_name in schema header
-    if (current.type === "schema_header") {
-      const entityNameNode = current.childForFieldName("entity_name");
-      if (entityNameNode && isPositionInNode(point, entityNameNode)) {
+    // Check for entity_name in schema_entry (argument field for define-entity/alter-entity)
+    if (current.type === "schema_entry") {
+      const argumentNode = current.childForFieldName("argument");
+      if (argumentNode && isPositionInNode(point, argumentNode)) {
         return {
           kind: "schema_entity",
-          entityName: entityNameNode.text,
-          node: extractIdentifier(entityNameNode),
+          entityName: argumentNode.text,
+          node: extractIdentifier(argumentNode),
           sourceMap,
         };
       }
@@ -707,11 +658,30 @@ function classifySectionNameNode(node: SyntaxNode, sourceMap: SourceMap): Sectio
  * Classify an identifier node
  */
 function classifyIdentifierNode(node: SyntaxNode, sourceMap: SourceMap): NodeContext {
-  // Check if this is the entity_name in a schema header
   const parent = node.parent;
-  if (parent?.type === "schema_header") {
-    const entityNameNode = parent.childForFieldName("entity_name");
-    if (entityNameNode && entityNameNode.id === node.id) {
+
+  // Check if this is the entity (argument) in a data_entry with create/update directive
+  if (parent?.type === "data_entry") {
+    const directiveNode = parent.childForFieldName("directive");
+    const directive = directiveNode?.text;
+
+    if (directive === "create" || directive === "update") {
+      const argumentNode = parent.childForFieldName("argument");
+      if (argumentNode && argumentNode.id === node.id) {
+        return {
+          kind: "entity",
+          entityName: node.text,
+          location: extractLocation(node),
+          sourceMap,
+        };
+      }
+    }
+  }
+
+  // Check if this is the entity_name (argument) in a schema_entry
+  if (parent?.type === "schema_entry") {
+    const argumentNode = parent.childForFieldName("argument");
+    if (argumentNode && argumentNode.id === node.id) {
       return {
         kind: "schema_entity",
         entityName: node.text,

@@ -1,63 +1,38 @@
 ==================
-invalid timestamp
+still typing #2 (description)
 ==================
 
-2026-01-05T18:11 create lore "Invalid"
-  type: "fact"
+2026-01-05T18:11Z create lore "Hello
 
-
-2026-01-05T18:11Z create lore "Proper"
-  type: "fact"
 ---
 
 (source_file
-  (ERROR
-    (datetime_value)
-    (UNEXPECTED 'T')
-    (UNEXPECTED ' ')
-    (field_name))
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
-      (metadata
-        (key)
-        (value
-          (quoted_value))))))
-
-==================
-still typing #1
-==================
-
-2026-01-05T18:11Z create 
-
----
-
-(source_file
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)))
   (ERROR
-    (timestamp)
-    (instance_directive)))
+    (UNEXPECTED '\0')))
 
 ==================
-invalid timestamp w/ section
+missing ending quote #2
 ==================
 
-2026-01-05T18:11 create lore "Invalid"
+
+2026-01-05T18:11Z create lore "Hello
   type: "fact"
 
-  # Hello
-  World
+  # Section
+  yes"
+
 ---
 
 (source_file
-  (ERROR
-    (datetime_value)
-    (UNEXPECTED 'T')
-    (UNEXPECTED ' ')
-    (field_name))
-  (ERROR
-    (UNEXPECTED ' ')
-    (section_name)))
+  (entry
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)))
+  (ERROR))

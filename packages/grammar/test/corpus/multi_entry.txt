@@ -12,23 +12,21 @@ two simple entries
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
           (quoted_value)))))
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -56,12 +54,11 @@ entries with content
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -77,12 +74,11 @@ entries with content
         (content_line
           (content_text)))))
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -119,26 +115,24 @@ three entries mixed
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (link)
-        (tag))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (link)
+      (tag)
       (metadata
         (key)
         (value
           (quoted_value)))))
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (tag))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (tag)
       (metadata
         (key)
         (value
@@ -150,12 +144,11 @@ three entries mixed
         (content_line
           (content_text)))))
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -180,23 +173,21 @@ entry with blank lines between
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
           (quoted_value)))))
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value

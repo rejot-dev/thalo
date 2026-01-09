@@ -10,12 +10,11 @@
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -37,12 +36,11 @@ tab indentation for metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -66,12 +64,11 @@ tab indentation for metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -95,12 +92,11 @@ tab indentation for content
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -124,12 +120,11 @@ tab indentation for markdown header
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -153,12 +148,11 @@ tab indentation for markdown header
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -185,12 +179,11 @@ mixed 4-space indent throughout
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -224,12 +217,11 @@ Empty Whitespace
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -251,12 +243,11 @@ Empty Whitespace
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -278,12 +269,11 @@ Empty Whitespace
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -307,12 +297,11 @@ Content-only entry (no metadata)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -338,12 +327,11 @@ Multiple consecutive blank lines in content
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -363,12 +351,11 @@ Entry ending at EOF (no trailing newline)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -389,12 +376,11 @@ Mixed tabs and spaces in same entry
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -424,12 +410,11 @@ Content line that looks like metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -456,12 +441,11 @@ Deeply nested markdown headers
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -491,12 +475,11 @@ Content directly after header (no blank line)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (content
         (markdown_header
           (md_indicator)
@@ -517,12 +500,11 @@ Content directly after metadata (no blank line)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value

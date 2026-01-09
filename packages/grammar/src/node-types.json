@@ -1,54 +1,5 @@
 [
   {
-    "type": "actualize_entry",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "actualize_header",
-          "named": true
-        },
-        {
-          "type": "comment_line",
-          "named": true
-        },
-        {
-          "type": "metadata",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "actualize_header",
-    "named": true,
-    "fields": {
-      "target": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "link",
-            "named": true
-          }
-        ]
-      },
-      "timestamp": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "timestamp",
-            "named": true
-          }
-        ]
-      }
-    }
-  },
-  {
     "type": "array_type",
     "named": true,
     "fields": {},
@@ -130,6 +81,87 @@
     }
   },
   {
+    "type": "data_directive",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "data_entry",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "link",
+            "named": true
+          }
+        ]
+      },
+      "directive": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "data_directive",
+            "named": true
+          }
+        ]
+      },
+      "timestamp": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "timestamp",
+            "named": true
+          }
+        ]
+      },
+      "title": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "title",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "comment_line",
+          "named": true
+        },
+        {
+          "type": "content",
+          "named": true
+        },
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "metadata",
+          "named": true
+        },
+        {
+          "type": "tag",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "default_value",
     "named": true,
     "fields": {},
@@ -158,11 +190,6 @@
     "fields": {}
   },
   {
-    "type": "entity",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "entry",
     "named": true,
     "fields": {},
@@ -171,19 +198,11 @@
       "required": true,
       "types": [
         {
-          "type": "actualize_entry",
-          "named": true
-        },
-        {
-          "type": "instance_entry",
+          "type": "data_entry",
           "named": true
         },
         {
           "type": "schema_entry",
-          "named": true
-        },
-        {
-          "type": "synthesis_entry",
           "named": true
         }
       ]
@@ -299,98 +318,6 @@
     "type": "identifier",
     "named": true,
     "fields": {}
-  },
-  {
-    "type": "instance_directive",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "instance_entry",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "comment_line",
-          "named": true
-        },
-        {
-          "type": "content",
-          "named": true
-        },
-        {
-          "type": "instance_header",
-          "named": true
-        },
-        {
-          "type": "metadata",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "instance_header",
-    "named": true,
-    "fields": {
-      "directive": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "instance_directive",
-            "named": true
-          }
-        ]
-      },
-      "entity": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "entity",
-            "named": true
-          }
-        ]
-      },
-      "timestamp": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "timestamp",
-            "named": true
-          }
-        ]
-      },
-      "title": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "title",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "link",
-          "named": true
-        },
-        {
-          "type": "tag",
-          "named": true
-        }
-      ]
-    }
   },
   {
     "type": "key",
@@ -609,54 +536,23 @@
   {
     "type": "schema_entry",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "metadata_block",
-          "named": true
-        },
-        {
-          "type": "remove_metadata_block",
-          "named": true
-        },
-        {
-          "type": "remove_sections_block",
-          "named": true
-        },
-        {
-          "type": "schema_header",
-          "named": true
-        },
-        {
-          "type": "sections_block",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "schema_header",
-    "named": true,
     "fields": {
+      "argument": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
       "directive": {
         "multiple": false,
         "required": true,
         "types": [
           {
             "type": "schema_directive",
-            "named": true
-          }
-        ]
-      },
-      "entity_name": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "identifier",
             "named": true
           }
         ]
@@ -688,6 +584,22 @@
       "types": [
         {
           "type": "link",
+          "named": true
+        },
+        {
+          "type": "metadata_block",
+          "named": true
+        },
+        {
+          "type": "remove_metadata_block",
+          "named": true
+        },
+        {
+          "type": "remove_sections_block",
+          "named": true
+        },
+        {
+          "type": "sections_block",
           "named": true
         },
         {
@@ -783,79 +695,6 @@
         },
         {
           "type": "entry",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "synthesis_entry",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "comment_line",
-          "named": true
-        },
-        {
-          "type": "content",
-          "named": true
-        },
-        {
-          "type": "metadata",
-          "named": true
-        },
-        {
-          "type": "synthesis_header",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "synthesis_header",
-    "named": true,
-    "fields": {
-      "link_id": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "link",
-            "named": true
-          }
-        ]
-      },
-      "timestamp": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "timestamp",
-            "named": true
-          }
-        ]
-      },
-      "title": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "title",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "tag",
           "named": true
         }
       ]
@@ -1078,20 +917,12 @@
     "named": true
   },
   {
-    "type": "journal",
-    "named": false
-  },
-  {
     "type": "link",
     "named": false
   },
   {
     "type": "link",
     "named": true
-  },
-  {
-    "type": "lore",
-    "named": false
   },
   {
     "type": "md_heading_text",
@@ -1102,16 +933,8 @@
     "named": true
   },
   {
-    "type": "opinion",
-    "named": false
-  },
-  {
     "type": "optional_marker",
     "named": true
-  },
-  {
-    "type": "reference",
-    "named": false
   },
   {
     "type": "section_name",

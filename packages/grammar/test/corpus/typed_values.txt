@@ -9,12 +9,11 @@ value: simple link
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -31,12 +30,11 @@ value: link with path
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -53,12 +51,11 @@ value: quoted value
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -75,10 +72,10 @@ value: datetime with time
 
 (source_file
   (entry
-    (actualize_entry
-      (actualize_header
-        (timestamp)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (link)
       (metadata
         (key)
         (value
@@ -95,12 +92,11 @@ value: datetime without time (date only)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -118,12 +114,11 @@ value: date range years
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -140,12 +135,11 @@ value: date range full dates
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -162,12 +156,11 @@ value: array of links
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -187,12 +180,11 @@ value: array of quoted values
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -211,12 +203,11 @@ value: array mixed links and quoted
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -236,11 +227,11 @@ query: entity with field condition
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -263,11 +254,11 @@ query: entity with tag condition
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -289,11 +280,11 @@ query: entity with link condition
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -315,11 +306,11 @@ query: multiple conditions with and
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -345,11 +336,11 @@ query: three conditions
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -379,11 +370,11 @@ query: field with quoted value
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -406,11 +397,11 @@ array: multiple queries
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -441,11 +432,11 @@ array: three queries
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -480,12 +471,11 @@ array: date ranges
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -504,12 +494,11 @@ array: mixed types
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value

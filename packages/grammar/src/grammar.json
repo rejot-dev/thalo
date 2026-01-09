@@ -60,28 +60,162 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "instance_entry"
-        },
-        {
-          "type": "SYMBOL",
           "name": "schema_entry"
         },
         {
           "type": "SYMBOL",
-          "name": "synthesis_entry"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "actualize_entry"
+          "name": "data_entry"
         }
       ]
     },
-    "instance_entry": {
+    "schema_entry": {
       "type": "SEQ",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "instance_header"
+          "type": "FIELD",
+          "name": "timestamp",
+          "content": {
+            "type": "SYMBOL",
+            "name": "timestamp"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "directive",
+          "content": {
+            "type": "SYMBOL",
+            "name": "schema_directive"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "argument",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "title",
+          "content": {
+            "type": "SYMBOL",
+            "name": "title"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "link"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "tag"
+              }
+            ]
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_schema_block"
+          }
+        }
+      ]
+    },
+    "schema_directive": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "define-entity"
+        },
+        {
+          "type": "STRING",
+          "value": "alter-entity"
+        }
+      ]
+    },
+    "data_entry": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "timestamp",
+          "content": {
+            "type": "SYMBOL",
+            "name": "timestamp"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "directive",
+          "content": {
+            "type": "SYMBOL",
+            "name": "data_directive"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "argument",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "link"
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "title",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "title"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "link"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "tag"
+              }
+            ]
+          }
         },
         {
           "type": "REPEAT",
@@ -113,60 +247,7 @@
         }
       ]
     },
-    "instance_header": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "timestamp",
-          "content": {
-            "type": "SYMBOL",
-            "name": "timestamp"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "directive",
-          "content": {
-            "type": "SYMBOL",
-            "name": "instance_directive"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "entity",
-          "content": {
-            "type": "SYMBOL",
-            "name": "entity"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "title",
-          "content": {
-            "type": "SYMBOL",
-            "name": "title"
-          }
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "link"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "tag"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "instance_directive": {
+    "data_directive": {
       "type": "CHOICE",
       "members": [
         {
@@ -176,29 +257,23 @@
         {
           "type": "STRING",
           "value": "update"
+        },
+        {
+          "type": "STRING",
+          "value": "define-synthesis"
+        },
+        {
+          "type": "STRING",
+          "value": "actualize-synthesis"
         }
       ]
     },
-    "entity": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "lore"
-        },
-        {
-          "type": "STRING",
-          "value": "opinion"
-        },
-        {
-          "type": "STRING",
-          "value": "reference"
-        },
-        {
-          "type": "STRING",
-          "value": "journal"
-        }
-      ]
+    "identifier": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[a-z][a-zA-Z0-9\\-_]*"
+      }
     },
     "metadata": {
       "type": "PREC",
@@ -232,222 +307,6 @@
           }
         ]
       }
-    },
-    "schema_entry": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "schema_header"
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_schema_block"
-          }
-        }
-      ]
-    },
-    "schema_header": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "timestamp",
-          "content": {
-            "type": "SYMBOL",
-            "name": "timestamp"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "directive",
-          "content": {
-            "type": "SYMBOL",
-            "name": "schema_directive"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "entity_name",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "title",
-          "content": {
-            "type": "SYMBOL",
-            "name": "title"
-          }
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "link"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "tag"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "schema_directive": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "define-entity"
-        },
-        {
-          "type": "STRING",
-          "value": "alter-entity"
-        }
-      ]
-    },
-    "identifier": {
-      "type": "TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "[a-z][a-zA-Z0-9\\-_]*"
-      }
-    },
-    "synthesis_entry": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "synthesis_header"
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "metadata"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "comment_line"
-              }
-            ]
-          }
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "content"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        }
-      ]
-    },
-    "synthesis_header": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "timestamp",
-          "content": {
-            "type": "SYMBOL",
-            "name": "timestamp"
-          }
-        },
-        {
-          "type": "STRING",
-          "value": "define-synthesis"
-        },
-        {
-          "type": "FIELD",
-          "name": "title",
-          "content": {
-            "type": "SYMBOL",
-            "name": "title"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "link_id",
-          "content": {
-            "type": "SYMBOL",
-            "name": "link"
-          }
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "SYMBOL",
-            "name": "tag"
-          }
-        }
-      ]
-    },
-    "actualize_entry": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "actualize_header"
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "metadata"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "comment_line"
-              }
-            ]
-          }
-        }
-      ]
-    },
-    "actualize_header": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "FIELD",
-          "name": "timestamp",
-          "content": {
-            "type": "SYMBOL",
-            "name": "timestamp"
-          }
-        },
-        {
-          "type": "STRING",
-          "value": "actualize-synthesis"
-        },
-        {
-          "type": "FIELD",
-          "name": "target",
-          "content": {
-            "type": "SYMBOL",
-            "name": "link"
-          }
-        }
-      ]
     },
     "_schema_block": {
       "type": "CHOICE",
@@ -1384,7 +1243,7 @@
       "value": " "
     }
   ],
-  "conflicts": [],
+  "conflicts": [["data_entry"]],
   "precedences": [],
   "externals": [
     {

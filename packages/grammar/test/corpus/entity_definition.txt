@@ -11,11 +11,10 @@ simple define-entity with metadata
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -35,11 +34,10 @@ define-entity with optional field
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -60,11 +58,10 @@ field with description
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -86,11 +83,10 @@ literal union type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -113,11 +109,10 @@ primitive union type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -139,11 +134,10 @@ array type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -164,11 +158,10 @@ array of union type (parenthesized)
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -193,11 +186,10 @@ array of literals union
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -222,11 +214,10 @@ array of string type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -247,11 +238,10 @@ array of date type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -272,11 +262,10 @@ array of date-range type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -297,11 +286,10 @@ default value with literal
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -326,11 +314,10 @@ default value with link
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -353,11 +340,10 @@ default value with datetime
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -380,11 +366,10 @@ default value with string type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -408,11 +393,10 @@ sections block
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (sections_block
         (section_definition (section_name))
         (section_definition (section_name))))))
@@ -431,11 +415,10 @@ section names with spaces
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (sections_block
         (section_definition (section_name))
         (section_definition
@@ -457,11 +440,10 @@ section names with mixed case words
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (sections_block
         (section_definition (section_name))
         (section_definition
@@ -482,11 +464,10 @@ optional section with description
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (sections_block
         (section_definition
           (section_name)
@@ -516,12 +497,11 @@ complete define-entity
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title)
-        (tag))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
+      (tag)
       (metadata_block
         (field_definition
           (field_name)
@@ -581,11 +561,10 @@ blank line between metadata and sections
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -608,11 +587,10 @@ alter-entity adding metadata
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -633,11 +611,10 @@ alter-entity removing metadata
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (remove_metadata_block
         (field_removal
           (field_name)
@@ -656,11 +633,10 @@ alter-entity adding sections
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (sections_block
         (section_definition
           (section_name)
@@ -680,11 +656,10 @@ alter-entity removing sections
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (remove_sections_block
         (section_removal
           (section_name)
@@ -709,11 +684,10 @@ alter-entity all block types
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)
@@ -743,11 +717,10 @@ date-range type
 (source_file
   (entry
     (schema_entry
-      (schema_header
-        (timestamp)
-        (schema_directive)
-        (identifier)
-        (title))
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
       (metadata_block
         (field_definition
           (field_name)

@@ -9,6 +9,9 @@ export default grammar({
     $["error_sentinel"], // Detects error recovery mode
   ],
 
+  // Resolve ambiguity: link after directive could be argument or trailing link/tag
+  conflicts: ($) => [[$.data_entry]],
+
   rules: {
     source_file: ($) => repeat(choice($.entry, $.comment, $._nl)),
 
@@ -18,70 +21,47 @@ export default grammar({
     // Indented comment line (within entries) - same prec as metadata (will be tried via choice)
     comment_line: ($) => prec(2, seq($["_indent"], $.comment)),
 
-    entry: ($) => choice($.instance_entry, $.schema_entry, $.synthesis_entry, $.actualize_entry),
-
     // =========================================================================
-    // Instance entries (create/update lore, opinion, etc.)
-    // =========================================================================
-
-    instance_entry: ($) =>
-      seq($.instance_header, repeat(choice($.metadata, $.comment_line)), optional($.content)),
-
-    instance_header: ($) =>
-      seq(
-        field("timestamp", $.timestamp),
-        field("directive", $.instance_directive),
-        field("entity", $.entity),
-        field("title", $.title),
-        repeat(choice($.link, $.tag)),
-      ),
-
-    instance_directive: (_) => choice("create", "update"),
-
-    entity: (_) => choice("lore", "opinion", "reference", "journal"),
-
-    // prec(2) to prefer metadata over content_line when we see key:value
-    metadata: ($) => prec(2, seq($["_indent"], field("key", $.key), ":", field("value", $.value))),
-
-    // =========================================================================
-    // Schema entries (define-entity/alter-entity)
+    // Unified entry structure
+    // Entry types are differentiated by the directive keyword in the header.
+    // Schema entries (define-entity, alter-entity) have schema blocks.
+    // Data entries (create, update, define-synthesis, actualize-synthesis) have metadata/content.
     // =========================================================================
 
-    schema_entry: ($) => seq($.schema_header, repeat($._schema_block)),
+    entry: ($) => choice($.schema_entry, $.data_entry),
 
-    schema_header: ($) =>
+    // Schema entries: define-entity or alter-entity with optional schema blocks
+    schema_entry: ($) =>
       seq(
         field("timestamp", $.timestamp),
         field("directive", $.schema_directive),
-        field("entity_name", $.identifier),
+        field("argument", $.identifier),
         field("title", $.title),
         repeat(choice($.link, $.tag)),
+        repeat($._schema_block),
       ),
 
     schema_directive: (_) => choice("define-entity", "alter-entity"),
 
-    identifier: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
-
-    // =========================================================================
-    // Synthesis entries (define-synthesis/actualize-synthesis)
-    // =========================================================================
-
-    synthesis_entry: ($) =>
-      seq($.synthesis_header, repeat(choice($.metadata, $.comment_line)), optional($.content)),
-
-    synthesis_header: ($) =>
+    // Data entries: instance, synthesis, or actualize with metadata and optional content
+    data_entry: ($) =>
       seq(
         field("timestamp", $.timestamp),
-        "define-synthesis",
-        field("title", $.title),
-        field("link_id", $.link),
-        repeat($.tag),
+        field("directive", $.data_directive),
+        field("argument", optional(choice($.identifier, $.link))),
+        field("title", optional($.title)),
+        repeat(choice($.link, $.tag)),
+        repeat(choice($.metadata, $.comment_line)),
+        optional($.content),
       ),
 
-    actualize_entry: ($) => seq($.actualize_header, repeat(choice($.metadata, $.comment_line))),
+    data_directive: (_) => choice("create", "update", "define-synthesis", "actualize-synthesis"),
 
-    actualize_header: ($) =>
-      seq(field("timestamp", $.timestamp), "actualize-synthesis", field("target", $.link)),
+    // Identifier for entity names (lore, opinion, etc.) and custom entity definitions
+    identifier: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
+
+    // prec(2) to prefer metadata over content_line when we see key:value
+    metadata: ($) => prec(2, seq($["_indent"], field("key", $.key), ":", field("value", $.value))),
 
     // =========================================================================
     // Schema blocks (# Metadata, # Sections, # Remove Metadata, # Remove Sections)

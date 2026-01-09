@@ -10,12 +10,11 @@ comment line after metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -36,12 +35,11 @@ comment line between metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -67,12 +65,11 @@ multiple comment lines
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -100,12 +97,11 @@ unindented comment lines between metadata
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -134,12 +130,11 @@ comment line before content
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -168,12 +163,11 @@ comment line in content section
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -205,12 +199,11 @@ comment line between content sections
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -243,12 +236,11 @@ comment only in metadata section - allows content after
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (comment_line
         (comment))
       (content
@@ -270,12 +262,11 @@ inline comment after metadata value (breaks parsing)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -296,12 +287,11 @@ comment at end of entry
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -321,12 +311,11 @@ comment with special characters
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -347,12 +336,11 @@ unindented comment before entry
 (source_file
   (comment)
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -373,24 +361,22 @@ unindented comment between entries
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
           (quoted_value)))))
   (comment)
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -409,12 +395,11 @@ unindented comment at end of file
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -436,12 +421,11 @@ multiple unindented comments
   (comment)
   (comment)
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -459,12 +443,11 @@ unindented comment directly after entry (no blank line)
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -487,12 +470,11 @@ mixed indented and unindented comments
 (source_file
   (comment)
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
@@ -515,24 +497,22 @@ unindented comment in metadata ends entry
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value
           (quoted_value)))))
   (comment)
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
       (metadata
         (key)
         (value

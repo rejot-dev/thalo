@@ -154,81 +154,178 @@ export function extractEntry(node: SyntaxNode): Entry | null {
     return null;
   }
 
-  if (child.type === "instance_entry") {
-    return extractInstanceEntry(child);
+  if (child.type === "data_entry") {
+    return extractDataEntry(child);
   }
   if (child.type === "schema_entry") {
     return extractSchemaEntry(child);
-  }
-  if (child.type === "synthesis_entry") {
-    return extractSynthesisEntry(child);
-  }
-  if (child.type === "actualize_entry") {
-    return extractActualizeEntry(child);
   }
   return null;
 }
 
 /**
- * Extract an InstanceEntry
+ * Extract a DataEntry - handles instance, synthesis, and actualize entries
+ * based on the directive type
  */
-export function extractInstanceEntry(node: SyntaxNode): InstanceEntry {
-  const headerNode = getChildByType(node, "instance_header");
-  if (!headerNode) {
-    throw new Error("Missing instance_header in instance_entry");
-  }
+export function extractDataEntry(
+  node: SyntaxNode,
+): InstanceEntry | SynthesisEntry | ActualizeEntry {
+  const directiveNode = getChildByField(node, "directive");
+  const directive = directiveNode.text;
 
+  if (directive === "define-synthesis") {
+    return extractSynthesisEntryFromData(node);
+  }
+  if (directive === "actualize-synthesis") {
+    return extractActualizeEntryFromData(node);
+  }
+  // Default: instance entry (create/update)
+  return extractInstanceEntryFromData(node);
+}
+
+/**
+ * Extract an InstanceEntry from a data_entry node
+ */
+export function extractInstanceEntryFromData(node: SyntaxNode): InstanceEntry {
+  const timestampNode = getChildByField(node, "timestamp");
+  const directiveNode = getChildByField(node, "directive");
+  const argumentNode = getOptionalChildByField(node, "argument");
+  const titleNode = getOptionalChildByField(node, "title");
+
+  const linkNodes = getChildrenByType(node, "link");
+  const tagNodes = getChildrenByType(node, "tag");
   const metadataNodes = getChildrenByType(node, "metadata");
   const contentNode = getChildByType(node, "content");
 
+  // For instance entries, argument is the entity (identifier)
+  const entityValue = argumentNode?.text || "";
+
+  // Create a synthetic header for compatibility
+  const header: InstanceHeader = {
+    ...baseNode(node, "instance_header"),
+    timestamp: extractTimestamp(timestampNode),
+    directive: directiveNode.text as InstanceDirective,
+    entity: entityValue as Entity,
+    title: titleNode
+      ? extractTitle(titleNode)
+      : { type: "title", location: extractLocation(node), syntaxNode: node, value: "" },
+    // Filter out the argument link from trailing links
+    link:
+      linkNodes.filter((l) => l !== argumentNode).length > 0
+        ? extractLink(linkNodes.filter((l) => l !== argumentNode)[0])
+        : null,
+    tags: tagNodes.map(extractTag),
+  };
+
   return {
     ...baseNode(node, "instance_entry"),
-    header: extractInstanceHeader(headerNode),
+    header,
     metadata: metadataNodes.map(extractMetadata),
     content: contentNode ? extractContent(contentNode) : null,
   };
 }
 
 /**
- * Extract an InstanceHeader
+ * Extract a SynthesisEntry from a data_entry node
  */
-export function extractInstanceHeader(node: SyntaxNode): InstanceHeader {
+export function extractSynthesisEntryFromData(node: SyntaxNode): SynthesisEntry {
   const timestampNode = getChildByField(node, "timestamp");
-  const directiveNode = getChildByField(node, "directive");
-  const entityNode = getChildByField(node, "entity");
-  const titleNode = getChildByField(node, "title");
+  const titleNode = getOptionalChildByField(node, "title");
+  const argumentNode = getOptionalChildByField(node, "argument");
 
   const linkNodes = getChildrenByType(node, "link");
   const tagNodes = getChildrenByType(node, "tag");
+  const metadataNodes = getChildrenByType(node, "metadata");
+  const contentNode = getChildByType(node, "content");
+
+  // For define-synthesis, the argument is the link_id
+  // The link_id is either the argument field, or the first link
+  const linkIdNode = argumentNode?.type === "link" ? argumentNode : linkNodes[0];
+
+  // Create a synthetic header for compatibility
+  const header: SynthesisHeader = {
+    ...baseNode(node, "synthesis_header"),
+    timestamp: extractTimestamp(timestampNode),
+    title: titleNode
+      ? extractTitle(titleNode)
+      : { type: "title", location: extractLocation(node), syntaxNode: node, value: "" },
+    linkId: linkIdNode
+      ? extractLink(linkIdNode)
+      : { type: "link", location: extractLocation(node), syntaxNode: node, id: "" },
+    // Filter out the linkId from trailing tags
+    tags: tagNodes.map(extractTag),
+  };
 
   return {
-    ...baseNode(node, "instance_header"),
-    timestamp: extractTimestamp(timestampNode),
-    directive: directiveNode.text as InstanceDirective,
-    entity: entityNode.text as Entity,
-    title: extractTitle(titleNode),
-    link: linkNodes.length > 0 ? extractLink(linkNodes[0]) : null,
-    tags: tagNodes.map(extractTag),
+    ...baseNode(node, "synthesis_entry"),
+    header,
+    metadata: metadataNodes.map(extractMetadata),
+    content: contentNode ? extractContent(contentNode) : null,
   };
 }
 
 /**
- * Extract a SchemaEntry
+ * Extract an ActualizeEntry from a data_entry node
+ */
+export function extractActualizeEntryFromData(node: SyntaxNode): ActualizeEntry {
+  const timestampNode = getChildByField(node, "timestamp");
+  const argumentNode = getOptionalChildByField(node, "argument");
+
+  const linkNodes = getChildrenByType(node, "link");
+  const metadataNodes = getChildrenByType(node, "metadata");
+
+  // For actualize-synthesis, the argument (or first link) is the target
+  const targetNode = argumentNode?.type === "link" ? argumentNode : linkNodes[0];
+
+  // Create a synthetic header for compatibility
+  const header: ActualizeHeader = {
+    ...baseNode(node, "actualize_header"),
+    timestamp: extractTimestamp(timestampNode),
+    target: targetNode
+      ? extractLink(targetNode)
+      : { type: "link", location: extractLocation(node), syntaxNode: node, id: "" },
+  };
+
+  return {
+    ...baseNode(node, "actualize_entry"),
+    header,
+    metadata: metadataNodes.map(extractMetadata),
+  };
+}
+
+/**
+ * Extract a SchemaEntry - header fields are now inline
  */
 export function extractSchemaEntry(node: SyntaxNode): SchemaEntry {
-  const headerNode = getChildByType(node, "schema_header");
-  if (!headerNode) {
-    throw new Error("Missing schema_header in schema_entry");
-  }
+  const timestampNode = getChildByField(node, "timestamp");
+  const directiveNode = getChildByField(node, "directive");
+  const argumentNode = getOptionalChildByField(node, "argument");
+  const titleNode = getChildByField(node, "title");
+
+  const linkNodes = getChildrenByType(node, "link");
+  const tagNodes = getChildrenByType(node, "tag");
 
   const metadataBlockNode = getChildByType(node, "metadata_block");
   const sectionsBlockNode = getChildByType(node, "sections_block");
   const removeMetadataBlockNode = getChildByType(node, "remove_metadata_block");
   const removeSectionsBlockNode = getChildByType(node, "remove_sections_block");
 
+  // Create a synthetic header for compatibility
+  const header: SchemaHeader = {
+    ...baseNode(node, "schema_header"),
+    timestamp: extractTimestamp(timestampNode),
+    directive: directiveNode.text as SchemaDirective,
+    entityName: argumentNode
+      ? extractIdentifier(argumentNode)
+      : { type: "identifier", location: extractLocation(node), syntaxNode: node, value: "" },
+    title: extractTitle(titleNode),
+    link: linkNodes.length > 0 ? extractLink(linkNodes[0]) : null,
+    tags: tagNodes.map(extractTag),
+  };
+
   return {
     ...baseNode(node, "schema_entry"),
-    header: extractSchemaHeader(headerNode),
+    header,
     metadataBlock: metadataBlockNode ? extractMetadataBlock(metadataBlockNode) : null,
     sectionsBlock: sectionsBlockNode ? extractSectionsBlock(sectionsBlockNode) : null,
     removeMetadataBlock: removeMetadataBlockNode
@@ -237,100 +334,6 @@ export function extractSchemaEntry(node: SyntaxNode): SchemaEntry {
     removeSectionsBlock: removeSectionsBlockNode
       ? extractRemoveSectionsBlock(removeSectionsBlockNode)
       : null,
-  };
-}
-
-/**
- * Extract a SchemaHeader
- */
-export function extractSchemaHeader(node: SyntaxNode): SchemaHeader {
-  const timestampNode = getChildByField(node, "timestamp");
-  const directiveNode = getChildByField(node, "directive");
-  const entityNameNode = getChildByField(node, "entity_name");
-  const titleNode = getChildByField(node, "title");
-
-  const linkNodes = getChildrenByType(node, "link");
-  const tagNodes = getChildrenByType(node, "tag");
-
-  return {
-    ...baseNode(node, "schema_header"),
-    timestamp: extractTimestamp(timestampNode),
-    directive: directiveNode.text as SchemaDirective,
-    entityName: extractIdentifier(entityNameNode),
-    title: extractTitle(titleNode),
-    link: linkNodes.length > 0 ? extractLink(linkNodes[0]) : null,
-    tags: tagNodes.map(extractTag),
-  };
-}
-
-/**
- * Extract a SynthesisEntry
- */
-export function extractSynthesisEntry(node: SyntaxNode): SynthesisEntry {
-  const headerNode = getChildByType(node, "synthesis_header");
-  if (!headerNode) {
-    throw new Error("Missing synthesis_header in synthesis_entry");
-  }
-
-  const metadataNodes = getChildrenByType(node, "metadata");
-  const contentNode = getChildByType(node, "content");
-
-  return {
-    ...baseNode(node, "synthesis_entry"),
-    header: extractSynthesisHeader(headerNode),
-    metadata: metadataNodes.map(extractMetadata),
-    content: contentNode ? extractContent(contentNode) : null,
-  };
-}
-
-/**
- * Extract a SynthesisHeader
- */
-export function extractSynthesisHeader(node: SyntaxNode): SynthesisHeader {
-  const timestampNode = getChildByField(node, "timestamp");
-  const titleNode = getChildByField(node, "title");
-  const linkIdNode = getChildByField(node, "link_id");
-
-  const tagNodes = getChildrenByType(node, "tag");
-
-  return {
-    ...baseNode(node, "synthesis_header"),
-    timestamp: extractTimestamp(timestampNode),
-    title: extractTitle(titleNode),
-    linkId: extractLink(linkIdNode),
-    tags: tagNodes.map(extractTag),
-  };
-}
-
-/**
- * Extract an ActualizeEntry
- */
-export function extractActualizeEntry(node: SyntaxNode): ActualizeEntry {
-  const headerNode = getChildByType(node, "actualize_header");
-  if (!headerNode) {
-    throw new Error("Missing actualize_header in actualize_entry");
-  }
-
-  const metadataNodes = getChildrenByType(node, "metadata");
-
-  return {
-    ...baseNode(node, "actualize_entry"),
-    header: extractActualizeHeader(headerNode),
-    metadata: metadataNodes.map(extractMetadata),
-  };
-}
-
-/**
- * Extract an ActualizeHeader
- */
-export function extractActualizeHeader(node: SyntaxNode): ActualizeHeader {
-  const timestampNode = getChildByField(node, "timestamp");
-  const targetNode = getChildByField(node, "target");
-
-  return {
-    ...baseNode(node, "actualize_header"),
-    timestamp: extractTimestamp(timestampNode),
-    target: extractLink(targetNode),
   };
 }
 

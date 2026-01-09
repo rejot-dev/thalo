@@ -48,15 +48,23 @@ function resetWarningState(): void {
 // Instance Entry Printing (create/update lore, opinion, etc.)
 // ===================
 
-const printInstanceHeader = (node: SyntaxNode): Doc => {
+/**
+ * Print header fields that are inline in data_entry or schema_entry nodes.
+ * The new grammar has header fields directly on the entry node rather than
+ * in a separate header child node.
+ */
+const printEntryHeaderFields = (
+  node: SyntaxNode,
+  directiveType: "data_directive" | "schema_directive",
+): Doc => {
   const parts: Doc[] = [];
 
   for (const child of node.children) {
     if (child.type === "timestamp") {
       parts.push(child.text);
-    } else if (child.type === "instance_directive") {
+    } else if (child.type === directiveType) {
       parts.push(" ", child.text);
-    } else if (child.type === "entity") {
+    } else if (child.type === "identifier") {
       parts.push(" ", child.text);
     } else if (child.type === "title") {
       parts.push(" ", child.text);
@@ -181,13 +189,15 @@ const printContent = (node: SyntaxNode): Doc => {
   return [hardline, ...parts];
 };
 
-const printInstanceEntry = (node: SyntaxNode): Doc => {
+/**
+ * Print a data_entry node (handles create, update, define-synthesis, actualize-synthesis).
+ * Header fields are inline on the entry node in the new grammar.
+ */
+const printDataEntry = (node: SyntaxNode): Doc => {
   const parts: Doc[] = [];
 
-  const header = node.children.find((c) => c.type === "instance_header");
-  if (header) {
-    parts.push(printInstanceHeader(header));
-  }
+  // Print header fields directly from the entry node
+  parts.push(printEntryHeaderFields(node, "data_directive"));
 
   // Handle metadata and comment_line nodes (they can be interleaved)
   const metadataAndComments = node.children.filter(
@@ -212,28 +222,6 @@ const printInstanceEntry = (node: SyntaxNode): Doc => {
 // ===================
 // Schema Entry Printing (define-entity/alter-entity)
 // ===================
-
-const printSchemaHeader = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = [];
-
-  for (const child of node.children) {
-    if (child.type === "timestamp") {
-      parts.push(child.text);
-    } else if (child.type === "schema_directive") {
-      parts.push(" ", child.text);
-    } else if (child.type === "identifier") {
-      parts.push(" ", child.text);
-    } else if (child.type === "title") {
-      parts.push(" ", child.text);
-    } else if (child.type === "link") {
-      parts.push(" ", child.text);
-    } else if (child.type === "tag") {
-      parts.push(" ", child.text);
-    }
-  }
-
-  return parts;
-};
 
 const printTypeExpression = (node: SyntaxNode): Doc => {
   const parts: Doc[] = [];
@@ -444,13 +432,15 @@ const printRemoveSectionsBlock = (node: SyntaxNode): Doc => {
   return parts;
 };
 
+/**
+ * Print a schema_entry node (handles define-entity, alter-entity).
+ * Header fields are inline on the entry node in the new grammar.
+ */
 const printSchemaEntry = (node: SyntaxNode): Doc => {
   const parts: Doc[] = [];
 
-  const header = node.children.find((c) => c.type === "schema_header");
-  if (header) {
-    parts.push(printSchemaHeader(header));
-  }
+  // Print header fields directly from the entry node
+  parts.push(printEntryHeaderFields(node, "schema_directive"));
 
   // Track whether we've printed a block (for adding blank lines between blocks)
   let hasBlockBefore = false;
@@ -488,9 +478,9 @@ const printSchemaEntry = (node: SyntaxNode): Doc => {
 // ===================
 
 const printEntry = (node: SyntaxNode): Doc => {
-  const instanceEntry = node.children.find((c) => c.type === "instance_entry");
-  if (instanceEntry) {
-    return printInstanceEntry(instanceEntry);
+  const dataEntry = node.children.find((c) => c.type === "data_entry");
+  if (dataEntry) {
+    return printDataEntry(dataEntry);
   }
 
   const schemaEntry = node.children.find((c) => c.type === "schema_entry");
@@ -498,8 +488,7 @@ const printEntry = (node: SyntaxNode): Doc => {
     return printSchemaEntry(schemaEntry);
   }
 
-  // For unhandled entry types (synthesis_entry, actualize_entry, etc.),
-  // preserve the original text
+  // For unhandled entry types, preserve the original text
   return node.text;
 };
 
@@ -592,14 +581,10 @@ export const printer: ThaloPrinter = {
         return printSourceFile(node);
       case "entry":
         return printEntry(node);
-      case "instance_entry":
-        return printInstanceEntry(node);
-      case "instance_header":
-        return printInstanceHeader(node);
+      case "data_entry":
+        return printDataEntry(node);
       case "schema_entry":
         return printSchemaEntry(node);
-      case "schema_header":
-        return printSchemaHeader(node);
       case "metadata":
         return printMetadata(node);
       case "content":

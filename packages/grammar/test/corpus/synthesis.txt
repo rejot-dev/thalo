@@ -9,11 +9,11 @@ simple define-synthesis
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -36,13 +36,13 @@ define-synthesis with tags
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link)
-        (tag)
-        (tag))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
+      (tag)
+      (tag)
       (metadata
         (key)
         (value
@@ -68,11 +68,11 @@ define-synthesis with prompt content
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -105,11 +105,11 @@ define-synthesis with multiple metadata
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -148,11 +148,11 @@ define-synthesis with multi-line prompt
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -186,10 +186,10 @@ simple actualize-synthesis
 
 (source_file
   (entry
-    (actualize_entry
-      (actualize_header
-        (timestamp)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (link)
       (metadata
         (key)
         (value
@@ -206,10 +206,10 @@ actualize-synthesis with only updated field
 
 (source_file
   (entry
-    (actualize_entry
-      (actualize_header
-        (timestamp)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (link)
       (metadata
         (key)
         (value
@@ -232,11 +232,11 @@ multiple entries in file
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value
@@ -254,10 +254,10 @@ multiple entries in file
         (content_line
           (content_text)))))
   (entry
-    (actualize_entry
-      (actualize_header
-        (timestamp)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (link)
       (metadata
         (key)
         (value
@@ -274,11 +274,11 @@ complex sources query
 
 (source_file
   (entry
-    (synthesis_entry
-      (synthesis_header
-        (timestamp)
-        (title)
-        (link))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (title)
+      (link)
       (metadata
         (key)
         (value

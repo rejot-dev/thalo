@@ -31,15 +31,15 @@ const FRAGMENT_WRAPPERS: Record<
     find: (tree: Tree) => SyntaxNode | null;
   }
 > = {
-  // Queries are embedded as metadata values in an instance entry
+  // Queries are embedded as metadata values in a data entry
   query: {
     wrapper: `2000-01-01T00:00Z create lore "x"
   sources: {FRAGMENT}`,
     find: (tree) => {
-      // Navigate: source_file > entry > instance_entry > metadata > value > query
+      // Navigate: source_file > entry > data_entry > metadata > value > query
       const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
-      const instanceEntry = entry?.namedChildren.find((c) => c.type === "instance_entry");
-      const metadata = instanceEntry?.namedChildren.find((c) => c.type === "metadata");
+      const dataEntry = entry?.namedChildren.find((c) => c.type === "data_entry");
+      const metadata = dataEntry?.namedChildren.find((c) => c.type === "metadata");
       const value = metadata?.childForFieldName("value");
       return value?.namedChildren.find((c) => c.type === "query") ?? null;
     },
@@ -51,8 +51,8 @@ const FRAGMENT_WRAPPERS: Record<
   key: {FRAGMENT}`,
     find: (tree) => {
       const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
-      const instanceEntry = entry?.namedChildren.find((c) => c.type === "instance_entry");
-      const metadata = instanceEntry?.namedChildren.find((c) => c.type === "metadata");
+      const dataEntry = entry?.namedChildren.find((c) => c.type === "data_entry");
+      const metadata = dataEntry?.namedChildren.find((c) => c.type === "metadata");
       return metadata?.childForFieldName("value") ?? null;
     },
   },

@@ -8,13 +8,12 @@ single tag
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (tag)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (tag))))
 
 ==================
 multiple tags
@@ -26,15 +25,14 @@ multiple tags
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (tag)
-        (tag)
-        (tag)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (tag)
+      (tag)
+      (tag))))
 
 ==================
 single link
@@ -46,13 +44,12 @@ single link
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (link)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (link))))
 
 ==================
 link and tags
@@ -64,15 +61,14 @@ link and tags
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (link)
-        (tag)
-        (tag)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (link)
+      (tag)
+      (tag))))
 
 ==================
 tags before link
@@ -84,15 +80,14 @@ tags before link
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (tag)
-        (tag)
-        (link)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (tag)
+      (tag)
+      (link))))
 
 ==================
 tag with dashes and dots
@@ -104,14 +99,13 @@ tag with dashes and dots
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (tag)
-        (tag)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (tag)
+      (tag))))
 
 ==================
 link with dashes
@@ -123,10 +117,9 @@ link with dashes
 
 (source_file
   (entry
-    (instance_entry
-      (instance_header
-        (timestamp)
-        (instance_directive)
-        (entity)
-        (title)
-        (link)))))
+    (data_entry
+      (timestamp)
+      (data_directive)
+      (identifier)
+      (title)
+      (link))))
