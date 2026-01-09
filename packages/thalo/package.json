@@ -9,6 +9,16 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./native": {
+      "development": "./src/parser.native.ts",
+      "types": "./dist/parser.native.d.ts",
+      "default": "./dist/parser.native.js"
+    },
+    "./web": {
+      "development": "./src/parser.web.ts",
+      "types": "./dist/parser.web.d.ts",
+      "default": "./dist/parser.web.js"
+    },
     "./ast": {
       "development": "./src/ast/index.ts",
       "types": "./dist/ast/index.d.ts",
@@ -46,11 +56,12 @@
   },
   "dependencies": {
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
-    "tree-sitter": "^0.25.0"
+    "tree-sitter": "^0.26.0",
+    "web-tree-sitter": "^0.26.3"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "@rejot-dev/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
