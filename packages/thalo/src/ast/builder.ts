@@ -113,7 +113,7 @@ export function parseTimezoneOffset(tz: string): number {
 
   const match = tz.match(/^([+-])(\d{2}):(\d{2})$/);
   if (!match) {
-    return 0;
+    throw new Error(`Invalid timezone format: "${tz}"`);
   }
 
   const sign = match[1] === "+" ? 1 : -1;
@@ -133,16 +133,7 @@ export function buildDatePart(
 ): DatePart {
   const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) {
-    // Fallback for malformed dates - shouldn't happen if grammar is correct
-    return {
-      type: "date_part",
-      year: 0,
-      month: 0,
-      day: 0,
-      value: dateStr,
-      location,
-      syntaxNode,
-    };
+    throw new Error(`Invalid date format: "${dateStr}"`);
   }
 
   return {
@@ -166,15 +157,7 @@ export function buildTimePart(
 ): TimePart {
   const match = timeStr.match(/^(\d{2}):(\d{2})$/);
   if (!match) {
-    // Fallback for malformed times - shouldn't happen if grammar is correct
-    return {
-      type: "time_part",
-      hour: 0,
-      minute: 0,
-      value: timeStr,
-      location,
-      syntaxNode,
-    };
+    throw new Error(`Invalid time format: "${timeStr}"`);
   }
 
   return {
@@ -222,13 +205,7 @@ export function buildTimestamp(node: SyntaxNode): Timestamp {
   const match = text.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(Z|[+-]\d{2}:\d{2})?$/);
 
   if (!match) {
-    // Malformed timestamp - create a basic timestamp without decomposed parts
-    return {
-      type: "timestamp",
-      value: text,
-      location: extractLocation(node),
-      syntaxNode: node,
-    };
+    throw new Error(`Invalid timestamp format: "${text}"`);
   }
 
   const dateStr = match[1];

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Point } from "tree-sitter";
+import type { Point, SyntaxNode } from "tree-sitter";
 import {
   buildTimestamp,
   buildDatePart,
@@ -14,7 +14,7 @@ import {
 import { isSyntaxError, isValidResult } from "./types.js";
 
 // Helper to create a mock syntax node
-function mockSyntaxNode(text: string, startIndex: number = 0): import("tree-sitter").SyntaxNode {
+function mockSyntaxNode(text: string, startIndex: number = 0): SyntaxNode {
   return {
     type: "timestamp",
     text,
@@ -53,10 +53,10 @@ describe("parseTimezoneOffset", () => {
     expect(parseTimezoneOffset("-01:00")).toBe(-60);
   });
 
-  it("should return 0 for invalid formats", () => {
-    expect(parseTimezoneOffset("invalid")).toBe(0);
-    expect(parseTimezoneOffset("+5:30")).toBe(0); // Missing leading zero
-    expect(parseTimezoneOffset("08:00")).toBe(0); // Missing sign
+  it("should throw for invalid formats", () => {
+    expect(() => parseTimezoneOffset("invalid")).toThrow('Invalid timezone format: "invalid"');
+    expect(() => parseTimezoneOffset("+5:30")).toThrow(); // Missing leading zero
+    expect(() => parseTimezoneOffset("08:00")).toThrow(); // Missing sign
   });
 });
 
@@ -83,15 +83,13 @@ describe("buildDatePart", () => {
     expect(datePart.day).toBe(31);
   });
 
-  it("should handle malformed dates gracefully", () => {
+  it("should throw for malformed dates", () => {
     const node = mockSyntaxNode("bad-date", 0);
     const location = mockLocation(0, 8);
-    const datePart = buildDatePart("bad-date", location, node);
 
-    expect(datePart.year).toBe(0);
-    expect(datePart.month).toBe(0);
-    expect(datePart.day).toBe(0);
-    expect(datePart.value).toBe("bad-date");
+    expect(() => buildDatePart("bad-date", location, node)).toThrow(
+      'Invalid date format: "bad-date"',
+    );
   });
 });
 
@@ -116,14 +114,11 @@ describe("buildTimePart", () => {
     expect(timePart.minute).toBe(0);
   });
 
-  it("should handle malformed times gracefully", () => {
+  it("should throw for malformed times", () => {
     const node = mockSyntaxNode("bad", 0);
     const location = mockLocation(0, 3);
-    const timePart = buildTimePart("bad", location, node);
 
-    expect(timePart.hour).toBe(0);
-    expect(timePart.minute).toBe(0);
-    expect(timePart.value).toBe("bad");
+    expect(() => buildTimePart("bad", location, node)).toThrow('Invalid time format: "bad"');
   });
 });
 
@@ -226,16 +221,10 @@ describe("buildTimestamp", () => {
     }
   });
 
-  it("should handle malformed timestamp gracefully", () => {
+  it("should throw for malformed timestamp", () => {
     const node = mockSyntaxNode("not-a-timestamp", 0);
-    const timestamp = buildTimestamp(node);
 
-    // Should return basic timestamp without decomposed parts
-    expect(timestamp.type).toBe("timestamp");
-    expect(timestamp.value).toBe("not-a-timestamp");
-    expect(timestamp.date).toBeUndefined();
-    expect(timestamp.time).toBeUndefined();
-    expect(timestamp.timezone).toBeUndefined();
+    expect(() => buildTimestamp(node)).toThrow('Invalid timestamp format: "not-a-timestamp"');
   });
 });
 
@@ -261,12 +250,6 @@ describe("hasValidTimezone", () => {
 
   it("should return false for missing timezone", () => {
     const node = mockSyntaxNode("2026-01-05T18:30", 0);
-    const timestamp = buildTimestamp(node);
-    expect(hasValidTimezone(timestamp)).toBe(false);
-  });
-
-  it("should return false for timestamp without decomposed parts", () => {
-    const node = mockSyntaxNode("invalid", 0);
     const timestamp = buildTimestamp(node);
     expect(hasValidTimezone(timestamp)).toBe(false);
   });
@@ -303,11 +286,5 @@ describe("formatTimestamp", () => {
     const node = mockSyntaxNode("2026-01-05T18:30", 0);
     const timestamp = buildTimestamp(node);
     expect(formatTimestamp(timestamp)).toBe("2026-01-05T18:30");
-  });
-
-  it("should return original value for malformed timestamp", () => {
-    const node = mockSyntaxNode("invalid", 0);
-    const timestamp = buildTimestamp(node);
-    expect(formatTimestamp(timestamp)).toBe("invalid");
   });
 });
