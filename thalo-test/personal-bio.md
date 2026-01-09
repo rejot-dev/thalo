@@ -1,5 +1,5 @@
 ```thalo
-2026-01-07T14:00 define-synthesis "Personal Bio" ^bio-synthesis #profile
+2026-01-07T14:00Z define-synthesis "Personal Bio" ^bio-synthesis #profile
   sources: lore where subject = ^self
 
   # Prompt
@@ -12,7 +12,7 @@
 2026-01-08T11:58Z create reference "some ref"
   ref-type: "other"
 
-# Key Takeaways
+  # Key Takeaways
 ```
 
 # Personal Bio

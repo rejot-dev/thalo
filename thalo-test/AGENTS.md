@@ -38,17 +38,15 @@ Each entity type defines which sections are required/optional in `entities.thalo
 ## Example
 
 ```thalo
-2026-01-05T16:00 create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
+2026-01-05T16:00Z create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
   confidence: "high"
 
-# Claim
+  # Claim
   TypeScript enums should be replaced with `as const` objects.
 
-# Reasoning
-
-- Enums generate runtime code
-
-- `as const` provides the same type safety with zero overhead
+  # Reasoning
+  - Enums generate runtime code
+  - `as const` provides the same type safety with zero overhead
 ```
 
 ## Tips
