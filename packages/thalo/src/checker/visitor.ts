@@ -79,11 +79,7 @@ export interface RuleVisitor {
 /**
  * Dispatch an entry to the appropriate visitor method.
  */
-export function dispatchToVisitor(
-  visitor: RuleVisitor,
-  entry: Entry,
-  ctx: EntryContext,
-): void {
+export function dispatchToVisitor(visitor: RuleVisitor, entry: Entry, ctx: EntryContext): void {
   switch (entry.type) {
     case "instance_entry":
       visitor.visitInstanceEntry?.(entry, ctx);

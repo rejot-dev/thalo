@@ -204,13 +204,12 @@ const tree2 = parser.parseIncremental(newSource, tree);
 
 ### Vite Usage
 
-For Vite projects, you can import the WASM files directly from this package using Vite's `?url`
-suffix:
+For Vite projects, you can import the WASM files directly using Vite's `?url` suffix:
 
 ```typescript
 import { createParser } from "@rejot-dev/thalo/web";
-import treeSitterWasmUrl from "@rejot-dev/thalo/web-tree-sitter.wasm?url";
-import languageWasmUrl from "@rejot-dev/thalo/tree-sitter-thalo.wasm?url";
+import treeSitterWasmUrl from "web-tree-sitter/web-tree-sitter.wasm?url";
+import languageWasmUrl from "@rejot-dev/tree-sitter-thalo/tree-sitter-thalo.wasm?url";
 
 const [treeSitterWasm, languageWasm] = await Promise.all([
   fetch(treeSitterWasmUrl).then((r) => r.arrayBuffer()),
@@ -222,11 +221,6 @@ const parser = await createParser({
   languageWasm: new Uint8Array(languageWasm),
 });
 ```
-
-Both WASM files are re-exported from this package for convenience:
-
-- `@rejot-dev/thalo/web-tree-sitter.wasm` — The web-tree-sitter runtime
-- `@rejot-dev/thalo/tree-sitter-thalo.wasm` — The thalo language grammar
 
 The main entry (`@rejot-dev/thalo`) provides convenience functions that use a singleton native
 parser internally for backwards compatibility.

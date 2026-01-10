@@ -110,14 +110,7 @@ export class Document {
     newText: string,
   ): EditResult {
     // Compute edit parameters
-    const edit = computeEdit(
-      this._lineIndex,
-      startLine,
-      startColumn,
-      endLine,
-      endColumn,
-      newText,
-    );
+    const edit = computeEdit(this._lineIndex, startLine, startColumn, endLine, endColumn, newText);
 
     // Apply the edit to get new source
     const newSource =

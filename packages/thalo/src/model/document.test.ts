@@ -137,7 +137,7 @@ console.log("not thalo");
 
     it("should apply multiline insertion", () => {
       const doc = new Document("test.thalo", '2024-01-01T12:00 create fact "Test" ^id');
-      const result = doc.applyEdit(0, 39, 0, 39, "\n  key: \"value\"");
+      const result = doc.applyEdit(0, 39, 0, 39, '\n  key: "value"');
 
       expect(result.fullReparse).toBe(false);
       expect(doc.source).toBe('2024-01-01T12:00 create fact "Test" ^id\n  key: "value"');
@@ -178,7 +178,7 @@ console.log("not thalo");
       const doc = new Document("test.md", source);
 
       // Edit within the thalo block (add metadata)
-      const result = doc.applyEdit(3, 32, 3, 32, "\n  key: \"value\"");
+      const result = doc.applyEdit(3, 32, 3, 32, '\n  key: "value"');
 
       expect(result.blockBoundariesChanged).toBe(false);
       expect(result.modifiedBlockIndices).toEqual([0]);
@@ -194,7 +194,13 @@ Some text`;
       expect(doc.blocks.length).toBe(0);
 
       // Add a thalo fence
-      const result = doc.applyEdit(2, 9, 2, 9, "\n\n```thalo\n2024-01-01T12:00 create fact ^id\n```");
+      const result = doc.applyEdit(
+        2,
+        9,
+        2,
+        9,
+        "\n\n```thalo\n2024-01-01T12:00 create fact ^id\n```",
+      );
 
       expect(result.blockBoundariesChanged).toBe(true);
       expect(result.fullReparse).toBe(true);

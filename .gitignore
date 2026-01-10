@@ -98,6 +98,7 @@ zig-out/
 
 # Grammar volatiles
 *.wasm
+!packages/grammar/tree-sitter-thalo.wasm
 *.obj
 *.o
 

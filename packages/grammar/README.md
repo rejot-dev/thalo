@@ -346,7 +346,7 @@ pnpm exec tree-sitter parse path/to/file.thalo
   ```thalo
   # Wrong - causes parse error:
   type: "fact" // this breaks
-
+  
   # Correct:
   // Note about type
   type: "fact"
@@ -366,7 +366,7 @@ pnpm exec tree-sitter parse path/to/file.thalo
   ```thalo
   # Correct:
   sources: lore where #career
-
+  
   # Wrong - not a valid query:
   sources: lore
   ```

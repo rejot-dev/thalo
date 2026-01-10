@@ -1,0 +1,82 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: CXXFLAGS="-std=c++20" pnpm install --frozen-lockfile
+
+      - name: Build prettier plugin
+        run: pnpm exec turbo run build --filter=@rejot-dev/thalo-prettier
+
+      - name: Check formatting
+        run: pnpm exec prettier --ignore-unknown --check .
+
+      - name: Run lint
+        run: pnpm exec oxlint
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: CXXFLAGS="-std=c++20" pnpm install --frozen-lockfile
+
+      - name: Verify grammar builds are up-to-date
+        run: node packages/grammar/scripts/check-rebuild.mjs
+
+      - name: Check types & build
+        run: pnpm exec turbo run types:check build
+
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: CXXFLAGS="-std=c++20" pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm exec turbo run test --concurrency=80%

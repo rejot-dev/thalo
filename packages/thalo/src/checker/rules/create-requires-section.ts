@@ -11,8 +11,7 @@ const visitor: RuleVisitor = {
 
     // Count markdown headers (sections) in content
     const content = entry.content;
-    const sectionCount =
-      content?.children.filter((c) => c.type === "markdown_header").length ?? 0;
+    const sectionCount = content?.children.filter((c) => c.type === "markdown_header").length ?? 0;
 
     if (sectionCount === 0) {
       const title = entry.header.title?.value ?? "(no title)";
