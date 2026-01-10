@@ -43,15 +43,61 @@ export function mergeThaloFiles(
     const baseAst =
       baseDoc.blocks.length > 0
         ? extractSourceFile(baseDoc.blocks[0].tree.rootNode)
-        : { entries: [] };
+        : { entries: [], syntaxErrors: [] };
     const oursAst =
       oursDoc.blocks.length > 0
         ? extractSourceFile(oursDoc.blocks[0].tree.rootNode)
-        : { entries: [] };
+        : { entries: [], syntaxErrors: [] };
     const theirsAst =
       theirsDoc.blocks.length > 0
         ? extractSourceFile(theirsDoc.blocks[0].tree.rootNode)
-        : { entries: [] };
+        : { entries: [], syntaxErrors: [] };
+
+    // Surface syntax errors as parse-error conflicts
+    const syntaxErrorConflicts: import("./types.js").MergeConflict[] = [];
+    if (baseAst.syntaxErrors.length > 0) {
+      syntaxErrorConflicts.push({
+        type: "parse-error",
+        message: `Parse error in base: ${baseAst.syntaxErrors.map((e) => e.message || "syntax error").join(", ")}`,
+        location: 0,
+        identity: { entryType: "parse-error" },
+        context: { errorMessage: "base version has syntax errors" },
+      });
+    }
+    if (oursAst.syntaxErrors.length > 0) {
+      syntaxErrorConflicts.push({
+        type: "parse-error",
+        message: `Parse error in ours: ${oursAst.syntaxErrors.map((e) => e.message || "syntax error").join(", ")}`,
+        location: 0,
+        identity: { entryType: "parse-error" },
+        context: { errorMessage: "ours version has syntax errors" },
+      });
+    }
+    if (theirsAst.syntaxErrors.length > 0) {
+      syntaxErrorConflicts.push({
+        type: "parse-error",
+        message: `Parse error in theirs: ${theirsAst.syntaxErrors.map((e) => e.message || "syntax error").join(", ")}`,
+        location: 0,
+        identity: { entryType: "parse-error" },
+        context: { errorMessage: "theirs version has syntax errors" },
+      });
+    }
+
+    if (syntaxErrorConflicts.length > 0) {
+      return {
+        success: false,
+        content: ours,
+        conflicts: syntaxErrorConflicts,
+        stats: {
+          totalEntries: 0,
+          oursOnly: 0,
+          theirsOnly: 0,
+          common: 0,
+          autoMerged: 0,
+          conflicts: syntaxErrorConflicts.length,
+        },
+      };
+    }
 
     const matches = matchEntries(baseAst.entries, oursAst.entries, theirsAst.entries);
 

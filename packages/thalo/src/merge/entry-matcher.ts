@@ -147,7 +147,8 @@ export function serializeIdentity(identity: EntryIdentity): string {
     return `ts:${identity.timestamp}:${identity.entryType}`;
   }
 
-  throw new Error("Entry has no identity (no link ID and no timestamp)");
+  // Fallback for synthetic identities (e.g., error conflicts)
+  return `type:${identity.entryType}`;
 }
 
 /**

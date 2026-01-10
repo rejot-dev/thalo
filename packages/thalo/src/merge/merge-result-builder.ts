@@ -1,6 +1,7 @@
 import type { EntryMatch, MergeConflict, MergeResult, MergeStats, MergeOptions } from "./types.js";
 import { formatConflict, formatEntry } from "./conflict-formatter.js";
 import { mergeEntry, entriesEqual } from "./entry-merger.js";
+import { serializeIdentity } from "./entry-matcher.js";
 
 /**
  * Build the final merged result from matches and conflicts
@@ -116,17 +117,4 @@ function getMatchTimestamp(match: EntryMatch): string | null {
     default:
       return null;
   }
-}
-
-/**
- * Serialize an EntryIdentity to a unique string key
- */
-function serializeIdentity(identity: import("./types.js").EntryIdentity): string {
-  if (identity.linkId) {
-    return `link:${identity.linkId}`;
-  }
-  if (identity.timestamp) {
-    return `ts:${identity.timestamp}:${identity.entryType}`;
-  }
-  return `type:${identity.entryType}`;
 }

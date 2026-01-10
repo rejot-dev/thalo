@@ -130,14 +130,13 @@ describe("entry-matcher", () => {
       expect(key).toBe("ts:2026-01-07T11:40:00Z:instance_entry");
     });
 
-    it("throws error for identity without link ID or timestamp", () => {
+    it("returns fallback for identity without link ID or timestamp", () => {
       const identity = {
         entryType: "instance_entry" as const,
       };
 
-      expect(() => serializeIdentity(identity)).toThrow(
-        "Entry has no identity (no link ID and no timestamp)",
-      );
+      const key = serializeIdentity(identity);
+      expect(key).toBe("type:instance_entry");
     });
   });
 
