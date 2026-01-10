@@ -100,5 +100,15 @@ export type { Diagnostic, Severity, CheckConfig, Rule, RuleCategory } from "./ch
 // Services
 export * from "./services/index.js";
 
+// Merge driver
+export { mergeThaloFiles } from "./merge/driver.js";
+export type {
+  MergeResult,
+  MergeConflict,
+  ConflictType,
+  MergeOptions,
+  MergeStats,
+} from "./merge/types.js";
+
 // Constants
 export * from "./constants.js";
