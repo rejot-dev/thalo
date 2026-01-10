@@ -34,6 +34,7 @@ import { emptySectionRule } from "./empty-section.js";
 import { updateWithoutCreateRule } from "./update-without-create.js";
 import { timestampOutOfOrderRule } from "./timestamp-out-of-order.js";
 import { createRequiresSectionRule } from "./create-requires-section.js";
+import { duplicateTimestampRule } from "./duplicate-timestamp.js";
 
 // Style rules
 import { missingTitleRule } from "./missing-title.js";
@@ -83,6 +84,7 @@ export const allRules: Rule[] = [
   updateWithoutCreateRule,
   timestampOutOfOrderRule,
   createRequiresSectionRule,
+  duplicateTimestampRule,
 
   // Style rules
   missingTitleRule,
