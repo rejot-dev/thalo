@@ -163,6 +163,11 @@ function mergeContent(
     return null;
   }
 
+  // If both sides deleted content, don't resurrect base
+  if (ours === null && theirs === null) {
+    return null;
+  }
+
   if (ours && theirs) {
     const oursChanged = !contentEquals(base, ours);
     const theirsChanged = !contentEquals(base, theirs);

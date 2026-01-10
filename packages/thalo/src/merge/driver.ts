@@ -61,15 +61,17 @@ export function mergeThaloFiles(
 
     return result;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
       success: false,
       content: ours,
       conflicts: [
         {
-          type: "concurrent-content-edit",
-          message: `Merge failed: ${error instanceof Error ? error.message : String(error)}`,
+          type: "merge-error",
+          message: `Merge failed: ${errorMessage}`,
           location: 0,
           identity: { entryType: "error" },
+          context: { errorMessage },
         },
       ],
       stats: {

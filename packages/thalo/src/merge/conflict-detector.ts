@@ -79,10 +79,19 @@ const DEFAULT_CONFLICT_RULES: ConflictRule[] = [
       const oursMetadata = getMetadataMap(match.ours);
       const theirsMetadata = getMetadataMap(match.theirs);
 
-      for (const [key, oursValue] of oursMetadata) {
+      // Iterate over union of all keys to catch delete-vs-edit conflicts
+      const allKeys = new Set([
+        ...baseMetadata.keys(),
+        ...oursMetadata.keys(),
+        ...theirsMetadata.keys(),
+      ]);
+
+      for (const key of allKeys) {
         const baseValue = baseMetadata.get(key);
+        const oursValue = oursMetadata.get(key);
         const theirsValue = theirsMetadata.get(key);
 
+        // Conflict if both sides changed from base differently
         if (oursValue !== baseValue && theirsValue !== baseValue && oursValue !== theirsValue) {
           return {
             type: "concurrent-metadata-update",

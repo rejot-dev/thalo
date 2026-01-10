@@ -84,7 +84,9 @@ export type ConflictType =
   | "concurrent-metadata-update" // Both modified same metadata key
   | "incompatible-schema-change" // Conflicting schema modifications
   | "concurrent-content-edit" // Both modified content of same entry
-  | "concurrent-title-change"; // Both changed title of same entry
+  | "concurrent-title-change" // Both changed title of same entry
+  | "parse-error" // Failed to parse one or more versions
+  | "merge-error"; // Internal merge failure
 
 /**
  * Additional context for conflicts
@@ -109,6 +111,11 @@ export interface ConflictContext {
    * The field name involved (for schema field conflicts)
    */
   fieldName?: string;
+
+  /**
+   * Error message (for parse-error and merge-error conflicts)
+   */
+  errorMessage?: string;
 }
 
 /**
