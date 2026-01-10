@@ -43,7 +43,9 @@
       "development": "./src/services/index.ts",
       "types": "./dist/services/index.d.ts",
       "default": "./dist/services/index.js"
-    }
+    },
+    "./web-tree-sitter.wasm": "./dist/web-tree-sitter.wasm",
+    "./tree-sitter-thalo.wasm": "./dist/tree-sitter-thalo.wasm"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

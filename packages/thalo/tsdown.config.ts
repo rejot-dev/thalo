@@ -13,4 +13,10 @@ export default defineConfig({
   ],
   dts: true,
   unbundle: true,
+  copy: [
+    // web-tree-sitter runtime WASM
+    "./node_modules/web-tree-sitter/web-tree-sitter.wasm",
+    // thalo language WASM
+    "./node_modules/@rejot-dev/tree-sitter-thalo/tree-sitter-thalo.wasm",
+  ],
 });
