@@ -51,6 +51,11 @@ export interface MergeConflict {
   location: number;
 
   /**
+   * Identity of the conflicting entry (for unique keying)
+   */
+  identity: EntryIdentity;
+
+  /**
    * The base entry (common ancestor), if applicable
    */
   base?: Entry;

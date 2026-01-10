@@ -183,7 +183,7 @@ function mergeContent(
 /**
  * Check if two entries are deeply equal
  */
-function entriesEqual(a: Entry, b: Entry): boolean {
+export function entriesEqual(a: Entry, b: Entry): boolean {
   if (a.type !== b.type) {
     return false;
   }

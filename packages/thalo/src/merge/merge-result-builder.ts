@@ -1,7 +1,6 @@
-import type { Entry } from "../ast/types.js";
 import type { EntryMatch, MergeConflict, MergeResult, MergeStats, MergeOptions } from "./types.js";
 import { formatConflict, formatEntry } from "./conflict-formatter.js";
-import { mergeEntry } from "./entry-merger.js";
+import { mergeEntry, entriesEqual } from "./entry-merger.js";
 
 /**
  * Build the final merged result from matches and conflicts
@@ -18,7 +17,7 @@ export function buildMergedResult(
 ): MergeResult {
   const conflictMap = new Map<string, MergeConflict>();
   for (const conflict of conflicts) {
-    const key = getMatchKey(conflict);
+    const key = serializeIdentity(conflict.identity);
     conflictMap.set(key, conflict);
   }
 
@@ -35,10 +34,7 @@ export function buildMergedResult(
   const sortedMatches = sortMatchesByTimestamp(matches);
 
   for (const match of sortedMatches) {
-    const matchKey = getMatchKey({
-      ours: match.ours ?? undefined,
-      theirs: match.theirs ?? undefined,
-    });
+    const matchKey = serializeIdentity(match.identity);
     const conflict = conflictMap.get(matchKey);
 
     if (conflict) {
@@ -123,35 +119,14 @@ function getMatchTimestamp(match: EntryMatch): string | null {
 }
 
 /**
- * Get a unique key for a conflict/match
+ * Serialize an EntryIdentity to a unique string key
  */
-function getMatchKey(item: { ours?: Entry | null; theirs?: Entry | null }): string {
-  const oursId = item.ours ? getEntryId(item.ours) : "null";
-  const theirsId = item.theirs ? getEntryId(item.theirs) : "null";
-  return `${oursId}:${theirsId}`;
-}
-
-/**
- * Get a unique identifier for an entry
- */
-function getEntryId(entry: Entry): string {
-  switch (entry.type) {
-    case "instance_entry":
-      return `${entry.header.timestamp.value}:${entry.type}:${entry.header.link?.id || ""}`;
-    case "schema_entry":
-      return `${entry.header.timestamp.value}:${entry.type}:${entry.header.link?.id || ""}`;
-    case "synthesis_entry":
-      return `${entry.header.timestamp.value}:${entry.type}:${entry.header.linkId.id}`;
-    case "actualize_entry":
-      return `${entry.header.timestamp.value}:${entry.type}:${entry.header.target.id}`;
-    default:
-      return "unknown";
+function serializeIdentity(identity: import("./types.js").EntryIdentity): string {
+  if (identity.linkId) {
+    return `link:${identity.linkId}`;
   }
-}
-
-/**
- * Check if two entries are equal (simplified)
- */
-function entriesEqual(a: Entry, b: Entry): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
+  if (identity.timestamp) {
+    return `ts:${identity.timestamp}:${identity.entryType}`;
+  }
+  return `type:${identity.entryType}`;
 }

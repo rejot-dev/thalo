@@ -329,6 +329,7 @@ describe("conflict-detector", () => {
                 type: "concurrent-metadata-update" as const,
                 message: "Concurrent tag changes detected",
                 location: 0,
+                identity: match.identity,
                 base,
                 ours,
                 theirs,

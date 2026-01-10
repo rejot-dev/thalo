@@ -69,6 +69,7 @@ export function mergeThaloFiles(
           type: "concurrent-content-edit",
           message: `Merge failed: ${error instanceof Error ? error.message : String(error)}`,
           location: 0,
+          identity: { entryType: "error" },
         },
       ],
       stats: {

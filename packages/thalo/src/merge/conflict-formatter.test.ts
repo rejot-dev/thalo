@@ -32,6 +32,7 @@ describe("conflict-formatter", () => {
         type: "duplicate-link-id",
         message: "Duplicate link ID",
         location: 0,
+        identity: { linkId: "shared-id", entryType: "instance_entry" },
         ours: oursEntry,
         theirs: theirsEntry,
         context: { linkId: "shared-id" },
@@ -75,6 +76,7 @@ describe("conflict-formatter", () => {
         type: "concurrent-title-change",
         message: "Concurrent title change",
         location: 0,
+        identity: { linkId: "e1", entryType: "instance_entry" },
         base: baseEntry,
         ours: oursEntry,
         theirs: theirsEntry,
@@ -120,6 +122,7 @@ describe("conflict-formatter", () => {
         type: "concurrent-title-change",
         message: "Concurrent title change",
         location: 0,
+        identity: { linkId: "e1", entryType: "instance_entry" },
         base: baseEntry,
         ours: oursEntry,
         theirs: theirsEntry,
@@ -143,6 +146,7 @@ describe("conflict-formatter", () => {
         type: "concurrent-content-edit",
         message: "Content conflict",
         location: 0,
+        identity: { linkId: "e1", entryType: "instance_entry" },
         theirs: theirsEntry,
       };
 
@@ -166,6 +170,7 @@ describe("conflict-formatter", () => {
         type: "concurrent-content-edit",
         message: "Content conflict",
         location: 0,
+        identity: { linkId: "e1", entryType: "instance_entry" },
         ours: oursEntry,
       };
 
