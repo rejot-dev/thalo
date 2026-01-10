@@ -232,10 +232,35 @@ export function entriesEqual(a: Entry, b: Entry): boolean {
 }
 
 /**
- * Check if two headers are equal
+ * Strip non-semantic fields (syntaxNode, location) for comparison.
+ * This avoids circular reference issues with tree-sitter nodes.
+ */
+function stripForComparison(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(stripForComparison);
+  }
+  if (typeof obj === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Skip non-semantic fields that may have circular refs
+      if (key === "syntaxNode" || key === "location") {
+        continue;
+      }
+      result[key] = stripForComparison(value);
+    }
+    return result;
+  }
+  return obj;
+}
+
+/**
+ * Check if two headers are equal (comparing semantic fields only)
  */
 function headersEqual(a: unknown, b: unknown): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
+  return JSON.stringify(stripForComparison(a)) === JSON.stringify(stripForComparison(b));
 }
 
 /**
@@ -293,18 +318,31 @@ function contentEquals(a: Content | null, b: Content | null): boolean {
 }
 
 /**
- * Check if schema blocks are equal
+ * Check if schema blocks are equal (comparing semantic fields only)
  */
 function schemaBlocksEqual(a: unknown, b: unknown): boolean {
+  const aObj = a as {
+    metadataBlock?: unknown;
+    sectionsBlock?: unknown;
+    removeMetadataBlock?: unknown;
+    removeSectionsBlock?: unknown;
+  };
+  const bObj = b as {
+    metadataBlock?: unknown;
+    sectionsBlock?: unknown;
+    removeMetadataBlock?: unknown;
+    removeSectionsBlock?: unknown;
+  };
+
   return (
-    JSON.stringify((a as { metadataBlock?: unknown }).metadataBlock) ===
-      JSON.stringify((b as { metadataBlock?: unknown }).metadataBlock) &&
-    JSON.stringify((a as { sectionsBlock?: unknown }).sectionsBlock) ===
-      JSON.stringify((b as { sectionsBlock?: unknown }).sectionsBlock) &&
-    JSON.stringify((a as { removeMetadataBlock?: unknown }).removeMetadataBlock) ===
-      JSON.stringify((b as { removeMetadataBlock?: unknown }).removeMetadataBlock) &&
-    JSON.stringify((a as { removeSectionsBlock?: unknown }).removeSectionsBlock) ===
-      JSON.stringify((b as { removeSectionsBlock?: unknown }).removeSectionsBlock)
+    JSON.stringify(stripForComparison(aObj.metadataBlock)) ===
+      JSON.stringify(stripForComparison(bObj.metadataBlock)) &&
+    JSON.stringify(stripForComparison(aObj.sectionsBlock)) ===
+      JSON.stringify(stripForComparison(bObj.sectionsBlock)) &&
+    JSON.stringify(stripForComparison(aObj.removeMetadataBlock)) ===
+      JSON.stringify(stripForComparison(bObj.removeMetadataBlock)) &&
+    JSON.stringify(stripForComparison(aObj.removeSectionsBlock)) ===
+      JSON.stringify(stripForComparison(bObj.removeSectionsBlock))
   );
 }
 

@@ -88,10 +88,23 @@ export function mockTimestamp(value: string, startIndex = 0, endIndex = 17): Tim
     syntaxNode: mockSyntaxNode(),
   };
 
+  // Calculate offsetMinutes from timezone string
+  const tzValue = timezoneMatch?.[1] || "Z";
+  let offsetMinutes = 0;
+  if (tzValue !== "Z") {
+    const offsetMatch = tzValue.match(/([+-])(\d{2}):(\d{2})/);
+    if (offsetMatch) {
+      const sign = offsetMatch[1] === "+" ? 1 : -1;
+      const hours = parseInt(offsetMatch[2], 10);
+      const minutes = parseInt(offsetMatch[3], 10);
+      offsetMinutes = sign * (hours * 60 + minutes);
+    }
+  }
+
   const timezonePart: TimezonePart = {
     type: "timezone_part",
-    value: timezoneMatch?.[1] || "Z",
-    offsetMinutes: 0,
+    value: tzValue,
+    offsetMinutes,
     location: mockLocation(16, 17),
     syntaxNode: mockSyntaxNode(),
   };

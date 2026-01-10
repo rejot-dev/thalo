@@ -333,5 +333,37 @@ describe("merge-result-builder", () => {
 
       expect(result.content).toContain("||||||| base");
     });
+
+    it("handles entries with non-serializable syntaxNode fields without throwing", () => {
+      // Create entry with mock syntaxNode that could have circular refs
+      const entry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Test Entry",
+        linkId: "e1",
+      });
+
+      // Add a synthetic syntaxNode-like object with circular reference
+      const circularRef: Record<string, unknown> = { value: "test" };
+      circularRef["self"] = circularRef; // Create circular reference
+      (entry as unknown as Record<string, unknown>)["_testCircularRef"] = circularRef;
+
+      const matches: EntryMatch[] = [
+        {
+          identity: { linkId: "e1", entryType: "instance_entry" },
+          base: entry,
+          ours: entry,
+          theirs: entry,
+        },
+      ];
+
+      // Should not throw even with circular references in the entry
+      expect(() => {
+        const result = buildMergedResult(matches, []);
+        expect(result.success).toBe(true);
+        expect(result.content).toBeTruthy();
+      }).not.toThrow();
+    });
   });
 });

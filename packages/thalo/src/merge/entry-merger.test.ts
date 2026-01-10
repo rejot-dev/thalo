@@ -387,5 +387,91 @@ describe("entry-merger", () => {
         expect(result.metadata.find((m) => m.key.value === "status")?.value.raw).toBe('"reviewed"');
       }
     });
+
+    it("does not resurrect content when both sides delete it", () => {
+      const baseEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry",
+        linkId: "e1",
+        content: ["Original content"],
+      });
+
+      // Both ours and theirs have no content (deleted)
+      const oursEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry",
+        linkId: "e1",
+      });
+
+      const theirsEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry",
+        linkId: "e1",
+      });
+
+      const match: EntryMatch = {
+        identity: { linkId: "e1", entryType: "instance_entry" },
+        base: baseEntry,
+        ours: oursEntry,
+        theirs: theirsEntry,
+      };
+
+      const result = mergeEntry(match);
+
+      expect(result).not.toBeNull();
+      if (result && result.type === "instance_entry") {
+        // Content should be null, not resurrected from base
+        expect(result.content).toBeNull();
+      }
+    });
+
+    it("takes ours when both sides add different content", () => {
+      const baseEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry",
+        linkId: "e1",
+      });
+
+      const oursEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry",
+        linkId: "e1",
+        content: ["Ours content"],
+      });
+
+      const theirsEntry = mockInstanceEntry({
+        timestamp: "2026-01-05T10:00Z",
+        directive: "create",
+        entity: "lore",
+        title: "Entry",
+        linkId: "e1",
+        content: ["Theirs content"],
+      });
+
+      const match: EntryMatch = {
+        identity: { linkId: "e1", entryType: "instance_entry" },
+        base: baseEntry,
+        ours: oursEntry,
+        theirs: theirsEntry,
+      };
+
+      const result = mergeEntry(match);
+
+      expect(result).not.toBeNull();
+      if (result && result.type === "instance_entry" && result.content) {
+        // When both sides add content, take ours
+        expect(result.content.children[0].text).toBe("Ours content");
+      }
+    });
   });
 });

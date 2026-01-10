@@ -170,6 +170,7 @@ const DEFAULT_CONFLICT_RULES: ConflictRule[] = [
         return null;
       }
 
+      // Check metadata fields
       const oursFields = getSchemaFields(match.ours);
       const theirsFields = getSchemaFields(match.theirs);
       const baseFields = getSchemaFields(match.base);
@@ -188,6 +189,108 @@ const DEFAULT_CONFLICT_RULES: ConflictRule[] = [
             ours: match.ours,
             theirs: match.theirs,
             context: { fieldName },
+          };
+        }
+      }
+
+      // Check section definitions
+      const oursSections = getSchemaSections(match.ours);
+      const theirsSections = getSchemaSections(match.theirs);
+      const baseSections = getSchemaSections(match.base);
+
+      const allSectionNames = new Set([
+        ...baseSections.keys(),
+        ...oursSections.keys(),
+        ...theirsSections.keys(),
+      ]);
+
+      for (const sectionName of allSectionNames) {
+        const baseSection = baseSections.get(sectionName);
+        const oursSection = oursSections.get(sectionName);
+        const theirsSection = theirsSections.get(sectionName);
+
+        if (
+          oursSection !== baseSection &&
+          theirsSection !== baseSection &&
+          oursSection !== theirsSection
+        ) {
+          return {
+            type: "incompatible-schema-change",
+            message: `Both sides modified section '${sectionName}' differently`,
+            location: 0,
+            identity: match.identity,
+            base: match.base,
+            ours: match.ours,
+            theirs: match.theirs,
+            context: { fieldName: sectionName },
+          };
+        }
+      }
+
+      // Check removed fields
+      const oursRemovedFields = getRemovedFields(match.ours);
+      const theirsRemovedFields = getRemovedFields(match.theirs);
+      const baseRemovedFields = getRemovedFields(match.base);
+
+      const allRemovedFieldNames = new Set([
+        ...baseRemovedFields.keys(),
+        ...oursRemovedFields.keys(),
+        ...theirsRemovedFields.keys(),
+      ]);
+
+      for (const fieldName of allRemovedFieldNames) {
+        const baseRemoved = baseRemovedFields.get(fieldName);
+        const oursRemoved = oursRemovedFields.get(fieldName);
+        const theirsRemoved = theirsRemovedFields.get(fieldName);
+
+        if (
+          oursRemoved !== baseRemoved &&
+          theirsRemoved !== baseRemoved &&
+          oursRemoved !== theirsRemoved
+        ) {
+          return {
+            type: "incompatible-schema-change",
+            message: `Both sides modified field removal '${fieldName}' differently`,
+            location: 0,
+            identity: match.identity,
+            base: match.base,
+            ours: match.ours,
+            theirs: match.theirs,
+            context: { fieldName },
+          };
+        }
+      }
+
+      // Check removed sections
+      const oursRemovedSections = getRemovedSections(match.ours);
+      const theirsRemovedSections = getRemovedSections(match.theirs);
+      const baseRemovedSections = getRemovedSections(match.base);
+
+      const allRemovedSectionNames = new Set([
+        ...baseRemovedSections.keys(),
+        ...oursRemovedSections.keys(),
+        ...theirsRemovedSections.keys(),
+      ]);
+
+      for (const sectionName of allRemovedSectionNames) {
+        const baseRemoved = baseRemovedSections.get(sectionName);
+        const oursRemoved = oursRemovedSections.get(sectionName);
+        const theirsRemoved = theirsRemovedSections.get(sectionName);
+
+        if (
+          oursRemoved !== baseRemoved &&
+          theirsRemoved !== baseRemoved &&
+          oursRemoved !== theirsRemoved
+        ) {
+          return {
+            type: "incompatible-schema-change",
+            message: `Both sides modified section removal '${sectionName}' differently`,
+            location: 0,
+            identity: match.identity,
+            base: match.base,
+            ours: match.ours,
+            theirs: match.theirs,
+            context: { fieldName: sectionName },
           };
         }
       }
@@ -291,6 +394,7 @@ function schemaEntriesEqual(a: Entry, b: Entry): boolean {
     return false;
   }
 
+  // Check metadata fields
   const aFields = getSchemaFields(a);
   const bFields = getSchemaFields(b);
 
@@ -300,6 +404,48 @@ function schemaEntriesEqual(a: Entry, b: Entry): boolean {
 
   for (const [key, value] of aFields) {
     if (bFields.get(key) !== value) {
+      return false;
+    }
+  }
+
+  // Check sections
+  const aSections = getSchemaSections(a);
+  const bSections = getSchemaSections(b);
+
+  if (aSections.size !== bSections.size) {
+    return false;
+  }
+
+  for (const [key, value] of aSections) {
+    if (bSections.get(key) !== value) {
+      return false;
+    }
+  }
+
+  // Check removed fields
+  const aRemovedFields = getRemovedFields(a);
+  const bRemovedFields = getRemovedFields(b);
+
+  if (aRemovedFields.size !== bRemovedFields.size) {
+    return false;
+  }
+
+  for (const [key, value] of aRemovedFields) {
+    if (bRemovedFields.get(key) !== value) {
+      return false;
+    }
+  }
+
+  // Check removed sections
+  const aRemovedSections = getRemovedSections(a);
+  const bRemovedSections = getRemovedSections(b);
+
+  if (aRemovedSections.size !== bRemovedSections.size) {
+    return false;
+  }
+
+  for (const [key, value] of aRemovedSections) {
+    if (bRemovedSections.get(key) !== value) {
       return false;
     }
   }
@@ -319,7 +465,70 @@ function getSchemaFields(entry: Entry): Map<string, string> {
 
   if (entry.metadataBlock) {
     for (const field of entry.metadataBlock.fields) {
-      map.set(field.name.value, serializeFieldDef(field));
+      map.set(`field:${field.name.value}`, serializeFieldDef(field));
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Get schema sections as a map from section name to serialized definition
+ */
+function getSchemaSections(entry: Entry): Map<string, string> {
+  const map = new Map<string, string>();
+
+  if (entry.type !== "schema_entry") {
+    return map;
+  }
+
+  if (entry.sectionsBlock) {
+    for (const section of entry.sectionsBlock.sections) {
+      map.set(
+        section.name.value,
+        JSON.stringify({
+          optional: section.optional,
+          description: section.description?.value ?? null,
+        }),
+      );
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Get removed schema fields as a map
+ */
+function getRemovedFields(entry: Entry): Map<string, string> {
+  const map = new Map<string, string>();
+
+  if (entry.type !== "schema_entry") {
+    return map;
+  }
+
+  if (entry.removeMetadataBlock) {
+    for (const removal of entry.removeMetadataBlock.fields) {
+      map.set(removal.name.value, removal.reason?.value ?? "");
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Get removed schema sections as a map
+ */
+function getRemovedSections(entry: Entry): Map<string, string> {
+  const map = new Map<string, string>();
+
+  if (entry.type !== "schema_entry") {
+    return map;
+  }
+
+  if (entry.removeSectionsBlock) {
+    for (const removal of entry.removeSectionsBlock.sections) {
+      map.set(removal.name.value, removal.reason?.value ?? "");
     }
   }
 
