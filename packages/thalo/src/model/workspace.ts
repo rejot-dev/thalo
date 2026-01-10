@@ -19,12 +19,7 @@ import type {
   DefaultValue as AstDefaultValue,
 } from "../ast/types.js";
 import { isSyntaxError } from "../ast/types.js";
-import type {
-  SemanticModel,
-  LinkIndex,
-  LinkDefinition,
-  LinkReference,
-} from "../semantic/types.js";
+import type { SemanticModel, LinkIndex, LinkDefinition, LinkReference } from "../semantic/types.js";
 import type { FileType } from "../parser.js";
 import { parseDocument } from "../parser.js";
 import { extractSourceFile } from "../ast/extract.js";
@@ -600,7 +595,9 @@ export class Workspace {
         }
 
         // Check for schema changes
-        const oldEntityNames = new Set(oldModel.schemaEntries.map((e) => e.header.entityName.value));
+        const oldEntityNames = new Set(
+          oldModel.schemaEntries.map((e) => e.header.entityName.value),
+        );
         const newEntityNames = new Set(model.schemaEntries.map((e) => e.header.entityName.value));
 
         for (const name of oldEntityNames) {

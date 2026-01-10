@@ -1,9 +1,6 @@
 {
   "extends": ["//"],
   "tasks": {
-    "build": {
-      "outputs": ["build/**"]
-    },
     "types:generate": {
       "outputs": ["worker-configuration.d.ts", ".react-router/types/**", ".source/**"]
     },

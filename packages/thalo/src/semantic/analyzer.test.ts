@@ -258,7 +258,10 @@ function mockInstanceEntry(options: {
     entity: options.entity,
     title: mockTitle(options.title),
     link: options.link
-      ? mockLink(options.link, mockLocation(startIndex + 50, startIndex + 50 + options.link.length + 1))
+      ? mockLink(
+          options.link,
+          mockLocation(startIndex + 50, startIndex + 50 + options.link.length + 1),
+        )
       : null,
     tags: (options.tags ?? []).map(mockTag),
     location: mockLocation(startIndex, startIndex + 100),

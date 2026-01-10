@@ -15,10 +15,7 @@ const visitor: RuleVisitor = {
 
     // Check if sources value is empty or just whitespace
     const sourcesValue = sourcesMetadata.value;
-    if (
-      sourcesValue.content.type === "quoted_value" &&
-      sourcesValue.content.value.trim() === ""
-    ) {
+    if (sourcesValue.content.type === "quoted_value" && sourcesValue.content.value.trim() === "") {
       ctx.report({
         message: `Synthesis '${title}' has an empty query. Specify an entity type like 'lore', 'journal', 'opinion', or 'reference'.`,
         file: ctx.file,

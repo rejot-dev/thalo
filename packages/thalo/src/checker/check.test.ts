@@ -375,12 +375,7 @@ describe("checkIncremental", () => {
   });
 
   it("should return empty array for non-existent file", () => {
-    const diagnostics = checkIncremental(
-      workspace,
-      "nonexistent.thalo",
-      [],
-      createInvalidation(),
-    );
+    const diagnostics = checkIncremental(workspace, "nonexistent.thalo", [], createInvalidation());
     expect(diagnostics).toHaveLength(0);
   });
 
