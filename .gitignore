@@ -106,3 +106,6 @@ zig-out/
 *.tgz
 *.zip
 *.jar
+
+# Playwright
+.playwright-mcp/

@@ -16,46 +16,133 @@ export function meta() {
 
 function Hero() {
   return (
-    <section className="relative w-full py-24 md:py-36">
-      <div className="mx-auto max-w-5xl px-4 md:px-8">
-        <div className="mb-8 flex items-center justify-center gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex size-2 rounded-full bg-primary"></span>
-            </span>
-            Alpha • Building in Public
-          </span>
-        </div>
+    <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden">
+      {/* Mobile: Tree as background with content overlapping */}
+      <div className="absolute inset-0 lg:hidden">
+        <img
+          src="/hero-tree.webp"
+          alt="Knowledge tree illustration"
+          className="h-full w-full object-cover object-[60%_top] dark:brightness-[0.55] dark:contrast-[1.1] dark:saturate-[0.8]"
+        />
+        {/* Dark mode color wash overlay - warm amber tint */}
+        <div className="pointer-events-none absolute inset-0 hidden dark:block bg-gradient-to-br from-amber-950/40 via-transparent to-zinc-950/50" />
+        {/* Gradient overlay for text readability - left side and bottom only */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#faf3e6_0%,#faf3e6_30%,transparent_60%),linear-gradient(to_bottom,transparent_0%,transparent_80%,#faf3e6_100%)] dark:bg-[linear-gradient(to_right,oklch(0.14_0.015_50)_0%,oklch(0.14_0.015_50/0.95)_25%,transparent_55%),linear-gradient(to_bottom,transparent_0%,transparent_70%,oklch(0.14_0.015_50)_100%)]" />
+      </div>
 
-        <h1 className="mb-8 text-center text-5xl font-bold leading-tight tracking-tight md:text-7xl lg:text-8xl">
-          <span className="block">Your thoughts,</span>
-          <span className="block bg-linear-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-            structured
-          </span>
-        </h1>
+      {/* Desktop: Tree image positioned to touch top and extend to right edge */}
+      <div className="absolute -top-16 right-0 bottom-0 w-full hidden lg:block">
+        <img
+          src="/hero-tree.webp"
+          alt="Knowledge tree illustration"
+          className="h-full w-full object-contain object-right-top dark:brightness-[0.55] dark:contrast-[1.1] dark:saturate-[0.8]"
+        />
+        {/* Dark mode color wash overlay - warm amber tint for cohesive night feel */}
+        <div className="pointer-events-none absolute inset-0 hidden dark:block bg-gradient-to-br from-amber-950/30 via-zinc-900/20 to-zinc-950/40" />
+        {/* Bottom gradient fade */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-[linear-gradient(to_bottom,transparent_0%,#faf3e6_85%,#faf3e6_100%)] dark:bg-[linear-gradient(to_bottom,transparent_0%,oklch(0.14_0.015_50)_85%,oklch(0.14_0.015_50)_100%)]" />
+      </div>
 
-        <p className="text-muted-foreground mx-auto mb-10 max-w-2xl text-center text-lg leading-relaxed md:text-xl">
-          Thalo is a plain-text language for capturing what you know, think, and learn. Like
-          markdown, but with structure. Like a database, but human-readable. Built for the age of
-          AI.
-        </p>
+      {/* Desktop: Wide vignette overlay - covers entire section for smooth left-to-right fade */}
+      <div className="pointer-events-none absolute inset-0 hidden lg:block bg-[linear-gradient(to_right,#faf3e6_0%,#faf3e6_25%,transparent_55%)] dark:bg-[linear-gradient(to_right,oklch(0.14_0.015_50)_0%,oklch(0.14_0.015_50)_25%,transparent_55%)]" />
 
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button asChild size="lg" className="h-12 px-8 text-base">
-            <Link to="/docs">Start Writing</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base">
-            <a
-              href="https://github.com/rejot-dev/thalo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2"
-            >
-              <GitHub className="size-5" />
-              GitHub
-            </a>
-          </Button>
+      <div className="relative mx-auto w-full max-w-7xl px-6 py-12 md:px-8 lg:px-12">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
+          {/* Left column: Text content */}
+          <div className="relative z-10 max-w-[280px] pt-8 sm:max-w-sm md:max-w-md md:pt-16 lg:max-w-xl lg:pt-20">
+            {/* Title */}
+            <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              <span className="text-primary">Thalo:</span>{" "}
+              <span className="italic">Thought And Lore Language.</span>
+            </h1>
+
+            {/* Description */}
+            <p className="mb-8 text-lg  leading-relaxed text-muted-foreground md:text-xl">
+              A plain-text, structured format for capturing personal knowledge—simple enough for
+              quick notes, consistent enough for durable data. Human-readable, versionable, and
+              tool-friendly.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-row gap-3 sm:gap-4">
+              <Button
+                asChild
+                size="lg"
+                className="h-12 rounded-full px-8 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+              >
+                <Link to="/docs">Get Started</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-full border-2 px-8 text-base font-semibold transition-all hover:bg-muted/50"
+              >
+                <Link to="/docs">Read the Docs</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Right column: Code overlay - visible on lg and up */}
+          <div className="relative hidden lg:flex lg:justify-end lg:items-end">
+            {/* Code block overlay */}
+            <div className="w-full max-w-md lg:-mb-16 xl:max-w-lg xl:-mb-32">
+              <div className="overflow-hidden rounded-xl border border-amber-900/20 bg-amber-50 shadow-2xl dark:border-zinc-700/50 dark:bg-zinc-900/95 dark:backdrop-blur-sm">
+                {/* Terminal header */}
+                <div className="flex items-center gap-2 border-b border-amber-900/10 bg-amber-100/50 px-4 py-2.5 dark:border-zinc-700/50 dark:bg-transparent">
+                  <span className="size-3 rounded-full bg-red-400/80 dark:bg-red-500/80"></span>
+                  <span className="size-3 rounded-full bg-yellow-400/80 dark:bg-yellow-500/80"></span>
+                  <span className="size-3 rounded-full bg-green-400/80 dark:bg-green-500/80"></span>
+                  <span className="ml-2 font-mono text-xs text-amber-800/60 dark:text-zinc-500">
+                    entries.thalo
+                  </span>
+                </div>
+
+                {/* Code content - Plain text wins snippet */}
+                <pre className="overflow-x-auto p-4 text-xs leading-relaxed md:text-sm">
+                  <code className="font-mono text-amber-950 dark:text-zinc-100">
+                    <span className="text-amber-600/70 dark:text-zinc-500">2026-01-08T14:30Z</span>{" "}
+                    <span className="text-amber-700 font-semibold dark:text-amber-400">
+                      create opinion
+                    </span>{" "}
+                    <span className="text-orange-700 dark:text-orange-300">"Plain text wins"</span>{" "}
+                    <span className="text-sky-700 dark:text-sky-400">^plain-text</span>{" "}
+                    <span className="text-emerald-700 dark:text-emerald-400">#pkm</span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-sky-700 dark:text-sky-400">confidence</span>:{" "}
+                    <span className="text-orange-700 dark:text-orange-300">"high"</span>
+                    {"\n\n"}
+                    {"  "}
+                    <span className="text-amber-700 dark:text-amber-400"># Claim</span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-amber-900 dark:text-zinc-300">
+                      Your notes should outlive every app.
+                    </span>
+                    {"\n\n"}
+                    {"  "}
+                    <span className="text-amber-700 dark:text-amber-400"># Reasoning</span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-amber-900 dark:text-zinc-300">
+                      - Apps die. Plain text is forever.
+                    </span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-amber-900 dark:text-zinc-300">
+                      - grep {">"} proprietary search
+                    </span>
+                    {"\n"}
+                    {"  "}
+                    <span className="text-amber-900 dark:text-zinc-300">
+                      - AI speaks text natively
+                    </span>
+                  </code>
+                </pre>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

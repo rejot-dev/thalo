@@ -60,11 +60,28 @@ export function HomeLayoutWithFooter({
         },
       }}
       themeSwitch={{
-        enabled: false,
+        enabled: true,
+        mode: "light-dark-system",
       }}
       nav={{
         ...options.nav,
-        title: <span className="text-[15px] font-semibold tracking-tight">Thalo</span>,
+        title: (
+          <Link to="/" className="group flex items-center gap-2">
+            <div className="relative size-12 overflow-visible">
+              <img
+                src="/logo-simple-circle.svg"
+                alt="Thalo"
+                className="absolute inset-0 size-12 transition-opacity duration-300 group-hover:opacity-0"
+              />
+              <img
+                src="/logo.svg"
+                alt="Thalo"
+                className="absolute inset-0 size-12 opacity-0 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:scale-115 group-hover:rotate-3"
+              />
+            </div>
+            <span className="text-[15px] font-semibold tracking-tight">Thalo</span>
+          </Link>
+        ),
       }}
       links={[
         {
@@ -157,7 +174,8 @@ export function Footer({ isDocsPage }: { isDocsPage: boolean }) {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Logo and description */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <Link to="/" className="text-xl font-bold text-foreground">
+            <Link to="/" className="flex items-center gap-4 text-xl font-bold text-foreground">
+              <img src="/logo.svg" alt="Thalo" className="size-20" />
               Thalo
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">Personal Thought And Lore Language</p>
