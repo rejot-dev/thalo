@@ -1,5 +1,12 @@
 import { runCli, type CommandDef } from "./cli.js";
-import { actualizeCommand, checkCommand, initCommand, rulesCommand } from "./commands/index.js";
+import {
+  actualizeCommand,
+  checkCommand,
+  initCommand,
+  rulesCommand,
+  mergeDriverCommand,
+  setupMergeDriverCommand,
+} from "./commands/index.js";
 
 /**
  * Root command definition
@@ -14,6 +21,8 @@ const rootCommand: CommandDef = {
     check: checkCommand,
     init: initCommand,
     rules: rulesCommand,
+    "merge-driver": mergeDriverCommand,
+    "setup-merge-driver": setupMergeDriverCommand,
   },
   // Default action when no subcommand is provided - run check
   action: checkCommand.action,
