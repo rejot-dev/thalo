@@ -173,6 +173,59 @@ pre::-webkit-scrollbar-thumb:hover {
   @apply border border-border/50;
 }
 
+/* Thalo syntax highlighting (tree-sitter based) */
+.thalo-highlighted {
+  /* Token colors - light theme */
+  --thalo-keyword: oklch(0.45 0.15 280);
+  --thalo-string: oklch(0.45 0.12 145);
+  --thalo-number: oklch(0.5 0.14 30);
+  --thalo-comment: oklch(0.55 0.02 55);
+  --thalo-function: oklch(0.45 0.12 220);
+  --thalo-property: oklch(0.4 0.1 55);
+  --thalo-variable: oklch(0.5 0.08 180);
+  --thalo-punctuation: oklch(0.55 0.05 55);
+}
+
+/* Dark theme */
+.dark .thalo-highlighted {
+  --thalo-keyword: oklch(0.75 0.14 280);
+  --thalo-string: oklch(0.75 0.12 145);
+  --thalo-number: oklch(0.8 0.14 30);
+  --thalo-comment: oklch(0.6 0.02 55);
+  --thalo-function: oklch(0.75 0.12 220);
+  --thalo-property: oklch(0.7 0.1 55);
+  --thalo-variable: oklch(0.7 0.08 180);
+  --thalo-punctuation: oklch(0.65 0.05 55);
+}
+
+/* Token class styles */
+.thalo-highlighted .keyword {
+  color: var(--thalo-keyword);
+  font-weight: 500;
+}
+.thalo-highlighted .string {
+  color: var(--thalo-string);
+}
+.thalo-highlighted .number {
+  color: var(--thalo-number);
+}
+.thalo-highlighted .comment {
+  color: var(--thalo-comment);
+  font-style: italic;
+}
+.thalo-highlighted .function {
+  color: var(--thalo-function);
+}
+.thalo-highlighted .property {
+  color: var(--thalo-property);
+}
+.thalo-highlighted .variable {
+  color: var(--thalo-variable);
+}
+.thalo-highlighted .punctuation {
+  color: var(--thalo-punctuation);
+}
+
 /* Animation for code examples */
 @keyframes typewriter {
   from {

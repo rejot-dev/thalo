@@ -1,0 +1,188 @@
+diff --git a/lib/tree-sitter.cjs b/lib/tree-sitter.cjs
+deleted file mode 100644
+index 513aceb39f5d3e67da37439527a22de37511551f..0000000000000000000000000000000000000000
+diff --git a/lib/tree-sitter.wasm b/lib/tree-sitter.wasm
+deleted file mode 100755
+index 8f9bc8393985d12e3d8255bbacb7c26821cb0c34..0000000000000000000000000000000000000000
+diff --git a/lib/tree-sitter.wasm.map b/lib/tree-sitter.wasm.map
+deleted file mode 100644
+index 2b0c48eb20fbc5bd6575a2713528f6a7456cc1d1..0000000000000000000000000000000000000000
+diff --git a/tree-sitter.cjs b/tree-sitter.cjs
+index f23c33ddb63172a2e20fbe6c95a3a7dc21e5d513..2feef681b07a6972447bbdad5a022383848eb48f 100644
+--- a/tree-sitter.cjs
++++ b/tree-sitter.cjs
+@@ -46,9 +46,14 @@ var require_tree_sitter = __commonJS({
+           readyPromiseResolve = resolve;
+           readyPromiseReject = reject;
+         });
++        // Cloudflare Workers polyfill: self.location is needed for worker path
++        if (typeof self !== "undefined" && typeof self.location === "undefined") {
++          self.location = { href: "" };
++        }
+         var ENVIRONMENT_IS_WEB = typeof window == "object";
+         var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined";
+-        var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer";
++        // Force ENVIRONMENT_IS_NODE to false for Cloudflare Workers compatibility
++        var ENVIRONMENT_IS_NODE = false;
+         var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
+         if (ENVIRONMENT_IS_NODE) {
+         }
+@@ -3782,6 +3787,53 @@ ${JSON.stringify(symbolNames, null, 2)}`);
+     const languageAddress = mod[functionName]();
+     return new _Language(INTERNAL, languageAddress);
+   }
++  /**
++   * Load a language from a pre-compiled WebAssembly.Module (async version).
++   * This is useful in environments like Cloudflare Workers where WASM
++   * imports are provided as WebAssembly.Module instances.
++   *
++   * @param module - A pre-compiled WebAssembly.Module
++   * @returns A Promise that resolves to a Language instance
++   */
++  static async loadModule(module) {
++    if (!(module instanceof WebAssembly.Module)) {
++      throw new Error("Language.loadModule requires a WebAssembly.Module instance");
++    }
++    const mod = await C.loadWebAssemblyModule(module, { loadAsync: true });
++    const symbolNames = Object.keys(mod);
++    const functionName = symbolNames.find((key) => LANGUAGE_FUNCTION_REGEX.test(key) && !key.includes("external_scanner_"));
++    if (!functionName) {
++      console.log(`Couldn't find language function in WASM file. Symbols:
++${JSON.stringify(symbolNames, null, 2)}`);
++      throw new Error("Language.loadModule failed: no language function found in WASM module");
++    }
++    const languageAddress = mod[functionName]();
++    return new _Language(INTERNAL, languageAddress);
++  }
++  /**
++   * Load a language from a pre-compiled WebAssembly.Module (synchronous version).
++   * This is useful in environments like Cloudflare Workers where WASM
++   * imports are provided as WebAssembly.Module instances and synchronous
++   * loading is preferred.
++   *
++   * @param module - A pre-compiled WebAssembly.Module
++   * @returns A Language instance
++   */
++  static loadModuleSync(module) {
++    if (!(module instanceof WebAssembly.Module)) {
++      throw new Error("Language.loadModuleSync requires a WebAssembly.Module instance");
++    }
++    const mod = C.loadWebAssemblyModule(module, { loadAsync: false });
++    const symbolNames = Object.keys(mod);
++    const functionName = symbolNames.find((key) => LANGUAGE_FUNCTION_REGEX.test(key) && !key.includes("external_scanner_"));
++    if (!functionName) {
++      console.log(`Couldn't find language function in WASM file. Symbols:
++${JSON.stringify(symbolNames, null, 2)}`);
++      throw new Error("Language.loadModuleSync failed: no language function found in WASM module");
++    }
++    const languageAddress = mod[functionName]();
++    return new _Language(INTERNAL, languageAddress);
++  }
+ };
+ 
+ // src/bindings.ts
+diff --git a/tree-sitter.js b/tree-sitter.js
+index 2526a14952fb731aa711c506cf5816860cc576e7..bb6fd9055569ff65fd9dcdb5deda08d21a0f77b2 100644
+--- a/tree-sitter.js
++++ b/tree-sitter.js
+@@ -2057,6 +2057,53 @@ ${JSON.stringify(symbolNames, null, 2)}`);
+     const languageAddress = mod[functionName]();
+     return new _Language(INTERNAL, languageAddress);
+   }
++  /**
++   * Load a language from a pre-compiled WebAssembly.Module (async version).
++   * This is useful in environments like Cloudflare Workers where WASM
++   * imports are provided as WebAssembly.Module instances.
++   *
++   * @param module - A pre-compiled WebAssembly.Module
++   * @returns A Promise that resolves to a Language instance
++   */
++  static async loadModule(module) {
++    if (!(module instanceof WebAssembly.Module)) {
++      throw new Error("Language.loadModule requires a WebAssembly.Module instance");
++    }
++    const mod = await C.loadWebAssemblyModule(module, { loadAsync: true });
++    const symbolNames = Object.keys(mod);
++    const functionName = symbolNames.find((key) => LANGUAGE_FUNCTION_REGEX.test(key) && !key.includes("external_scanner_"));
++    if (!functionName) {
++      console.log(`Couldn't find language function in WASM file. Symbols:
++${JSON.stringify(symbolNames, null, 2)}`);
++      throw new Error("Language.loadModule failed: no language function found in WASM module");
++    }
++    const languageAddress = mod[functionName]();
++    return new _Language(INTERNAL, languageAddress);
++  }
++  /**
++   * Load a language from a pre-compiled WebAssembly.Module (synchronous version).
++   * This is useful in environments like Cloudflare Workers where WASM
++   * imports are provided as WebAssembly.Module instances and synchronous
++   * loading is preferred.
++   *
++   * @param module - A pre-compiled WebAssembly.Module
++   * @returns A Language instance
++   */
++  static loadModuleSync(module) {
++    if (!(module instanceof WebAssembly.Module)) {
++      throw new Error("Language.loadModuleSync requires a WebAssembly.Module instance");
++    }
++    const mod = C.loadWebAssemblyModule(module, { loadAsync: false });
++    const symbolNames = Object.keys(mod);
++    const functionName = symbolNames.find((key) => LANGUAGE_FUNCTION_REGEX.test(key) && !key.includes("external_scanner_"));
++    if (!functionName) {
++      console.log(`Couldn't find language function in WASM file. Symbols:
++${JSON.stringify(symbolNames, null, 2)}`);
++      throw new Error("Language.loadModuleSync failed: no language function found in WASM module");
++    }
++    const languageAddress = mod[functionName]();
++    return new _Language(INTERNAL, languageAddress);
++  }
+ };
+ 
+ // lib/tree-sitter.mjs
+@@ -2070,9 +2117,15 @@ var Module2 = (() => {
+       readyPromiseResolve = resolve;
+       readyPromiseReject = reject;
+     });
++    // Cloudflare Workers polyfill: self.location is needed for worker path
++    if (typeof self !== "undefined" && typeof self.location === "undefined") {
++      self.location = { href: "" };
++    }
+     var ENVIRONMENT_IS_WEB = typeof window == "object";
+     var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined";
+-    var ENVIRONMENT_IS_NODE = typeof process == "object" && typeof process.versions == "object" && typeof process.versions.node == "string" && process.type != "renderer";
++    // Force ENVIRONMENT_IS_NODE to false for Cloudflare Workers compatibility
++    // This prevents the code from trying to use node:fs which causes issues in Miniflare dev mode
++    var ENVIRONMENT_IS_NODE = false;
+     var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
+     if (ENVIRONMENT_IS_NODE) {
+       const { createRequire } = await import("module");
+diff --git a/web-tree-sitter.d.ts b/web-tree-sitter.d.ts
+index ec65825c845da1a0a46fc1ea5bd473c03f628634..672bc8a222410ee87f83c1c12832b8e54381e37b 100644
+--- a/web-tree-sitter.d.ts
++++ b/web-tree-sitter.d.ts
+@@ -327,6 +327,25 @@ declare module 'web-tree-sitter' {
+ 		 * The module can be provided as a path to a file or as a buffer.
+ 		 */
+ 		static load(input: string | Uint8Array): Promise<Language>;
++		/**
++		 * Load a language from a pre-compiled WebAssembly.Module (async version).
++		 * This is useful in environments like Cloudflare Workers where WASM
++		 * imports are provided as WebAssembly.Module instances.
++		 *
++		 * @param module - A pre-compiled WebAssembly.Module
++		 * @returns A Promise that resolves to a Language instance
++		 */
++		static loadModule(module: WebAssembly.Module): Promise<Language>;
++		/**
++		 * Load a language from a pre-compiled WebAssembly.Module (synchronous version).
++		 * This is useful in environments like Cloudflare Workers where WASM
++		 * imports are provided as WebAssembly.Module instances and synchronous
++		 * loading is preferred.
++		 *
++		 * @param module - A pre-compiled WebAssembly.Module
++		 * @returns A Language instance
++		 */
++		static loadModuleSync(module: WebAssembly.Module): Language;
+ 	}
+ 	/** A tree that represents the syntactic structure of a source code file. */
+ 	export class Tree {

@@ -19,16 +19,19 @@
     "build:watch": "tsdown --watch",
     "types:check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "pr-review": "tsx src/pr-review.ts",
+    "pr-reply": "tsx src/pr-reply.ts"
   },
   "dependencies": {
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
-    "tree-sitter": "^0.25.0"
+    "tree-sitter": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "@rejot-dev/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
     "tsdown": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

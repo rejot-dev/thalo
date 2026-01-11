@@ -30,7 +30,7 @@ Your notes become a collaboration between you and AI, versioned in git, readable
 
 ## The Syntax in 30 Seconds
 
-```thalo
+```text
 {timestamp} {directive} {entity} "Title" [^id] [#tags...]
   metadata: "value"
   related: ^other-entry

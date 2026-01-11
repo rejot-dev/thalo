@@ -36,7 +36,7 @@ The header line contains:
 
 ### Example
 
-```text
+```thalo
 2026-01-08T14:30Z create opinion "TypeScript enums should be avoided" ^ts-enums #typescript
   confidence: "high"
   related: ^clean-code
@@ -66,7 +66,7 @@ Metadata fields are indented key-value pairs. Values can be:
 Content sections start with `# SectionName` (indented). All content must be within a section. Each
 entity type defines which sections are required or optional.
 
-```text
+```thalo
 2026-01-08T14:30Z create journal "Daily reflection" ^daily-2026-01-08
   subject: ^self
   type: "reflection"
@@ -113,7 +113,7 @@ Tags are useful for filtering and querying your knowledge base.
 
 Before creating entries, you need to define entity schemas:
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity opinion "Formed stances on topics"
   # Metadata
   confidence: "high" | "medium" | "low"
@@ -136,7 +136,7 @@ The schema defines:
 
 Syntheses define queries over your knowledge base:
 
-```text
+```thalo
 2026-01-08T14:30Z define-synthesis "My Programming Philosophy" ^prog-philosophy #programming
   sources: opinion where #programming, lore where #insights
 
@@ -155,8 +155,9 @@ Syntheses allow you to:
 
 Add comments with `//`:
 
-```text
+```thalo
 // This is a comment
+
 2026-01-08T14:30Z create opinion "Example" ^example
   // Metadata comment
   confidence: "high"

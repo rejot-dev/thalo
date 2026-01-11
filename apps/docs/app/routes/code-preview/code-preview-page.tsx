@@ -1,7 +1,9 @@
 import { ThemeToggle } from "fumadocs-ui/components/layout/theme-toggle";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Grid2x2, Grid3x3, Square, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
-import { FragnoCodeBlock } from "@/components/fragno-code-block";
+import { ThaloCodeRenderer, type HighlightedLine } from "@/components/thalo-code";
+import { getParser } from "@/lib/thalo-parser.client";
+import { highlightToTokens } from "@/lib/thalo-highlighter";
 
 export function loader() {
   // Only allow access in development mode
@@ -57,36 +59,47 @@ const layoutConfigs: LayoutConfig[] = [
   },
 ];
 
-const defaultCode = `import { createFragment } from '@fragno-dev/core';
+const defaultCode = `2026-01-08T14:30Z create opinion "Plain text wins" ^plain-text #pkm
+  confidence: "high"
 
-export const myFragment = createFragment({
-  name: 'my-fragment',
-  routes: {
-    hello: {
-      path: '/hello',
-      method: 'GET',
-      handler: async () => {
-        return { message: 'Hello from Fragno!' };
-      },
-    },
-  },
-  client: (builder) => ({
-    useGreeting: builder.createQuery({
-      route: 'hello',
-      queryKey: ['greeting'],
-    }),
-  }),
-});`;
+  # Claim
+  Your notes should outlive every app.
+
+  # Reasoning
+  - Apps die. Plain text is forever.
+  - grep > proprietary search
+  - AI speaks text natively`;
 
 const defaultDescription =
-  "A simple fragment example showing how to define routes and client hooks with Fragno.";
+  "A structured entry capturing an opinion with references, tags, and markdown content.";
 
 export default function CodePreviewPage() {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("single");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [description, setDescription] = useState(defaultDescription);
   const [code, setCode] = useState(defaultCode);
-  const [language, setLanguage] = useState("typescript");
+  const [highlightedLines, setHighlightedLines] = useState<HighlightedLine[]>([]);
+
+  // Highlight code when it changes
+  useEffect(() => {
+    let cancelled = false;
+    getParser()
+      .then((parser) => {
+        if (!cancelled) {
+          const { lines } = highlightToTokens(parser, code);
+          setHighlightedLines(lines);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          // eslint-disable-next-line no-console
+          console.error("[code-preview] Failed to load parser:", err);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
 
   const currentLayout =
     layoutConfigs.find((config) => config.mode === layoutMode) || layoutConfigs[0];
@@ -188,30 +201,19 @@ export default function CodePreviewPage() {
                       <div className="h-3 w-3 rounded-full bg-green-400" />
                     </div>
                     <div className="ml-2 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      {language}
+                      thalo
                     </div>
                   </div>
                 </div>
                 <div
-                  className="code-preview-container overflow-auto"
+                  className="overflow-auto"
                   style={{
                     height: `${currentLayout.height - 135}px`,
                   }}
                 >
-                  <style
-                    dangerouslySetInnerHTML={{
-                      __html: `.code-preview-container pre, .code-preview-container code, .code-preview-container figure { background: transparent !important; padding-top: 0 !important; border: none !important; } .code-preview-container code { font-size: 0.95rem !important; line-height: 1.6 !important; }`,
-                    }}
-                  />
-                  <FragnoCodeBlock
-                    lang={language}
-                    code={code}
-                    codeblock={{
-                      allowCopy: false,
-                    }}
-                    options={{
-                      defaultColor: false,
-                    }}
+                  <ThaloCodeRenderer
+                    lines={highlightedLines}
+                    className="text-[0.95rem] leading-[1.6]"
                   />
                 </div>
               </div>
@@ -238,42 +240,18 @@ export default function CodePreviewPage() {
               />
             </div>
 
-            <div className="grid grid-cols-[1fr_150px] gap-4">
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Code
-                </label>
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  rows={15}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 font-mono text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                  placeholder="Enter code..."
-                  spellCheck={false}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Language
-                </label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                >
-                  <option value="typescript">TypeScript</option>
-                  <option value="tsx">TSX</option>
-                  <option value="javascript">JavaScript</option>
-                  <option value="jsx">JSX</option>
-                  <option value="json">JSON</option>
-                  <option value="bash">Bash</option>
-                  <option value="shell">Shell</option>
-                  <option value="css">CSS</option>
-                  <option value="html">HTML</option>
-                  <option value="markdown">Markdown</option>
-                </select>
-              </div>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Code
+              </label>
+              <textarea
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                rows={15}
+                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 font-mono text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                placeholder="Enter Thalo code..."
+                spellCheck={false}
+              />
             </div>
 
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300">

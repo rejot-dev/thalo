@@ -36,7 +36,7 @@ Entity definitions use the `define-entity` directive:
 
 ### Example: Opinion Entity
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity opinion "Formed stances on topics"
   # Metadata
   confidence: "high" | "medium" | "low"
@@ -51,7 +51,7 @@ Entity definitions use the `define-entity` directive:
 
 ### Example: Reference Entity
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity reference "External resources or local files"
   # Metadata
   url?: string ; "Full URL to external resource"
@@ -117,7 +117,7 @@ Sections define the content structure of entries:
 
 ### Example
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity journal "Personal thoughts and reflections"
   # Metadata
   subject: string | link
@@ -133,7 +133,7 @@ Sections define the content structure of entries:
 
 Once defined, create entries using the entity type:
 
-```text
+```thalo
 2026-01-08T14:30Z create opinion "TypeScript enums should be avoided" ^ts-enums #typescript
   confidence: "high"
   related: ^clean-code
@@ -154,14 +154,12 @@ Once defined, create entries using the entity type:
 
 Modify existing entity definitions with `alter-entity`:
 
-```text
+```thalo
 2026-01-10T10:00Z alter-entity opinion "Formed stances on topics"
   # Metadata
-  # Add new optional field
   source?: link ; "Source that influenced this opinion"
 
   # Sections
-  # Add new optional section
   Examples? ; "Concrete examples of this opinion"
 ```
 
@@ -169,7 +167,7 @@ Modify existing entity definitions with `alter-entity`:
 
 Set default values for optional metadata fields:
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity reference "External resources"
   # Metadata
   status?: "unread" | "read" | "processed" = "unread"
@@ -181,7 +179,7 @@ If `status` is omitted when creating a reference, it defaults to `"unread"`.
 
 Create a special entity for self-references:
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity me "Entity to allow for self-references" ^self
   # Sections
   Bio ; "Need at least one section"

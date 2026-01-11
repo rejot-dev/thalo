@@ -3,12 +3,17 @@ packages:
   - apps/*
 
 catalog:
-  "@types/node": ^22
+  "@types/node": ^24
+  tree-sitter: ^0.25.0
   tsdown: ^0.15.12
-  tsx: ^4.21.0
+  tsx: 4.21.0
   typescript: ^5.7.3
   vitest: ^3.2.4
+  web-tree-sitter: ^0.25.0
 
 onlyBuiltDependencies:
   - tree-sitter
   - tree-sitter-cli
+
+patchedDependencies:
+  web-tree-sitter@0.25.10: patches/web-tree-sitter@0.25.10.patch

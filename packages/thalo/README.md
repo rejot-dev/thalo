@@ -222,6 +222,24 @@ const parser = await createParser({
 });
 ```
 
+Both WASM files are re-exported from this package for convenience:
+
+- `@rejot-dev/thalo/web-tree-sitter.wasm` — The web-tree-sitter runtime
+- `@rejot-dev/thalo/tree-sitter-thalo.wasm` — The thalo language grammar
+
+### Cloudflare Workers / WebAssembly.Module Support
+
+In environments like Cloudflare Workers, WASM imports are provided as pre-compiled
+`WebAssembly.Module` instances rather than raw bytes. The web parser supports this directly:
+
+```typescript
+import { createParser } from "@rejot-dev/thalo/web";
+import treeSitterWasm from "./tree-sitter.wasm"; // WebAssembly.Module
+import languageWasm from "./tree-sitter-thalo.wasm"; // WebAssembly.Module
+
+const parser = await createParser({ treeSitterWasm, languageWasm });
+```
+
 The main entry (`@rejot-dev/thalo`) provides convenience functions that use a singleton native
 parser internally for backwards compatibility.
 

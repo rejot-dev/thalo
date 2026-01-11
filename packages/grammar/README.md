@@ -18,10 +18,11 @@ using fenced code blocks with the `thalo` language identifier:
 Some markdown content here.
 
 ```thalo
-2026-01-05T18:00 create lore "An insight" #example
-  type: insight
+2026-01-05T18:00Z create lore "An insight" #example
+  type: "insight"
   subject: ^self
 
+  # Summary
   This thalo entry lives inside a markdown file.
 ```
 
@@ -47,11 +48,12 @@ Create or update instances of entities (lore, opinion, reference, journal):
 ### Example
 
 ```thalo
-2026-01-05T18:11 create lore "Custom event streaming system" ^event-streaming #architecture #distributed
+2026-01-05T18:11Z create lore "Custom event streaming system" ^event-streaming #architecture #distributed
   type: "fact"
   subject: ^acme-corp
   date: 2018 ~ 2022
 
+  # Summary
   The company built a custom event streaming system on top of Postgres
   before Kafka became widely adopted.
 ```
@@ -116,7 +118,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
 ### Example
 
 ```thalo
-2026-01-05T18:12 define-entity reference "Collected resources"
+2026-01-05T18:12Z define-entity reference "Collected resources"
   # Metadata
   url?: string ; "the url to the resource"
   ref-type: "article" | "video" | "tweet"
@@ -134,7 +136,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
 Modify existing entity schemas by adding or removing fields/sections:
 
 ```thalo
-2026-01-10T14:00 alter-entity reference "Add published field, remove legacy"
+2026-01-10T14:00Z alter-entity reference "Add published field, remove legacy"
   # Metadata
   published: datetime ; "publication date"
   # Remove Metadata
@@ -169,7 +171,7 @@ regex-based parsing. All values must be explicitly typed (no plain/unquoted valu
 
 Single link references:
 
-```thalo
+```text
 subject: ^self
 supersedes: ^previous-opinion
 ```
@@ -180,7 +182,7 @@ supersedes: ^previous-opinion
 
 Values in double quotes (required for all string values including literal types):
 
-```thalo
+```text
 type: "fact"
 confidence: "high"
 description: "A longer text value"
@@ -192,7 +194,7 @@ description: "A longer text value"
 
 Date or datetime values (date with optional time):
 
-```thalo
+```text
 published: 2026-01-07
 updated: 2026-01-07T12:00
 created: 2026-01-05T18:11
@@ -204,7 +206,7 @@ created: 2026-01-05T18:11
 
 Date ranges with the `~` separator:
 
-```thalo
+```text
 date: 2022 ~ 2024
 period: 2022-05 ~ 2024-12-31
 ```
@@ -215,7 +217,7 @@ period: 2022-05 ~ 2024-12-31
 
 Source queries for synthesis entries:
 
-```thalo
+```text
 sources: lore where subject = ^self and #career
 sources: lore where type = "fact"
 ```
@@ -232,7 +234,7 @@ Query conditions support:
 
 Comma-separated lists of any value type (links, quoted values, timestamps, date ranges, or queries):
 
-```thalo
+```text
 related: ^ref1, ^ref2, ^ref3
 authors: "Jane Doe", ^john-ref, "Alice Smith"
 periods: 2020 ~ 2022, 2023 ~ 2024
@@ -334,7 +336,7 @@ pnpm exec tree-sitter parse path/to/file.thalo
 - **All string values must be quoted**: There are no plain/unquoted values. Literal types like
   `"fact"` require quotes.
 
-  ```thalo
+  ```text
   # Correct:
   type: "fact"
   description: "Some text"
@@ -343,10 +345,10 @@ pnpm exec tree-sitter parse path/to/file.thalo
 - **No inline comments in values**: Comments (`//`) after metadata values break parsing. Use a
   separate comment line instead.
 
-  ```thalo
+  ```text
   # Wrong - causes parse error:
   type: "fact" // this breaks
-  
+
   # Correct:
   // Note about type
   type: "fact"
@@ -355,7 +357,7 @@ pnpm exec tree-sitter parse path/to/file.thalo
 - **Single dates must be quoted**: The grammar only recognizes date ranges (`YYYY ~ YYYY`). Single
   dates should be quoted strings.
 
-  ```thalo
+  ```text
   # Correct:
   published: "2024-05-11"
   period: 2022 ~ 2024
@@ -363,10 +365,10 @@ pnpm exec tree-sitter parse path/to/file.thalo
 
 - **Query `where` clause is required**: Queries must include a `where` clause.
 
-  ```thalo
+  ```text
   # Correct:
   sources: lore where #career
-  
+
   # Wrong - not a valid query:
   sources: lore
   ```
