@@ -1,7 +1,36 @@
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { GitHub } from "@/components/logos/github";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ThaloCodeRenderer, type HighlightedLine } from "@/components/thalo-code";
+import { getParser } from "@/lib/thalo-parser.server";
+import { getParser as getClientParser } from "@/lib/thalo-parser.client";
+import { highlightToTokens } from "@/lib/thalo-highlighter";
+
+const DEMO_CODE = `2026-01-08T14:30Z create opinion "Plain text wins" ^plain-text #pkm
+  confidence: "high"
+
+  # Claim
+  Your notes should outlive every app.
+
+  # Reasoning
+  - Apps die. Plain text is forever.
+  - grep > proprietary search
+  - AI speaks text natively`;
+
+/** Server loader - runs during SSR. */
+export async function loader() {
+  const parser = await getParser();
+  const { lines } = highlightToTokens(parser, DEMO_CODE);
+  return { highlightedLines: lines };
+}
+
+/** Client loader - runs during client-side navigation. */
+export async function clientLoader() {
+  const parser = await getClientParser();
+  const { lines } = highlightToTokens(parser, DEMO_CODE);
+  return { highlightedLines: lines };
+}
 
 export function meta() {
   return [
@@ -14,7 +43,7 @@ export function meta() {
   ];
 }
 
-function Hero() {
+function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
   return (
     <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden">
       {/* Mobile: Tree as background with content overlapping */}
@@ -25,7 +54,7 @@ function Hero() {
           className="h-full w-full object-cover object-[60%_top] dark:brightness-[0.55] dark:contrast-[1.1] dark:saturate-[0.8]"
         />
         {/* Dark mode color wash overlay - warm amber tint */}
-        <div className="pointer-events-none absolute inset-0 hidden dark:block bg-gradient-to-br from-amber-950/40 via-transparent to-zinc-950/50" />
+        <div className="pointer-events-none absolute inset-0 hidden dark:block bg-linear-to-br from-amber-950/40 via-transparent to-zinc-950/50" />
         {/* Gradient overlay for text readability - left side and bottom only */}
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#faf3e6_0%,#faf3e6_30%,transparent_60%),linear-gradient(to_bottom,transparent_0%,transparent_80%,#faf3e6_100%)] dark:bg-[linear-gradient(to_right,oklch(0.14_0.015_50)_0%,oklch(0.14_0.015_50/0.95)_25%,transparent_55%),linear-gradient(to_bottom,transparent_0%,transparent_70%,oklch(0.14_0.015_50)_100%)]" />
       </div>
@@ -35,10 +64,10 @@ function Hero() {
         <img
           src="/hero-tree.webp"
           alt="Knowledge tree illustration"
-          className="h-full w-full object-contain object-right-top dark:brightness-[0.55] dark:contrast-[1.1] dark:saturate-[0.8]"
+          className="h-full w-full object-contain object-top-right dark:brightness-[0.55] dark:contrast-[1.1] dark:saturate-[0.8]"
         />
         {/* Dark mode color wash overlay - warm amber tint for cohesive night feel */}
-        <div className="pointer-events-none absolute inset-0 hidden dark:block bg-gradient-to-br from-amber-950/30 via-zinc-900/20 to-zinc-950/40" />
+        <div className="pointer-events-none absolute inset-0 hidden dark:block bg-linear-to-br from-amber-950/30 via-zinc-900/20 to-zinc-950/40" />
         {/* Bottom gradient fade */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-[linear-gradient(to_bottom,transparent_0%,#faf3e6_85%,#faf3e6_100%)] dark:bg-[linear-gradient(to_bottom,transparent_0%,oklch(0.14_0.015_50)_85%,oklch(0.14_0.015_50)_100%)]" />
       </div>
@@ -99,47 +128,10 @@ function Hero() {
                 </div>
 
                 {/* Code content - Plain text wins snippet */}
-                <pre className="overflow-x-auto p-4 text-xs leading-relaxed md:text-sm">
-                  <code className="font-mono text-amber-950 dark:text-zinc-100">
-                    <span className="text-amber-600/70 dark:text-zinc-500">2026-01-08T14:30Z</span>{" "}
-                    <span className="text-amber-700 font-semibold dark:text-amber-400">
-                      create opinion
-                    </span>{" "}
-                    <span className="text-orange-700 dark:text-orange-300">"Plain text wins"</span>{" "}
-                    <span className="text-sky-700 dark:text-sky-400">^plain-text</span>{" "}
-                    <span className="text-emerald-700 dark:text-emerald-400">#pkm</span>
-                    {"\n"}
-                    {"  "}
-                    <span className="text-sky-700 dark:text-sky-400">confidence</span>:{" "}
-                    <span className="text-orange-700 dark:text-orange-300">"high"</span>
-                    {"\n\n"}
-                    {"  "}
-                    <span className="text-amber-700 dark:text-amber-400"># Claim</span>
-                    {"\n"}
-                    {"  "}
-                    <span className="text-amber-900 dark:text-zinc-300">
-                      Your notes should outlive every app.
-                    </span>
-                    {"\n\n"}
-                    {"  "}
-                    <span className="text-amber-700 dark:text-amber-400"># Reasoning</span>
-                    {"\n"}
-                    {"  "}
-                    <span className="text-amber-900 dark:text-zinc-300">
-                      - Apps die. Plain text is forever.
-                    </span>
-                    {"\n"}
-                    {"  "}
-                    <span className="text-amber-900 dark:text-zinc-300">
-                      - grep {">"} proprietary search
-                    </span>
-                    {"\n"}
-                    {"  "}
-                    <span className="text-amber-900 dark:text-zinc-300">
-                      - AI speaks text natively
-                    </span>
-                  </code>
-                </pre>
+                <ThaloCodeRenderer
+                  lines={highlightedLines}
+                  className="p-4 text-xs leading-relaxed md:text-sm [&_code]:text-amber-950 dark:[&_code]:text-zinc-100"
+                />
               </div>
             </div>
           </div>
@@ -149,7 +141,7 @@ function Hero() {
   );
 }
 
-function LiveDemo() {
+function LiveDemo({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
   return (
     <section className="relative w-full py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
@@ -170,29 +162,7 @@ function LiveDemo() {
                   <span className="size-3 rounded-full bg-green-400/80"></span>
                   <span className="ml-2 font-mono">entries.thalo</span>
                 </div>
-                <pre className="overflow-x-auto p-4 text-sm leading-relaxed">
-                  <code className="text-foreground/90 font-mono">
-                    <span className="text-muted-foreground">2026-01-08T14:30Z</span>{" "}
-                    <span className="text-primary font-semibold">create opinion</span>{" "}
-                    <span className="text-foreground">"Plain text wins"</span>{" "}
-                    <span className="text-blue-600 dark:text-blue-400">^plain-text</span>{" "}
-                    <span className="text-emerald-600 dark:text-emerald-400">#pkm</span>
-                    {`
-  confidence: "high"
-
-  `}
-                    <span className="text-primary"># Claim</span>
-                    {`
-  Your notes should outlive every app.
-
-  `}
-                    <span className="text-primary"># Reasoning</span>
-                    {`
-  - Apps die. Plain text is forever.
-  - grep > proprietary search
-  - AI speaks text natively`}
-                  </code>
-                </pre>
+                <ThaloCodeRenderer lines={highlightedLines} />
               </CardContent>
             </Card>
           </div>
@@ -522,10 +492,12 @@ thalo check`}
 }
 
 export default function HomePage() {
+  const { highlightedLines } = useLoaderData<typeof loader>();
+
   return (
     <main className="relative flex min-h-screen flex-col overflow-x-hidden">
-      <Hero />
-      <LiveDemo />
+      <Hero highlightedLines={highlightedLines} />
+      <LiveDemo highlightedLines={highlightedLines} />
       <Problem />
       <Concepts />
       <Tooling />

@@ -11,7 +11,7 @@ See how Thalo is used in practice with these real-world examples.
 
 Capture your stances on topics:
 
-```text
+```thalo
 2026-01-08T14:30Z create opinion "Premature abstraction is worse than duplication" ^opinion-abstraction #programming #architecture
   confidence: "high"
   related: ^no-abstraction, ^pragmatic-programmer
@@ -36,7 +36,7 @@ Capture your stances on topics:
 
 Track external resources:
 
-```text
+```thalo
 2026-01-07T10:18Z create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
   ref-type: "book"
   author: "Robert C. Martin"
@@ -58,7 +58,7 @@ Track external resources:
 
 Record personal thoughts and reflections:
 
-```text
+```thalo
 2026-01-07T10:18Z create journal "Reflecting on abstractions in software design" #programming #reflection
   subject: ^self
   type: "reflection"
@@ -82,7 +82,7 @@ Record personal thoughts and reflections:
 
 Capture facts and insights:
 
-```text
+```thalo
 2026-01-07T10:18Z create lore "Simple code is often better than clever code" #programming #insights
   type: "insight"
   subject: ^self
@@ -98,7 +98,7 @@ Capture facts and insights:
 
 Query and synthesize knowledge:
 
-```text
+```thalo
 2026-01-08T14:30Z define-synthesis "My Programming Philosophy" ^prog-philosophy #programming
   sources: opinion where #programming, lore where #insights
 
@@ -114,7 +114,7 @@ Here's a complete example of entity definitions and entries:
 
 ### entities.thalo
 
-```text
+```thalo
 2026-01-07T11:40Z define-entity opinion "Formed stances on topics"
   # Metadata
   confidence: "high" | "medium" | "low"
@@ -147,7 +147,7 @@ Here's a complete example of entity definitions and entries:
 
 ### entries.thalo
 
-```text
+```thalo
 2026-01-07T10:18Z create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
   ref-type: "book"
   author: "Robert C. Martin"

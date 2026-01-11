@@ -9,11 +9,8 @@ import { isIdentityMap } from "./source-map.js";
 const require = createRequire(import.meta.url);
 
 // Resolve WASM file paths
-// web-tree-sitter doesn't export the WASM file, so we resolve the package and append the filename
-const treeSitterWasmPath = join(
-  dirname(require.resolve("web-tree-sitter")),
-  "web-tree-sitter.wasm",
-);
+// web-tree-sitter exports the WASM as tree-sitter.wasm (not web-tree-sitter.wasm)
+const treeSitterWasmPath = join(dirname(require.resolve("web-tree-sitter")), "tree-sitter.wasm");
 const languageWasmPath = require.resolve("@rejot-dev/tree-sitter-thalo/tree-sitter-thalo.wasm");
 
 // Load WASM files once for all tests
@@ -66,10 +63,10 @@ describe("Web Parser", () => {
     expect(tree.rootNode.hasError).toBe(false);
 
     // Find the entry
-    const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
+    const entry = tree.rootNode.namedChildren.find((c) => c?.type === "entry");
     expect(entry).toBeDefined();
 
-    const schemaEntry = entry?.namedChildren.find((c) => c.type === "schema_entry");
+    const schemaEntry = entry?.namedChildren.find((c) => c?.type === "schema_entry");
     expect(schemaEntry).toBeDefined();
   });
 
@@ -163,5 +160,116 @@ More text.
 
     expect(tree1.rootNode.hasError).toBe(false);
     expect(tree2.rootNode.hasError).toBe(false);
+  });
+});
+
+describe("Web Parser with WebAssembly.Module", () => {
+  let treeSitterWasmBytes: Uint8Array;
+  let languageWasmBytes: Uint8Array;
+  let treeSitterModule: WebAssembly.Module;
+  let languageModule: WebAssembly.Module;
+
+  beforeAll(async () => {
+    // Load WASM files as bytes
+    [treeSitterWasmBytes, languageWasmBytes] = await Promise.all([
+      readFile(treeSitterWasmPath).then((b) => new Uint8Array(b)),
+      readFile(languageWasmPath).then((b) => new Uint8Array(b)),
+    ]);
+
+    // Pre-compile to WebAssembly.Module
+    [treeSitterModule, languageModule] = await Promise.all([
+      WebAssembly.compile(treeSitterWasmBytes.buffer as ArrayBuffer),
+      WebAssembly.compile(languageWasmBytes.buffer as ArrayBuffer),
+    ]);
+  });
+
+  it("creates a parser with pre-compiled treeSitterWasm module", async () => {
+    const parser = await createParser({
+      treeSitterWasm: treeSitterModule,
+      languageWasm: languageWasmBytes,
+    });
+
+    expect(parser).toBeDefined();
+    expect(parser.parse).toBeInstanceOf(Function);
+
+    const source = `2026-01-05T18:00Z create lore "Test" #test
+  type: "fact"
+`;
+    const tree = parser.parse(source);
+    expect(tree.rootNode.type).toBe("source_file");
+    expect(tree.rootNode.hasError).toBe(false);
+  });
+
+  it("parses complex documents with pre-compiled treeSitterWasm module", async () => {
+    const parser = await createParser({
+      treeSitterWasm: treeSitterModule,
+      languageWasm: languageWasmBytes,
+    });
+
+    const source = `# My Document
+
+\`\`\`thalo
+2026-01-05T18:00Z create lore "Test entry" #test
+  type: "fact"
+\`\`\`
+`;
+    const result = parser.parseDocument(source, { fileType: "markdown" });
+
+    expect(result.blocks).toHaveLength(1);
+    expect(result.blocks[0].tree.rootNode.hasError).toBe(false);
+  });
+
+  it("creates a parser with pre-compiled languageWasm module", async () => {
+    // languageWasm as WebAssembly.Module is now supported via our patched loadModule method
+    const parser = await createParser({
+      treeSitterWasm: treeSitterWasmBytes,
+      languageWasm: languageModule,
+    });
+
+    expect(parser).toBeDefined();
+    expect(parser.parse).toBeInstanceOf(Function);
+
+    const source = `2026-01-05T18:00Z create lore "Test" #test
+  type: "fact"
+`;
+    const tree = parser.parse(source);
+    expect(tree.rootNode.type).toBe("source_file");
+    expect(tree.rootNode.hasError).toBe(false);
+  });
+
+  it("creates a parser with both inputs as WebAssembly.Module", async () => {
+    const parser = await createParser({
+      treeSitterWasm: treeSitterModule,
+      languageWasm: languageModule,
+    });
+
+    expect(parser).toBeDefined();
+    expect(parser.parse).toBeInstanceOf(Function);
+
+    const source = `2026-01-05T18:00Z create lore "Test" #test
+  type: "fact"
+`;
+    const tree = parser.parse(source);
+    expect(tree.rootNode.type).toBe("source_file");
+    expect(tree.rootNode.hasError).toBe(false);
+  });
+
+  it("parses complex documents with both inputs as WebAssembly.Module", async () => {
+    const parser = await createParser({
+      treeSitterWasm: treeSitterModule,
+      languageWasm: languageModule,
+    });
+
+    const source = `# My Document
+
+\`\`\`thalo
+2026-01-05T18:00Z create lore "Test entry" #test
+  type: "fact"
+\`\`\`
+`;
+    const result = parser.parseDocument(source, { fileType: "markdown" });
+
+    expect(result.blocks).toHaveLength(1);
+    expect(result.blocks[0].tree.rootNode.hasError).toBe(false);
   });
 });

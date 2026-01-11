@@ -26,6 +26,8 @@
     "build:watch": "turbo watch build --filter='./packages/**'",
     "types:check": "turbo run types:check",
     "test": "turbo run test",
-    "test:watch": "turbo run test:watch"
+    "test:watch": "turbo run test:watch",
+    "pr-review": "pnpm --filter @rejot-dev/scripts pr-review",
+    "pr-reply": "pnpm --filter @rejot-dev/scripts pr-reply"
   }
 }

@@ -1,14 +1,16 @@
 {
   "include": [
     ".react-router/types/**/*",
-    ".source/**/*",
+    ".source/**/*.ts",
     "app/**/*",
     "app/**/.server/**/*",
     "app/**/.client/**/*",
     "workers/**/*",
     "worker-configuration.d.ts",
-    "secrets.d.ts"
+    "secrets.d.ts",
+    "wasm/**/*"
   ],
+  "exclude": [".source/**/*.mjs"],
   "compilerOptions": {
     "composite": true,
     "strict": true,

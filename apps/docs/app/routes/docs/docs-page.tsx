@@ -12,6 +12,7 @@ import { createElement, createContext, useContext } from "react";
 import { isMarkdownPreferred } from "fumadocs-core/negotiation";
 import { iconComponents } from "@/lib/icons";
 import { buildMarkdownApiUrl } from "./markdown-redirect";
+import { ThaloHighlightProvider } from "@/components/thalo-highlight-provider";
 
 /**
  * Context to pass loader data to the MDX component
@@ -142,23 +143,25 @@ export default function Page({ loaderData }: Route.ComponentProps) {
   const hydratedTree = hydrateIcons(tree as PageTree.Root);
 
   return (
-    <div
-      // The docs layout uses `--fd-banner-height` to offset its fixed elements.
-      // Since we render it under the site header (HomeLayout), we bump this so
-      // the sidebar/top controls don't sit behind the header.
-      style={{ ["--fd-banner-height" as never]: "56px" }}
-    >
-      <DocsLayout
-        {...baseOptions()}
-        tree={hydratedTree}
-        sidebar={{
-          collapsible: false,
-        }}
+    <ThaloHighlightProvider key={path}>
+      <div
+        // The docs layout uses `--fd-banner-height` to offset its fixed elements.
+        // Since we render it under the site header (HomeLayout), we bump this so
+        // the sidebar/top controls don't sit behind the header.
+        style={{ ["--fd-banner-height" as never]: "56px" }}
       >
-        <PageDataContext.Provider value={{ url, path, processedMarkdown }}>
-          <Content />
-        </PageDataContext.Provider>
-      </DocsLayout>
-    </div>
+        <DocsLayout
+          {...baseOptions()}
+          tree={hydratedTree}
+          sidebar={{
+            collapsible: false,
+          }}
+        >
+          <PageDataContext.Provider value={{ url, path, processedMarkdown }}>
+            <Content />
+          </PageDataContext.Provider>
+        </DocsLayout>
+      </div>
+    </ThaloHighlightProvider>
   );
 }

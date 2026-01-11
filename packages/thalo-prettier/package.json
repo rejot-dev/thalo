@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
-    "tree-sitter": "^0.25.0"
+    "tree-sitter": "catalog:"
   },
   "peerDependencies": {
     "prettier": "^3.0.0"

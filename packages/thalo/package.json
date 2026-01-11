@@ -56,8 +56,8 @@
   },
   "dependencies": {
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
-    "tree-sitter": "^0.25.0",
-    "web-tree-sitter": "^0.26.3"
+    "tree-sitter": "catalog:",
+    "web-tree-sitter": "catalog:"
   },
   "devDependencies": {
     "@rejot-dev/typescript-config": "workspace:*",
