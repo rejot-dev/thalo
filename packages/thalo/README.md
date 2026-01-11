@@ -1,7 +1,7 @@
 # @rejot-dev/thalo
 
-Core library for **thalo** (Personal Thought And Lore Language). Provides parsing, semantic
-analysis, validation, and workspace management for `.thalo` files.
+Core library for **thalo** (Thought And Lore Language). Provides parsing, semantic analysis,
+validation, and workspace management for `.thalo` files.
 
 ## Features
 

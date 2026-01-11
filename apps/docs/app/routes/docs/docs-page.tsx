@@ -84,9 +84,15 @@ function hydrateIcons(node: unknown): unknown {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const isMarkdown =
     request.url.endsWith(".md") || request.url.endsWith(".mdx") || isMarkdownPreferred(request);
-  const splat = params["*"]?.replace(/\.mdx?$/, "");
+  const splat = params["*"]?.replace(/\.mdx?$/, "") ?? "";
 
   const slugs = splat.split("/").filter((v) => v.length > 0);
+
+  // Redirect /docs/index to /docs
+  if (slugs.length === 1 && slugs[0] === "index") {
+    return Response.redirect(new URL("/docs", request.url).href, 301);
+  }
+
   const page = source.getPage(slugs);
 
   if (!page) {

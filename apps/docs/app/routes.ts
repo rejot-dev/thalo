@@ -4,10 +4,13 @@ export default [
   layout("layouts/home-layout.tsx", [
     index("routes/home.tsx"),
 
+    route("playground", "routes/playground.tsx"),
+    route("rules", "routes/rules.tsx"),
+
     route("blog", "routes/blog/blog-index.tsx"),
     route("blog/:slug", "routes/blog/blog-post.tsx"),
 
-    route("docs", "routes/docs/docs-index.tsx"),
+    route("docs", "routes/docs/docs-page.tsx", { id: "docs-index" }),
     route("docs/*", "routes/docs/docs-page.tsx"),
   ]),
 

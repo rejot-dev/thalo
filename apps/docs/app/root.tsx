@@ -32,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const baseUrl =
     import.meta.env.MODE === "development" ? "http://localhost:3000" : "https://thalo.dev";
   const description =
-    "Thalo is a structured plain-text language for capturing personal knowledge, thoughts, and references. AI-ready, version-controlled, human-readable.";
+    "Thalo is a structured plain-text language for capturing knowledge, thoughts, and references. AI-ready, version-controlled, human-readable.";
   const socialImage = `${baseUrl}/social.webp`;
 
   return (
@@ -41,13 +41,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content={description} />
-        <meta property="og:title" content="Thalo: Personal Thought And Lore Language" />
+        <meta property="og:title" content="Thalo: Knowledge Language" />
         <meta property="og:description" content={description} />
         <meta property="og:image" content={socialImage} />
         <meta property="og:url" content={baseUrl} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Thalo: Personal Thought And Lore Language" />
+        <meta name="twitter:title" content="Thalo: Thought And Lore Language" />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={socialImage} />
         <Meta />

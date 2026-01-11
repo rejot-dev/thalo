@@ -1,6 +1,6 @@
 # Thalo Language Server
 
-Language Server Protocol (LSP) implementation for **thalo** (Personal Thought And Lore Language).
+Language Server Protocol (LSP) implementation for **thalo** (Thought And Lore Language).
 
 ## Features
 

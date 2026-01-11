@@ -1,7 +1,6 @@
 # Thalo VS Code Extension
 
-Syntax highlighting and formatting for **thalo** (Personal Thought And Lore Language) files in VS
-Code.
+Syntax highlighting and formatting for **thalo** (Thought And Lore Language) files in VS Code.
 
 ## Features
 

@@ -141,7 +141,7 @@
   - Existing codebases may have valid reasons to keep enums
   - String enums are less problematic than numeric ones
 
-2026-01-07T10:18Z create journal "Reflecting on abstractions in software design" #programming #reflection
+2026-01-07T10:18Z create journal "Reflecting on abstractions in software design" #programming #reflection ^asd
   subject: ^self
   type: "reflection"
   mood: "contemplative"

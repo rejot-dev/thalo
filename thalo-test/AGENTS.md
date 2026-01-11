@@ -1,4 +1,4 @@
-# THALO - Personal Thought And Lore Language
+# THALO - Thought And Lore Language
 
 Entity schemas are defined in `entities.thalo`.
 

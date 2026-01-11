@@ -4,3 +4,4 @@ export * from "./semantic-tokens.js";
 export * from "./entity-navigation.js";
 export * from "./query.js";
 export * from "./hover.js";
+export * from "./synthesis.js";

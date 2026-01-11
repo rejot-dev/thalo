@@ -52,7 +52,7 @@ const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   Bio ; "Need at least one section"
 `;
 
-const AGENTS_MD = `# THALO - Personal Thought And Lore Language
+const AGENTS_MD = `# THALO - Thought And Lore Language
 
 Entity schemas are defined in \`entities.thalo\`.
 

@@ -6,6 +6,16 @@ import { ThaloCodeRenderer, type HighlightedLine } from "@/components/thalo-code
 import { getParser } from "@/lib/thalo-parser.server";
 import { getParser as getClientParser } from "@/lib/thalo-parser.client";
 import { highlightToTokens } from "@/lib/thalo-highlighter";
+import {
+  ArrowRight,
+  Check,
+  Link2,
+  Sparkles,
+  FileCode,
+  Terminal,
+  Wand2,
+  TreePine,
+} from "lucide-react";
 
 const DEMO_CODE = `2026-01-08T14:30Z create opinion "Plain text wins" ^plain-text #pkm
   confidence: "high"
@@ -34,7 +44,7 @@ export async function clientLoader() {
 
 export function meta() {
   return [
-    { title: "Thalo: Personal Thought And Lore Language" },
+    { title: "Thalo: Thought And Lore Language" },
     {
       name: "description",
       content:
@@ -87,9 +97,8 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
 
             {/* Description */}
             <p className="mb-8 text-lg  leading-relaxed text-muted-foreground md:text-xl">
-              A plain-text, structured format for capturing personal knowledge—simple enough for
-              quick notes, consistent enough for durable data. Human-readable, versionable, and
-              tool-friendly.
+              A plain-text, structured format for capturing knowledge. Store quick notes, create
+              durable data. Human-readable, versionable, and LLMs love to work with it.
             </p>
 
             {/* CTA Buttons */}
@@ -142,80 +151,107 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
 }
 
 function LiveDemo({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
+  const benefits = [
+    {
+      icon: Check,
+      title: "Schema Validation",
+      description:
+        "Your entries are type-checked. Missing a required field? You'll know instantly.",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-500/10",
+    },
+    {
+      icon: Link2,
+      title: "Cross-references",
+      description: "Connect thoughts with ^links. Build a personal knowledge graph in plain text.",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-500/10",
+    },
+    {
+      icon: Sparkles,
+      title: "AI Synthesis",
+      description:
+        "Query your knowledge and let AI synthesize. Scattered thoughts → coherent understanding.",
+      color: "text-amber-600 dark:text-amber-400",
+      bg: "bg-amber-500/10",
+    },
+  ];
+
   return (
-    <section className="relative w-full py-16 md:py-24">
-      <div className="mx-auto max-w-6xl px-4 md:px-8">
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-          {/* Left: The Thalo entry */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                1
-              </span>
-              Write structured entries
+    <section className="relative w-full overflow-hidden py-24 md:py-32">
+      {/* Subtle diagonal line decoration */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -right-32 top-0 h-px w-96 rotate-45 bg-linear-to-r from-transparent via-border to-transparent" />
+        <div className="absolute -left-32 bottom-32 h-px w-96 rotate-45 bg-linear-to-r from-transparent via-border to-transparent" />
+      </div>
+
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        {/* Section header */}
+        <div className="mb-16 max-w-2xl">
+          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+            — HOW IT WORKS
+          </span>
+          <h2 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
+            Write once, <span className="italic text-primary">understand forever</span>
+          </h2>
+        </div>
+
+        <div className="grid items-start gap-12 lg:grid-cols-5 lg:gap-16">
+          {/* Left: Code block - takes 3 columns */}
+          <div className="lg:col-span-3">
+            <div className="relative">
+              {/* Decorative shadow layer */}
+              <div className="absolute -inset-1 rounded-2xl bg-linear-to-br from-primary/20 via-transparent to-primary/10 blur-xl" />
+
+              <Card className="relative overflow-hidden border-2 border-primary/20 bg-card shadow-2xl shadow-primary/5">
+                <CardContent className="p-0">
+                  <div className="flex items-center gap-2 border-b border-border/50 bg-muted/30 px-4 py-3">
+                    <div className="flex gap-1.5">
+                      <span className="size-3 rounded-full bg-red-400/80" />
+                      <span className="size-3 rounded-full bg-yellow-400/80" />
+                      <span className="size-3 rounded-full bg-green-400/80" />
+                    </div>
+                    <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      entries.thalo
+                    </span>
+                  </div>
+                  <ThaloCodeRenderer
+                    lines={highlightedLines}
+                    className="p-5 text-sm leading-relaxed md:text-base"
+                  />
+                </CardContent>
+              </Card>
             </div>
-            <Card className="border-2 border-primary/20 bg-card/80 backdrop-blur-sm">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-2 border-b border-border/50 px-4 py-2 text-xs text-muted-foreground">
-                  <span className="size-3 rounded-full bg-red-400/80"></span>
-                  <span className="size-3 rounded-full bg-yellow-400/80"></span>
-                  <span className="size-3 rounded-full bg-green-400/80"></span>
-                  <span className="ml-2 font-mono">entries.thalo</span>
-                </div>
-                <ThaloCodeRenderer lines={highlightedLines} />
-              </CardContent>
-            </Card>
           </div>
 
-          {/* Right: What you get */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                2
-              </span>
-              Get structure + tooling
-            </div>
-            <div className="grid gap-4">
-              <Card className="border bg-card/60 backdrop-blur-sm">
-                <CardContent className="flex items-start gap-4 p-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-xl">
-                    ✓
+          {/* Right: Benefits - takes 2 columns */}
+          <div className="space-y-6 lg:col-span-2">
+            {benefits.map((benefit) => (
+              <div key={benefit.title} className="group relative">
+                <div className="flex gap-4">
+                  <div
+                    className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${benefit.bg} transition-transform duration-300 group-hover:scale-110`}
+                  >
+                    <benefit.icon className={`size-5 ${benefit.color}`} />
                   </div>
                   <div>
-                    <div className="font-semibold">Validation</div>
-                    <div className="text-sm text-muted-foreground">
-                      Schema checks your entries. Missing a required field? You'll know.
-                    </div>
+                    <h3 className="mb-1 font-semibold tracking-tight">{benefit.title}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {benefit.description}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-              <Card className="border bg-card/60 backdrop-blur-sm">
-                <CardContent className="flex items-start gap-4 p-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-xl">
-                    🔗
-                  </div>
-                  <div>
-                    <div className="font-semibold">Cross-references</div>
-                    <div className="text-sm text-muted-foreground">
-                      <code className="rounded bg-muted px-1 text-xs">^plain-text</code> links to
-                      other entries. Build a knowledge graph.
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="border bg-card/60 backdrop-blur-sm">
-                <CardContent className="flex items-start gap-4 p-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-xl">
-                    🤖
-                  </div>
-                  <div>
-                    <div className="font-semibold">AI-ready</div>
-                    <div className="text-sm text-muted-foreground">
-                      Structure gives AI context. Define syntheses to query + summarize.
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            ))}
+
+            <div className="pt-4">
+              <Link
+                to="/playground"
+                className="group inline-flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
+              >
+                See it in action
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
           </div>
         </div>
@@ -225,26 +261,174 @@ function LiveDemo({ highlightedLines }: { highlightedLines: HighlightedLine[] })
 }
 
 function Problem() {
+  const problems = [
+    {
+      label: "Markdown",
+      headline: "Too loose",
+      body: "Great for docs, terrible for personal knowledge. No schema, no types, no validation. Just soup.",
+    },
+    {
+      label: "Apps",
+      headline: "Too rigid",
+      body: "Lock-in, proprietary formats, features you don't need. When they shut down, your notes are orphaned.",
+    },
+    {
+      label: "AI",
+      headline: "Needs structure",
+      body: "With structure and a checker, LLMs have a feedback loop to create valid entries.",
+    },
+  ];
+
   return (
-    <section className="relative w-full border-y bg-muted/30 py-16 md:py-24">
-      <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
-        <h2 className="mb-6 text-3xl font-bold md:text-4xl">The Problem</h2>
-        <div className="space-y-6 text-lg leading-relaxed text-muted-foreground">
-          <p>
-            <strong className="text-foreground">Markdown is too loose.</strong> Great for docs,
-            terrible for personal knowledge. No schema, no types, no validation. Just soup.
-          </p>
-          <p>
-            <strong className="text-foreground">Apps are too rigid.</strong> Lock-in, proprietary
-            formats, features you don't need. When they shut down, your notes are orphaned.
-          </p>
-          <p>
-            <strong className="text-foreground">AI needs structure.</strong> Feed an LLM a folder of
-            markdown and watch it hallucinate. Feed it typed, linked entries and watch it reason.
-          </p>
+    <section className="relative w-full overflow-hidden border-y border-border/50 bg-muted/20 py-24 md:py-32">
+      {/* Subtle paper texture hint */}
+      <div className="pointer-events-none absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjAzIi8+PC9zdmc+')] opacity-50 dark:opacity-30" />
+
+      <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+        <div className="mb-16 text-center">
+          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+            — THE PROBLEM
+          </span>
+          <h2 className="mx-auto max-w-3xl text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
+            Your knowledge deserves <span className="italic">better infrastructure</span>
+          </h2>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-3 md:gap-6 lg:gap-12">
+          {problems.map((problem, idx) => (
+            <div key={problem.label} className="relative">
+              {/* Connecting line on larger screens */}
+              {idx < problems.length - 1 && (
+                <div className="absolute right-0 top-8 hidden h-px w-6 bg-border md:block lg:w-12" />
+              )}
+
+              <div className="space-y-3">
+                <span className="inline-block rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-medium uppercase tracking-wider text-primary">
+                  {problem.label}
+                </span>
+                <h3 className="text-2xl font-bold tracking-tight md:text-3xl">
+                  {problem.headline}
+                </h3>
+                <p className="leading-relaxed text-muted-foreground">{problem.body}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
+  );
+}
+
+/** Fake syntax-highlighted code for concepts - uses manual spans for highlighting */
+function SyntaxCode({ children }: { children: React.ReactNode }) {
+  return (
+    <pre className="overflow-x-auto text-xs leading-relaxed">
+      <code className="font-mono text-foreground/80">{children}</code>
+    </pre>
+  );
+}
+
+/** Color classes for syntax highlighting */
+const syn = {
+  timestamp: "text-blue-600 dark:text-blue-400",
+  directive: "text-purple-600 dark:text-purple-400",
+  entity: "text-amber-600 dark:text-amber-400",
+  string: "text-emerald-600 dark:text-emerald-400",
+  link: "text-cyan-600 dark:text-cyan-400",
+  tag: "text-pink-600 dark:text-pink-400",
+  section: "text-foreground font-semibold",
+  key: "text-foreground/90",
+  comment: "text-muted-foreground",
+};
+
+function ConceptCodeEntity() {
+  return (
+    <SyntaxCode>
+      <span className={syn.timestamp}>2026-01-08T14:30Z</span>{" "}
+      <span className={syn.directive}>define-entity</span>{" "}
+      <span className={syn.entity}>opinion</span>{" "}
+      <span className={syn.string}>"Formed stances"</span>
+      {"\n"}
+      {"  "}
+      <span className={syn.section}># Metadata</span>
+      {"\n"}
+      {"  "}
+      <span className={syn.key}>confidence:</span> <span className={syn.string}>"high"</span>
+      {" | "}
+      <span className={syn.string}>"medium"</span>
+      {" | "}
+      <span className={syn.string}>"low"</span>
+      {"\n\n"}
+      {"  "}
+      <span className={syn.section}># Sections</span>
+      {"\n"}
+      {"  "}
+      <span className={syn.key}>Claim</span>
+      {" ; "}
+      <span className={syn.string}>"Core opinion"</span>
+      {"\n"}
+      {"  "}
+      <span className={syn.key}>Reasoning?</span>
+      {" ; "}
+      <span className={syn.string}>"Supporting points"</span>
+    </SyntaxCode>
+  );
+}
+
+function ConceptCodeEntry() {
+  return (
+    <SyntaxCode>
+      <span className={syn.timestamp}>2026-01-08T14:30Z</span>{" "}
+      <span className={syn.directive}>create</span> <span className={syn.entity}>opinion</span>{" "}
+      <span className={syn.string}>"Tabs &gt; Spaces"</span>{" "}
+      <span className={syn.link}>^tabs-vs-spaces</span>
+      {"\n"}
+      {"  "}
+      <span className={syn.key}>confidence:</span> <span className={syn.string}>"high"</span>
+      {"\n\n"}
+      {"  "}
+      <span className={syn.section}># Claim</span>
+      {"\n"}
+      {"  "}Tabs let everyone choose their width.
+    </SyntaxCode>
+  );
+}
+
+function ConceptCodeLinks() {
+  return (
+    <SyntaxCode>
+      <span className={syn.comment}>// Reference other entries</span>
+      {"\n"}
+      <span className={syn.key}>related:</span> <span className={syn.link}>^clean-code</span>
+      {", "}
+      <span className={syn.link}>^pragmatic</span>
+      {"\n"}
+      <span className={syn.key}>subject:</span> <span className={syn.link}>^self</span>
+      {"\n\n"}
+      <span className={syn.comment}>// Tags for filtering</span>
+      {"\n"}
+      <span className={syn.tag}>#programming</span> <span className={syn.tag}>#architecture</span>
+    </SyntaxCode>
+  );
+}
+
+function ConceptCodeSynthesis() {
+  return (
+    <SyntaxCode>
+      <span className={syn.timestamp}>2026-01-08T14:30Z</span>{" "}
+      <span className={syn.directive}>define-synthesis</span>{" "}
+      <span className={syn.string}>"My Philosophy"</span> <span className={syn.tag}>#coding</span>
+      {"\n"}
+      {"  "}
+      <span className={syn.key}>sources:</span> <span className={syn.entity}>opinion</span>
+      {" where "}
+      <span className={syn.tag}>#coding</span>
+      {"\n\n"}
+      {"  "}
+      <span className={syn.section}># Prompt</span>
+      {"\n"}
+      {"  "}Synthesize my opinions into a philosophy.
+    </SyntaxCode>
   );
 }
 
@@ -252,76 +436,92 @@ function Concepts() {
   const concepts = [
     {
       name: "Entities",
-      description:
-        "Define what kinds of knowledge you track. Opinions, journals, references, lore—whatever fits your brain.",
-      example: `define-entity opinion
-  confidence: "high" | "medium" | "low"
-  
-  # Claim
-  # Reasoning`,
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      number: "01",
+      description: "Define what kinds of knowledge you track. Opinions, journals, references, lore",
+      codeComponent: ConceptCodeEntity,
+      icon: FileCode,
+      accent: "from-amber-500/20 to-orange-500/20",
+      iconColor: "text-amber-600 dark:text-amber-400",
     },
     {
       name: "Entries",
-      description:
-        "Create instances of your entities. Timestamped, typed, validated. Plain text that actually means something.",
-      example: `create opinion "Tabs > Spaces"
-  confidence: "high"
-  
-  # Claim
-  Tabs let everyone choose.`,
-      color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+      number: "02",
+      description: "Create instances of your entities. Timestamped, typed, validated. Plain text.",
+      codeComponent: ConceptCodeEntry,
+      icon: Terminal,
+      accent: "from-blue-500/20 to-cyan-500/20",
+      iconColor: "text-blue-600 dark:text-blue-400",
     },
     {
       name: "Links",
+      number: "03",
       description:
-        "Connect your thoughts with ^references. Build a personal knowledge graph without leaving plain text.",
-      example: `related: ^clean-code, ^pragmatic
-subject: ^self`,
-      color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        "Connect your thoughts with ^references. Build an organized knowledge graph without leaving plain text.",
+      codeComponent: ConceptCodeLinks,
+      icon: Link2,
+      accent: "from-emerald-500/20 to-teal-500/20",
+      iconColor: "text-emerald-600 dark:text-emerald-400",
     },
     {
       name: "Syntheses",
+      number: "04",
       description:
         "Query your knowledge and prompt AI to synthesize. Scattered thoughts become coherent understanding.",
-      example: `define-synthesis "My Philosophy"
-  sources: opinion where #coding
-  
-  # Prompt
-  Synthesize my opinions.`,
-      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+      codeComponent: ConceptCodeSynthesis,
+      icon: Wand2,
+      accent: "from-violet-500/20 to-purple-500/20",
+      iconColor: "text-violet-600 dark:text-violet-400",
     },
   ];
 
   return (
-    <section className="relative w-full py-16 md:py-24">
-      <div className="mx-auto max-w-6xl px-4 md:px-8">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold md:text-4xl">Four Simple Concepts</h2>
-          <p className="text-muted-foreground text-lg">
-            That's it. Learn these and you know Thalo.
-          </p>
+    <section className="relative w-full py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <div className="mb-16">
+          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+            — CORE CONCEPTS
+          </span>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <h2 className="max-w-xl text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
+              Four concepts, <span className="italic">infinite possibilities</span>
+            </h2>
+            <p className="max-w-sm text-muted-foreground">Learn these and you know Thalo.</p>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {concepts.map((concept) => (
             <Card
               key={concept.name}
-              className="overflow-hidden border-2 transition-all hover:border-primary/30"
+              className="group relative h-full overflow-hidden border-2 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
             >
-              <CardContent className="p-0">
-                <div className="p-6">
-                  <div
-                    className={`mb-3 inline-flex rounded-full px-3 py-1 text-sm font-semibold ${concept.color}`}
-                  >
-                    {concept.name}
+              {/* Gradient accent on hover */}
+              <div
+                className={`absolute inset-0 bg-linear-to-br ${concept.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+              />
+
+              <CardContent className="relative flex h-full flex-col p-0">
+                <div className="flex-1 p-6">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex size-10 items-center justify-center rounded-lg bg-muted ${concept.iconColor}`}
+                      >
+                        <concept.icon className="size-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold tracking-tight">{concept.name}</h3>
+                      </div>
+                    </div>
+                    <span className="font-mono text-2xl font-bold text-muted-foreground/30">
+                      {concept.number}
+                    </span>
                   </div>
-                  <p className="text-muted-foreground">{concept.description}</p>
+                  <p className="leading-relaxed text-muted-foreground">{concept.description}</p>
                 </div>
-                <div className="border-t bg-muted/30 p-4">
-                  <pre className="overflow-x-auto text-xs leading-relaxed">
-                    <code className="font-mono text-foreground/80">{concept.example}</code>
-                  </pre>
+
+                <div className="border-t border-border/50 bg-muted/30 p-4">
+                  <concept.codeComponent />
                 </div>
               </CardContent>
             </Card>
@@ -336,56 +536,58 @@ function Tooling() {
   const tools = [
     {
       name: "CLI",
-      status: "Alpha",
       description: "Initialize, validate, actualize syntheses",
-      icon: "⌨️",
+      icon: Terminal,
     },
     {
       name: "LSP",
-      status: "Alpha",
       description: "Autocomplete, diagnostics, go-to-definition",
-      icon: "🔧",
+      icon: FileCode,
     },
     {
       name: "VSCode",
-      status: "Alpha",
       description: "Syntax highlighting + LSP integration",
-      icon: "📝",
+      icon: Wand2,
     },
     {
-      name: "Prettier",
-      status: "Alpha",
-      description: "Auto-format your .thalo files",
-      icon: "✨",
+      name: "Formatting",
+      description: "Auto-format your Thalo files with Prettier",
+      icon: Sparkles,
     },
     {
       name: "Tree-sitter",
-      status: "Alpha",
       description: "Full parser for building more tools",
-      icon: "🌲",
+      icon: TreePine,
     },
   ];
 
   return (
-    <section className="relative w-full border-t bg-muted/30 py-16 md:py-24">
-      <div className="mx-auto max-w-5xl px-4 md:px-8">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold md:text-4xl">Real Tooling, Day One</h2>
-          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+    <section className="relative w-full overflow-hidden border-t border-border/50 bg-muted/20 py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <div className="mb-16 text-center">
+          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+            — TOOLING
+          </span>
+          <h2 className="mx-auto max-w-3xl text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
+            Real tools, <span className="italic">from day one</span>
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
             A language is only as good as its tooling. Thalo ships with everything you need.
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {tools.map((tool) => (
-            <Card key={tool.name} className="text-center">
-              <CardContent className="p-5">
-                <div className="mb-3 text-3xl">{tool.icon}</div>
-                <div className="mb-1 font-semibold">{tool.name}</div>
-                <div className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  {tool.status}
+            <Card
+              key={tool.name}
+              className="group h-full border-2 border-transparent bg-card/80 transition-all duration-300 hover:border-primary/20 hover:shadow-md"
+            >
+              <CardContent className="flex h-full flex-col items-center p-6 text-center">
+                <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+                  <tool.icon className="size-6" />
                 </div>
-                <div className="text-xs text-muted-foreground">{tool.description}</div>
+                <h3 className="mb-1 font-semibold tracking-tight">{tool.name}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{tool.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -396,38 +598,70 @@ function Tooling() {
 }
 
 function Philosophy() {
+  const principles = [
+    {
+      headline: "Plain text is the universal interface",
+      body: "Everything reads it. Everything writes it. Git diffs it. grep searches it. AI generates it.",
+    },
+    {
+      headline: "Structure enables thinking",
+      body: "When your thoughts have shape, you can see patterns, find contradictions, and build on what you know.",
+    },
+    {
+      headline: "AI is your co-pilot, not your replacement",
+      body: "You write in collaboration with AI. AI helps you synthesize, query, and discover. Your knowledge, augmented.",
+    },
+    {
+      headline: "Your notes should outlive every app",
+      body: "Thalo files are just text. No cloud required. No subscription. No vendor. Just you and your thoughts, forever.",
+    },
+  ];
+
   return (
-    <section className="relative w-full py-16 md:py-24">
-      <div className="mx-auto max-w-4xl px-4 md:px-8">
-        <Card className="overflow-hidden border-2 border-primary/20">
-          <CardContent className="p-8 md:p-12">
-            <h2 className="mb-6 text-3xl font-bold md:text-4xl">The Philosophy</h2>
-            <div className="space-y-6 text-lg leading-relaxed text-muted-foreground">
-              <p>
-                <strong className="text-foreground">Plain text is the universal interface.</strong>{" "}
-                Everything reads it. Everything writes it. Git diffs it. grep searches it. AI
-                generates it.
-              </p>
-              <p>
-                <strong className="text-foreground">Structure enables thinking.</strong> When your
-                thoughts have shape, you can see patterns, find contradictions, and build on what
-                you know.
-              </p>
-              <p>
-                <strong className="text-foreground">
-                  AI is your co-pilot, not your replacement.
-                </strong>{" "}
-                You write the entries. AI helps you synthesize, query, and discover. Your knowledge,
-                augmented.
-              </p>
-              <p>
-                <strong className="text-foreground">Your notes should outlive every app.</strong>{" "}
-                Thalo files are just text. No cloud required. No subscription. No vendor. Just you
-                and your thoughts, forever.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+    <section className="relative w-full py-24 md:py-32">
+      <div className="mx-auto max-w-6xl px-6 md:px-8">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          {/* Left: Large typography */}
+          <div className="flex flex-col justify-center">
+            <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+              — PHILOSOPHY
+            </span>
+            <h2 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+              A manifesto for{" "}
+              <span className="relative">
+                <span className="italic text-primary">durable</span>
+                <svg
+                  className="absolute -bottom-1 left-0 h-2 w-full text-primary/30"
+                  viewBox="0 0 100 8"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M0 7 Q 25 0, 50 7 T 100 7"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </span>{" "}
+              knowledge
+            </h2>
+          </div>
+
+          {/* Right: Principles list */}
+          <div className="space-y-8">
+            {principles.map((principle) => (
+              <div key={principle.headline} className="group relative pl-6">
+                {/* Vertical accent line */}
+                <div className="absolute left-0 top-0 h-full w-0.5 bg-border transition-colors duration-300 group-hover:bg-primary" />
+
+                <h3 className="mb-2 text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
+                  {principle.headline}
+                </h3>
+                <p className="leading-relaxed text-muted-foreground">{principle.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -435,46 +669,80 @@ function Philosophy() {
 
 function GetStarted() {
   return (
-    <section className="relative w-full border-t py-16 md:py-24">
-      <div className="mx-auto max-w-4xl px-4 text-center md:px-8">
-        <h2 className="mb-4 text-3xl font-bold md:text-4xl">Start in 30 Seconds</h2>
-        <p className="text-muted-foreground mb-8 text-lg">
-          Install the CLI, init a knowledge base, start writing.
-        </p>
+    <section className="relative w-full overflow-hidden border-t border-border/50 py-24 md:py-32">
+      {/* Decorative background elements */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-64 -top-64 size-[500px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-64 -right-64 size-[500px] rounded-full bg-primary/5 blur-3xl" />
+      </div>
 
-        <Card className="mb-8 border-2 bg-card/80 text-left backdrop-blur-sm">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-2 border-b border-border/50 px-4 py-2 text-xs text-muted-foreground">
-              <span className="size-3 rounded-full bg-red-400/80"></span>
-              <span className="size-3 rounded-full bg-yellow-400/80"></span>
-              <span className="size-3 rounded-full bg-green-400/80"></span>
-              <span className="ml-2 font-mono">terminal</span>
-            </div>
-            <pre className="overflow-x-auto p-4 text-sm">
-              <code className="font-mono">
-                <span className="text-muted-foreground"># Install</span>
-                {`
-pnpm add -g @rejot-dev/thalo-cli
+      <div className="relative mx-auto max-w-5xl px-6 md:px-8">
+        <div className="mb-12 text-center">
+          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+            — GET STARTED
+          </span>
+          <h2 className="mx-auto max-w-2xl text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
+            From zero to structured knowledge{" "}
+            <span className="italic text-primary">in 30 seconds</span>
+          </h2>
+        </div>
 
-`}
-                <span className="text-muted-foreground"># Initialize</span>
-                {`
-thalo init
+        <div className="mb-12">
+          <Card className="relative overflow-hidden border-2 border-primary/20 bg-card shadow-2xl shadow-primary/5">
+            {/* Gradient accent */}
+            <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent" />
 
-`}
-                <span className="text-muted-foreground"># Validate</span>
-                {`
-thalo check`}
-              </code>
-            </pre>
-          </CardContent>
-        </Card>
+            <CardContent className="relative p-0">
+              <div className="flex items-center gap-2 border-b border-border/50 bg-muted/30 px-4 py-3">
+                <div className="flex gap-1.5">
+                  <span className="size-3 rounded-full bg-red-400/80" />
+                  <span className="size-3 rounded-full bg-yellow-400/80" />
+                  <span className="size-3 rounded-full bg-green-400/80" />
+                </div>
+                <span className="ml-2 font-mono text-xs text-muted-foreground">terminal</span>
+              </div>
+              <pre className="overflow-x-auto p-6 text-sm md:text-base">
+                <code className="font-mono leading-relaxed">
+                  <span className="text-muted-foreground"># Install the CLI</span>
+                  {"\n"}
+                  <span className="text-primary">pnpm</span>
+                  {" add -g @rejot-dev/thalo-cli "}
+                  <span className="inline-flex translate-y-[-2px] items-center gap-1.5 align-middle rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
+                    <span className="size-1.5 rounded-full bg-amber-500" />
+                    coming soon — not published yet
+                  </span>
+                  {"\n\n"}
+                  <span className="text-muted-foreground"># Initialize your knowledge base</span>
+                  {"\n"}
+                  <span className="text-primary">thalo</span>
+                  {" init\n\n"}
+                  <span className="text-muted-foreground"># Validate your entries</span>
+                  {"\n"}
+                  <span className="text-primary">thalo</span>
+                  {" check"}
+                </code>
+              </pre>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button asChild size="lg" className="h-12 px-8 text-base">
-            <Link to="/docs">Read the Docs</Link>
+          <Button
+            asChild
+            size="lg"
+            className="h-12 rounded-full px-8 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          >
+            <Link to="/docs" className="flex items-center gap-2">
+              Read the Docs
+              <ArrowRight className="size-4" />
+            </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-12 rounded-full border-2 px-8 text-base font-semibold"
+          >
             <a
               href="https://github.com/rejot-dev/thalo"
               target="_blank"

@@ -2,9 +2,8 @@
 
 ## Overview
 
-Thalo (Personal Thought And Lore Language) is a structured language for capturing personal
-knowledge, thoughts, and references. This monorepo contains the parser, tooling, and editor
-integrations.
+Thalo (Thought And Lore Language) is a structured language for capturing personal knowledge,
+thoughts, and references. This monorepo contains the parser, tooling, and editor integrations.
 
 ## Setup
 

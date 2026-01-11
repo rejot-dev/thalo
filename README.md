@@ -1,6 +1,6 @@
 # Thalo
 
-**Personal Thought And Lore Language**
+**Thought And Lore Language**
 
 A plain-text format for your knowledge. Structured enough to query, simple enough to jot.
 
