@@ -2,15 +2,20 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   Workspace,
-  executeQueries,
   formatQuery,
   findAllSyntheses,
   findLatestActualize,
-  getActualizeUpdatedTimestamp,
   findEntryFile,
   getEntrySourceText,
   type InstanceEntry,
+  type ActualizeInfo,
 } from "@rejot-dev/thalo";
+import {
+  createChangeTracker,
+  parseCheckpoint,
+  formatCheckpoint,
+  type ChangeMarker,
+} from "@rejot-dev/thalo/change-tracker";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 
@@ -91,6 +96,18 @@ function loadWorkspace(files: string[]): Workspace {
 }
 
 /**
+ * Get the change marker from an actualize entry.
+ * Reads from the checkpoint metadata field.
+ */
+function getActualizeMarker(actualize: ActualizeInfo | null): ChangeMarker | null {
+  if (!actualize) {
+    return null;
+  }
+  const checkpoint = actualize.entry.metadata.find((m) => m.key.value === "checkpoint");
+  return parseCheckpoint(checkpoint?.value.raw);
+}
+
+/**
  * Get raw entry text from source file (CLI-specific with filesystem access)
  */
 function getEntryRawText(entry: InstanceEntry, file: string): string {
@@ -114,7 +131,7 @@ function relativePath(filePath: string): string {
   return filePath;
 }
 
-function actualizeAction(ctx: CommandContext): void {
+async function actualizeAction(ctx: CommandContext): Promise<void> {
   const { args } = ctx;
 
   // Determine target paths
@@ -129,6 +146,14 @@ function actualizeAction(ctx: CommandContext): void {
 
   const workspace = loadWorkspace(files);
 
+  // Create change tracker (auto-detects git)
+  const tracker = await createChangeTracker({ cwd: process.cwd() });
+  const isGitMode = tracker.type === "git";
+
+  if (isGitMode) {
+    console.log(pc.dim("Using git-based change tracking"));
+  }
+
   // Find all synthesis definitions
   const syntheses = findAllSyntheses(workspace);
 
@@ -142,12 +167,14 @@ function actualizeAction(ctx: CommandContext): void {
   for (const synthesis of syntheses) {
     // Find latest actualize entry
     const lastActualize = findLatestActualize(workspace, synthesis.linkId);
-    const lastUpdated = getActualizeUpdatedTimestamp(lastActualize);
+    const lastMarker = getActualizeMarker(lastActualize);
 
-    // Query for new entries
-    const newEntries = executeQueries(workspace, synthesis.sources, {
-      afterTimestamp: lastUpdated ?? undefined,
-    });
+    // Get changed entries using the tracker
+    const { entries: newEntries, currentMarker } = await tracker.getChangedEntries(
+      workspace,
+      synthesis.sources,
+      lastMarker,
+    );
 
     if (newEntries.length === 0) {
       console.log(pc.green(`✓ ${relativePath(synthesis.file)}: ${synthesis.title} - up to date`));
@@ -163,8 +190,12 @@ function actualizeAction(ctx: CommandContext): void {
     );
     console.log(`Target: ${pc.yellow(`^${synthesis.linkId}`)}`);
     console.log(`Sources: ${synthesis.sources.map(formatQuery).join(", ")}`);
-    if (lastUpdated) {
-      console.log(`Last updated: ${pc.dim(lastUpdated)}`);
+    if (lastMarker) {
+      const markerDisplay =
+        lastMarker.type === "git"
+          ? `git:${lastMarker.value.slice(0, 7)}`
+          : formatCheckpoint(lastMarker);
+      console.log(`Last checkpoint: ${pc.dim(markerDisplay)}`);
     }
 
     // Output prompt
@@ -174,7 +205,7 @@ function actualizeAction(ctx: CommandContext): void {
 
     // Output new entries
     console.log();
-    console.log(pc.bold(`--- New Entries (${newEntries.length}) ---`));
+    console.log(pc.bold(`--- Changed Entries (${newEntries.length}) ---`));
     for (const entry of newEntries) {
       const entryFile = findEntryFile(workspace, entry);
       console.log();
@@ -185,7 +216,7 @@ function actualizeAction(ctx: CommandContext): void {
       console.log(getEntryRawText(entry, entryFile));
     }
 
-    // Output instructions
+    // Output instructions with checkpoint metadata
     console.log();
     console.log(pc.bold("--- Instructions ---"));
     console.log(
@@ -195,7 +226,10 @@ function actualizeAction(ctx: CommandContext): void {
     console.log(
       `3. Append to the thalo block: ${pc.cyan(`actualize-synthesis ^${synthesis.linkId}`)}`,
     );
-    console.log(`   with metadata: ${pc.cyan("updated: <current-timestamp>")}`);
+
+    // Format checkpoint
+    const checkpointValue = formatCheckpoint(currentMarker);
+    console.log(`   with metadata: ${pc.cyan(`checkpoint: "${checkpointValue}"`)}`);
     console.log();
     console.log(pc.dim("─".repeat(60)));
   }

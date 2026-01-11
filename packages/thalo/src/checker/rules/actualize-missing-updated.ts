@@ -19,11 +19,11 @@ const visitor: RuleVisitor = {
   visitActualizeEntry(entry, ctx) {
     const target = entry.header.target.id;
     const timestamp = formatTimestamp(entry.header.timestamp);
-    const updatedField = entry.metadata.find((m) => m.key.value === "updated");
+    const checkpointField = entry.metadata.find((m) => m.key.value === "checkpoint");
 
-    if (!updatedField) {
+    if (!checkpointField) {
       ctx.report({
-        message: `Actualize entry is missing 'updated:' field. Add 'updated: ${timestamp}' to track when this synthesis was last run.`,
+        message: `Actualize entry is missing checkpoint. Add 'checkpoint: "ts:${timestamp}"' or 'checkpoint: "git:<hash>"' to track when this synthesis was last run.`,
         file: ctx.file,
         location: entry.location,
         sourceMap: ctx.sourceMap,
@@ -34,12 +34,12 @@ const visitor: RuleVisitor = {
 };
 
 /**
- * Check that actualize-synthesis entries have an updated field
+ * Check that actualize-synthesis entries have a checkpoint field for tracking
  */
 export const actualizeMissingUpdatedRule: Rule = {
   code: "actualize-missing-updated",
-  name: "Actualize Missing Updated",
-  description: "An actualize-synthesis entry must have an 'updated:' field with a timestamp",
+  name: "Actualize Missing Checkpoint",
+  description: "An actualize-synthesis entry must have a 'checkpoint:' field for tracking",
   category,
   defaultSeverity: "error",
   dependencies: { scope: "entry" },

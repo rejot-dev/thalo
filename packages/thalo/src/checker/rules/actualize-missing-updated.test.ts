@@ -9,7 +9,7 @@ describe("actualize-missing-updated rule", () => {
     workspace = new Workspace();
   });
 
-  it("reports when actualize has no updated field", () => {
+  it("reports when actualize has no checkpoint field", () => {
     workspace.addDocument(
       `2026-01-07T10:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
@@ -27,10 +27,10 @@ describe("actualize-missing-updated rule", () => {
 
     expect(error).toBeDefined();
     expect(error!.severity).toBe("error");
-    expect(error!.message).toContain("missing 'updated:' field");
+    expect(error!.message).toContain("missing checkpoint");
   });
 
-  it("does not report when actualize has updated field", () => {
+  it("does not report when actualize has checkpoint field with timestamp", () => {
     workspace.addDocument(
       `2026-01-07T10:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self
@@ -39,7 +39,27 @@ describe("actualize-missing-updated rule", () => {
   Generate.
 
 2026-01-07T12:00Z actualize-synthesis ^profile
-  updated: 2026-01-07T12:00Z
+  checkpoint: "ts:2026-01-07T12:00Z"
+`,
+      { filename: "profile.thalo" },
+    );
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "actualize-missing-updated");
+
+    expect(error).toBeUndefined();
+  });
+
+  it("does not report when actualize has checkpoint field with git commit", () => {
+    workspace.addDocument(
+      `2026-01-07T10:00Z define-synthesis "My Profile" ^profile
+  sources: lore where subject = ^self
+
+  # Prompt
+  Generate.
+
+2026-01-07T12:00Z actualize-synthesis ^profile
+  checkpoint: "git:abc123def456"
 `,
       { filename: "profile.thalo" },
     );
@@ -67,10 +87,10 @@ describe("actualize-missing-updated rule", () => {
     const error = diagnostics.find((d) => d.code === "actualize-missing-updated");
 
     expect(error).toBeDefined();
-    expect(error!.message).toContain("2026-01-07T15:30Z");
+    expect(error!.message).toContain("ts:2026-01-07T15:30Z");
   });
 
-  it("reports for multiple actualize entries missing updated", () => {
+  it("reports for multiple actualize entries missing checkpoint", () => {
     workspace.addDocument(
       `2026-01-07T10:00Z define-synthesis "My Profile" ^profile
   sources: lore where subject = ^self

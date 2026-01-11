@@ -81,10 +81,14 @@ function extractSeverity(body: string): string {
 }
 
 function extractDescription(body: string): string | null {
-  // Extract the description text between the bold title and the first <details> block
-  // Pattern: **Title.**\n\nDescription text here.\n\n<details>
+  // Extract the description text between the bold title and various end markers.
+  // Handles formats:
+  // 1. **Title.**\n\nDescription\n\n<details> (blank line after title, has details)
+  // 2. **Title.**  \n- Bullet\n\n<details> (soft break, has details)
+  // 3. **Title.**\n\nDescription\n\n<!-- comment --> (no details block)
+  // 4. **Title.**\n\nDescription\n\nAlso applies to: (no details, has footer)
   const match = body.match(
-    /\*\*[^*]+\*\*\s*\n\n([\s\S]*?)(?=\n\n<details>|\n\n<!-- suggestion_start|\n\n<!-- fingerprinting)/,
+    /\*\*[^*]+\*\*[ \t]*\n+([^\n][\s\S]*?)(?=\n\n+<details>|\n\n+<!-- |\n\n+Also applies to:)/,
   );
   if (match) {
     const desc = match[1].trim();

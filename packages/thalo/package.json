@@ -43,6 +43,11 @@
       "development": "./src/services/index.ts",
       "types": "./dist/services/index.d.ts",
       "default": "./dist/services/index.js"
+    },
+    "./change-tracker": {
+      "development": "./src/services/change-tracker/index.ts",
+      "types": "./dist/services/change-tracker/index.d.ts",
+      "default": "./dist/services/change-tracker/index.js"
     }
   },
   "main": "./dist/index.js",

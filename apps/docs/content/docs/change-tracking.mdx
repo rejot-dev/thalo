@@ -1,0 +1,255 @@
+---
+title: Change Tracking
+description: How Thalo tracks changes for synthesis actualization
+---
+
+# Change Tracking
+
+When you define a synthesis, Thalo needs to know which entries have changed since the last time you
+actualized it. This page explains how change tracking works and the different tracking modes.
+
+## Overview
+
+Change tracking determines which entries need to be included when you run `thalo actualize`. Instead
+of re-processing all entries every time, Thalo tracks a "checkpoint" that represents the last point
+in time (or git commit) when the synthesis was run.
+
+## Tracking Modes
+
+Thalo supports two tracking modes, identified by the checkpoint prefix:
+
+### Git-Based Tracking (`git:`) - Recommended
+
+When you're in a git repository, Thalo automatically uses git commit hashes to track changes. This
+is the recommended approach because it:
+
+- Detects **in-place edits** to existing entries
+- Handles **file renames** automatically
+- Works with your existing git workflow
+- Survives rebasing and history rewrites (with graceful fallback)
+
+When git tracking is active, you'll see:
+
+```
+Using git-based change tracking
+```
+
+### Timestamp-Based Tracking (`ts:`) - Fallback
+
+When not in a git repository, Thalo falls back to timestamp-based tracking. This mode:
+
+- Only detects **new entries** (entries with timestamps after the checkpoint)
+- Cannot detect modifications to existing entries
+- Is simpler but less powerful
+
+## How It Works
+
+### The Actualize Flow
+
+1. **Find syntheses** - Thalo locates all `define-synthesis` entries
+2. **Read checkpoint** - For each synthesis, find the latest `actualize-synthesis` entry and read
+   its checkpoint
+3. **Find changes** - Compare current entries against the checkpoint to find what changed
+4. **Output prompt** - Generate a prompt with all changed entries
+
+### Checkpoints in actualize-synthesis
+
+When you record an actualization, you add a checkpoint field:
+
+```text
+2026-01-08T15:00Z actualize-synthesis ^my-profile
+  checkpoint: "git:abc123def456"
+```
+
+Or for timestamp-based tracking:
+
+```text
+2026-01-08T15:00Z actualize-synthesis ^my-profile
+  checkpoint: "ts:2026-01-08T15:00Z"
+```
+
+The checkpoint format is `provider:value` where:
+
+- `git:` - Git commit hash
+- `ts:` - ISO timestamp
+
+This extensible format allows for future providers (e.g., `db:` for database tracking).
+
+### Git Change Detection
+
+When using git tracking, Thalo:
+
+1. Gets the list of files changed since the checkpoint commit
+2. For each changed `.thalo` file:
+   - Retrieves the file content at the checkpoint commit
+   - Parses both old and new versions
+   - Compares entries by identity (link ID or timestamp)
+   - Reports entries that are new or modified
+
+### Entry Identity
+
+Thalo matches entries across commits using:
+
+1. **Link ID** (primary) - If an entry has a `^link-id`, that's its identity
+2. **Timestamp + Type** (fallback) - For entries without links, uses timestamp and entry type
+
+This means you can modify an entry's content and Thalo will correctly identify it as "changed"
+rather than "deleted and added".
+
+## Configuration
+
+### Forcing a Tracking Mode
+
+In most cases, Thalo auto-detects the best mode. However, the API allows forcing a specific mode:
+
+```typescript
+import { createChangeTracker } from "@rejot-dev/thalo/change-tracker";
+
+// Force timestamp tracking even in a git repo
+const tracker = await createChangeTracker({
+  preferredType: "timestamp",
+});
+
+// Force git tracking (throws if not in a git repo)
+const gitTracker = await createChangeTracker({
+  preferredType: "git",
+});
+```
+
+### Graceful Fallbacks
+
+The git tracker handles edge cases gracefully:
+
+- **Commit doesn't exist** (rebased/squashed) - Returns all matching entries
+- **Switching from timestamp to git** - Returns all matching entries for the first git-tracked run
+- **Not in a git repo** - Automatically falls back to timestamp tracking
+
+## Best Practices
+
+### Use Link IDs for Important Entries
+
+Entries you plan to modify should have link IDs:
+
+```text
+2026-01-08T10:00Z create lore "My evolving thought" ^evolving-thought
+  subject: ^self
+
+  # Content
+  This entry might be updated over time...
+```
+
+Without a link ID, modifications create new entries instead of updating existing ones.
+
+### Commit Before Actualizing
+
+For git tracking to work correctly, commit your changes before running `thalo actualize`:
+
+```bash
+# 1. Make changes to entries
+vim entries.thalo
+
+# 2. Commit the changes
+git add entries.thalo
+git commit -m "Add new entries"
+
+# 3. Now actualize
+thalo actualize
+```
+
+The checkpoint stored will be the commit hash at actualization time.
+
+## Troubleshooting
+
+### "All entries showing as changed"
+
+This happens when:
+
+- The checkpoint commit doesn't exist (rebased away)
+- You switched from timestamp to git tracking
+- First run of a synthesis (no previous checkpoint)
+
+This is expected behavior - Thalo returns all matching entries as a safe fallback.
+
+### "Modified entries not detected"
+
+If you're using timestamp tracking (not in a git repo), modifications to existing entries won't be
+detected. Only new entries with later timestamps appear.
+
+Solution: Use git for your Thalo files to get full change detection.
+
+### "checkpoint must be quoted"
+
+The `checkpoint` metadata value must be a quoted string:
+
+```text
+# Correct
+checkpoint: "git:abc123def456"
+
+# Incorrect - will not parse
+checkpoint: git:abc123def456
+```
+
+## API Reference
+
+### ChangeTracker Interface
+
+```typescript
+interface ChangeTracker {
+  /** Type of tracker: "git" or "ts" */
+  readonly type: "git" | "ts";
+
+  /** Get the current position marker */
+  getCurrentMarker(): Promise<ChangeMarker>;
+
+  /** Get entries changed since a marker */
+  getChangedEntries(
+    workspace: Workspace,
+    queries: Query[],
+    marker: ChangeMarker | null,
+  ): Promise<ChangedEntriesResult>;
+}
+```
+
+### ChangeMarker Type
+
+```typescript
+interface ChangeMarker {
+  type: "git" | "ts";
+  value: string; // commit hash or ISO timestamp
+}
+```
+
+### Creating a Tracker
+
+```typescript
+import { createChangeTracker } from "@rejot-dev/thalo/change-tracker";
+
+// Auto-detect (recommended)
+const tracker = await createChangeTracker();
+
+// With options
+const trackerWithOptions = await createChangeTracker({
+  cwd: "/path/to/repo",
+  preferredType: "auto", // "auto" | "git" | "timestamp"
+});
+```
+
+### Checkpoint Utilities
+
+```typescript
+import { parseCheckpoint, formatCheckpoint } from "@rejot-dev/thalo/change-tracker";
+
+// Parse a checkpoint string
+const marker = parseCheckpoint('"git:abc123"');
+// → { type: "git", value: "abc123" }
+
+// Format a marker as checkpoint string
+const str = formatCheckpoint({ type: "ts", value: "2026-01-08T15:00Z" });
+// → "ts:2026-01-08T15:00Z"
+```
+
+## Next Steps
+
+- Learn about [syntheses](/docs/syntax#syntheses) in the syntax guide
+- See the [CLI reference](/docs/cli) for the `actualize` command
+- Explore [examples](/docs/examples) of syntheses in action
