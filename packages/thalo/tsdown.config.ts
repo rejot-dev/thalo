@@ -10,6 +10,7 @@ export default defineConfig({
     "./src/schema/index.ts",
     "./src/checker/index.ts",
     "./src/services/index.ts",
+    "./src/services/change-tracker/index.ts",
   ],
   dts: true,
   unbundle: true,
