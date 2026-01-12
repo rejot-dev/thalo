@@ -98,16 +98,23 @@ export function AnimatedTerminal({ className }: AnimatedTerminalProps) {
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [showCursor, setShowCursor] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Cursor blink effect
+  // Cursor blink effect - only when focused
   useEffect(() => {
+    if (!isFocused) {
+      setShowCursor(false);
+      return;
+    }
+
+    setShowCursor(true);
     const interval = setInterval(() => {
       setShowCursor((prev) => !prev);
     }, 530);
     return () => clearInterval(interval);
-  }, []);
+  }, [isFocused]);
 
   // Auto-scroll to bottom when history changes
   useEffect(() => {
@@ -395,6 +402,8 @@ export function AnimatedTerminal({ className }: AnimatedTerminalProps) {
                 setHistoryIndex(-1); // Reset history navigation when typing
               }}
               onKeyDown={handleKeyDown}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               disabled={isRunning}
               className={cn(
                 "relative w-full bg-transparent text-zinc-100 outline-none",
