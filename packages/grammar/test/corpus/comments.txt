@@ -11,7 +11,11 @@ comment line after metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -36,7 +40,11 @@ comment line between metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -66,7 +74,11 @@ multiple comment lines
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -98,7 +110,11 @@ unindented comment lines between metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -131,7 +147,11 @@ comment line before content
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -164,7 +184,11 @@ comment line in content section
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -200,7 +224,11 @@ comment line between content sections
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -237,7 +265,11 @@ comment only in metadata section - allows content after
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -263,7 +295,11 @@ inline comment after metadata value (breaks parsing)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -288,7 +324,11 @@ comment at end of entry
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -312,7 +352,11 @@ comment with special characters
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -337,7 +381,11 @@ unindented comment before entry
   (comment)
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -362,7 +410,11 @@ unindented comment between entries
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -373,7 +425,11 @@ unindented comment between entries
   (comment)
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -396,7 +452,11 @@ unindented comment at end of file
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -422,7 +482,11 @@ multiple unindented comments
   (comment)
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -444,7 +508,11 @@ unindented comment directly after entry (no blank line)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -471,7 +539,11 @@ mixed indented and unindented comments
   (comment)
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -498,7 +570,11 @@ unindented comment in metadata ends entry
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -509,7 +585,11 @@ unindented comment in metadata ends entry
   (comment)
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)

@@ -11,7 +11,11 @@ simple define-entity with metadata
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -34,7 +38,11 @@ define-entity with optional field
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -58,7 +66,11 @@ field with description
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -83,7 +95,11 @@ literal union type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -109,7 +125,11 @@ primitive union type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -134,7 +154,11 @@ array type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -158,7 +182,11 @@ array of union type (parenthesized)
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -186,7 +214,11 @@ array of literals union
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -214,7 +246,11 @@ array of string type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -238,7 +274,11 @@ array of date type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -262,7 +302,11 @@ array of date-range type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -286,7 +330,11 @@ default value with literal
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -314,7 +362,11 @@ default value with link
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -340,7 +392,11 @@ default value with datetime
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -366,7 +422,11 @@ default value with string type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -393,13 +453,19 @@ sections block
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
       (sections_block
-        (section_definition (section_name))
-        (section_definition (section_name))))))
+        (section_definition
+          (section_name))
+        (section_definition
+          (section_name))))))
 
 ==================
 section names with spaces
@@ -415,12 +481,17 @@ section names with spaces
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
       (sections_block
-        (section_definition (section_name))
+        (section_definition
+          (section_name))
         (section_definition
           (section_name)
           (optional_marker)
@@ -440,12 +511,17 @@ section names with mixed case words
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
       (sections_block
-        (section_definition (section_name))
+        (section_definition
+          (section_name))
         (section_definition
           (section_name)
           (optional_marker))))))
@@ -464,7 +540,11 @@ optional section with description
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -497,7 +577,11 @@ complete define-entity
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -561,7 +645,11 @@ blank line between metadata and sections
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -587,7 +675,11 @@ alter-entity adding metadata
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -611,7 +703,11 @@ alter-entity removing metadata
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -633,7 +729,11 @@ alter-entity adding sections
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -656,7 +756,11 @@ alter-entity removing sections
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -684,7 +788,11 @@ alter-entity all block types
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -717,7 +825,11 @@ date-range type
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)

@@ -962,10 +962,72 @@
       "value": "\\r?\\n"
     },
     "timestamp": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "date",
+          "content": {
+            "type": "SYMBOL",
+            "name": "timestamp_date"
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "timestamp_t"
+        },
+        {
+          "type": "FIELD",
+          "name": "time",
+          "content": {
+            "type": "SYMBOL",
+            "name": "timestamp_time"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "tz",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "timestamp_tz"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "timestamp_date": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "[12]\\d{3}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d(Z|[+-][0-2]\\d:[0-5]\\d)"
+        "value": "[12]\\d{3}-[01]\\d-[0-3]\\d"
+      }
+    },
+    "timestamp_t": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "STRING",
+        "value": "T"
+      }
+    },
+    "timestamp_time": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[0-2]\\d:[0-5]\\d"
+      }
+    },
+    "timestamp_tz": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "Z|[+-][0-2]\\d:[0-5]\\d"
       }
     },
     "title": {

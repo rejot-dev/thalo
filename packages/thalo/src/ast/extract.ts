@@ -570,6 +570,10 @@ export function extractArrayType(node: SyntaxNode): ArrayType | SyntaxErrorNode<
       throw new Error("Empty paren_type");
     }
     const extracted = extractTypeExpression(innerTypeExpr);
+    // Propagate syntax errors from inner type
+    if (extracted.type === "syntax_error") {
+      return extracted;
+    }
     // paren_type is only valid with union types in arrays
     if (extracted.type !== "union_type") {
       throw new Error(`Unexpected paren_type content: ${extracted.type}`);

@@ -10,7 +10,11 @@ single metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -32,7 +36,11 @@ multiple metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -58,7 +66,11 @@ metadata with quoted value
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -86,7 +98,11 @@ metadata with reference value
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -117,7 +133,11 @@ metadata with date range
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -147,7 +167,11 @@ metadata with hyphenated key
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)

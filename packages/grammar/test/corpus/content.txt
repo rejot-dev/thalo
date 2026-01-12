@@ -14,7 +14,11 @@ content with section header
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -50,7 +54,11 @@ multi-line content under section
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -87,7 +95,11 @@ content with multiple sections
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -121,7 +133,11 @@ content without metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -147,7 +163,11 @@ content at EOF without trailing newline
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -177,7 +197,11 @@ markdown header at EOF without trailing newline
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -203,7 +227,11 @@ content directly after header (no blank line)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -228,7 +256,11 @@ content directly after metadata (no blank line)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)

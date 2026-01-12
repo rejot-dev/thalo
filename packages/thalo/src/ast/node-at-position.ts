@@ -420,6 +420,23 @@ function classifyNode(node: SyntaxNode, point: Point, block: ParsedBlock): NodeC
         sourceMap,
       };
 
+    // Timestamp child nodes - delegate to parent timestamp
+    case "timestamp_date":
+    case "timestamp_t":
+    case "timestamp_time":
+    case "timestamp_tz": {
+      const parent = node.parent;
+      if (parent && parent.type === "timestamp") {
+        return {
+          kind: "timestamp",
+          value: extractTimestamp(parent).value,
+          node: extractTimestamp(parent),
+          sourceMap,
+        };
+      }
+      return { kind: "unknown" };
+    }
+
     case "key":
       return classifyKeyNode(node, sourceMap);
 

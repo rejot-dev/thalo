@@ -720,6 +720,52 @@
     }
   },
   {
+    "type": "timestamp",
+    "named": true,
+    "fields": {
+      "date": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "timestamp_date",
+            "named": true
+          }
+        ]
+      },
+      "time": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "timestamp_time",
+            "named": true
+          }
+        ]
+      },
+      "tz": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "timestamp_tz",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "timestamp_t",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "type_expression",
     "named": true,
     "fields": {},
@@ -961,7 +1007,19 @@
     "named": true
   },
   {
-    "type": "timestamp",
+    "type": "timestamp_date",
+    "named": true
+  },
+  {
+    "type": "timestamp_t",
+    "named": true
+  },
+  {
+    "type": "timestamp_time",
+    "named": true
+  },
+  {
+    "type": "timestamp_tz",
     "named": true
   },
   {
