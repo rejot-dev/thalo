@@ -1,6 +1,6 @@
 import type { SourceFile, Entry, SchemaEntry, Metadata } from "../ast/types.js";
 import type { SourceMap } from "../source-map.js";
-import type { ParsedBlock } from "../parser.js";
+import type { ParsedBlock, GenericTree } from "../parser.shared.js";
 import type {
   SemanticModel,
   LinkIndex,
@@ -20,7 +20,7 @@ export interface AnalyzeOptions {
   /** Source map for position translation */
   sourceMap: SourceMap;
   /** The parsed blocks (containing tree-sitter trees) */
-  blocks: ParsedBlock[];
+  blocks: ParsedBlock<GenericTree>[];
 }
 
 /**
@@ -193,7 +193,7 @@ export function updateSemanticModel(
   newAst: SourceFile,
   newSource: string,
   newSourceMap: SourceMap,
-  newBlocks: ParsedBlock[],
+  newBlocks: ParsedBlock<GenericTree>[],
 ): SemanticUpdateResult {
   const oldAst = model.ast;
   const file = model.file;

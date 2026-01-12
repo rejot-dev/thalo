@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import { getDiagnostics } from "./diagnostics.js";
 
 /**
@@ -14,7 +14,7 @@ describe("getDiagnostics", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
 
     // Add schema definitions for validation
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"

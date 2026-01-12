@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { parseDocument } from "./parser.js";
+import { createWorkspace } from "./parser.native.js";
 import { Workspace } from "./model/workspace.js";
 import { check } from "./checker/check.js";
 import { isIdentityMap } from "./source-map.js";
@@ -76,7 +77,7 @@ describe("SchemaRegistry", () => {
   # Sections
   Summary?
 `;
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     workspace.addDocument(source, { filename: "schema.thalo" });
 
     const schema = workspace.schemaRegistry.get("lore");
@@ -95,7 +96,7 @@ describe("Checker", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
 
     // Add schema definitions
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"

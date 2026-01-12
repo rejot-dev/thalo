@@ -12,7 +12,7 @@ import type {
 } from "../ast/types.js";
 import type { NodeContext } from "../ast/node-at-position.js";
 import { toFileLocation } from "../source-map.js";
-import { isSyntaxError } from "../ast/types.js";
+import { formatTimestamp } from "../formatters.js";
 
 // ===================
 // Types
@@ -26,17 +26,6 @@ export interface HoverResult {
   content: string;
   /** Optional range to highlight (file-absolute) */
   range?: Location;
-}
-
-// ===================
-// Timestamp Formatting
-// ===================
-
-function formatTimestamp(ts: Timestamp): string {
-  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
-  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
-  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
-  return `${date}T${time}${tz}`;
 }
 
 // ===================

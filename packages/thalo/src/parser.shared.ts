@@ -4,15 +4,35 @@
  */
 
 import { createSourceMap, identitySourceMap, type SourceMap } from "./source-map.js";
+import type { SyntaxNode } from "./ast/types.js";
+
+/**
+ * Edit parameters for incremental parsing.
+ */
+export interface TreeEdit {
+  startIndex: number;
+  oldEndIndex: number;
+  newEndIndex: number;
+  startPosition: { row: number; column: number };
+  oldEndPosition: { row: number; column: number };
+  newEndPosition: { row: number; column: number };
+}
 
 /**
  * A generic tree interface that both tree-sitter and web-tree-sitter satisfy.
+ *
+ * Note: Both `Tree` (from tree-sitter) and `Tree` (from web-tree-sitter) have this shape.
+ * The main difference is that web-tree-sitter's SyntaxNode is called "Node", but the
+ * interface is compatible.
+ *
+ * This is a minimal interface that only specifies the properties we actually use.
+ * The actual Tree types have many more properties (language, copy, delete, etc.)
+ * but we don't constrain those to keep the interface flexible.
  */
 export interface GenericTree {
-  rootNode: {
-    type: string;
-    hasError: boolean;
-  };
+  readonly rootNode: SyntaxNode;
+  /** Edit the tree for incremental parsing */
+  edit(edit: TreeEdit): void;
 }
 
 /**

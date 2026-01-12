@@ -1,16 +1,17 @@
-// Main entry point - parser and core types
-export {
-  parseDocument,
-  parseThalo,
-  parseThaloIncremental,
-  type ParsedBlock,
-  type ParsedDocument,
-  type ParseOptions,
-  type FileType,
-} from "./parser.js";
+// Parser types - browser-compatible types only
+// NOTE: For parseDocument/parseThalo functions, use @rejot-dev/thalo/native (Node.js) or @rejot-dev/thalo/web (browser)
+export type {
+  ParsedBlock,
+  ParsedDocument,
+  ParseOptions,
+  FileType,
+  ThaloParser,
+  GenericTree,
+} from "./parser.shared.js";
 
-// Fragment parsing - parse individual expressions
-export { parseFragment, parseQuery, type FragmentType, type ParsedFragment } from "./fragment.js";
+// Fragment parsing - Node.js only (uses native parser)
+// NOTE: For fragment parsing, import directly from @rejot-dev/thalo/native
+export type { FragmentType, ParsedFragment } from "./fragment.js";
 
 // Model classes
 export { Workspace } from "./model/workspace.js";
@@ -112,3 +113,23 @@ export type {
 
 // Constants
 export * from "./constants.js";
+
+// Commands
+export { runCheck, type RunCheckOptions } from "./commands/check.js";
+export type { CheckResult, DiagnosticInfo, DiagnosticSeverity } from "./commands/check.js";
+export { runQuery, parseQueryString, type RunQueryOptions } from "./commands/query.js";
+export type { QueryResult, QueryEntryInfo, QueryConditionInfo } from "./commands/query.js";
+export { runActualize, type RunActualizeOptions } from "./commands/actualize.js";
+export type {
+  ActualizeResult,
+  SynthesisOutputInfo,
+  ActualizeEntryInfo,
+} from "./commands/actualize.js";
+export {
+  formatDiagnostic,
+  formatCheckResult,
+  formatQueryResult,
+  formatQueryResultRaw,
+  formatActualizeResult,
+  type DiagnosticFormat,
+} from "./formatters.js";

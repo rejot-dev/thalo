@@ -1,16 +1,19 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  Workspace,
-  check,
-  type Diagnostic,
+  runCheck,
+  formatDiagnostic as formatDiagnosticPlain,
   type Severity,
   type CheckConfig,
+  type CheckResult,
+  type DiagnosticInfo,
+  type DiagnosticSeverity,
 } from "@rejot-dev/thalo";
+import { createWorkspace } from "@rejot-dev/thalo/native";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 
-type SeverityKey = Exclude<Severity, "off">;
+type SeverityKey = DiagnosticSeverity;
 type OutputFormat = "default" | "json" | "compact" | "github";
 
 const SEVERITY_ORDER: Record<SeverityKey, number> = {
@@ -34,44 +37,24 @@ function relativePath(filePath: string): string {
   return filePath;
 }
 
-function formatDiagnosticDefault(diagnostic: Diagnostic): string {
-  const { location, severity, code, message } = diagnostic;
-  const color = severityColor[severity];
+function formatDiagnosticDefault(d: DiagnosticInfo): string {
+  const color = severityColor[d.severity];
 
-  const line = String(location.startPosition.row + 1);
-  const col = String(location.startPosition.column + 1);
-  const loc = `${line}:${col}`.padEnd(8);
-  const severityLabel = color(severity.padEnd(7));
-  const codeLabel = pc.dim(code);
+  const loc = `${d.line}:${d.column}`.padEnd(8);
+  const severityLabel = color(d.severity.padEnd(7));
+  const codeLabel = pc.dim(d.code);
 
-  return `  ${pc.dim(loc)} ${severityLabel} ${message}  ${codeLabel}`;
+  return `  ${pc.dim(loc)} ${severityLabel} ${d.message}  ${codeLabel}`;
 }
 
-function formatDiagnosticCompact(diagnostic: Diagnostic): string {
-  const { file, location, severity, code, message } = diagnostic;
-  const rel = relativePath(file);
-  const loc = `${rel}:${location.startPosition.row + 1}:${location.startPosition.column + 1}`;
-  return `${loc}: ${severity[0].toUpperCase()} [${code}] ${message}`;
-}
-
-function formatDiagnosticGithub(diagnostic: Diagnostic): string {
-  const { file, location, severity, code, message } = diagnostic;
-  const line = location.startPosition.row + 1;
-  const col = location.startPosition.column + 1;
-  const endLine = location.endPosition.row + 1;
-  const endCol = location.endPosition.column + 1;
-
-  return `::${severity} file=${file},line=${line},col=${col},endLine=${endLine},endColumn=${endCol},title=${code}::${message}`;
-}
-
-function formatDiagnostic(diagnostic: Diagnostic, format: OutputFormat): string {
+function formatDiagnostic(d: DiagnosticInfo, format: OutputFormat): string {
   switch (format) {
     case "compact":
-      return formatDiagnosticCompact(diagnostic);
     case "github":
-      return formatDiagnosticGithub(diagnostic);
+      // Use shared formatter for compact/github formats (no colors needed)
+      return formatDiagnosticPlain(d, format);
     default:
-      return formatDiagnosticDefault(diagnostic);
+      return formatDiagnosticDefault(d);
   }
 }
 
@@ -129,14 +112,11 @@ function resolveFiles(paths: string[]): string[] {
 
 interface RunResult {
   files: string[];
-  diagnostics: Diagnostic[];
-  errorCount: number;
-  warningCount: number;
-  infoCount: number;
+  result: CheckResult;
 }
 
-function runCheck(files: string[], config: CheckConfig): RunResult {
-  const workspace = new Workspace();
+function executeCheck(files: string[], config: CheckConfig): RunResult {
+  const workspace = createWorkspace();
 
   for (const file of files) {
     try {
@@ -147,23 +127,9 @@ function runCheck(files: string[], config: CheckConfig): RunResult {
     }
   }
 
-  const diagnostics = check(workspace, config);
+  const result = runCheck(workspace, { config });
 
-  diagnostics.sort((a: Diagnostic, b: Diagnostic) => {
-    if (a.file !== b.file) {
-      return a.file.localeCompare(b.file);
-    }
-    if (a.location.startPosition.row !== b.location.startPosition.row) {
-      return a.location.startPosition.row - b.location.startPosition.row;
-    }
-    return a.location.startPosition.column - b.location.startPosition.column;
-  });
-
-  const errorCount = diagnostics.filter((d) => d.severity === "error").length;
-  const warningCount = diagnostics.filter((d) => d.severity === "warning").length;
-  const infoCount = diagnostics.filter((d) => d.severity === "info").length;
-
-  return { files, diagnostics, errorCount, warningCount, infoCount };
+  return { files, result };
 }
 
 interface OutputOptions {
@@ -171,11 +137,20 @@ interface OutputOptions {
   severity: SeverityKey;
 }
 
-function outputResults(result: RunResult, options: OutputOptions): void {
-  const { diagnostics, errorCount, warningCount, infoCount, files } = result;
+function outputResults(runResult: RunResult, options: OutputOptions): void {
+  const { result, files } = runResult;
+  const { diagnosticsByFile, errorCount, warningCount, infoCount } = result;
 
+  // Collect and filter diagnostics by severity
   const minSeverity = SEVERITY_ORDER[options.severity];
-  const filtered = diagnostics.filter((d) => SEVERITY_ORDER[d.severity] <= minSeverity);
+  const filtered: DiagnosticInfo[] = [];
+  for (const diagnostics of diagnosticsByFile.values()) {
+    for (const d of diagnostics) {
+      if (SEVERITY_ORDER[d.severity] <= minSeverity) {
+        filtered.push(d);
+      }
+    }
+  }
 
   if (options.format === "json") {
     const output = {
@@ -186,10 +161,10 @@ function outputResults(result: RunResult, options: OutputOptions): void {
       info: infoCount,
       diagnostics: filtered.map((d) => ({
         file: d.file,
-        line: d.location.startPosition.row + 1,
-        column: d.location.startPosition.column + 1,
-        endLine: d.location.endPosition.row + 1,
-        endColumn: d.location.endPosition.column + 1,
+        line: d.line,
+        column: d.column,
+        endLine: d.endLine,
+        endColumn: d.endColumn,
         severity: d.severity,
         code: d.code,
         message: d.message,
@@ -201,7 +176,7 @@ function outputResults(result: RunResult, options: OutputOptions): void {
 
   if (options.format === "default") {
     // Group diagnostics by file for cleaner output
-    const byFile = new Map<string, Diagnostic[]>();
+    const byFile = new Map<string, DiagnosticInfo[]>();
     for (const d of filtered) {
       const existing = byFile.get(d.file) || [];
       existing.push(d);
@@ -254,8 +229,8 @@ function watchFiles(paths: string[], options: OutputOptions, config: CheckConfig
       return;
     }
 
-    const result = runCheck(files, config);
-    outputResults(result, options);
+    const runResult = executeCheck(files, config);
+    outputResults(runResult, options);
 
     console.log();
     console.log(pc.dim("Watching for file changes... (Ctrl+C to exit)"));
@@ -361,13 +336,13 @@ function checkAction(ctx: CommandContext): void {
   }
 
   // Run checks
-  const result = runCheck(files, config);
+  const runResult = executeCheck(files, config);
 
   // Output results
-  outputResults(result, { format, severity });
+  outputResults(runResult, { format, severity });
 
   // Determine exit code
-  if (result.errorCount > 0) {
+  if (runResult.result.errorCount > 0) {
     process.exit(1);
   }
 
@@ -379,12 +354,12 @@ function checkAction(ctx: CommandContext): void {
       process.exit(2);
     }
 
-    if (result.warningCount > maxWarningsNum) {
+    if (runResult.result.warningCount > maxWarningsNum) {
       if (format !== "json") {
         console.log();
         console.error(
           pc.red(
-            `Warning threshold exceeded: ${result.warningCount} warnings (max: ${maxWarningsNum})`,
+            `Warning threshold exceeded: ${runResult.result.warningCount} warnings (max: ${maxWarningsNum})`,
           ),
         );
       }

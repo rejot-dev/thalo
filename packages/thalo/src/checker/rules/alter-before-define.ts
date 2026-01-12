@@ -1,20 +1,10 @@
 import type { Rule, RuleCategory } from "../types.js";
 import type { RuleVisitor, VisitorContext } from "../visitor.js";
-import type { SchemaEntry, Timestamp } from "../../ast/types.js";
-import { isSyntaxError } from "../../ast/types.js";
+import type { SchemaEntry } from "../../ast/types.js";
 import type { IndexedEntry } from "../workspace-index.js";
+import { formatTimestamp } from "../../formatters.js";
 
 const category: RuleCategory = "schema";
-
-/**
- * Format a timestamp for comparison
- */
-function formatTimestamp(ts: Timestamp): string {
-  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
-  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
-  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
-  return `${date}T${time}${tz}`;
-}
 
 const visitor: RuleVisitor = {
   afterCheck(ctx: VisitorContext) {

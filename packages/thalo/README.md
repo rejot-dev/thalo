@@ -112,15 +112,19 @@ Parse individual expressions without a full document context:
 
 ```typescript
 import { parseFragment, parseQuery } from "@rejot-dev/thalo";
+import { createParser } from "@rejot-dev/thalo/native";
+
+// Create a parser (native for Node.js, or web parser for browser)
+const parser = createParser();
 
 // Parse a query expression
-const queryResult = parseQuery("lore where subject = ^self and #career");
+const queryResult = parseQuery(parser, "lore where subject = ^self and #career");
 if (queryResult.valid) {
   console.log(queryResult.node.type); // "query"
 }
 
 // Parse a type expression
-const typeResult = parseFragment("type_expression", 'string | "literal"');
+const typeResult = parseFragment(parser, "type_expression", 'string | "literal"');
 ```
 
 ### Executing Queries

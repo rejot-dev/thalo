@@ -10,7 +10,7 @@
  * Note: This module runs alongside extract.ts during the migration period.
  * Once migration is complete, extract.ts can be removed.
  */
-import type { SyntaxNode, Point } from "tree-sitter";
+import type { SyntaxNode, Point } from "./types.js";
 import type {
   Location,
   SyntaxErrorCode,
@@ -294,15 +294,6 @@ export function getTimezoneValue(timestamp: Timestamp): string | null {
 
 /**
  * Get the full formatted timestamp value, including timezone if valid
+ * Re-exported from formatters for consistency
  */
-export function formatTimestamp(timestamp: Timestamp): string {
-  if (!timestamp.date || !timestamp.time) {
-    return timestamp.value;
-  }
-
-  const dateStr = timestamp.date.value;
-  const timeStr = timestamp.time.value;
-  const tzStr = getTimezoneValue(timestamp) ?? "";
-
-  return `${dateStr}T${timeStr}${tzStr}`;
-}
+export { formatTimestamp } from "../formatters.js";

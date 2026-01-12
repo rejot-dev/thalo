@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { parseDocument } from "./parser.js";
+import { createWorkspace } from "./parser.native.js";
 import { Workspace } from "./model/workspace.js";
 import { check } from "./checker/check.js";
 import { extractSemanticTokens } from "./services/semantic-tokens.js";
@@ -157,7 +158,7 @@ More text.
     let workspace: Workspace;
 
     beforeEach(() => {
-      workspace = new Workspace();
+      workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
@@ -226,7 +227,7 @@ Line 1
 
   describe("Definition", () => {
     it("definition location is file-absolute for markdown", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
 
       // Define entry in markdown
       const source = `# References
@@ -250,7 +251,7 @@ Line 1
 
   describe("References", () => {
     it("reference locations are file-absolute for markdown", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
 
       // Define and reference in same block in markdown
       const source = `# Notes
@@ -291,7 +292,7 @@ Line 1
     });
 
     it("cross-file references work between .thalo and .md files", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
 
       // Define in .thalo file
       workspace.addDocument(

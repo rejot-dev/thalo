@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import { check } from "../check.js";
 
@@ -6,7 +7,7 @@ describe("invalid-field-type rule", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
@@ -81,7 +82,7 @@ describe("invalid-field-type rule - array types", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity opinion "Opinions"
   # Metadata
@@ -174,7 +175,7 @@ describe("invalid-field-type rule - datetime fields with datetime_value", () => 
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity reference "References"
   # Metadata
@@ -230,7 +231,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata

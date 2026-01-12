@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { Workspace } from "./workspace.js";
+import { createWorkspace } from "../parser.native.js";
 
 describe("Workspace", () => {
   it("should create SemanticModel when adding document", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "Test entry"
   subject: ^self
@@ -18,7 +18,7 @@ describe("Workspace", () => {
   });
 
   it("should provide allModels method", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "First entry"
 `,
@@ -35,7 +35,7 @@ describe("Workspace", () => {
   });
 
   it("should build link index for definitions", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "My entry" ^my-entry
 `,
@@ -48,7 +48,7 @@ describe("Workspace", () => {
   });
 
   it("should build link index for references", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "My entry"
   subject: ^self
@@ -64,7 +64,7 @@ describe("Workspace", () => {
   });
 
   it("should merge links across documents", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "First" ^entry-1
 `,
@@ -87,7 +87,7 @@ describe("Workspace", () => {
   });
 
   it("should clear models when clearing workspace", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "Test"
 `,
@@ -102,7 +102,7 @@ describe("Workspace", () => {
   });
 
   it("should remove model when removing document", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "Test" ^my-entry
 `,
@@ -119,7 +119,7 @@ describe("Workspace", () => {
   });
 
   it("should provide allEntries method", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "First"
 `,
@@ -138,7 +138,7 @@ describe("Workspace", () => {
   });
 
   it("should provide hasDocument and files methods", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "Test"
 `,
@@ -151,7 +151,7 @@ describe("Workspace", () => {
   });
 
   it("should provide getLinkDefinition and getLinkReferences", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "Entry" ^my-entry
 2026-01-05T11:00Z create lore "Ref"
@@ -170,7 +170,7 @@ describe("Workspace", () => {
   });
 
   it("should handle empty documents", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     const model = ws.addDocument("", { filename: "empty.thalo" });
 
     expect(model).toBeDefined();
@@ -179,7 +179,7 @@ describe("Workspace", () => {
   });
 
   it("should populate schema registry from define-entity", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z define-entity person "A person"
   # Metadata
@@ -196,7 +196,7 @@ describe("Workspace", () => {
   });
 
   it("should replace document when adding same filename", () => {
-    const ws = new Workspace();
+    const ws = createWorkspace();
     ws.addDocument(
       `2026-01-05T10:00Z create lore "First" ^first
 `,

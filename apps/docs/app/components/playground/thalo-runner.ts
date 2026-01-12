@@ -3,12 +3,18 @@
 /**
  * Thalo Runner - Executes thalo commands on playground content.
  *
- * Provides browser-compatible implementations of check, query, and actualize
- * commands using the web-tree-sitter parser.
+ * Uses the shared Workspace and command layer from @rejot-dev/thalo
+ * with the web-tree-sitter parser.
  */
 
-import type { Tree } from "@rejot-dev/thalo/web";
-import { getParser, type ThaloParser } from "@/lib/thalo-parser.client";
+import { Workspace } from "@rejot-dev/thalo";
+import { runCheck as runCheckCommand, type CheckResult } from "@rejot-dev/thalo/commands/check";
+import { runQuery as runQueryCommand, type QueryResult } from "@rejot-dev/thalo/commands/query";
+import {
+  runActualize as runActualizeCommand,
+  type ActualizeResult,
+} from "@rejot-dev/thalo/commands/actualize";
+import { getParser } from "@/lib/thalo-parser.client";
 
 // Virtual filenames for the playground
 const FILES = {
@@ -39,486 +45,100 @@ export interface PlaygroundContent {
   synthesis: string;
 }
 
-// Simplified internal types for our use case
-interface SimpleQuery {
-  entity: string;
-  conditions: SimpleQueryCondition[];
-}
-
-interface SimpleQueryCondition {
-  kind: "field" | "tag" | "link";
-  field?: string;
-  value?: string;
-  tag?: string;
-  link?: string;
-}
-
-interface SimpleEntry {
-  type: "instance" | "schema" | "synthesis" | "actualize";
-  timestamp: string;
-  directive: string;
-  entity?: string;
-  title: string;
-  linkId?: string;
-  tags: string[];
-  metadata: Map<string, string>;
-  content: string[];
-  sources?: SimpleQuery[];
-  prompt?: string;
-  startIndex: number;
-  endIndex: number;
-  startLine: number;
-}
-
-interface ParsedDocument {
-  file: string;
-  source: string;
-  entries: SimpleEntry[];
-  syntaxErrors: SyntaxError[];
-}
-
-interface SyntaxError {
-  file: string;
-  message: string;
-  line: number;
-  column: number;
-}
-
 // ===================
-// AST Node Interface
+// Workspace Creation
 // ===================
 
-interface AnyNode {
-  type: string;
-  text: string;
-  namedChildren: AnyNode[];
-  startIndex: number;
-  endIndex: number;
-  startPosition: { row: number; column: number };
-  endPosition: { row: number; column: number };
-  childForFieldName: (name: string) => AnyNode | null;
-  hasError?: boolean;
-}
-
-// ===================
-// Parsing
-// ===================
-
-async function parseDocument(
-  parser: ThaloParser<Tree>,
-  file: string,
-  source: string,
-): Promise<ParsedDocument> {
-  const tree = parser.parse(source);
-  const rootNode = tree.rootNode as unknown as AnyNode;
-
-  const entries: SimpleEntry[] = [];
-  const syntaxErrors: SyntaxError[] = [];
-
-  for (const child of rootNode.namedChildren) {
-    if (child.type === "entry") {
-      const entry = extractEntry(child, source);
-      if (entry) {
-        entries.push(entry);
-      }
-    } else if (child.type === "ERROR") {
-      syntaxErrors.push({
-        file,
-        message: `Parse error: unexpected content "${child.text.slice(0, 50)}${child.text.length > 50 ? "..." : ""}"`,
-        line: child.startPosition.row + 1,
-        column: child.startPosition.column + 1,
-      });
-    }
-  }
-
-  // Check for errors in the tree
-  if (rootNode.hasError && syntaxErrors.length === 0) {
-    // Find ERROR nodes recursively
-    const findErrors = (node: AnyNode): void => {
-      if (node.type === "ERROR") {
-        syntaxErrors.push({
-          file,
-          message: `Syntax error near: "${node.text.slice(0, 30)}${node.text.length > 30 ? "..." : ""}"`,
-          line: node.startPosition.row + 1,
-          column: node.startPosition.column + 1,
-        });
-      }
-      for (const child of node.namedChildren) {
-        findErrors(child);
-      }
-    };
-    findErrors(rootNode);
-  }
-
-  return { file, source, entries, syntaxErrors };
-}
-
-function extractEntry(node: AnyNode, source: string): SimpleEntry | null {
-  const child = node.namedChildren[0];
-  if (!child) {
-    return null;
-  }
-
-  if (child.type === "data_entry") {
-    return extractDataEntry(child, source);
-  }
-  if (child.type === "schema_entry") {
-    return extractSchemaEntry(child, source);
-  }
-  return null;
-}
-
-function extractDataEntry(node: AnyNode, _source: string): SimpleEntry {
-  const directiveNode = node.childForFieldName("directive");
-  const directive = directiveNode?.text || "create";
-  const timestampNode = node.childForFieldName("timestamp");
-  const argumentNode = node.childForFieldName("argument");
-  const titleNode = node.childForFieldName("title");
-
-  const linkNodes = node.namedChildren.filter((c) => c.type === "link");
-  const tagNodes = node.namedChildren.filter((c) => c.type === "tag");
-  const metadataNodes = node.namedChildren.filter((c) => c.type === "metadata");
-  const contentNode = node.namedChildren.find((c) => c.type === "content");
-
-  // Extract metadata as Map
-  const metadata = new Map<string, string>();
-  for (const m of metadataNodes) {
-    const keyNode = m.childForFieldName("key");
-    const valueNode = m.childForFieldName("value");
-    if (keyNode && valueNode) {
-      metadata.set(keyNode.text, valueNode.text.trim());
-    }
-  }
-
-  // Extract content lines
-  const content: string[] = [];
-  let prompt: string | undefined;
-  if (contentNode) {
-    let inPrompt = false;
-    const promptLines: string[] = [];
-
-    for (const c of contentNode.namedChildren) {
-      if (c.type === "markdown_header") {
-        if (c.text.toLowerCase().includes("prompt")) {
-          inPrompt = true;
-        } else {
-          inPrompt = false;
-        }
-        content.push(c.text);
-      } else if (c.type === "content_line") {
-        content.push(c.text);
-        if (inPrompt) {
-          promptLines.push(c.text);
-        }
-      }
-    }
-
-    if (promptLines.length > 0) {
-      prompt = promptLines.join("\n").trim();
-    }
-  }
-
-  // Determine type based on directive
-  let type: SimpleEntry["type"] = "instance";
-  let linkId: string | undefined;
-  let sources: SimpleQuery[] | undefined;
-
-  if (directive === "define-synthesis") {
-    type = "synthesis";
-    const linkIdNode = argumentNode?.type === "link" ? argumentNode : linkNodes[0];
-    linkId = linkIdNode ? linkIdNode.text.slice(1) : undefined;
-
-    // Extract sources from metadata
-    const sourcesValue = metadata.get("sources");
-    if (sourcesValue) {
-      sources = parseQueryFromText(sourcesValue);
-    }
-  } else if (directive === "actualize-synthesis") {
-    type = "actualize";
-    const targetNode = argumentNode?.type === "link" ? argumentNode : linkNodes[0];
-    linkId = targetNode ? targetNode.text.slice(1) : undefined;
-  }
-
-  return {
-    type,
-    timestamp: timestampNode?.text || "",
-    directive,
-    entity: type === "instance" ? argumentNode?.text : undefined,
-    title: titleNode ? stripQuotes(titleNode.text) : "",
-    linkId:
-      linkId ??
-      (linkNodes.length > 0 && type === "instance" ? linkNodes[0].text.slice(1) : undefined),
-    tags: tagNodes.map((t) => t.text.slice(1)),
-    metadata,
-    content,
-    sources,
-    prompt,
-    startIndex: node.startIndex,
-    endIndex: node.endIndex,
-    startLine: node.startPosition.row + 1,
-  };
-}
-
-function extractSchemaEntry(node: AnyNode, _source: string): SimpleEntry {
-  const directiveNode = node.childForFieldName("directive");
-  const timestampNode = node.childForFieldName("timestamp");
-  const argumentNode = node.childForFieldName("argument");
-  const titleNode = node.childForFieldName("title");
-  const tagNodes = node.namedChildren.filter((c) => c.type === "tag");
-  const linkNodes = node.namedChildren.filter((c) => c.type === "link");
-
-  return {
-    type: "schema",
-    timestamp: timestampNode?.text || "",
-    directive: directiveNode?.text || "define-entity",
-    entity: argumentNode?.text,
-    title: titleNode ? stripQuotes(titleNode.text) : "",
-    linkId: linkNodes.length > 0 ? linkNodes[0].text.slice(1) : undefined,
-    tags: tagNodes.map((t) => t.text.slice(1)),
-    metadata: new Map(),
-    content: [],
-    startIndex: node.startIndex,
-    endIndex: node.endIndex,
-    startLine: node.startPosition.row + 1,
-  };
-}
-
-function parseQueryFromText(text: string): SimpleQuery[] {
-  // Simple query parsing from metadata value
-  // Expected format: "entity where #tag" or "entity where condition"
-  const trimmed = text.trim();
-
-  const match = trimmed.match(/^(\S+)(?:\s+where\s+(.+))?$/);
-  if (!match) {
-    return [{ entity: trimmed, conditions: [] }];
-  }
-
-  const [, entity, conditionsStr] = match;
-  const conditions: SimpleQueryCondition[] = [];
-
-  if (conditionsStr) {
-    const parts = conditionsStr.split(/\s+and\s+/);
-    for (const part of parts) {
-      const p = part.trim();
-      if (p.startsWith("#")) {
-        conditions.push({ kind: "tag", tag: p.slice(1) });
-      } else if (p.startsWith("^")) {
-        conditions.push({ kind: "link", link: p.slice(1) });
-      } else {
-        const fieldMatch = p.match(/^(\S+)\s*=\s*(.+)$/);
-        if (fieldMatch) {
-          conditions.push({ kind: "field", field: fieldMatch[1], value: fieldMatch[2] });
-        }
-      }
-    }
-  }
-
-  return [{ entity, conditions }];
-}
-
-function stripQuotes(text: string): string {
-  if (text.startsWith('"') && text.endsWith('"')) {
-    return text.slice(1, -1);
-  }
-  return text;
-}
-
-// ===================
-// Query Execution
-// ===================
-
-function entryMatchesQuery(entry: SimpleEntry, query: SimpleQuery): boolean {
-  if (entry.type !== "instance") {
-    return false;
-  }
-  if (entry.entity !== query.entity) {
-    return false;
-  }
-
-  return query.conditions.every((condition) => {
-    switch (condition.kind) {
-      case "tag":
-        return entry.tags.includes(condition.tag!);
-      case "link":
-        return entry.linkId === condition.link;
-      case "field": {
-        const value = entry.metadata.get(condition.field!);
-        return value === condition.value;
-      }
-    }
-  });
-}
-
-function executeQuery(docs: ParsedDocument[], query: SimpleQuery): SimpleEntry[] {
-  const results: SimpleEntry[] = [];
-
-  for (const doc of docs) {
-    for (const entry of doc.entries) {
-      if (entryMatchesQuery(entry, query)) {
-        results.push(entry);
-      }
-    }
-  }
-
-  return results;
-}
-
-function formatQuery(query: SimpleQuery): string {
-  let result = query.entity;
-
-  if (query.conditions.length > 0) {
-    const condStrs = query.conditions.map((c) => {
-      switch (c.kind) {
-        case "field":
-          return `${c.field} = ${c.value}`;
-        case "tag":
-          return `#${c.tag}`;
-        case "link":
-          return `^${c.link}`;
-      }
-    });
-    result += ` where ${condStrs.join(" and ")}`;
-  }
-
-  return result;
-}
-
-// ===================
-// Command Runners
-// ===================
-
-async function runCheck(content: PlaygroundContent): Promise<CommandResult> {
+/**
+ * Create a workspace with the web parser and add playground documents.
+ */
+async function createPlaygroundWorkspace(content: PlaygroundContent): Promise<Workspace> {
   const parser = await getParser();
+  const workspace = new Workspace(parser);
 
-  const docs = await Promise.all([
-    parseDocument(parser, FILES.entities, content.entities),
-    parseDocument(parser, FILES.entries, content.entries),
-    parseDocument(parser, FILES.synthesis, content.synthesis),
-  ]);
+  // Add all documents
+  if (content.entities.trim()) {
+    workspace.addDocument(content.entities, { filename: FILES.entities });
+  }
+  if (content.entries.trim()) {
+    workspace.addDocument(content.entries, { filename: FILES.entries });
+  }
+  if (content.synthesis.trim()) {
+    workspace.addDocument(content.synthesis, { filename: FILES.synthesis });
+  }
 
+  return workspace;
+}
+
+// ===================
+// Result Formatting
+// ===================
+
+/**
+ * Format check results into terminal lines.
+ */
+function formatCheckResult(result: CheckResult): TerminalLine[] {
   const lines: TerminalLine[] = [];
   lines.push({ type: "header", text: "=== Running check ===" });
   lines.push({ type: "blank", text: "" });
 
-  // Collect all errors
-  const allErrors: SyntaxError[] = [];
-  for (const doc of docs) {
-    allErrors.push(...doc.syntaxErrors);
-  }
+  const totalDiagnostics = result.errorCount + result.warningCount + result.infoCount;
 
-  if (allErrors.length === 0) {
-    let entryCount = 0;
-    for (const doc of docs) {
-      entryCount += doc.entries.length;
-    }
-
-    lines.push({ type: "success", text: "✓ No syntax errors found" });
+  if (totalDiagnostics === 0) {
+    lines.push({ type: "success", text: "✓ No issues found" });
     lines.push({
       type: "info",
-      text: `  ${docs.length} files checked, ${entryCount} entries parsed`,
+      text: `  ${result.filesChecked} files checked`,
     });
-    lines.push({ type: "blank", text: "" });
-
-    // Show entry summary
-    for (const doc of docs) {
-      if (doc.entries.length > 0) {
-        const schemaCount = doc.entries.filter((e) => e.type === "schema").length;
-        const instanceCount = doc.entries.filter((e) => e.type === "instance").length;
-        const synthesisCount = doc.entries.filter((e) => e.type === "synthesis").length;
-
-        const parts = [];
-        if (schemaCount > 0) {
-          parts.push(`${schemaCount} schema`);
-        }
-        if (instanceCount > 0) {
-          parts.push(`${instanceCount} instance`);
-        }
-        if (synthesisCount > 0) {
-          parts.push(`${synthesisCount} synthesis`);
-        }
-
-        if (parts.length > 0) {
-          lines.push({ type: "dim", text: `  ${doc.file}: ${parts.join(", ")}` });
-        }
-      }
-    }
   } else {
-    // Group errors by file
-    const byFile = new Map<string, SyntaxError[]>();
-    for (const err of allErrors) {
-      const existing = byFile.get(err.file) || [];
-      existing.push(err);
-      byFile.set(err.file, existing);
-    }
-
-    for (const [file, fileErrors] of byFile) {
+    // Group diagnostics by file
+    for (const [file, diagnostics] of result.diagnosticsByFile) {
       lines.push({ type: "info", text: file });
-      for (const err of fileErrors) {
+      for (const d of diagnostics) {
+        const severityColor =
+          d.severity === "error" ? "error" : d.severity === "warning" ? "warning" : "info";
         lines.push({
-          type: "error",
-          text: `  ${err.line}:${err.column}  error  ${err.message}`,
+          type: severityColor,
+          text: `  ${d.line}:${d.column}  ${d.severity}  ${d.message}  ${d.code}`,
         });
       }
       lines.push({ type: "blank", text: "" });
     }
 
-    const errorCount = allErrors.length;
+    // Summary
+    const parts: string[] = [];
+    if (result.errorCount > 0) {
+      parts.push(`${result.errorCount} error${result.errorCount !== 1 ? "s" : ""}`);
+    }
+    if (result.warningCount > 0) {
+      parts.push(`${result.warningCount} warning${result.warningCount !== 1 ? "s" : ""}`);
+    }
+    if (result.infoCount > 0) {
+      parts.push(`${result.infoCount} info`);
+    }
+
+    const isError = result.errorCount > 0;
     lines.push({
-      type: "error",
-      text: `✗ ${errorCount} error${errorCount !== 1 ? "s" : ""} found`,
+      type: isError ? "error" : "warning",
+      text: `${isError ? "✗" : "⚠"} ${parts.join(", ")}`,
     });
   }
 
-  return {
-    command: "thalo check",
-    lines,
-  };
+  return lines;
 }
 
-async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<CommandResult> {
-  const parser = await getParser();
-
-  const docs = await Promise.all([
-    parseDocument(parser, FILES.entities, content.entities),
-    parseDocument(parser, FILES.entries, content.entries),
-    parseDocument(parser, FILES.synthesis, content.synthesis),
-  ]);
-
-  // If no query provided, try to get one from the first synthesis
-  let query: SimpleQuery;
-  if (queryStr) {
-    const parsed = parseQueryFromText(queryStr);
-    query = parsed[0];
-  } else {
-    // Find first synthesis and use its sources
-    let found = false;
-    for (const doc of docs) {
-      for (const entry of doc.entries) {
-        if (entry.type === "synthesis" && entry.sources && entry.sources.length > 0) {
-          query = entry.sources[0];
-          found = true;
-          break;
-        }
-      }
-      if (found) {
-        break;
-      }
-    }
-    if (!found) {
-      query = { entity: "opinion", conditions: [] };
-    }
-  }
-
-  const results = executeQuery(docs, query!);
+/**
+ * Format query results into terminal lines.
+ */
+function formatQueryResultLines(result: QueryResult): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  const displayQuery = formatQuery(query!);
-  lines.push({ type: "header", text: `=== Query: ${displayQuery} ===` });
+  lines.push({ type: "header", text: `=== Query: ${result.queryString} ===` });
   lines.push({ type: "blank", text: "" });
-  lines.push({ type: "info", text: `Found: ${results.length} entries` });
+  lines.push({ type: "info", text: `Found: ${result.totalCount} entries` });
   lines.push({ type: "blank", text: "" });
 
-  for (const entry of results) {
+  for (const entry of result.entries) {
     const link = entry.linkId ? ` ^${entry.linkId}` : "";
     const tags = entry.tags.length > 0 ? " " + entry.tags.map((t) => `#${t}`).join(" ") : "";
 
@@ -528,51 +148,32 @@ async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<
     });
   }
 
-  if (results.length === 0) {
+  if (result.entries.length === 0) {
     lines.push({ type: "dim", text: "No matching entries found." });
   }
 
-  return {
-    command: `thalo query '${displayQuery}'`,
-    lines,
-  };
+  return lines;
 }
 
-async function runActualize(content: PlaygroundContent): Promise<CommandResult> {
-  const parser = await getParser();
-
-  const docs = await Promise.all([
-    parseDocument(parser, FILES.entities, content.entities),
-    parseDocument(parser, FILES.entries, content.entries),
-    parseDocument(parser, FILES.synthesis, content.synthesis),
-  ]);
-
-  // Find all synthesis entries
-  const syntheses: SimpleEntry[] = [];
-  for (const doc of docs) {
-    for (const entry of doc.entries) {
-      if (entry.type === "synthesis") {
-        syntheses.push(entry);
-      }
-    }
-  }
-
+/**
+ * Format actualize results into terminal lines.
+ */
+function formatActualizeResultLines(result: ActualizeResult): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  if (syntheses.length === 0) {
+  if (result.syntheses.length === 0) {
     lines.push({ type: "header", text: "=== Running actualize ===" });
     lines.push({ type: "blank", text: "" });
     lines.push({ type: "dim", text: "No synthesis definitions found." });
-    return { command: "thalo actualize", lines };
+    return lines;
   }
 
-  for (const synthesis of syntheses) {
+  for (const synthesis of result.syntheses) {
     lines.push({ type: "header", text: `=== Synthesis: ${synthesis.title} ===` });
     lines.push({ type: "info", text: `Target: ^${synthesis.linkId}` });
 
-    if (synthesis.sources && synthesis.sources.length > 0) {
-      const sourceStrs = synthesis.sources.map(formatQuery).join(", ");
-      lines.push({ type: "info", text: `Sources: ${sourceStrs}` });
+    if (synthesis.sources.length > 0) {
+      lines.push({ type: "info", text: `Sources: ${synthesis.sources.join(", ")}` });
     }
 
     lines.push({ type: "blank", text: "" });
@@ -586,47 +187,85 @@ async function runActualize(content: PlaygroundContent): Promise<CommandResult> 
       lines.push({ type: "blank", text: "" });
     }
 
-    // Find and show matching entries
-    const allEntries: SimpleEntry[] = [];
-    if (synthesis.sources) {
-      for (const source of synthesis.sources) {
-        const matches = executeQuery(docs, source);
-        allEntries.push(...matches);
-      }
-    }
-
-    if (allEntries.length > 0) {
-      lines.push({ type: "header", text: `--- Entries (${allEntries.length}) ---` });
+    // Show matching entries
+    if (synthesis.entries.length > 0) {
+      lines.push({ type: "header", text: `--- Entries (${synthesis.entries.length}) ---` });
       lines.push({ type: "blank", text: "" });
 
-      // Find the source for each entry and show raw text
-      for (const entry of allEntries) {
-        for (const doc of docs) {
-          const found = doc.entries.find((e) => e === entry);
-          if (found) {
-            const text = doc.source.slice(entry.startIndex, entry.endIndex).trim();
-            for (const line of text.split("\n")) {
-              lines.push({ type: "entry", text: line });
-            }
-            lines.push({ type: "blank", text: "" });
-            break;
+      for (const entry of synthesis.entries) {
+        if (entry.rawText) {
+          for (const line of entry.rawText.split("\n")) {
+            lines.push({ type: "entry", text: line });
           }
+          lines.push({ type: "blank", text: "" });
         }
       }
     } else {
-      lines.push({ type: "dim", text: "No matching entries found." });
+      lines.push({ type: "success", text: "✓ Up to date - no new entries." });
       lines.push({ type: "blank", text: "" });
     }
 
     // Instructions
     lines.push({ type: "header", text: "--- Instructions ---" });
-    lines.push({ type: "dim", text: "Pipe this output to an LLM to generate the synthesis:" });
-    lines.push({ type: "success", text: `  thalo actualize ^${synthesis.linkId} | llm` });
+    lines.push({
+      type: "dim",
+      text: `1. Update the content directly below the \`\`\`thalo block in ${synthesis.file}`,
+    });
+    lines.push({ type: "dim", text: `2. Place output BEFORE any subsequent \`\`\`thalo blocks` });
+    lines.push({
+      type: "dim",
+      text: `3. Append to the thalo block: actualize-synthesis ^${synthesis.linkId}`,
+    });
+    lines.push({ type: "dim", text: `   with metadata: updated: <current-timestamp>` });
+  }
+
+  return lines;
+}
+
+// ===================
+// Command Runners
+// ===================
+
+async function runCheck(content: PlaygroundContent): Promise<CommandResult> {
+  const workspace = await createPlaygroundWorkspace(content);
+  const result = runCheckCommand(workspace);
+  return {
+    command: "thalo check",
+    lines: formatCheckResult(result),
+  };
+}
+
+async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<CommandResult> {
+  const workspace = await createPlaygroundWorkspace(content);
+
+  // Default query if none provided
+  const query = queryStr || "opinion";
+
+  const result = runQueryCommand(workspace, query);
+
+  if (!result) {
+    return {
+      command: `thalo query '${query}'`,
+      lines: [
+        { type: "header", text: `=== Query: ${query} ===` },
+        { type: "blank", text: "" },
+        { type: "error", text: "Invalid query syntax" },
+      ],
+    };
   }
 
   return {
+    command: `thalo query '${result.queryString}'`,
+    lines: formatQueryResultLines(result),
+  };
+}
+
+async function runActualize(content: PlaygroundContent): Promise<CommandResult> {
+  const workspace = await createPlaygroundWorkspace(content);
+  const result = runActualizeCommand(workspace);
+  return {
     command: "thalo actualize",
-    lines,
+    lines: formatActualizeResultLines(result),
   };
 }
 

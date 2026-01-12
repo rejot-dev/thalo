@@ -1,7 +1,7 @@
 import type { Workspace } from "../model/workspace.js";
-import type { InstanceEntry, Timestamp } from "../ast/types.js";
-import { isSyntaxError } from "../ast/types.js";
+import type { InstanceEntry } from "../ast/types.js";
 import type { Query, QueryCondition } from "../model/types.js";
+import { formatTimestamp } from "../formatters.js";
 
 /**
  * Options for executing queries
@@ -21,16 +21,6 @@ interface QueryResultEntry {
   entry: InstanceEntry;
   file: string;
   timestampStr: string;
-}
-
-/**
- * Format a timestamp for comparison (includes timezone for correct sorting)
- */
-function formatTimestamp(ts: Timestamp): string {
-  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
-  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
-  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
-  return `${date}T${time}${tz}`;
 }
 
 /**

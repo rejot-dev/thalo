@@ -3,12 +3,11 @@ import type {
   SynthesisEntry,
   ActualizeEntry,
   InstanceEntry,
-  Timestamp,
   Query as AstQuery,
   QueryCondition as AstQueryCondition,
 } from "../ast/types.js";
-import { isSyntaxError } from "../ast/types.js";
 import type { Query, QueryCondition } from "../model/types.js";
+import { formatTimestamp } from "../formatters.js";
 
 /**
  * Information about a synthesis definition including file context
@@ -42,16 +41,8 @@ export interface ActualizeInfo {
   timestamp: string;
 }
 
-/**
- * Format a timestamp to ISO-like string for comparisons and display.
- * Example: "2026-01-07T12:00Z" or "2026-01-07T12:00+05:30"
- */
-export function formatTimestamp(ts: Timestamp): string {
-  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
-  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
-  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
-  return `${date}T${time}${tz}`;
-}
+// Re-export formatTimestamp from formatters for backward compatibility
+export { formatTimestamp } from "../formatters.js";
 
 /**
  * Convert an AST Query to a Model Query.

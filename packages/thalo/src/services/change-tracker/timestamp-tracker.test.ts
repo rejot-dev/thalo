@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TimestampChangeTracker } from "./timestamp-tracker.js";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import type { Query } from "../../model/types.js";
 
@@ -9,7 +10,7 @@ describe("TimestampChangeTracker", () => {
 
   beforeEach(() => {
     tracker = new TimestampChangeTracker();
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   describe("type", () => {

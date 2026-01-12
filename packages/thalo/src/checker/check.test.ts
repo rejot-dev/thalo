@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import type { SyntaxNode } from "tree-sitter";
+import { createWorkspace } from "../parser.native.js";
 import { Workspace } from "../model/workspace.js";
 import { check, checkModel, checkDocument, checkIncremental } from "./check.js";
 import type {
@@ -118,7 +119,7 @@ describe("check", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   describe("syntax error collection", () => {
@@ -264,7 +265,7 @@ describe("checkModel", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   it("should collect syntax errors from the model", () => {
@@ -325,7 +326,7 @@ describe("checkDocument", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   it("should return empty array for non-existent file", () => {
@@ -371,7 +372,7 @@ describe("checkIncremental", () => {
   });
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   it("should return empty array for non-existent file", () => {

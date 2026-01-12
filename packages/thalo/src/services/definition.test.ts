@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { createWorkspace } from "../parser.native.js";
 import { Workspace } from "../model/workspace.js";
 import { findDefinition } from "./definition.js";
 
@@ -6,7 +7,7 @@ describe("findDefinition", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
 
     const source1 = `2026-01-05T18:00Z create lore "First entry" ^first-entry #test
   type: fact

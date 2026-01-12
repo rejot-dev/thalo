@@ -1,7 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  Workspace,
   formatQuery,
   findAllSyntheses,
   findLatestActualize,
@@ -10,6 +9,7 @@ import {
   type InstanceEntry,
   type ActualizeInfo,
 } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import {
   createChangeTracker,
   parseCheckpoint,
@@ -81,7 +81,7 @@ function resolveFiles(paths: string[]): string[] {
  * Load workspace from files
  */
 function loadWorkspace(files: string[]): Workspace {
-  const workspace = new Workspace();
+  const workspace = createWorkspace();
 
   for (const file of files) {
     try {

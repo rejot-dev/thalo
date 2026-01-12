@@ -10,7 +10,8 @@ import {
   FileChangeType,
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace, type FileType } from "@rejot-dev/thalo";
+import type { FileType } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 
 import { serverCapabilities, tokenLegend } from "./capabilities.js";
 import { handleDefinition } from "./handlers/definition.js";
@@ -39,7 +40,7 @@ interface ServerState {
  */
 function createServerState(connection: Connection): ServerState {
   return {
-    workspace: new Workspace(),
+    workspace: createWorkspace(),
     documents: new Map(),
     connection,
     workspaceFolders: [],

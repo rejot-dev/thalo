@@ -1,4 +1,3 @@
-import type { Point } from "tree-sitter";
 import type { Location } from "./ast/types.js";
 
 /**
@@ -9,6 +8,15 @@ export interface Position {
   /** 0-based line number */
   line: number;
   /** 0-based column number */
+  column: number;
+}
+
+/**
+ * Tree-sitter Point interface (row and column).
+ * Defined locally to avoid bundling native tree-sitter.
+ */
+interface Point {
+  row: number;
   column: number;
 }
 

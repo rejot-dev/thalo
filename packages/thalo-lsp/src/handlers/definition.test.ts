@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import type { Position } from "vscode-languageserver";
 import { handleDefinition } from "./definition.js";
 
@@ -15,7 +15,7 @@ describe("handleDefinition", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
 
     // Add a document with entries that can be linked to
     const source = `2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript
@@ -354,7 +354,7 @@ describe("handleDefinition", () => {
     });
 
     it("should handle empty workspace", () => {
-      const emptyWorkspace = new Workspace();
+      const emptyWorkspace = createWorkspace();
       const doc = createDocument(`  related: ^ts-lore`, "file:///empty.thalo");
       emptyWorkspace.addDocument(doc.getText(), { filename: "/empty.thalo" });
 

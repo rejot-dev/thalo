@@ -105,10 +105,10 @@ export function CopyrightLine() {
 export function HomeFooter() {
   const footerLinks = {
     product: [
-      { label: "Home", href: "/", internal: true },
-      { label: "Documentation", href: "/docs", internal: true },
+      { label: "Docs", href: "/docs", internal: true },
       { label: "Demo", href: "/demo", internal: true },
-      { label: "Rules Reference", href: "/rules", internal: true },
+      { label: "Playground", href: "/playground", internal: true },
+      { label: "Rules", href: "/rules", internal: true },
     ],
     developer: [
       { label: "GitHub", href: "https://github.com/rejot-dev/thalo" },

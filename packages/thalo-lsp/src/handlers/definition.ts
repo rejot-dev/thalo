@@ -1,7 +1,6 @@
 import type { Position, Location } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import {
-  parseDocument,
   findNodeAtPosition,
   findDefinition,
   findEntityDefinition,
@@ -10,6 +9,7 @@ import {
   type Workspace,
   type Position as ThaloPosition,
 } from "@rejot-dev/thalo";
+import { parseDocument } from "@rejot-dev/thalo/native";
 
 /**
  * Convert a file path to a URI

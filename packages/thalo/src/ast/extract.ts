@@ -1,4 +1,4 @@
-import type { SyntaxNode } from "tree-sitter";
+import type { SyntaxNode } from "./types.js";
 import { buildTimestamp } from "./builder.js";
 import type {
   AstNode,
@@ -99,14 +99,20 @@ function getOptionalChildByField(node: SyntaxNode, field: string): SyntaxNode | 
  * Get all children of a specific type
  */
 function getChildrenByType(node: SyntaxNode, type: string): SyntaxNode[] {
-  return node.namedChildren.filter((child) => child.type === type);
+  return node.namedChildren.filter(
+    (child): child is SyntaxNode => child !== null && child.type === type,
+  );
 }
 
 /**
  * Get the first child of a specific type
  */
 function getChildByType(node: SyntaxNode, type: string): SyntaxNode | null {
-  return node.namedChildren.find((child) => child.type === type) ?? null;
+  return (
+    node.namedChildren.find(
+      (child): child is SyntaxNode => child !== null && child.type === type,
+    ) ?? null
+  );
 }
 
 /**
@@ -135,6 +141,9 @@ export function extractSourceFile(node: SyntaxNode): SourceFile {
   const syntaxErrors: SyntaxErrorNode[] = [];
 
   for (const child of node.namedChildren) {
+    if (!child) {
+      continue;
+    } // Skip nulls (web-tree-sitter can return null in arrays)
     if (child.type === "entry") {
       const entry = extractEntry(child);
       if (entry) {
@@ -562,6 +571,9 @@ export function extractUnionType(node: SyntaxNode): UnionType {
   const members: (PrimitiveType | LiteralType | ArrayType)[] = [];
 
   for (const child of node.namedChildren) {
+    if (!child) {
+      continue;
+    } // Skip nulls
     switch (child.type) {
       case "primitive_type":
         members.push(extractPrimitiveType(child));
@@ -602,6 +614,9 @@ export function extractContent(node: SyntaxNode): Content {
   const children: (MarkdownHeader | ContentLine)[] = [];
 
   for (const child of node.namedChildren) {
+    if (!child) {
+      continue;
+    } // Skip nulls
     if (child.type === "markdown_header") {
       children.push(extractMarkdownHeader(child));
     } else if (child.type === "content_line") {
@@ -750,6 +765,9 @@ function extractValueArray(node: SyntaxNode): ValueArray {
   const elements: (Link | QuotedValue | DatetimeValue | DateRangeValue | Query)[] = [];
 
   for (const child of node.namedChildren) {
+    if (!child) {
+      continue;
+    } // Skip nulls
     if (child.type === "link") {
       elements.push(extractLink(child));
     } else if (child.type === "quoted_value") {
@@ -790,6 +808,9 @@ function extractQuery(node: SyntaxNode): Query {
   const conditions: QueryCondition[] = [];
   if (conditionsNode) {
     for (const child of conditionsNode.namedChildren) {
+      if (!child) {
+        continue;
+      } // Skip nulls
       if (child.type === "query_condition") {
         const condition = extractQueryCondition(child);
         if (condition) {

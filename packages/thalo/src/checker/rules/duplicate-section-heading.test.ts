@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import { check } from "../check.js";
 
@@ -6,7 +7,7 @@ describe("duplicate-section-heading rule", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity opinion "Opinion entries"
   # Metadata

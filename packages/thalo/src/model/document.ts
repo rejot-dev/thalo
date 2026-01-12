@@ -1,8 +1,13 @@
-import type { Point, Tree } from "tree-sitter";
 import type { SourceMap } from "../source-map.js";
 import { createSourceMap, identitySourceMap } from "../source-map.js";
-import { parseThaloIncremental, type FileType } from "../parser.js";
+import type { ThaloParser, GenericTree, FileType } from "../parser.shared.js";
 import { LineIndex, computeEdit } from "./line-index.js";
+
+/** Position type compatible with tree-sitter Point */
+interface Point {
+  row: number;
+  column: number;
+}
 
 /**
  * Edit range for applying incremental edits to a document.
@@ -20,13 +25,13 @@ export interface EditRange {
 /**
  * A parsed thalo block within a document.
  */
-export interface DocumentBlock {
+export interface DocumentBlock<T extends GenericTree = GenericTree> {
   /** The thalo source code for this block */
   source: string;
   /** Source map for translating block-relative positions to file-absolute positions */
   sourceMap: SourceMap;
   /** The parsed tree-sitter tree */
-  tree: Tree;
+  tree: T;
   /** Character offset where this block starts in the full document */
   startOffset: number;
   /** Character offset where this block ends in the full document */
@@ -54,21 +59,34 @@ const THALO_FENCE_REGEX = /^```thalo\s*\n([\s\S]*?)^```/gm;
 /**
  * A Document owns the source text and Tree-sitter tree(s) for a file,
  * providing efficient incremental edit operations.
+ *
+ * The Document is parser-agnostic - it accepts any parser that implements
+ * the ThaloParser interface.
  */
-export class Document {
+export class Document<T extends GenericTree = GenericTree> {
   readonly filename: string;
   readonly fileType: FileType;
 
+  private parser: ThaloParser<T>;
   private _source: string;
-  private _blocks: DocumentBlock[];
+  private _blocks: DocumentBlock<T>[];
   private _lineIndex: LineIndex;
 
-  constructor(filename: string, source: string, fileType?: FileType) {
+  /**
+   * Create a Document with a parser.
+   *
+   * @param parser - A ThaloParser instance
+   * @param filename - The filename for this document
+   * @param source - The source code
+   * @param fileType - Optional explicit file type
+   */
+  constructor(parser: ThaloParser<T>, filename: string, source: string, fileType?: FileType) {
+    this.parser = parser;
     this.filename = filename;
-    this.fileType = fileType ?? Document.detectFileType(filename, source);
     this._source = source;
-    this._lineIndex = new LineIndex(source);
-    this._blocks = this.parseBlocks(source);
+    this.fileType = fileType ?? Document.detectFileType(filename, source);
+    this._lineIndex = new LineIndex(this._source);
+    this._blocks = this.parseBlocks(this._source);
   }
 
   /**
@@ -88,7 +106,7 @@ export class Document {
   /**
    * Get the current parsed blocks.
    */
-  get blocks(): readonly DocumentBlock[] {
+  get blocks(): readonly DocumentBlock<T>[] {
     return this._blocks;
   }
 
@@ -183,10 +201,10 @@ export class Document {
   /**
    * Parse all thalo blocks from the source.
    */
-  private parseBlocks(source: string): DocumentBlock[] {
+  private parseBlocks(source: string): DocumentBlock<T>[] {
     if (this.fileType === "thalo") {
       // Single block for pure thalo files
-      const tree = parseThaloIncremental(source);
+      const tree = this.parser.parse(source);
       return [
         {
           source,
@@ -199,14 +217,14 @@ export class Document {
     }
 
     // Extract thalo blocks from markdown
-    const blocks: DocumentBlock[] = [];
+    const blocks: DocumentBlock<T>[] = [];
     let match: RegExpExecArray | null;
 
     while ((match = THALO_FENCE_REGEX.exec(source)) !== null) {
       const content = match[1];
       const contentStart = match.index + match[0].indexOf(content);
       const sourceMap = createSourceMap(source, contentStart, content);
-      const tree = parseThaloIncremental(content);
+      const tree = this.parser.parse(content);
 
       blocks.push({
         source: content,
@@ -275,7 +293,7 @@ export class Document {
     });
 
     // Reparse with the old tree for incremental parsing
-    const newTree = parseThaloIncremental(newSource, block.tree);
+    const newTree = this.parser.parseIncremental(newSource, block.tree);
 
     // Update the block
     this._blocks = [
@@ -414,7 +432,7 @@ export class Document {
     });
 
     // Reparse with the old tree
-    const newTree = parseThaloIncremental(newBlockSource, oldBlock.tree);
+    const newTree = this.parser.parseIncremental(newBlockSource, oldBlock.tree);
 
     // Update blocks array
     this._blocks = this._blocks.map((block, i) => {
