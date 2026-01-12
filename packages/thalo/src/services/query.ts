@@ -133,7 +133,10 @@ export function executeQueries(
 ): InstanceEntry[] {
   const { afterTimestamp } = options;
   const results: QueryResultEntry[] = [];
-  const seen = new Set<string>(); // Track by file:timestamp to avoid duplicates
+  // Track seen entries by file:position to avoid returning the same entry twice
+  // (can happen when entry matches multiple queries). We use position rather than
+  // semantic identity (timestamp+type) because query should return ALL physical entries.
+  const seen = new Set<string>();
 
   for (const model of workspace.allModels()) {
     for (const entry of model.ast.entries) {
@@ -142,7 +145,7 @@ export function executeQueries(
       }
 
       const timestampStr = formatTimestamp(entry.header.timestamp);
-      const key = `${model.file}:${timestampStr}`;
+      const key = `${model.file}:${entry.location.startPosition.row}:${entry.location.startPosition.column}`;
 
       // Skip if we've already seen this entry
       if (seen.has(key)) {
