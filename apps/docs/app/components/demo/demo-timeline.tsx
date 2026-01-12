@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/cn";
-import { usePlayground } from "./playground-context";
+import { useDemo } from "./demo-context";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export function PlaygroundTimeline() {
-  const { currentStep, totalSteps, steps, goToStep, nextStep, prevStep } = usePlayground();
+export function DemoTimeline() {
+  const { currentStep, totalSteps, steps, goToStep, nextStep, prevStep } = useDemo();
 
   const step = steps[currentStep];
 

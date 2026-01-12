@@ -107,7 +107,7 @@ export function HomeFooter() {
     product: [
       { label: "Home", href: "/", internal: true },
       { label: "Documentation", href: "/docs", internal: true },
-      { label: "Demo", href: "/playground", internal: true },
+      { label: "Demo", href: "/demo", internal: true },
       { label: "Rules Reference", href: "/rules", internal: true },
     ],
     developer: [

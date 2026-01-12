@@ -103,8 +103,14 @@ export function HomeLayoutWithFooter({
         {
           type: "main",
           on: "all",
-          url: "/playground",
+          url: "/demo",
           text: "Demo",
+        },
+        {
+          type: "main",
+          on: "all",
+          url: "/playground",
+          text: "Playground",
         },
         {
           type: "main",

@@ -52,35 +52,40 @@ const severityStyles = {
 // Category icons and colors
 const categoryMeta: Record<
   string,
-  { icon: React.ElementType; color: string; label: string; description: string }
+  { icon: React.ElementType; color: string; bg: string; label: string; description: string }
 > = {
   instance: {
     icon: FileCode,
-    color: "text-blue-600 dark:text-blue-400",
+    color: "text-blue-700 dark:text-blue-400",
+    bg: "bg-blue-100 dark:bg-blue-950/60",
     label: "Instance Entry Rules",
     description: "Validation for create, update, and other instance entries",
   },
   link: {
     icon: Link2,
-    color: "text-violet-600 dark:text-violet-400",
+    color: "text-violet-700 dark:text-violet-400",
+    bg: "bg-violet-100 dark:bg-violet-950/60",
     label: "Link Rules",
     description: "Cross-reference and link integrity checks",
   },
   schema: {
     icon: Database,
-    color: "text-emerald-600 dark:text-emerald-400",
+    color: "text-emerald-700 dark:text-emerald-400",
+    bg: "bg-emerald-100 dark:bg-emerald-950/60",
     label: "Schema Definition Rules",
     description: "Entity schema structure and consistency",
   },
   metadata: {
     icon: Layers,
-    color: "text-amber-600 dark:text-amber-400",
+    color: "text-amber-700 dark:text-amber-400",
+    bg: "bg-amber-100 dark:bg-amber-950/60",
     label: "Metadata Value Rules",
     description: "Field values, types, and constraints",
   },
   content: {
     icon: FileText,
-    color: "text-pink-600 dark:text-pink-400",
+    color: "text-pink-700 dark:text-pink-400",
+    bg: "bg-pink-100 dark:bg-pink-950/60",
     label: "Content Rules",
     description: "Markdown sections and entry content",
   },
@@ -495,24 +500,19 @@ function CategorySection({ categoryId, rules }: { categoryId: string; rules: Rul
   return (
     <section className="relative">
       {/* Category header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-4 -mx-4 px-4 sm:-mx-6 sm:px-6 border-b border-border/30 mb-6">
-        <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "flex items-center justify-center size-10 rounded-lg bg-muted",
-              meta.color,
-            )}
-          >
-            <CategoryIcon className="size-5" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-foreground">{meta.label}</h2>
-            <p className="text-sm text-muted-foreground">{meta.description}</p>
-          </div>
-          <span className="ml-auto text-sm font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
-            {rules.length} rule{rules.length !== 1 ? "s" : ""}
-          </span>
+      <div className="flex items-center gap-3 py-4 mb-6 border-b border-border/40">
+        <div
+          className={cn("flex items-center justify-center size-10 rounded-lg", meta.bg, meta.color)}
+        >
+          <CategoryIcon className="size-5" />
         </div>
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">{meta.label}</h2>
+          <p className="text-sm text-muted-foreground">{meta.description}</p>
+        </div>
+        <span className="ml-auto text-sm font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+          {rules.length} rule{rules.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {/* Rules grid */}
@@ -685,10 +685,10 @@ export default function RulesPage() {
               Read the Docs
             </Link>
             <Link
-              to="/playground"
+              to="/demo"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-6 py-3 font-semibold text-foreground transition-all hover:bg-muted"
             >
-              Try the Playground
+              Try the Demo
             </Link>
           </div>
         </footer>
