@@ -1,6 +1,7 @@
 import type { Rule, RuleCategory } from "../types.js";
 import type { RuleVisitor } from "../visitor.js";
 import type { DefaultValue, TypeExpression } from "../../ast/types.js";
+import { isSyntaxError } from "../../ast/types.js";
 import type { ModelDefaultValue, ModelTypeExpression } from "../../model/types.js";
 import { TypeExpr } from "../../schema/types.js";
 
@@ -12,6 +13,11 @@ const visitor: RuleVisitor = {
 
     for (const field of fields) {
       if (!field.defaultValue) {
+        continue;
+      }
+
+      // Skip fields with unknown types - they'll be reported as syntax errors
+      if (isSyntaxError(field.typeExpr)) {
         continue;
       }
 

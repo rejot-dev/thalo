@@ -18,6 +18,10 @@
         {
           "type": "primitive_type",
           "named": true
+        },
+        {
+          "type": "unknown_type",
+          "named": true
         }
       ]
     }
@@ -738,6 +742,10 @@
         {
           "type": "union_type",
           "named": true
+        },
+        {
+          "type": "unknown_type",
+          "named": true
         }
       ]
     }
@@ -761,9 +769,18 @@
         {
           "type": "primitive_type",
           "named": true
+        },
+        {
+          "type": "unknown_type",
+          "named": true
         }
       ]
     }
+  },
+  {
+    "type": "unknown_type",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "value",

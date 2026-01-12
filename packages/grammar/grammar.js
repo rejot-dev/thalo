@@ -138,12 +138,15 @@ export default grammar({
 
     type_expression: ($) => choice($.union_type, $._type_term),
     union_type: ($) => prec.left(1, seq($._type_term, repeat1(seq("|", $._type_term)))),
-    _type_term: ($) => choice($.array_type, $.primitive_type, $.literal_type),
+    _type_term: ($) => choice($.array_type, $.primitive_type, $.literal_type, $.unknown_type),
     array_type: ($) => seq($._array_element, token.immediate("[]")),
-    _array_element: ($) => choice($.primitive_type, $.literal_type, $.paren_type),
+    _array_element: ($) => choice($.primitive_type, $.literal_type, $.paren_type, $.unknown_type),
     paren_type: ($) => seq("(", $.type_expression, ")"),
     primitive_type: (_) => choice("string", "datetime", "date-range", "link"),
     literal_type: (_) => token(/"[^"]*"/),
+    // Fallback for unrecognized type identifiers (e.g., "date-time" typo)
+    // Tree-sitter prefers exact matches (primitive_type) over regex patterns
+    unknown_type: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
     default_value: ($) => choice($.quoted_value, $.link, $.datetime_value),
 
     // =========================================================================

@@ -426,13 +426,19 @@ function classifyNode(node: SyntaxNode, point: Point, block: ParsedBlock): NodeC
     case "primitive_type":
     case "literal_type":
     case "array_type":
-    case "union_type":
+    case "union_type": {
+      const typeExpr = extractTypeExpression(node.parent ?? node);
+      // Skip syntax errors (unknown types)
+      if (typeExpr.type === "syntax_error") {
+        return { kind: "unknown" };
+      }
       return {
         kind: "type",
         typeName: node.type === "primitive_type" ? node.text : node.type,
-        node: extractTypeExpression(node.parent ?? node),
+        node: typeExpr,
         sourceMap,
       };
+    }
 
     case "field_name":
       return classifyFieldNameNode(node, sourceMap);

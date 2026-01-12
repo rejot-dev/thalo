@@ -3,6 +3,7 @@ import type {
   ModelPrimitiveType,
   ModelLiteralType,
   ModelUnionType,
+  ModelUnknownType,
   ModelDefaultValue,
 } from "../model/types.js";
 import type {
@@ -79,6 +80,10 @@ export const TypeExpr = {
         return matchesArrayContent(content, type.elementType);
       case "union":
         return type.members.some((member) => TypeExpr.matchesContent(content, member));
+      case "unknown":
+        // Unknown types can't be validated - accept any value
+        // (the unknown type itself is reported as a syntax error)
+        return true;
     }
   },
 
@@ -99,6 +104,9 @@ export const TypeExpr = {
         return matchesDefaultAsArrayElement(defaultValue, type.elementType);
       case "union":
         return type.members.some((member) => TypeExpr.matchesDefaultValue(defaultValue, member));
+      case "unknown":
+        // Unknown types can't be validated - accept any default value
+        return true;
     }
   },
 
@@ -119,6 +127,8 @@ export const TypeExpr = {
         return `${TypeExpr.toString(type.elementType)}[]`;
       case "union":
         return type.members.map((m) => TypeExpr.toString(m)).join(" | ");
+      case "unknown":
+        return type.name;
     }
   },
 };
@@ -172,8 +182,12 @@ function matchesLiteralContent(content: ValueContent, expectedValue: string): bo
  */
 function matchesArrayContent(
   content: ValueContent,
-  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType,
+  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType | ModelUnknownType,
 ): boolean {
+  // Unknown element types can't be validated - accept any value
+  if (elementType.kind === "unknown") {
+    return true;
+  }
   // If it's a value_array, validate each element
   if (content.type === "value_array") {
     // Empty arrays are not allowed
@@ -340,7 +354,7 @@ function matchesDefaultPrimitive(
  */
 function matchesDefaultAsArrayElement(
   defaultValue: ModelDefaultValue,
-  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType,
+  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType | ModelUnknownType,
 ): boolean {
   switch (elementType.kind) {
     case "primitive":
@@ -356,6 +370,9 @@ function matchesDefaultAsArrayElement(
         }
         return false;
       });
+    case "unknown":
+      // Unknown types can't be validated - accept any default value
+      return true;
   }
 }
 
