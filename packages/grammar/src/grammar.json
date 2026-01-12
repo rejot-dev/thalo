@@ -741,6 +741,10 @@
         {
           "type": "SYMBOL",
           "name": "literal_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "unknown_type"
         }
       ]
     },
@@ -774,6 +778,10 @@
         {
           "type": "SYMBOL",
           "name": "paren_type"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "unknown_type"
         }
       ]
     },
@@ -820,6 +828,13 @@
       "content": {
         "type": "PATTERN",
         "value": "\"[^\"]*\""
+      }
+    },
+    "unknown_type": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[a-z][a-zA-Z0-9\\-_]*"
       }
     },
     "default_value": {

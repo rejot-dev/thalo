@@ -725,7 +725,9 @@ function convertSectionDefinition(section: SectionDefinition): ModelSectionDefin
   };
 }
 
-function convertTypeExpression(expr: TypeExpression): ModelTypeExpression {
+function convertTypeExpression(
+  expr: TypeExpression | import("../ast/types.js").SyntaxErrorNode<"unknown_type">,
+): ModelTypeExpression {
   switch (expr.type) {
     case "primitive_type":
       return { kind: "primitive", name: expr.name };
@@ -737,7 +739,7 @@ function convertTypeExpression(expr: TypeExpression): ModelTypeExpression {
         kind: "array",
         elementType: convertTypeExpression(expr.elementType) as Exclude<
           ModelTypeExpression,
-          { kind: "array" | "union" }
+          { kind: "array" | "union" | "unknown" }
         >,
       };
     case "union_type":
@@ -748,6 +750,9 @@ function convertTypeExpression(expr: TypeExpression): ModelTypeExpression {
           (m) => convertTypeExpression(m) as Exclude<ModelTypeExpression, { kind: "union" }>,
         ),
       };
+    case "syntax_error":
+      // Unknown type - preserve the name for error messages
+      return { kind: "unknown", name: expr.text };
   }
 }
 

@@ -77,11 +77,22 @@ export type ModelTypeExpression =
   | ModelPrimitiveType
   | ModelLiteralType
   | ModelArrayType
-  | ModelUnionType;
+  | ModelUnionType
+  | ModelUnknownType;
 
 export interface ModelPrimitiveType {
   kind: "primitive";
   name: "string" | "datetime" | "date-range" | "link";
+}
+
+/**
+ * An unknown/invalid type (e.g., typo like "date-time" instead of "datetime").
+ * Fields with this type are included in the schema but type validation is skipped.
+ */
+export interface ModelUnknownType {
+  kind: "unknown";
+  /** The unrecognized type name as written */
+  name: string;
 }
 
 export interface ModelLiteralType {
@@ -91,12 +102,12 @@ export interface ModelLiteralType {
 
 export interface ModelArrayType {
   kind: "array";
-  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType;
+  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType | ModelUnknownType;
 }
 
 export interface ModelUnionType {
   kind: "union";
-  members: (ModelPrimitiveType | ModelLiteralType | ModelArrayType)[];
+  members: (ModelPrimitiveType | ModelLiteralType | ModelArrayType | ModelUnknownType)[];
 }
 
 // ===================

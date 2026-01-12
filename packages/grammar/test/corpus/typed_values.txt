@@ -506,3 +506,28 @@ array: mixed types
             (link)
             (quoted_value)
             (date_range)))))))
+
+
+==================
+Unknown type (misspelled datetime)
+==================
+
+2026-01-05T18:12Z define-entity event "Events"
+  # Metadata
+  created: date-time
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (timestamp)
+      (schema_directive)
+      (identifier)
+      (title)
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (unknown_type)))))))
+

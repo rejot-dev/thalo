@@ -1,4 +1,33 @@
 /**
+ * AST (Abstract Syntax Tree) type definitions for the Thalo language.
+ *
+ * ## CST vs AST
+ *
+ * This module defines the **AST** - a cleaned-up, typed representation of Thalo source code.
+ * It is built from the **CST** (Concrete Syntax Tree) produced by tree-sitter.
+ *
+ * **CST (from tree-sitter grammar):**
+ * - Raw parse tree with all syntactic details
+ * - Node types like `primitive_type`, `unknown_type`, `timestamp`, etc.
+ * - May contain ERROR nodes for invalid syntax
+ * - Accessed via `SyntaxNode` interface
+ *
+ * **AST (this module):**
+ * - Typed, validated representation for semantic analysis
+ * - Converts CST nodes to typed interfaces (e.g., `PrimitiveType`, `Timestamp`)
+ * - Handles syntax errors gracefully via `SyntaxErrorNode` (e.g., unknown types become errors)
+ * - Uses `Result<T, E>` pattern for fields that may contain recoverable errors
+ *
+ * **Example:** The CST node `unknown_type` (for typos like "date-time") is converted to a
+ * `SyntaxErrorNode<"unknown_type">` in the AST, allowing the rest of the document to parse
+ * while still reporting the error precisely.
+ *
+ * The conversion happens in `extract.ts` (CST → AST) and `builder.ts` (timestamp decomposition).
+ *
+ * @module
+ */
+
+/**
  * Tree-sitter Point interface (row and column).
  *
  * Compatible with both tree-sitter (native) and web-tree-sitter (web).
@@ -82,6 +111,7 @@ export type SyntaxErrorCode =
   | "invalid_directive"
   | "invalid_timestamp"
   | "malformed_metadata"
+  | "unknown_type"
   | "parse_error";
 
 /**
@@ -274,7 +304,8 @@ export interface FieldDefinition extends AstNode {
   type: "field_definition";
   name: FieldName;
   optional: boolean;
-  typeExpr: TypeExpression;
+  /** The type expression, or SyntaxErrorNode if an unknown type was used */
+  typeExpr: Result<TypeExpression, "unknown_type">;
   defaultValue: DefaultValue | null;
   description: Description | null;
 }

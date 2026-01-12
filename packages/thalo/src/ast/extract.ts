@@ -1,5 +1,5 @@
 import type { SyntaxNode } from "./types.js";
-import { buildTimestamp } from "./builder.js";
+import { buildTimestamp, createSyntaxError } from "./builder.js";
 import type {
   AstNode,
   Location,
@@ -29,6 +29,7 @@ import type {
   LiteralType,
   ArrayType,
   UnionType,
+  SyntaxErrorNode,
   Metadata,
   Content,
   MarkdownHeader,
@@ -51,7 +52,6 @@ import type {
   SectionName,
   Description,
   DefaultValue,
-  SyntaxErrorNode,
 } from "./types.js";
 
 /**
@@ -142,8 +142,10 @@ export function extractSourceFile(node: SyntaxNode): SourceFile {
 
   for (const child of node.namedChildren) {
     if (!child) {
+      // Skip nulls (web-tree-sitter can return null in arrays)
       continue;
-    } // Skip nulls (web-tree-sitter can return null in arrays)
+    }
+
     if (child.type === "entry") {
       const entry = extractEntry(child);
       if (entry) {
@@ -485,9 +487,12 @@ export function extractSectionRemoval(node: SyntaxNode): SectionRemoval {
 }
 
 /**
- * Extract a TypeExpression
+ * Extract a TypeExpression.
+ * Returns a SyntaxErrorNode if an unknown type identifier is encountered.
  */
-export function extractTypeExpression(node: SyntaxNode): TypeExpression {
+export function extractTypeExpression(
+  node: SyntaxNode,
+): TypeExpression | SyntaxErrorNode<"unknown_type"> {
   // type_expression wraps the actual type
   const child = node.namedChildren[0];
   if (!child) {
@@ -503,6 +508,13 @@ export function extractTypeExpression(node: SyntaxNode): TypeExpression {
       return extractArrayType(child);
     case "union_type":
       return extractUnionType(child);
+    case "unknown_type":
+      return createSyntaxError(
+        "unknown_type",
+        `Unknown type '${child.text}'. Valid types: string, datetime, date-range, link`,
+        child.text,
+        child,
+      );
     default:
       throw new Error(`Unknown type expression: ${child.type}`);
   }
@@ -529,9 +541,10 @@ export function extractLiteralType(node: SyntaxNode): LiteralType {
 }
 
 /**
- * Extract an ArrayType
+ * Extract an ArrayType.
+ * Returns a SyntaxErrorNode if the element type is unknown.
  */
-export function extractArrayType(node: SyntaxNode): ArrayType {
+export function extractArrayType(node: SyntaxNode): ArrayType | SyntaxErrorNode<"unknown_type"> {
   const child = node.namedChildren[0];
   if (!child) {
     throw new Error("Empty array_type");
@@ -542,6 +555,14 @@ export function extractArrayType(node: SyntaxNode): ArrayType {
     elementType = extractPrimitiveType(child);
   } else if (child.type === "literal_type") {
     elementType = extractLiteralType(child);
+  } else if (child.type === "unknown_type") {
+    // Unknown element type in array - return syntax error for whole type
+    return createSyntaxError(
+      "unknown_type",
+      `Unknown type '${child.text}'. Valid types: string, datetime, date-range, link`,
+      node.text,
+      node,
+    );
   } else if (child.type === "paren_type") {
     // Parenthesized type: extract the inner type_expression
     const innerTypeExpr = child.namedChildren[0];
@@ -565,9 +586,10 @@ export function extractArrayType(node: SyntaxNode): ArrayType {
 }
 
 /**
- * Extract a UnionType
+ * Extract a UnionType.
+ * Returns a SyntaxErrorNode if any member is an unknown type.
  */
-export function extractUnionType(node: SyntaxNode): UnionType {
+export function extractUnionType(node: SyntaxNode): UnionType | SyntaxErrorNode<"unknown_type"> {
   const members: (PrimitiveType | LiteralType | ArrayType)[] = [];
 
   for (const child of node.namedChildren) {
@@ -581,9 +603,22 @@ export function extractUnionType(node: SyntaxNode): UnionType {
       case "literal_type":
         members.push(extractLiteralType(child));
         break;
-      case "array_type":
-        members.push(extractArrayType(child));
+      case "array_type": {
+        const arrayType = extractArrayType(child);
+        if (arrayType.type === "syntax_error") {
+          return arrayType; // Bubble up the error
+        }
+        members.push(arrayType);
         break;
+      }
+      case "unknown_type":
+        // Unknown type in union - return syntax error for whole type
+        return createSyntaxError(
+          "unknown_type",
+          `Unknown type '${child.text}'. Valid types: string, datetime, date-range, link`,
+          node.text,
+          node,
+        );
     }
   }
 
