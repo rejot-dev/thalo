@@ -173,22 +173,23 @@ describe("parse error handling", () => {
       expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it("should return original source and warn when timezone is forgotten in timestamp", async () => {
+    it("should format successfully when timezone is missing (semantic error caught by checker)", async () => {
       // Missing timezone indicator (Z or +/-HH:MM) at end of timestamp
+      // Grammar accepts this - error is caught in AST builder and reported by checker
       const input = `2026-01-05T15:30 create lore "Title"
   type: "fact"`;
 
       const result = await format(input);
 
-      // Should return original source unchanged
-      expect(result).toBe(input + "\n");
-      expect(warnSpy).toHaveBeenCalled();
+      // Should format successfully (no parse error, just semantic error)
+      expect(result).toBeDefined();
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it("should return original source unchanged when file has any errors", async () => {
-      // First entry is invalid (no timezone), second is valid
-      // We return original unchanged to avoid tree-sitter error recovery issues
-      const input = `2026-01-05T15:30 create lore "Invalid"
+    it("should format successfully when one entry has missing timezone", async () => {
+      // First entry is missing timezone, second is valid
+      // Grammar accepts both - missing timezone is a semantic error
+      const input = `2026-01-05T15:30 create lore "Missing TZ"
   type: "fact"
 
 2026-01-05T18:11Z create lore "Valid Entry"
@@ -197,11 +198,9 @@ describe("parse error handling", () => {
 
       const result = await format(input);
 
-      // Should warn about errors
-      expect(warnSpy).toHaveBeenCalled();
-
-      // Should return original source unchanged (already has trailing newline)
-      expect(result).toBe(input);
+      // Should format successfully (no parse errors)
+      expect(result).toBeDefined();
+      expect(warnSpy).not.toHaveBeenCalled();
     });
   });
 });

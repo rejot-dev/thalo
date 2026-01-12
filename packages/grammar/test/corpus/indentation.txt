@@ -11,7 +11,11 @@
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -37,7 +41,11 @@ tab indentation for metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -65,7 +73,11 @@ tab indentation for metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -93,7 +105,11 @@ tab indentation for content
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -121,7 +137,11 @@ tab indentation for markdown header
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -149,7 +169,11 @@ tab indentation for markdown header
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -180,7 +204,11 @@ mixed 4-space indent throughout
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -218,7 +246,11 @@ Empty Whitespace
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -244,7 +276,11 @@ Empty Whitespace
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -270,7 +306,11 @@ Empty Whitespace
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -298,7 +338,11 @@ Content-only entry (no metadata)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -328,7 +372,11 @@ Multiple consecutive blank lines in content
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -352,7 +400,11 @@ Entry ending at EOF (no trailing newline)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -377,7 +429,11 @@ Mixed tabs and spaces in same entry
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -411,7 +467,11 @@ Content line that looks like metadata
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -442,7 +502,11 @@ Deeply nested markdown headers
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -476,7 +540,11 @@ Content directly after header (no blank line)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -501,7 +569,11 @@ Content directly after metadata (no blank line)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)

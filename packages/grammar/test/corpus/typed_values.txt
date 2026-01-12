@@ -10,7 +10,11 @@ value: simple link
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -31,7 +35,11 @@ value: link with path
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -52,7 +60,11 @@ value: quoted value
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -73,7 +85,11 @@ value: datetime with time
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (link)
       (metadata
@@ -93,7 +109,11 @@ value: datetime without time (date only)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -101,7 +121,6 @@ value: datetime without time (date only)
         (key)
         (value
           (datetime_value))))))
-
 
 ==================
 value: date range years
@@ -115,7 +134,11 @@ value: date range years
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -136,7 +159,11 @@ value: date range full dates
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -157,7 +184,11 @@ value: array of links
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -181,7 +212,11 @@ value: array of quoted values
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -204,7 +239,11 @@ value: array mixed links and quoted
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -228,7 +267,11 @@ query: entity with field condition
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -255,7 +298,11 @@ query: entity with tag condition
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -281,7 +328,11 @@ query: entity with link condition
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -307,7 +358,11 @@ query: multiple conditions with and
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -337,7 +392,11 @@ query: three conditions
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -371,7 +430,11 @@ query: field with quoted value
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -398,7 +461,11 @@ array: multiple queries
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -433,7 +500,11 @@ array: three queries
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (title)
       (link)
@@ -472,7 +543,11 @@ array: date ranges
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -495,7 +570,11 @@ array: mixed types
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -506,7 +585,6 @@ array: mixed types
             (link)
             (quoted_value)
             (date_range)))))))
-
 
 ==================
 Unknown type (misspelled datetime)
@@ -521,7 +599,11 @@ Unknown type (misspelled datetime)
 (source_file
   (entry
     (schema_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (schema_directive)
       (identifier)
       (title)
@@ -530,4 +612,3 @@ Unknown type (misspelled datetime)
           (field_name)
           (type_expression
             (unknown_type)))))))
-

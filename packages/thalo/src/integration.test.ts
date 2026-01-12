@@ -42,40 +42,21 @@ describe("integration", () => {
     expect(diagnostics).toMatchInlineSnapshot(`
       [
         {
-          "code": "syntax-parse_error",
+          "code": "syntax-missing_timezone",
           "file": "entries.thalo",
           "location": {
-            "endIndex": 107,
+            "endIndex": 17,
             "endPosition": {
-              "column": 21,
-              "row": 3,
+              "column": 16,
+              "row": 1,
             },
-            "startIndex": 1,
+            "startIndex": 17,
             "startPosition": {
-              "column": 0,
+              "column": 16,
               "row": 1,
             },
           },
-          "message": "Parse error: unexpected content "2026-01-05T10:00 create reference "First entry" ^f..."",
-          "severity": "error",
-        },
-        {
-          "code": "syntax-parse_error",
-          "file": "entries.thalo",
-          "location": {
-            "endIndex": 147,
-            "endPosition": {
-              "column": 26,
-              "row": 6,
-            },
-            "startIndex": 111,
-            "startPosition": {
-              "column": 2,
-              "row": 5,
-            },
-          },
-          "message": "Parse error: unexpected content "# Summary
-        This is the first entry."",
+          "message": "Timestamp requires timezone (e.g., Z or +05:30)",
           "severity": "error",
         },
       ]

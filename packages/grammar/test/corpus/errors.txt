@@ -9,7 +9,11 @@ unclosed title quote (recovers at newline)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title))))
@@ -30,7 +34,11 @@ unclosed title quote with content (recovers at newline)
 (source_file
   (entry
     (data_entry
-      (timestamp)
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
       (data_directive)
       (identifier)
       (title)
@@ -44,3 +52,59 @@ unclosed title quote with content (recovers at newline)
           (md_heading_text))
         (content_line
           (content_text))))))
+
+==================
+timestamp without timezone (validated in AST builder)
+==================
+
+2026-01-05T18:11 create lore "Entry without timezone"
+  type: "fact"
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (quoted_value))))))
+
+==================
+timestamp without timezone in schema entry
+==================
+
+2026-01-05T10:00 define-entity test "Test entity"
+  # Metadata
+  name: string
+
+  # Sections
+  Summary
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time))
+      (schema_directive)
+      (identifier)
+      (title)
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type))))
+      (sections_block
+        (section_definition
+          (section_name))))))

@@ -13,7 +13,7 @@ import {
 } from "./builder.js";
 import { isSyntaxError, isValidResult } from "./types.js";
 
-// Helper to create a mock syntax node
+// Helper to create a mock syntax node (simple version for non-timestamp nodes)
 function mockSyntaxNode(text: string, startIndex: number = 0): SyntaxNode {
   return {
     type: "timestamp",
@@ -23,6 +23,85 @@ function mockSyntaxNode(text: string, startIndex: number = 0): SyntaxNode {
     startPosition: { row: 0, column: startIndex } as Point,
     endPosition: { row: 0, column: startIndex + text.length } as Point,
     namedChildren: [],
+    childForFieldName: () => null,
+  } as unknown as import("tree-sitter").SyntaxNode;
+}
+
+// Helper to create a mock timestamp node with proper child nodes
+function mockTimestampNode(text: string, startIndex: number = 0): SyntaxNode {
+  // Parse timestamp to create proper child nodes
+  const match = text.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(Z|[+-]\d{2}:\d{2})?$/);
+  if (!match) {
+    throw new Error(`Invalid timestamp format for mock: "${text}"`);
+  }
+
+  const dateStr = match[1]; // YYYY-MM-DD (no T)
+  const timeStr = match[2];
+  const tzStr = match[3];
+
+  const dateEndIndex = startIndex + 10; // YYYY-MM-DD
+  const tEndIndex = dateEndIndex + 1; // T
+  const timeEndIndex = tEndIndex + 5; // HH:MM
+  const tzEndIndex = tzStr ? timeEndIndex + tzStr.length : timeEndIndex;
+
+  const dateNode = {
+    type: "timestamp_date",
+    text: dateStr,
+    startIndex,
+    endIndex: dateEndIndex,
+    startPosition: { row: 0, column: startIndex } as Point,
+    endPosition: { row: 0, column: dateEndIndex } as Point,
+  };
+
+  const tNode = {
+    type: "timestamp_t",
+    text: "T",
+    startIndex: dateEndIndex,
+    endIndex: tEndIndex,
+    startPosition: { row: 0, column: dateEndIndex } as Point,
+    endPosition: { row: 0, column: tEndIndex } as Point,
+  };
+
+  const timeNode = {
+    type: "timestamp_time",
+    text: timeStr,
+    startIndex: tEndIndex,
+    endIndex: timeEndIndex,
+    startPosition: { row: 0, column: tEndIndex } as Point,
+    endPosition: { row: 0, column: timeEndIndex } as Point,
+  };
+
+  const tzNode = tzStr
+    ? {
+        type: "timestamp_tz",
+        text: tzStr,
+        startIndex: timeEndIndex,
+        endIndex: tzEndIndex,
+        startPosition: { row: 0, column: timeEndIndex } as Point,
+        endPosition: { row: 0, column: tzEndIndex } as Point,
+      }
+    : null;
+
+  return {
+    type: "timestamp",
+    text,
+    startIndex,
+    endIndex: startIndex + text.length,
+    startPosition: { row: 0, column: startIndex } as Point,
+    endPosition: { row: 0, column: startIndex + text.length } as Point,
+    namedChildren: tzNode ? [dateNode, tNode, timeNode, tzNode] : [dateNode, tNode, timeNode],
+    childForFieldName: (name: string) => {
+      if (name === "date") {
+        return dateNode as unknown as SyntaxNode;
+      }
+      if (name === "time") {
+        return timeNode as unknown as SyntaxNode;
+      }
+      if (name === "tz") {
+        return tzNode as unknown as SyntaxNode | null;
+      }
+      return null;
+    },
   } as unknown as import("tree-sitter").SyntaxNode;
 }
 
@@ -154,7 +233,7 @@ describe("buildTimezonePart", () => {
 
 describe("buildTimestamp", () => {
   it("should decompose timestamp with UTC timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30Z", 0);
+    const node = mockTimestampNode("2026-01-05T18:30Z", 0);
     const timestamp = buildTimestamp(node);
 
     expect(timestamp.type).toBe("timestamp");
@@ -183,7 +262,7 @@ describe("buildTimestamp", () => {
   });
 
   it("should decompose timestamp with positive offset timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30+05:30", 0);
+    const node = mockTimestampNode("2026-01-05T18:30+05:30", 0);
     const timestamp = buildTimestamp(node);
 
     expect(isValidResult(timestamp.timezone!)).toBe(true);
@@ -194,7 +273,7 @@ describe("buildTimestamp", () => {
   });
 
   it("should decompose timestamp with negative offset timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30-08:00", 0);
+    const node = mockTimestampNode("2026-01-05T18:30-08:00", 0);
     const timestamp = buildTimestamp(node);
 
     expect(isValidResult(timestamp.timezone!)).toBe(true);
@@ -205,7 +284,7 @@ describe("buildTimestamp", () => {
   });
 
   it("should create syntax error for missing timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30", 0);
+    const node = mockTimestampNode("2026-01-05T18:30", 0);
     const timestamp = buildTimestamp(node);
 
     // Should still have date and time
@@ -221,10 +300,13 @@ describe("buildTimestamp", () => {
     }
   });
 
-  it("should throw for malformed timestamp", () => {
+  it("should throw for missing child nodes", () => {
+    // Mock node without proper children simulates invalid structure
     const node = mockSyntaxNode("not-a-timestamp", 0);
 
-    expect(() => buildTimestamp(node)).toThrow('Invalid timestamp format: "not-a-timestamp"');
+    expect(() => buildTimestamp(node)).toThrow(
+      "Invalid timestamp structure: missing date or time node",
+    );
   });
 });
 
@@ -243,13 +325,13 @@ describe("createSyntaxError", () => {
 
 describe("hasValidTimezone", () => {
   it("should return true for valid timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30Z", 0);
+    const node = mockTimestampNode("2026-01-05T18:30Z", 0);
     const timestamp = buildTimestamp(node);
     expect(hasValidTimezone(timestamp)).toBe(true);
   });
 
   it("should return false for missing timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30", 0);
+    const node = mockTimestampNode("2026-01-05T18:30", 0);
     const timestamp = buildTimestamp(node);
     expect(hasValidTimezone(timestamp)).toBe(false);
   });
@@ -257,13 +339,13 @@ describe("hasValidTimezone", () => {
 
 describe("getTimezoneValue", () => {
   it("should return timezone value for valid timestamp", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30Z", 0);
+    const node = mockTimestampNode("2026-01-05T18:30Z", 0);
     const timestamp = buildTimestamp(node);
     expect(getTimezoneValue(timestamp)).toBe("Z");
   });
 
   it("should return null for missing timezone", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30", 0);
+    const node = mockTimestampNode("2026-01-05T18:30", 0);
     const timestamp = buildTimestamp(node);
     expect(getTimezoneValue(timestamp)).toBeNull();
   });
@@ -271,19 +353,19 @@ describe("getTimezoneValue", () => {
 
 describe("formatTimestamp", () => {
   it("should format complete timestamp", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30Z", 0);
+    const node = mockTimestampNode("2026-01-05T18:30Z", 0);
     const timestamp = buildTimestamp(node);
     expect(formatTimestamp(timestamp)).toBe("2026-01-05T18:30Z");
   });
 
   it("should format timestamp with positive offset", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30+05:30", 0);
+    const node = mockTimestampNode("2026-01-05T18:30+05:30", 0);
     const timestamp = buildTimestamp(node);
     expect(formatTimestamp(timestamp)).toBe("2026-01-05T18:30+05:30");
   });
 
   it("should format timestamp without timezone (drops timezone)", () => {
-    const node = mockSyntaxNode("2026-01-05T18:30", 0);
+    const node = mockTimestampNode("2026-01-05T18:30", 0);
     const timestamp = buildTimestamp(node);
     expect(formatTimestamp(timestamp)).toBe("2026-01-05T18:30");
   });

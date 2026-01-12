@@ -188,65 +188,50 @@ export function buildTimezonePart(
 }
 
 /**
- * Build a Timestamp with decomposed parts from a timestamp string.
+ * Build a Timestamp with decomposed parts from tree-sitter child nodes.
  *
- * Expected format: YYYY-MM-DDTHH:MM[Z|±HH:MM]
+ * The grammar decomposes timestamp into:
+ * - timestamp_date: "YYYY-MM-DD" (date)
+ * - timestamp_t: "T" (separator, not a field)
+ * - timestamp_time: "HH:MM" (time)
+ * - timestamp_tz: "Z" or "±HH:MM" (optional timezone)
  *
- * If the timezone is missing (when grammar allows it), a SyntaxErrorNode
- * is created for the timezone field.
+ * If the timezone is missing, a SyntaxErrorNode is created for the timezone field.
  *
- * @param node - The tree-sitter node for the timestamp
+ * @param node - The tree-sitter timestamp node with date, time, and optional tz children
  * @returns Timestamp with decomposed date, time, and timezone parts
  */
 export function buildTimestamp(node: SyntaxNode): Timestamp {
   const text = node.text;
 
-  // Parse the timestamp: YYYY-MM-DDTHH:MM[Z|±HH:MM]
-  const match = text.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(Z|[+-]\d{2}:\d{2})?$/);
+  // Get child nodes by field name
+  const dateNode = node.childForFieldName("date");
+  const timeNode = node.childForFieldName("time");
+  const tzNode = node.childForFieldName("tz");
 
-  if (!match) {
-    throw new Error(`Invalid timestamp format: "${text}"`);
+  if (!dateNode || !timeNode) {
+    throw new Error(`Invalid timestamp structure: missing date or time node in "${text}"`);
   }
 
-  const dateStr = match[1];
-  const timeStr = match[2];
-  const tzStr = match[3];
+  // Build date part with location from the actual node
+  const dateLocation = extractLocation(dateNode);
+  const datePart = buildDatePart(dateNode.text, dateLocation, dateNode);
 
-  // Calculate positions for each part within the timestamp
-  const baseIndex = node.startIndex;
-  const baseRow = node.startPosition.row;
-  const baseCol = node.startPosition.column;
-
-  // Date: positions 0-9 (YYYY-MM-DD)
-  const dateLocation = syntheticLocation(
-    { index: baseIndex, position: { row: baseRow, column: baseCol } },
-    { index: baseIndex + 10, position: { row: baseRow, column: baseCol + 10 } },
-  );
-
-  // Time: positions 11-15 (HH:MM, after the T)
-  const timeLocation = syntheticLocation(
-    { index: baseIndex + 11, position: { row: baseRow, column: baseCol + 11 } },
-    { index: baseIndex + 16, position: { row: baseRow, column: baseCol + 16 } },
-  );
-
-  const datePart = buildDatePart(dateStr, dateLocation, node);
-  const timePart = buildTimePart(timeStr, timeLocation, node);
+  // Build time part with location from the actual node
+  const timeLocation = extractLocation(timeNode);
+  const timePart = buildTimePart(timeNode.text, timeLocation, timeNode);
 
   // Build timezone or syntax error if missing
   let timezone: Result<TimezonePart, "missing_timezone">;
 
-  if (tzStr) {
-    // Timezone: position 16 onwards
-    const tzLocation = syntheticLocation(
-      { index: baseIndex + 16, position: { row: baseRow, column: baseCol + 16 } },
-      { index: node.endIndex, position: node.endPosition },
-    );
-    timezone = buildTimezonePart(tzStr, tzLocation, node);
+  if (tzNode) {
+    const tzLocation = extractLocation(tzNode);
+    timezone = buildTimezonePart(tzNode.text, tzLocation, tzNode);
   } else {
-    // Missing timezone - create syntax error at end of timestamp
+    // Missing timezone - create syntax error at end of timestamp (after time)
     const errorLocation = syntheticLocation(
-      { index: baseIndex + 16, position: { row: baseRow, column: baseCol + 16 } },
-      { index: baseIndex + 16, position: { row: baseRow, column: baseCol + 16 } },
+      { index: timeNode.endIndex, position: timeNode.endPosition },
+      { index: timeNode.endIndex, position: timeNode.endPosition },
     );
     timezone = createSyntaxErrorAt(
       "missing_timezone",
