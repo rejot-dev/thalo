@@ -7,7 +7,7 @@ import type { CommandDef, CommandContext } from "../cli.js";
 // File Templates
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, reflections, and experiences"
+const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, reflections, and experiences" ^journal
   # Metadata
   subject: string | link ; "Subject name/slug (use ^self for personal)"
   type: string ; "idea, reflection, experience, doubt, question, etc."
@@ -16,7 +16,7 @@ const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   # Sections
   Entry ; "The journal entry content"
 
-{{TIMESTAMP}} define-entity opinion "Formed stances on topics"
+{{TIMESTAMP}} define-entity opinion "Formed stances on topics" ^opinion
   # Metadata
   confidence: "high" | "medium" | "low"
   supersedes?: link ; "Reference to previous stance"
@@ -26,7 +26,7 @@ const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   Reasoning ; "Bullet points supporting the claim"
   Caveats? ; "Edge cases, limitations, exceptions"
 
-{{TIMESTAMP}} define-entity reference "External resources or local files"
+{{TIMESTAMP}} define-entity reference "External resources or local files" ^reference
   # Metadata
   url?: string ; "Full URL to external resource"
   file?: string ; "Path to local file"
@@ -39,7 +39,7 @@ const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   Key Takeaways? ; "Bullet points of main insights"
   Related? ; "Links to related entries"
 
-{{TIMESTAMP}} define-entity lore "Facts and insights about subjects or yourself"
+{{TIMESTAMP}} define-entity lore "Facts and insights about subjects or yourself" ^lore
   # Metadata
   type: "fact" | "insight" ; "fact = verifiable info, insight = learned wisdom"
   subject: string | link ; "Subject name/slug (use ^self for personal lore)"
@@ -110,6 +110,18 @@ Each entity type defines which sections are required/optional in \`entities.thal
 - Use \`thalo check\` to validate entries against schemas
 `;
 
+const PERSONAL_BIO_MD = `\`\`\`thalo
+{{TIMESTAMP}} define-synthesis "Personal Bio" ^bio-synthesis #profile
+  sources: lore where subject = ^self
+
+  # Prompt
+  Write a narrative bio from the collected facts and insights.
+  Keep it professional but personable.
+\`\`\`
+
+# Personal Bio
+`;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Init Action
 // ─────────────────────────────────────────────────────────────────────────────
@@ -138,6 +150,7 @@ function initAction(ctx: CommandContext): void {
   const files = [
     { path: "entities.thalo", content: ENTITIES_THALO.replace(/\{\{TIMESTAMP\}\}/g, timestamp) },
     { path: "AGENTS.md", content: AGENTS_MD },
+    { path: "personal-bio.md", content: PERSONAL_BIO_MD.replace(/\{\{TIMESTAMP\}\}/g, timestamp) },
   ];
 
   let createdCount = 0;

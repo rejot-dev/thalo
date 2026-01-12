@@ -83,7 +83,10 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
       </div>
 
       {/* Desktop: Wide vignette overlay - covers entire section for smooth left-to-right fade */}
-      <div className="pointer-events-none absolute inset-0 hidden lg:block bg-[linear-gradient(to_right,#faf3e6_0%,#faf3e6_25%,transparent_55%)] dark:bg-[linear-gradient(to_right,oklch(0.14_0.015_50)_0%,oklch(0.14_0.015_50)_25%,transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 hidden lg:block bg-[linear-gradient(to_right,#faf3e6_0%,#faf3e6_25%,transparent_55%)] dark:bg-[linear-gradient(to_right,oklch(0.12_0.01_50)_0%,oklch(0.14_0.015_50)_20%,oklch(0.14_0.015_50)_30%,transparent_55%)]" />
+
+      {/* Desktop dark mode: Subtle ambient glow on left side for visual interest */}
+      <div className="pointer-events-none absolute inset-0 hidden dark:lg:block bg-[radial-gradient(ellipse_80%_100%_at_15%_50%,oklch(0.20_0.02_50/0.4)_0%,transparent_50%)]" />
 
       <div className="relative mx-auto w-full max-w-7xl px-6 py-12 md:px-8 lg:px-12">
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
