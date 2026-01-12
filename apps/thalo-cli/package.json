@@ -25,7 +25,9 @@
   },
   "dependencies": {
     "@rejot-dev/thalo": "workspace:*",
-    "picocolors": "^1.1.1"
+    "@rejot-dev/tree-sitter-thalo": "workspace:*",
+    "picocolors": "^1.1.1",
+    "tree-sitter": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

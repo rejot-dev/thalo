@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import { check } from "../check.js";
 
@@ -6,7 +7,7 @@ describe("empty-required-value rule", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
@@ -84,7 +85,7 @@ describe("empty-required-value rule", () => {
   });
 
   it("does not report field with default value", () => {
-    const workspaceWithDefaults = new Workspace();
+    const workspaceWithDefaults = createWorkspace();
     workspaceWithDefaults.addDocument(
       `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata

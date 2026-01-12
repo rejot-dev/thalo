@@ -1,5 +1,5 @@
-import type { SyntaxNode, Point } from "tree-sitter";
-import type { ParsedDocument, ParsedBlock } from "../parser.js";
+import type { SyntaxNode, Point } from "./types.js";
+import type { ParsedDocument, ParsedBlock, GenericTree } from "../parser.shared.js";
 import {
   findBlockAtPosition,
   positionToPoint,
@@ -317,7 +317,10 @@ function checkForDirective(
  * @param position - File-absolute position (0-based line and column)
  * @returns The semantic context at the position, or { kind: "unknown" } if not recognized
  */
-export function findNodeAtPosition(parsed: ParsedDocument, position: Position): NodeContext {
+export function findNodeAtPosition(
+  parsed: ParsedDocument<GenericTree>,
+  position: Position,
+): NodeContext {
   // Find which block contains the position
   const match = findBlockAtPosition(parsed.blocks, position);
   if (!match) {
@@ -328,7 +331,8 @@ export function findNodeAtPosition(parsed: ParsedDocument, position: Position): 
   const point = positionToPoint(blockPosition);
 
   // Use tree-sitter to find the deepest node at this position
-  const rootNode = block.tree.rootNode;
+  // Type assertion: both native and web tree-sitter rootNode have compatible interfaces
+  const rootNode = block.tree.rootNode as SyntaxNode;
   let node = rootNode.descendantForPosition(point);
 
   if (!node) {
@@ -352,6 +356,9 @@ export function findNodeAtPosition(parsed: ParsedDocument, position: Position): 
  */
 function findChildEndingAt(node: SyntaxNode, point: Point): SyntaxNode | null {
   for (const child of node.namedChildren) {
+    if (!child) {
+      continue;
+    } // Skip nulls
     const end = child.endPosition;
     // Check if this child ends exactly at the point
     if (end.row === point.row && end.column === point.column) {

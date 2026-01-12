@@ -32,7 +32,6 @@
     "@react-router/node": "^7.9.5",
     "@react-router/serve": "^7.9.5",
     "@rejot-dev/thalo": "workspace:*",
-    "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "codemirror": "^6.0.2",
@@ -58,6 +57,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.5",
+    "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "@react-router/dev": "^7.9.5",
     "@rejot-dev/typescript-config": "workspace:*",
     "@tailwindcss/vite": "^4.1.16",

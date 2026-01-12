@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import { check } from "../check.js";
 
@@ -6,7 +7,7 @@ describe("invalid-default-value rule", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   it("reports default value that does not match enum type", () => {

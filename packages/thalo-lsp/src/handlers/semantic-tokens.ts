@@ -1,11 +1,7 @@
 import type { SemanticTokens } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  parseDocument,
-  extractSemanticTokens,
-  encodeSemanticTokens,
-  type FileType,
-} from "@rejot-dev/thalo";
+import { extractSemanticTokens, encodeSemanticTokens, type FileType } from "@rejot-dev/thalo";
+import { parseDocument } from "@rejot-dev/thalo/native";
 
 /**
  * Get the file type from a URI

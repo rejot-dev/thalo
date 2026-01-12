@@ -48,6 +48,26 @@
       "development": "./src/services/change-tracker/index.ts",
       "types": "./dist/services/change-tracker/index.d.ts",
       "default": "./dist/services/change-tracker/index.js"
+    },
+    "./commands/check": {
+      "development": "./src/commands/check.ts",
+      "types": "./dist/commands/check.d.ts",
+      "default": "./dist/commands/check.js"
+    },
+    "./commands/query": {
+      "development": "./src/commands/query.ts",
+      "types": "./dist/commands/query.d.ts",
+      "default": "./dist/commands/query.js"
+    },
+    "./commands/actualize": {
+      "development": "./src/commands/actualize.ts",
+      "types": "./dist/commands/actualize.d.ts",
+      "default": "./dist/commands/actualize.js"
+    },
+    "./formatters": {
+      "development": "./src/formatters.ts",
+      "types": "./dist/formatters.d.ts",
+      "default": "./dist/formatters.js"
     }
   },
   "main": "./dist/index.js",
@@ -59,16 +79,30 @@
     "test": "vitest run",
     "test:watch": "vitest --watch"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "tree-sitter": "catalog:",
     "web-tree-sitter": "catalog:"
   },
+  "peerDependenciesMeta": {
+    "@rejot-dev/tree-sitter-thalo": {
+      "optional": true
+    },
+    "tree-sitter": {
+      "optional": true
+    },
+    "web-tree-sitter": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "@rejot-dev/typescript-config": "workspace:*",
     "@types/node": "catalog:",
+    "tree-sitter": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "web-tree-sitter": "catalog:"
   }
 }

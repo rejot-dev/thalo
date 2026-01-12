@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import { check } from "../check.js";
 
@@ -6,7 +7,7 @@ describe("missing-title rule", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
@@ -61,7 +62,7 @@ describe("missing-title rule", () => {
   });
 
   it("reports missing title on schema entry", () => {
-    const workspaceWithBadSchema = new Workspace();
+    const workspaceWithBadSchema = createWorkspace();
     workspaceWithBadSchema.addDocument(
       `2026-01-01T00:00Z define-entity lore ""
   # Metadata
@@ -78,7 +79,7 @@ describe("missing-title rule", () => {
   });
 
   it("reports on both instance and schema entries", () => {
-    const workspaceWithMissingTitles = new Workspace();
+    const workspaceWithMissingTitles = createWorkspace();
     workspaceWithMissingTitles.addDocument(
       `2026-01-01T00:00Z define-entity lore ""
   # Metadata

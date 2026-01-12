@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { GitChangeTracker } from "./git-tracker.js";
+import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import type { Query } from "../../model/types.js";
 import * as path from "node:path";
@@ -39,7 +40,7 @@ describe("GitChangeTracker", () => {
 
     beforeEach(() => {
       tracker = new GitChangeTracker({ cwd: repoRoot });
-      workspace = new Workspace();
+      workspace = createWorkspace();
     });
 
     it("should throw when not in git repo", async () => {

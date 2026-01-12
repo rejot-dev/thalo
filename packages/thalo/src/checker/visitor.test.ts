@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { createWorkspace } from "../parser.native.js";
 import { Workspace } from "../model/workspace.js";
 import { buildWorkspaceIndex } from "./workspace-index.js";
 import {
@@ -15,7 +16,7 @@ describe("Visitor", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   describe("runVisitors", () => {

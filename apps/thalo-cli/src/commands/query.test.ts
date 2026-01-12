@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { Workspace, executeQuery } from "@rejot-dev/thalo";
-import { parseQueryString } from "./query.js";
+import { executeQuery, parseQueryString } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 
 describe("query command", () => {
   describe("parseQueryString", () => {
@@ -103,7 +103,7 @@ describe("query command", () => {
     let workspace: Workspace;
 
     beforeEach(() => {
-      workspace = new Workspace();
+      workspace = createWorkspace();
 
       // Add schema
       workspace.addDocument(

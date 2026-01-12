@@ -1,4 +1,50 @@
-import type { SyntaxNode, Point } from "tree-sitter";
+/**
+ * Tree-sitter Point interface (row and column).
+ *
+ * Compatible with both tree-sitter (native) and web-tree-sitter (web).
+ */
+export interface Point {
+  row: number;
+  column: number;
+}
+
+/**
+ * Minimal SyntaxNode interface compatible with both tree-sitter and web-tree-sitter.
+ *
+ * This interface represents the common subset of properties and methods available
+ * in both tree-sitter's `SyntaxNode` and web-tree-sitter's `Node`.
+ *
+ * We define our own interface rather than importing from tree-sitter because:
+ * 1. tree-sitter is a peer dependency, not a regular dependency
+ * 2. The native and web versions have slightly different interfaces
+ * 3. We only need a minimal subset of the full tree-sitter API
+ *
+ * Note: In web-tree-sitter, namedChildren, children, and childrenForFieldName can
+ * contain null values. Native tree-sitter doesn't include nulls, but the type
+ * `(SyntaxNode | null)[]` is compatible with `SyntaxNode[]` (contravariance).
+ * Code should filter out nulls when needed using `.filter((c): c is SyntaxNode => c !== null)`.
+ */
+export interface SyntaxNode {
+  readonly id: number;
+  readonly type: string;
+  readonly text: string;
+  readonly startIndex: number;
+  readonly endIndex: number;
+  readonly startPosition: Point;
+  readonly endPosition: Point;
+  readonly namedChildren: readonly (SyntaxNode | null)[];
+  readonly children: readonly (SyntaxNode | null)[];
+  readonly parent: SyntaxNode | null;
+  childForFieldName(fieldName: string): SyntaxNode | null;
+  childrenForFieldName(fieldName: string): (SyntaxNode | null)[];
+  descendantForPosition(start: Point, end?: Point): SyntaxNode | null;
+  descendantsOfType(
+    type: string | string[],
+    startPosition?: Point,
+    endPosition?: Point,
+  ): (SyntaxNode | null)[];
+  readonly hasError: boolean;
+}
 
 /**
  * Location information for an AST node

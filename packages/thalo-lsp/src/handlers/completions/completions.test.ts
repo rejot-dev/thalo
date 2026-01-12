@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import { CompletionItemKind, type CompletionParams, type Position } from "vscode-languageserver";
 import { handleCompletion, handleCompletionResolve, detectContext } from "./index.js";
 import type { CompletionContext, CompletionContextKind } from "./context.js";
@@ -356,7 +356,7 @@ describe("detectContext", () => {
 describe("TimestampProvider", () => {
   it("provides current timestamp at line start", () => {
     const ctx = createTestContext("line_start");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = timestampProvider.getCompletions(ctx, workspace);
 
     expect(items).toHaveLength(1);
@@ -368,7 +368,7 @@ describe("TimestampProvider", () => {
 describe("DirectiveProvider", () => {
   it("provides all directives after timestamp", () => {
     const ctx = createTestContext("after_timestamp");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = directiveProvider.getCompletions(ctx, workspace);
 
     const labels = items.map((i) => i.label);
@@ -382,7 +382,7 @@ describe("DirectiveProvider", () => {
 
   it("filters directives by partial text", () => {
     const ctx = createTestContext("after_timestamp", "def");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = directiveProvider.getCompletions(ctx, workspace);
 
     expect(items).toHaveLength(2);
@@ -393,7 +393,7 @@ describe("DirectiveProvider", () => {
 
   it("filters directives by partial text for actualize", () => {
     const ctx = createTestContext("after_timestamp", "act");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = directiveProvider.getCompletions(ctx, workspace);
 
     expect(items).toHaveLength(1);
@@ -402,7 +402,7 @@ describe("DirectiveProvider", () => {
 
   it("includes synthesis directives description", () => {
     const ctx = createTestContext("after_timestamp");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = directiveProvider.getCompletions(ctx, workspace);
 
     const defineSynthesis = items.find((i) => i.label === "define-synthesis");
@@ -419,7 +419,7 @@ describe("EntityProvider", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
   });
 
   it("provides entities from schema registry for create directive", () => {
@@ -485,7 +485,7 @@ describe("MetadataKeyProvider", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
@@ -541,7 +541,7 @@ describe("MetadataValueProvider", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: "fact" | "insight"
@@ -580,7 +580,7 @@ describe("LinkProvider", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     const source = `2026-01-05T18:00Z create lore "Test entry" ^my-lore #test
   type: "fact"
 
@@ -632,7 +632,7 @@ describe("TagProvider", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     const source = `2026-01-05T18:00Z create lore "Entry 1" #typescript #testing
   type: "fact"
 
@@ -677,7 +677,7 @@ describe("SectionProvider", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     const schemaSource = `2026-01-01T00:00Z define-entity opinion "Opinions"
   # Metadata
   confidence: "high" | "medium" | "low"
@@ -723,7 +723,7 @@ describe("SectionProvider", () => {
 describe("SchemaBlockProvider", () => {
   it("provides schema block headers for define-entity", () => {
     const ctx = createTestContext("schema_block_header", "#", { directive: "define-entity" });
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = schemaBlockProvider.getCompletions(ctx, workspace);
 
     const labels = items.map((i) => i.label);
@@ -736,7 +736,7 @@ describe("SchemaBlockProvider", () => {
 
   it("provides all block headers for alter-entity", () => {
     const ctx = createTestContext("schema_block_header", "#", { directive: "alter-entity" });
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = schemaBlockProvider.getCompletions(ctx, workspace);
 
     const labels = items.map((i) => i.label);
@@ -748,7 +748,7 @@ describe("SchemaBlockProvider", () => {
 
   it("filters by partial text", () => {
     const ctx = createTestContext("schema_block_header", "# Meta", { directive: "define-entity" });
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = schemaBlockProvider.getCompletions(ctx, workspace);
 
     expect(items).toHaveLength(1);
@@ -759,7 +759,7 @@ describe("SchemaBlockProvider", () => {
 describe("TypeExprProvider", () => {
   it("provides primitive types", () => {
     const ctx = createTestContext("field_type", "");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = typeExprProvider.getCompletions(ctx, workspace);
 
     const labels = items.map((i) => i.label);
@@ -771,7 +771,7 @@ describe("TypeExprProvider", () => {
 
   it("provides literal type suggestion", () => {
     const ctx = createTestContext("field_type", "");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = typeExprProvider.getCompletions(ctx, workspace);
 
     const literalItem = items.find((i) => i.label === '"..."');
@@ -780,7 +780,7 @@ describe("TypeExprProvider", () => {
 
   it("filters by partial text", () => {
     const ctx = createTestContext("field_type", "str");
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = typeExprProvider.getCompletions(ctx, workspace);
 
     expect(items).toHaveLength(1);
@@ -796,7 +796,7 @@ describe("handleCompletion integration", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
 
     // Add schema definitions
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore entries"
@@ -918,7 +918,7 @@ describe("handleCompletion integration", () => {
 
 describe("edge cases", () => {
   it("handles empty workspace gracefully", () => {
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = completeFromMarker(
       workspace,
       `2026-01-06T14:30Z create lore "Title"
@@ -929,7 +929,7 @@ describe("edge cases", () => {
   });
 
   it("handles workspace without schema gracefully", () => {
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const items = completeFromMarker(
       workspace,
       `2026-01-06T14:30Z create lore "Title"
@@ -940,7 +940,7 @@ describe("edge cases", () => {
   });
 
   it("handles cursor at various indentation levels", () => {
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: string
@@ -965,7 +965,7 @@ describe("edge cases", () => {
   });
 
   it("filters completions by partial text correctly", () => {
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     const schemaSource = `2026-01-01T00:00Z define-entity lore "Lore"
   # Metadata
   type: "fact" | "insight"

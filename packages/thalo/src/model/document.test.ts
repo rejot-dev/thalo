@@ -1,34 +1,46 @@
 import { describe, it, expect } from "vitest";
 import { Document } from "./document.js";
+import type { FileType } from "../parser.shared.js";
+import { createParser } from "../parser.native.js";
+
+// Shared parser for all tests
+const parser = createParser();
+
+/**
+ * Create a document with the native parser.
+ */
+function createDocument(filename: string, source: string, fileType?: FileType): Document {
+  return new Document(parser, filename, source, fileType);
+}
 
 describe("Document", () => {
   describe("constructor", () => {
     it("should detect thalo file type from extension", () => {
-      const doc = new Document("test.thalo", "2024-01-01T12:00 create fact ^id");
+      const doc = createDocument("test.thalo", "2024-01-01T12:00 create fact ^id");
       expect(doc.fileType).toBe("thalo");
       expect(doc.blocks.length).toBe(1);
     });
 
     it("should detect markdown file type from extension", () => {
       const source = "# Title\n\n```thalo\n2024-01-01T12:00 create fact ^id\n```\n";
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
       expect(doc.fileType).toBe("markdown");
       expect(doc.blocks.length).toBe(1);
     });
 
     it("should detect markdown from content when no extension", () => {
       const source = "# Title\n\n```thalo\n2024-01-01T12:00 create fact ^id\n```\n";
-      const doc = new Document("test", source);
+      const doc = createDocument("test", source);
       expect(doc.fileType).toBe("markdown");
     });
 
     it("should default to thalo when no markers present", () => {
-      const doc = new Document("test", "2024-01-01T12:00 create fact ^id");
+      const doc = createDocument("test", "2024-01-01T12:00 create fact ^id");
       expect(doc.fileType).toBe("thalo");
     });
 
     it("should allow explicit file type override", () => {
-      const doc = new Document("test.md", "2024-01-01T12:00 create fact ^id", "thalo");
+      const doc = createDocument("test.md", "2024-01-01T12:00 create fact ^id", "thalo");
       expect(doc.fileType).toBe("thalo");
     });
   });
@@ -37,7 +49,7 @@ describe("Document", () => {
     it("should create single block for thalo files", () => {
       const source = `2024-01-01T12:00 create fact "Test" ^test-id
   key: "value"`;
-      const doc = new Document("test.thalo", source);
+      const doc = createDocument("test.thalo", source);
 
       expect(doc.blocks.length).toBe(1);
       expect(doc.blocks[0].source).toBe(source);
@@ -47,7 +59,7 @@ describe("Document", () => {
 
     it("should parse tree correctly", () => {
       const source = '2024-01-01T12:00 create fact "Test" ^test-id';
-      const doc = new Document("test.thalo", source);
+      const doc = createDocument("test.thalo", source);
 
       expect(doc.blocks[0].tree.rootNode.type).toBe("source_file");
     });
@@ -62,7 +74,7 @@ describe("Document", () => {
 \`\`\`
 
 Some text`;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       expect(doc.blocks.length).toBe(1);
       expect(doc.blocks[0].source).toBe("2024-01-01T12:00 create fact ^id\n");
@@ -80,7 +92,7 @@ Middle text
 \`\`\`thalo
 2024-01-02T12:00 create fact ^id2
 \`\`\``;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       expect(doc.blocks.length).toBe(2);
       expect(doc.blocks[0].source).toBe("2024-01-01T12:00 create fact ^id1\n");
@@ -95,7 +107,7 @@ Just regular markdown
 \`\`\`javascript
 console.log("not thalo");
 \`\`\``;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
       expect(doc.blocks.length).toBe(0);
     });
 
@@ -105,7 +117,7 @@ console.log("not thalo");
 \`\`\`thalo
 2024-01-01T12:00 create fact ^id
 \`\`\``;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       expect(doc.blocks.length).toBe(1);
       const block = doc.blocks[0];
@@ -117,7 +129,7 @@ console.log("not thalo");
 
   describe("applyEdit - thalo files", () => {
     it("should apply single character insertion", () => {
-      const doc = new Document("test.thalo", "hello world");
+      const doc = createDocument("test.thalo", "hello world");
       // Insert " there" after "hello" (at position 5)
       const result = doc.applyEdit(0, 5, 0, 5, " there");
 
@@ -127,7 +139,7 @@ console.log("not thalo");
     });
 
     it("should apply text replacement", () => {
-      const doc = new Document("test.thalo", "hello world");
+      const doc = createDocument("test.thalo", "hello world");
       // Replace "world" (chars 6-11) with "universe"
       const result = doc.applyEdit(0, 6, 0, 11, "universe");
 
@@ -136,7 +148,7 @@ console.log("not thalo");
     });
 
     it("should apply multiline insertion", () => {
-      const doc = new Document("test.thalo", '2024-01-01T12:00 create fact "Test" ^id');
+      const doc = createDocument("test.thalo", '2024-01-01T12:00 create fact "Test" ^id');
       const result = doc.applyEdit(0, 39, 0, 39, '\n  key: "value"');
 
       expect(result.fullReparse).toBe(false);
@@ -147,7 +159,7 @@ console.log("not thalo");
     it("should apply deletion", () => {
       const source = `2024-01-01T12:00 create fact "Test" ^id
   key: "value"`;
-      const doc = new Document("test.thalo", source);
+      const doc = createDocument("test.thalo", source);
 
       // Delete the second line
       const result = doc.applyEdit(0, 39, 1, 14, "");
@@ -157,7 +169,7 @@ console.log("not thalo");
     });
 
     it("should update line index after edit", () => {
-      const doc = new Document("test.thalo", "line1\nline2");
+      const doc = createDocument("test.thalo", "line1\nline2");
 
       expect(doc.lineIndex.lineCount).toBe(2);
 
@@ -175,7 +187,7 @@ console.log("not thalo");
 \`\`\`thalo
 2024-01-01T12:00 create fact ^id
 \`\`\``;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       // Edit within the thalo block (add metadata)
       const result = doc.applyEdit(3, 32, 3, 32, '\n  key: "value"');
@@ -189,7 +201,7 @@ console.log("not thalo");
       const source = `# Title
 
 Some text`;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       expect(doc.blocks.length).toBe(0);
 
@@ -213,7 +225,7 @@ Some text`;
 \`\`\`thalo
 2024-01-01T12:00 create fact ^id
 \`\`\``;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       expect(doc.blocks.length).toBe(1);
 
@@ -230,7 +242,7 @@ Some text`;
 \`\`\`thalo
 2024-01-01T12:00 create fact ^id
 \`\`\``;
-      const doc = new Document("test.md", source);
+      const doc = createDocument("test.md", source);
 
       const originalStartOffset = doc.blocks[0].startOffset;
 
@@ -244,7 +256,7 @@ Some text`;
 
   describe("replaceContent", () => {
     it("should replace entire document content", () => {
-      const doc = new Document("test.thalo", "original content");
+      const doc = createDocument("test.thalo", "original content");
 
       doc.replaceContent('2024-01-01T12:00 create fact "New" ^id');
 
@@ -264,7 +276,7 @@ Some text`;
 2024-01-02T12:00 create fact ^id2
 \`\`\``;
 
-      const doc = new Document("test.md", source1);
+      const doc = createDocument("test.md", source1);
       expect(doc.blocks.length).toBe(1);
 
       doc.replaceContent(source2);
@@ -274,7 +286,7 @@ Some text`;
 
   describe("applyEditRange", () => {
     it("should accept tree-sitter format edit", () => {
-      const doc = new Document("test.thalo", "hello world");
+      const doc = createDocument("test.thalo", "hello world");
 
       doc.applyEditRange(
         {

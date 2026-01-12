@@ -121,9 +121,6 @@ importers:
       '@rejot-dev/thalo':
         specifier: workspace:*
         version: link:../../packages/thalo
-      '@rejot-dev/tree-sitter-thalo':
-        specifier: workspace:*
-        version: link:../../packages/grammar
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -197,6 +194,9 @@ importers:
       '@react-router/dev':
         specifier: ^7.9.5
         version: 7.12.0(@react-router/serve@7.12.0(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(typescript@5.9.3))(@types/node@24.10.4)(babel-plugin-macros@3.1.0)(jiti@2.6.1)(lightningcss@1.30.2)(react-router@7.12.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0))(wrangler@4.58.0)
+      '@rejot-dev/tree-sitter-thalo':
+        specifier: workspace:*
+        version: link:../../packages/grammar
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -251,9 +251,15 @@ importers:
       '@rejot-dev/thalo':
         specifier: workspace:*
         version: link:../../packages/thalo
+      '@rejot-dev/tree-sitter-thalo':
+        specifier: workspace:*
+        version: link:../../packages/grammar
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
+      tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.0
     devDependencies:
       '@rejot-dev/typescript-config':
         specifier: workspace:*
@@ -324,23 +330,19 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
 
   packages/thalo:
-    dependencies:
+    devDependencies:
       '@rejot-dev/tree-sitter-thalo':
         specifier: workspace:*
         version: link:../grammar
-      tree-sitter:
-        specifier: 'catalog:'
-        version: 0.25.0
-      web-tree-sitter:
-        specifier: 'catalog:'
-        version: 0.25.10(patch_hash=c35b0a0c6fb8d018f279f0f307240fc083bb7278dca75c113b83567ee15c526b)
-    devDependencies:
       '@rejot-dev/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':
         specifier: 'catalog:'
         version: 24.10.4
+      tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.0
       tsdown:
         specifier: 'catalog:'
         version: 0.15.12(typescript@5.9.3)
@@ -350,6 +352,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
+      web-tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.10(patch_hash=c35b0a0c6fb8d018f279f0f307240fc083bb7278dca75c113b83567ee15c526b)
 
   packages/thalo-lsp:
     dependencies:

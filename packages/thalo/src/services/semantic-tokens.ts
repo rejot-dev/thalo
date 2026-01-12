@@ -1,5 +1,5 @@
-import type { SyntaxNode, Tree } from "tree-sitter";
-import type { ParsedDocument } from "../parser.js";
+import type { SyntaxNode } from "../ast/types.js";
+import type { ParsedDocument, GenericTree } from "../parser.shared.js";
 import type { SourceMap } from "../source-map.js";
 
 /**
@@ -98,8 +98,13 @@ export function extractSemanticTokens(document: ParsedDocument): SemanticToken[]
 /**
  * Extract tokens from a tree-sitter tree
  */
-function extractTokensFromTree(tree: Tree, sourceMap: SourceMap, tokens: SemanticToken[]): void {
-  const cursor = tree.walk();
+function extractTokensFromTree(
+  tree: GenericTree,
+  sourceMap: SourceMap,
+  tokens: SemanticToken[],
+): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cursor = (tree as any).walk();
 
   // DFS traversal
   const visitNode = (node: SyntaxNode): void => {

@@ -14,20 +14,17 @@ import type {
   FieldDefinition,
   SectionDefinition,
   TypeExpression,
-  Timestamp,
-  TimezonePart,
   DefaultValue as AstDefaultValue,
 } from "../ast/types.js";
-import { isSyntaxError } from "../ast/types.js";
 import type { SemanticModel, LinkIndex, LinkDefinition, LinkReference } from "../semantic/types.js";
-import type { FileType } from "../parser.js";
-import { parseDocument } from "../parser.js";
+import type { ThaloParser, GenericTree, FileType } from "../parser.shared.js";
 import { extractSourceFile } from "../ast/extract.js";
 import { analyze, updateSemanticModel } from "../semantic/analyzer.js";
 import { SchemaRegistry } from "../schema/registry.js";
 import { identitySourceMap, type SourceMap } from "../source-map.js";
 import { Document, type EditResult } from "./document.js";
 import { LineIndex, computeEdit } from "./line-index.js";
+import { formatTimestamp } from "../formatters.js";
 
 /**
  * Options for adding a document to the workspace
@@ -59,10 +56,32 @@ export interface InvalidationResult {
 /**
  * A workspace containing multiple thalo documents.
  * Provides cross-file link resolution and schema management.
+ *
+ * The workspace is parser-agnostic - it accepts any parser that implements
+ * the ThaloParser interface, allowing it to work with both native (Node.js)
+ * and web (WASM) tree-sitter implementations.
+ *
+ * @example
+ * ```typescript
+ * // With native parser (Node.js) - parser is optional, defaults to native
+ * import { Workspace } from "@rejot-dev/thalo";
+ * const workspace = new Workspace();
+ *
+ * // With explicit parser
+ * import { createParser } from "@rejot-dev/thalo/native";
+ * const parser = createParser();
+ * const workspace = new Workspace(parser);
+ *
+ * // With web parser (browser)
+ * import { createParser } from "@rejot-dev/thalo/web";
+ * const parser = await createParser({ treeSitterWasm, languageWasm });
+ * const workspace = new Workspace(parser);
+ * ```
  */
 export class Workspace {
+  private parser: ThaloParser<GenericTree>;
   private models = new Map<string, SemanticModel>();
-  private documents = new Map<string, Document>();
+  private documents = new Map<string, Document<GenericTree>>();
   private _schemaRegistry = new SchemaRegistry();
   private _linkIndex: LinkIndex = {
     definitions: new Map(),
@@ -74,6 +93,16 @@ export class Workspace {
   private linkDependencies = new Map<string, Set<string>>();
   // entityName -> Set of files that use this entity (as instances)
   private entityDependencies = new Map<string, Set<string>>();
+
+  /**
+   * Create a new Workspace.
+   *
+   * @param parser - A ThaloParser instance. For Node.js, use createParser() from "@rejot-dev/thalo".
+   *                 For browser, use createParser() from "@rejot-dev/thalo/web".
+   */
+  constructor(parser: ThaloParser<GenericTree>) {
+    this.parser = parser;
+  }
 
   /**
    * Get the schema registry for this workspace
@@ -99,7 +128,7 @@ export class Workspace {
     this.removeDocument(filename);
 
     // Parse and create SemanticModel
-    const parsed = parseDocument(source, { fileType });
+    const parsed = this.parser.parseDocument(source, { fileType });
     if (parsed.blocks.length === 0) {
       // Empty document - create minimal model
       const emptyLocation = {
@@ -131,7 +160,8 @@ export class Workspace {
 
     // For now, only process the first block (standard for .thalo files)
     const block = parsed.blocks[0];
-    const ast = extractSourceFile(block.tree.rootNode);
+    // Type assertion: both native and web tree-sitter rootNode have compatible interfaces
+    const ast = extractSourceFile(block.tree.rootNode as import("tree-sitter").SyntaxNode);
     const model = analyze(ast, {
       file: filename,
       source,
@@ -253,7 +283,7 @@ export class Workspace {
    * Get the Document instance for incremental editing.
    * Returns undefined if the document hasn't been added with incremental support.
    */
-  getDocument(file: string): Document | undefined {
+  getDocument(file: string): Document<GenericTree> | undefined {
     return this.documents.get(file);
   }
 
@@ -320,7 +350,7 @@ export class Workspace {
     if (doc) {
       doc.replaceContent(newSource);
     } else {
-      doc = new Document(filename, newSource);
+      doc = new Document(this.parser, filename, newSource);
       this.documents.set(filename, doc);
     }
 
@@ -475,7 +505,7 @@ export class Workspace {
    */
   private updateModelFromDocument(
     filename: string,
-    doc: Document,
+    doc: Document<GenericTree>,
     editResult: EditResult,
   ): InvalidationResult {
     const result: InvalidationResult = {
@@ -536,7 +566,8 @@ export class Workspace {
 
     // Parse the first block
     const block = doc.blocks[0];
-    const newAst = extractSourceFile(block.tree.rootNode);
+    // Type assertion: both native and web tree-sitter rootNode have compatible interfaces
+    const newAst = extractSourceFile(block.tree.rootNode as import("tree-sitter").SyntaxNode);
     const newSourceMap = block.sourceMap;
     const newBlocks = doc.blocks.map((b) => ({
       source: b.source,
@@ -730,21 +761,4 @@ function convertDefaultValue(defaultValue: AstDefaultValue): ModelDefaultValue {
     case "datetime_value":
       return { kind: "datetime", value: defaultValue.content.value, raw };
   }
-}
-
-function formatTimestamp(ts: Timestamp): string {
-  const date = `${ts.date.year}-${ts.date.month.toString().padStart(2, "0")}-${ts.date.day.toString().padStart(2, "0")}`;
-  const time = `${ts.time.hour.toString().padStart(2, "0")}:${ts.time.minute.toString().padStart(2, "0")}`;
-  const tz = formatTimezone(ts.timezone);
-  return `${date}T${time}${tz}`;
-}
-
-function formatTimezone(
-  tz: TimezonePart | import("../ast/types.js").SyntaxErrorNode<"missing_timezone">,
-): string {
-  if (isSyntaxError(tz)) {
-    return "";
-  }
-  // Return the value directly - it's already formatted ("Z", "+05:30", "-08:00")
-  return tz.value;
 }

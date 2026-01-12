@@ -1,5 +1,5 @@
-import type { SyntaxNode, Tree } from "tree-sitter";
-import { parseThalo } from "./parser.js";
+import type { SyntaxNode } from "./ast/types.js";
+import type { ThaloParser, GenericTree } from "./parser.shared.js";
 
 /**
  * Supported fragment types for parsing individual expressions.
@@ -28,7 +28,7 @@ const FRAGMENT_WRAPPERS: Record<
   FragmentType,
   {
     wrapper: string;
-    find: (tree: Tree) => SyntaxNode | null;
+    find: (tree: GenericTree) => SyntaxNode | null;
   }
 > = {
   // Queries are embedded as metadata values in a data entry
@@ -37,11 +37,11 @@ const FRAGMENT_WRAPPERS: Record<
   sources: {FRAGMENT}`,
     find: (tree) => {
       // Navigate: source_file > entry > data_entry > metadata > value > query
-      const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
-      const dataEntry = entry?.namedChildren.find((c) => c.type === "data_entry");
-      const metadata = dataEntry?.namedChildren.find((c) => c.type === "metadata");
+      const entry = tree.rootNode.namedChildren.find((c) => c?.type === "entry");
+      const dataEntry = entry?.namedChildren.find((c) => c?.type === "data_entry");
+      const metadata = dataEntry?.namedChildren.find((c) => c?.type === "metadata");
       const value = metadata?.childForFieldName("value");
-      return value?.namedChildren.find((c) => c.type === "query") ?? null;
+      return value?.namedChildren.find((c) => c?.type === "query") ?? null;
     },
   },
 
@@ -50,9 +50,9 @@ const FRAGMENT_WRAPPERS: Record<
     wrapper: `2000-01-01T00:00Z create lore "x"
   key: {FRAGMENT}`,
     find: (tree) => {
-      const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
-      const dataEntry = entry?.namedChildren.find((c) => c.type === "data_entry");
-      const metadata = dataEntry?.namedChildren.find((c) => c.type === "metadata");
+      const entry = tree.rootNode.namedChildren.find((c) => c?.type === "entry");
+      const dataEntry = entry?.namedChildren.find((c) => c?.type === "data_entry");
+      const metadata = dataEntry?.namedChildren.find((c) => c?.type === "metadata");
       return metadata?.childForFieldName("value") ?? null;
     },
   },
@@ -64,10 +64,10 @@ const FRAGMENT_WRAPPERS: Record<
   field: {FRAGMENT}`,
     find: (tree) => {
       // Navigate: source_file > entry > schema_entry > metadata_block > field_definition > type
-      const entry = tree.rootNode.namedChildren.find((c) => c.type === "entry");
-      const schemaEntry = entry?.namedChildren.find((c) => c.type === "schema_entry");
-      const metadataBlock = schemaEntry?.namedChildren.find((c) => c.type === "metadata_block");
-      const fieldDef = metadataBlock?.namedChildren.find((c) => c.type === "field_definition");
+      const entry = tree.rootNode.namedChildren.find((c) => c?.type === "entry");
+      const schemaEntry = entry?.namedChildren.find((c) => c?.type === "schema_entry");
+      const metadataBlock = schemaEntry?.namedChildren.find((c) => c?.type === "metadata_block");
+      const fieldDef = metadataBlock?.namedChildren.find((c) => c?.type === "field_definition");
       return fieldDef?.childForFieldName("type") ?? null;
     },
   },
@@ -80,23 +80,34 @@ const FRAGMENT_WRAPPERS: Record<
  * embeds the fragment in a minimal valid document context, parses it, and
  * extracts the relevant syntax node.
  *
+ * The parser parameter makes this function work in both Node.js and browser environments.
+ *
  * @example
  * ```ts
- * // Parse a query expression
- * const result = parseFragment('query', 'lore where type = "fact" and #education');
+ * // With native parser (Node.js)
+ * import { createParser } from "@rejot-dev/thalo/native";
+ * const parser = createParser();
+ * const result = parseFragment(parser, 'query', 'lore where type = "fact" and #education');
  * if (result.valid) {
  *   console.log(result.node.type); // "query"
  * }
  *
- * // Parse a type expression
- * const typeResult = parseFragment('type_expression', 'string | "literal"');
+ * // With web parser (browser)
+ * import { createParser } from "@rejot-dev/thalo/web";
+ * const parser = await createParser({ treeSitterWasm, languageWasm });
+ * const typeResult = parseFragment(parser, 'type_expression', 'string | "literal"');
  * ```
  *
+ * @param parser - A ThaloParser instance (native or web)
  * @param type - The type of fragment to parse
  * @param source - The source string to parse as that fragment type
  * @returns ParsedFragment with the syntax node and validity status
  */
-export function parseFragment(type: FragmentType, source: string): ParsedFragment {
+export function parseFragment(
+  parser: ThaloParser<GenericTree>,
+  type: FragmentType,
+  source: string,
+): ParsedFragment {
   const config = FRAGMENT_WRAPPERS[type];
   if (!config) {
     return {
@@ -108,7 +119,7 @@ export function parseFragment(type: FragmentType, source: string): ParsedFragmen
 
   // Embed fragment in wrapper template
   const wrappedSource = config.wrapper.replace("{FRAGMENT}", source);
-  const tree = parseThalo(wrappedSource);
+  const tree = parser.parse(wrappedSource);
 
   // Check for parse errors in the whole tree
   if (tree.rootNode.hasError) {
@@ -147,18 +158,24 @@ export function parseFragment(type: FragmentType, source: string): ParsedFragmen
 
 /**
  * Parse a query expression.
- * Convenience wrapper around parseFragment('query', source).
+ * Convenience wrapper around parseFragment(parser, 'query', source).
  *
  * @example
  * ```ts
- * const result = parseQuery('lore where type = "fact" and #education');
+ * import { createParser } from "@rejot-dev/thalo/native";
+ * const parser = createParser();
+ * const result = parseQuery(parser, 'lore where type = "fact" and #education');
  * if (result.valid) {
  *   // result.node.type === "query"
  *   // Access entity: result.node.childForFieldName('entity')
  *   // Access conditions: result.node.childForFieldName('conditions')
  * }
  * ```
+ *
+ * @param parser - A ThaloParser instance (native or web)
+ * @param source - The query string to parse
+ * @returns ParsedFragment with the syntax node and validity status
  */
-export function parseQuery(source: string): ParsedFragment {
-  return parseFragment("query", source);
+export function parseQuery(parser: ThaloParser<GenericTree>, source: string): ParsedFragment {
+  return parseFragment(parser, "query", source);
 }

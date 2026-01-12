@@ -1,15 +1,7 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import {
-  Workspace,
-  parseQuery as parseQueryFragment,
-  executeQuery,
-  formatQuery,
-  findEntryFile,
-  getEntrySourceText,
-  type Query,
-  type InstanceEntry,
-} from "@rejot-dev/thalo";
+import { runQuery, formatQueryResultRaw, type QueryEntryInfo } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 
@@ -82,7 +74,7 @@ async function resolveFiles(paths: string[]): Promise<string[]> {
  * Load workspace from files
  */
 async function loadWorkspace(files: string[]): Promise<Workspace> {
-  const workspace = new Workspace();
+  const workspace = createWorkspace();
 
   for (const file of files) {
     try {
@@ -109,96 +101,16 @@ function relativePath(filePath: string): string {
 }
 
 /**
- * Get raw entry text from source file
+ * Format entry with colors for default display
  */
-async function getEntryRawText(entry: InstanceEntry, file: string): Promise<string> {
-  try {
-    const source = await readFile(file, "utf-8");
-    return getEntrySourceText(entry, source);
-  } catch {
-    return `[Could not read entry from ${file}]`;
-  }
-}
-
-/**
- * Extract query from parsed fragment syntax node.
- * Converts tree-sitter node to model Query.
- */
-function extractQueryFromNode(node: { text: string; type: string }): Query | null {
-  if (node.type !== "query") {
-    return null;
-  }
-
-  // Parse the query text to extract entity and conditions
-  const text = node.text;
-  const whereMatch = text.match(/^(\S+)(?:\s+where\s+(.+))?$/);
-
-  if (!whereMatch) {
-    return null;
-  }
-
-  const [, entity, conditionsStr] = whereMatch;
-  const conditions: Query["conditions"] = [];
-
-  if (conditionsStr) {
-    // Split by " and " to get individual conditions
-    const condParts = conditionsStr.split(/\s+and\s+/);
-
-    for (const part of condParts) {
-      const trimmed = part.trim();
-
-      // Tag condition: #tag
-      if (trimmed.startsWith("#")) {
-        conditions.push({ kind: "tag", tag: trimmed.slice(1) });
-        continue;
-      }
-
-      // Link condition: ^link
-      if (trimmed.startsWith("^")) {
-        conditions.push({ kind: "link", link: trimmed.slice(1) });
-        continue;
-      }
-
-      // Field condition: field = value
-      const fieldMatch = trimmed.match(/^(\S+)\s*=\s*(.+)$/);
-      if (fieldMatch) {
-        const [, field, value] = fieldMatch;
-        // Keep the value as-is (including quotes) to match raw metadata values
-        conditions.push({ kind: "field", field, value });
-      }
-    }
-  }
-
-  return { entity, conditions };
-}
-
-/**
- * Format timestamp for display
- */
-function formatTimestamp(entry: InstanceEntry): string {
-  const ts = entry.header.timestamp;
-  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
-  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
-  return `${date}T${time}`;
-}
-
-/**
- * Format entry for default display
- */
-function formatEntryDefault(entry: InstanceEntry, file: string): string {
+function formatEntryDefault(entry: QueryEntryInfo): string {
   const lines: string[] = [];
-  const ts = formatTimestamp(entry);
-  const title = entry.header.title.value;
-  const entity = entry.header.entity;
-  const link = entry.header.link?.id;
-  const tags = entry.header.tags.map((t) => `#${t.name}`).join(" ");
-  const startLine = entry.location.startPosition.row + 1;
-  const endLine = entry.location.endPosition.row + 1;
+  const tags = entry.tags.map((t) => `#${t}`).join(" ");
 
   lines.push(
-    `${pc.dim(ts)} ${pc.cyan(entity)} ${pc.bold(title)}${link ? " " + pc.green(`^${link}`) : ""}${tags ? " " + pc.yellow(tags) : ""}`,
+    `${pc.dim(entry.timestamp)} ${pc.cyan(entry.entity)} ${pc.bold(entry.title)}${entry.linkId ? " " + pc.green(`^${entry.linkId}`) : ""}${tags ? " " + pc.yellow(tags) : ""}`,
   );
-  lines.push(`  ${pc.dim(`${relativePath(file)}:${startLine}-${endLine}`)}`);
+  lines.push(`  ${pc.dim(`${relativePath(entry.file)}:${entry.startLine}-${entry.endLine}`)}`);
 
   return lines.join("\n");
 }
@@ -206,47 +118,19 @@ function formatEntryDefault(entry: InstanceEntry, file: string): string {
 /**
  * Format entry for JSON output
  */
-function formatEntryJson(entry: InstanceEntry, file: string): object {
+function formatEntryJson(entry: QueryEntryInfo): object {
   return {
-    file: relativePath(file),
-    timestamp: formatTimestamp(entry),
-    entity: entry.header.entity,
-    title: entry.header.title.value,
-    tags: entry.header.tags.map((t) => t.name),
-    link: entry.header.link?.id ?? null,
-    metadata: entry.metadata.map((m) => ({
-      key: m.key.value,
-      value: m.value.raw,
-    })),
+    file: relativePath(entry.file),
+    timestamp: entry.timestamp,
+    entity: entry.entity,
+    title: entry.title,
+    tags: entry.tags,
+    link: entry.linkId,
     location: {
-      startLine: entry.location.startPosition.row + 1,
-      endLine: entry.location.endPosition.row + 1,
+      startLine: entry.startLine,
+      endLine: entry.endLine,
     },
   };
-}
-
-/**
- * Parse a query string into a Query object.
- * Supports both full queries ("lore where #tag") and entity-only ("lore").
- */
-export function parseQueryString(queryStr: string): Query | null {
-  // Check if it's an entity-only query (no "where" clause)
-  if (!queryStr.includes(" where ")) {
-    // Simple entity name - validate it's a single word
-    const trimmed = queryStr.trim();
-    if (/^[a-z][a-z0-9-]*$/i.test(trimmed)) {
-      return { entity: trimmed, conditions: [] };
-    }
-    // Not a valid entity name, try parsing as full query
-  }
-
-  // Parse as full query
-  const parseResult = parseQueryFragment(queryStr);
-  if (!parseResult.valid) {
-    return null;
-  }
-
-  return extractQueryFromNode(parseResult.node);
 }
 
 async function queryAction(ctx: CommandContext): Promise<void> {
@@ -264,19 +148,15 @@ async function queryAction(ctx: CommandContext): Promise<void> {
     process.exit(2);
   }
 
-  // Parse the query
-  const query = parseQueryString(queryStr);
-  if (!query) {
-    console.error(pc.red(`Error: Invalid query syntax`));
-    console.error(pc.dim(`Query: ${queryStr}`));
-    process.exit(2);
-  }
-
   // Handle format
   const format = (options["format"] as OutputFormat) || "default";
   if (format === "json") {
     process.env["NO_COLOR"] = "1";
   }
+
+  // Handle limit
+  const limitStr = options["limit"] as string | undefined;
+  const limit = limitStr ? parseInt(limitStr, 10) : undefined;
 
   // Determine target paths
   const targetPaths = args.slice(1);
@@ -291,26 +171,26 @@ async function queryAction(ctx: CommandContext): Promise<void> {
 
   const workspace = await loadWorkspace(files);
 
-  // Execute query
-  const results = executeQuery(workspace, query);
+  // Execute query using shared command
+  const result = runQuery(workspace, queryStr, {
+    limit,
+    includeRawText: format === "raw",
+  });
 
-  // Handle limit
-  const limitStr = options["limit"] as string | undefined;
-  const limit = limitStr ? parseInt(limitStr, 10) : undefined;
-  const limitedResults = limit && limit > 0 ? results.slice(0, limit) : results;
+  if (!result) {
+    console.error(pc.red(`Error: Invalid query syntax`));
+    console.error(pc.dim(`Query: ${queryStr}`));
+    process.exit(2);
+  }
 
   // Output results
   if (format === "json") {
-    const jsonResults = limitedResults.map((entry) => {
-      const file = findEntryFile(workspace, entry);
-      return formatEntryJson(entry, file || "unknown");
-    });
     console.log(
       JSON.stringify(
         {
-          query: formatQuery(query),
-          count: results.length,
-          results: jsonResults,
+          query: result.queryString,
+          count: result.totalCount,
+          results: result.entries.map(formatEntryJson),
         },
         null,
         2,
@@ -320,33 +200,29 @@ async function queryAction(ctx: CommandContext): Promise<void> {
   }
 
   if (format === "raw") {
-    // Output raw entry text
-    for (const entry of limitedResults) {
-      const file = findEntryFile(workspace, entry);
-      if (file) {
-        console.log(await getEntryRawText(entry, file));
-        console.log();
-      }
+    // Output raw entry text using shared formatter
+    const lines = formatQueryResultRaw(result);
+    for (const line of lines) {
+      console.log(line);
     }
     return;
   }
 
-  // Default format
+  // Default format with colors
   console.log();
-  console.log(`Query: ${pc.cyan(formatQuery(query))}`);
-  console.log(`Found: ${pc.bold(String(results.length))} entries`);
+  console.log(`Query: ${pc.cyan(result.queryString)}`);
+  console.log(`Found: ${pc.bold(String(result.totalCount))} entries`);
 
-  if (limitedResults.length > 0) {
+  if (result.entries.length > 0) {
     console.log();
-    for (const entry of limitedResults) {
-      const file = findEntryFile(workspace, entry);
-      console.log(formatEntryDefault(entry, file || "unknown"));
+    for (const entry of result.entries) {
+      console.log(formatEntryDefault(entry));
     }
   }
 
-  if (limit && results.length > limit) {
+  if (limit && result.totalCount > limit) {
     console.log();
-    console.log(pc.dim(`(showing ${limit} of ${results.length} results)`));
+    console.log(pc.dim(`(showing ${limit} of ${result.totalCount} results)`));
   }
 
   console.log();

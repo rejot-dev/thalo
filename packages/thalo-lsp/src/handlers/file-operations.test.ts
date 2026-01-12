@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import type { Position } from "vscode-languageserver";
 import { handleDefinition } from "./definition.js";
 import { handleReferences } from "./references.js";
@@ -33,7 +33,7 @@ describe("file operations - cross-file definition resolution", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "thalo-test-"));
   });
 

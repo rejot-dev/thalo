@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Workspace } from "../model/workspace.js";
+import { createWorkspace } from "../parser.native.js";
 import {
   formatTimestamp,
   getSynthesisSources,
@@ -15,7 +15,7 @@ import { executeQueries } from "./query.js";
 describe("synthesis service", () => {
   describe("formatTimestamp", () => {
     it("formats a UTC timestamp", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:30Z create lore "Test"
   type: "fact"
@@ -29,7 +29,7 @@ describe("synthesis service", () => {
     });
 
     it("formats a timestamp with positive offset", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:30+05:30 create lore "Test"
   type: "fact"
@@ -42,7 +42,7 @@ describe("synthesis service", () => {
     });
 
     it("formats a timestamp with negative offset", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:30-08:00 create lore "Test"
   type: "fact"
@@ -57,7 +57,7 @@ describe("synthesis service", () => {
 
   describe("getSynthesisSources", () => {
     it("extracts single source query", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
@@ -80,7 +80,7 @@ describe("synthesis service", () => {
     });
 
     it("extracts multiple source queries from array", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "All Career" ^all-career
   sources: lore where #career, journal where #career
@@ -101,7 +101,7 @@ describe("synthesis service", () => {
     });
 
     it("returns empty array when no sources metadata", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "No Sources" ^no-sources
 
@@ -121,7 +121,7 @@ describe("synthesis service", () => {
 
   describe("getSynthesisPrompt", () => {
     it("extracts prompt text from content", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -139,7 +139,7 @@ describe("synthesis service", () => {
     });
 
     it("returns null when no content", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -153,7 +153,7 @@ describe("synthesis service", () => {
     });
 
     it("returns null when no prompt header", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -172,7 +172,7 @@ describe("synthesis service", () => {
 
   describe("findAllSyntheses", () => {
     it("finds syntheses across multiple files", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -199,7 +199,7 @@ describe("synthesis service", () => {
     });
 
     it("includes all synthesis info fields", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "My Profile" ^my-profile
   sources: lore where subject = ^self
@@ -225,7 +225,7 @@ describe("synthesis service", () => {
 
   describe("findLatestActualize", () => {
     it("finds the latest actualize by timestamp", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -251,7 +251,7 @@ describe("synthesis service", () => {
     });
 
     it("returns null when no actualize exists", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -267,7 +267,7 @@ describe("synthesis service", () => {
     });
 
     it("only finds actualizes for the target synthesis", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -292,7 +292,7 @@ describe("synthesis service", () => {
 
   describe("getActualizeUpdatedTimestamp", () => {
     it("extracts updated timestamp from actualize", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -314,7 +314,7 @@ describe("synthesis service", () => {
     });
 
     it("returns null when no updated metadata", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore
@@ -333,7 +333,7 @@ describe("synthesis service", () => {
 
   describe("findEntryFile", () => {
     it("finds the file containing an entry", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z create lore "Entry 1"
   type: "fact"
@@ -377,7 +377,7 @@ describe("synthesis service", () => {
   # Content
   This is the content.`;
 
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(source, { filename: "test.thalo" });
 
       const entries = workspace.allInstanceEntries();
@@ -392,7 +392,7 @@ describe("synthesis service", () => {
 
   describe("integration: synthesis workflow", () => {
     it("finds new entries for a synthesis after last actualize", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
 
       // Add entries
       workspace.addDocument(
@@ -447,7 +447,7 @@ describe("synthesis service", () => {
     });
 
     it("returns all entries when no prior actualize exists", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
 
       workspace.addDocument(
         `2026-01-07T10:00Z create lore "Fact 1"

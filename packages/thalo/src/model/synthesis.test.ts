@@ -1,18 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { createWorkspace } from "../parser.native.js";
 import { Workspace } from "./workspace.js";
 import type { Query, QueryCondition } from "./types.js";
-import type { InstanceEntry, SynthesisEntry, ActualizeEntry, Timestamp } from "../ast/types.js";
-import { isSyntaxError } from "../ast/types.js";
-
-/**
- * Helper to format timestamp for comparisons
- */
-function formatTimestamp(ts: Timestamp): string {
-  const date = `${ts.date.year}-${String(ts.date.month).padStart(2, "0")}-${String(ts.date.day).padStart(2, "0")}`;
-  const time = `${String(ts.time.hour).padStart(2, "0")}:${String(ts.time.minute).padStart(2, "0")}`;
-  const tz = isSyntaxError(ts.timezone) ? "" : ts.timezone.value;
-  return `${date}T${time}${tz}`;
-}
+import type { InstanceEntry, SynthesisEntry, ActualizeEntry } from "../ast/types.js";
+import { formatTimestamp } from "../formatters.js";
 
 /**
  * Get synthesis sources from a synthesis entry (extracts queries from sources metadata)
@@ -163,7 +154,7 @@ function getActualizeEntries(workspace: Workspace, filename: string): ActualizeE
 describe("Synthesis integration", () => {
   describe("query matching", () => {
     it("matches entries by entity type", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:00Z create lore "Fact 1" #career
   type: "fact"
@@ -201,7 +192,7 @@ describe("Synthesis integration", () => {
     });
 
     it("matches entries by tag", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:00Z create lore "Career fact" #career
   type: "fact"
@@ -239,7 +230,7 @@ describe("Synthesis integration", () => {
     });
 
     it("matches entries by multiple conditions (AND)", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:00Z create lore "Self career" #career
   type: "fact"
@@ -284,7 +275,7 @@ describe("Synthesis integration", () => {
     });
 
     it("matches entries from multiple source queries (OR)", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T12:00Z create lore "Career lore" #career
   type: "fact"
@@ -325,7 +316,7 @@ describe("Synthesis integration", () => {
 
   describe("timestamp filtering", () => {
     it("filters entries after a timestamp", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z create lore "Old fact"
   type: "fact"
@@ -385,7 +376,7 @@ describe("Synthesis integration", () => {
 
   describe("actualize entries", () => {
     it("finds latest actualize for a synthesis", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z define-synthesis "Profile" ^profile
   sources: lore where subject = ^self
@@ -419,7 +410,7 @@ describe("Synthesis integration", () => {
     });
 
     it("uses actualize timestamp to filter new entries", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
       workspace.addDocument(
         `2026-01-07T10:00Z create lore "Old fact"
   type: "fact"
@@ -469,7 +460,7 @@ describe("Synthesis integration", () => {
 
   describe("cross-file synthesis", () => {
     it("finds entries across multiple files", () => {
-      const workspace = new Workspace();
+      const workspace = createWorkspace();
 
       workspace.addDocument(
         `2026-01-07T10:00Z create lore "Fact in file 1"
@@ -527,7 +518,7 @@ describe("Synthesis integration", () => {
 
 describe("Synthesis link resolution", () => {
   it("synthesis linkId is resolvable in workspace", () => {
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-07T10:00Z define-synthesis "Profile" ^my-profile
   sources: lore where subject = ^self
@@ -544,7 +535,7 @@ describe("Synthesis link resolution", () => {
   });
 
   it("actualize target is tracked as reference", () => {
-    const workspace = new Workspace();
+    const workspace = createWorkspace();
     workspace.addDocument(
       `2026-01-07T10:00Z define-synthesis "Profile" ^my-profile
   sources: lore where subject = ^self

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { Workspace } from "@rejot-dev/thalo";
+import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import type { Position, ReferenceContext } from "vscode-languageserver";
 import { handleReferences } from "./references.js";
 
@@ -15,7 +15,7 @@ describe("handleReferences", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
-    workspace = new Workspace();
+    workspace = createWorkspace();
 
     // Add documents with cross-references
     const source1 = `2026-01-05T18:00Z create lore "Test entry about TypeScript" ^ts-lore #typescript
@@ -176,7 +176,7 @@ describe("handleReferences", () => {
     let synthesisWorkspace: Workspace;
 
     beforeEach(() => {
-      synthesisWorkspace = new Workspace();
+      synthesisWorkspace = createWorkspace();
 
       // Add a synthesis definition
       const synthesisSource = `2026-01-05T10:00Z define-synthesis "Career Summary" ^career-summary #career
