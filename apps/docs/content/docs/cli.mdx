@@ -99,6 +99,58 @@ thalo actualize
 thalo actualize ^prog-philosophy
 ```
 
+### `thalo query`
+
+Query entries by entity type, tags, links, or metadata.
+
+```bash
+thalo query "<query>" [paths...]
+```
+
+**Query Syntax:**
+
+- Entity only: `lore` - All entries of type
+- Tag filter: `lore where #career` - Entries with tag
+- Link filter: `opinion where ^my-topic` - Entries with link
+- Field filter: `lore where type = "fact"` - Entries matching field value
+- Combined: `lore where #career and type = "insight"` - Multiple conditions (AND)
+
+**Options:**
+
+- `-f, --format <format>` - Output format: `default`, `json`, or `raw`
+- `-n, --limit <number>` - Maximum number of results to show
+
+**Examples:**
+
+```bash
+# Query all lore entries
+thalo query "lore"
+
+# Query entries with a specific tag
+thalo query "lore where #career"
+
+# Query entries with a field value
+thalo query 'lore where type = "insight"'
+
+# Query entries with a link
+thalo query "opinion where ^my-topic"
+
+# Combine conditions
+thalo query 'lore where #career and type = "fact"'
+
+# Output as JSON
+thalo query "lore" --format json
+
+# Show raw entry text
+thalo query "lore where #career" --format raw
+
+# Limit results
+thalo query "lore" --limit 5
+
+# Query specific directory
+thalo query "lore" ./my-knowledge-base
+```
+
 ### `thalo rules`
 
 Display validation rules for your knowledge base.
@@ -145,6 +197,19 @@ thalo check
 # 2. If valid, commit to git
 git add entries.thalo
 git commit -m "Add new opinion on TypeScript"
+```
+
+### Querying Your Knowledge
+
+```bash
+# Find all career-related insights
+thalo query 'lore where #career and type = "insight"'
+
+# Export entries as JSON for processing
+thalo query "opinion" --format json > opinions.json
+
+# Get raw text of specific entries
+thalo query "lore where ^my-topic" --format raw
 ```
 
 ### Setting Up a New Knowledge Base
