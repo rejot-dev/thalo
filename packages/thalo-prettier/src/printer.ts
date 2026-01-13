@@ -31,7 +31,8 @@ function emitParseWarning(rootNode: ThaloRootNode): void {
     return;
   }
 
-  const message = formatParseErrors(source, errorNodes);
+  const filepath = rootNode._thaloFilepath ?? "<unknown>";
+  const message = formatParseErrors(source, errorNodes, filepath);
   console.warn(
     `\n[thalo-prettier] Warning: File contains syntax errors. Returning original source unchanged.\n${message}\n`,
   );

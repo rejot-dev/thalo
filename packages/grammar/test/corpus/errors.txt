@@ -108,3 +108,56 @@ timestamp without timezone in schema entry
       (sections_block
         (section_definition
           (section_name))))))
+
+==================
+invalid link
+==================
+
+
+2026-01-05T18:11Z create lore "Hello"
+  related: ^2026-01-05T17:11Z
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)))
+  (ERROR
+    (key)
+    (ERROR
+      (link))
+    (UNEXPECTED 'Z')
+    (timestamp_tz)))
+
+==================
+date range without end
+==================
+
+
+2026-01-05T18:11Z create lore "Hello"
+  related: 2024 ~ 
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)))
+  (ERROR
+    (key)
+    (UNEXPECTED '\n')))

@@ -1,30 +1,50 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import ignore from "ignore";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 
-/**
- * Collect .thalo files using glob pattern
- */
-async function collectThaloFiles(dir: string): Promise<string[]> {
-  const pattern = "**/*.thalo";
-  const files: string[] = [];
+async function loadIgnoreFile(filePath: string): Promise<string[]> {
+  try {
+    const content = await fs.readFile(filePath, "utf-8");
+    return content.split("\n").filter((line) => line.trim() && !line.startsWith("#"));
+  } catch {
+    return [];
+  }
+}
 
-  // Use Node's built-in glob (Node 22+)
-  for await (const entry of fs.glob(pattern, {
-    cwd: dir,
-    exclude: (name) => name.startsWith(".") || name === "node_modules",
-  })) {
-    files.push(path.join(dir, entry));
+async function createIgnoreFilter(dir: string) {
+  const ig = ignore();
+  ig.add(await loadIgnoreFile(path.join(dir, ".gitignore")));
+  ig.add(await loadIgnoreFile(path.join(dir, ".prettierignore")));
+  return ig;
+}
+
+async function collectFiles(dir: string, fileTypes: string[]): Promise<string[]> {
+  const files: string[] = [];
+  const ig = await createIgnoreFilter(dir);
+
+  // Build glob patterns for each file type
+  const patterns = fileTypes.map((type) => `**/*.${type}`);
+
+  // exclude prevents traversing into node_modules/.git (perf), ig.ignores handles user patterns
+  for (const pattern of patterns) {
+    for await (const entry of fs.glob(pattern, {
+      cwd: dir,
+      exclude: (name) => name === "node_modules" || name.startsWith("."),
+    })) {
+      // Normalize to forward slashes for ignore matching (ignore lib expects posix paths)
+      const igPath = entry.split(path.sep).join("/");
+      if (!ig.ignores(igPath)) {
+        files.push(path.join(dir, entry));
+      }
+    }
   }
 
   return files;
 }
 
-/**
- * Resolve files from paths (files or directories)
- */
-async function resolveFiles(paths: string[]): Promise<string[]> {
+async function resolveFiles(paths: string[], fileTypes: string[]): Promise<string[]> {
   const files: string[] = [];
 
   for (const targetPath of paths) {
@@ -33,9 +53,12 @@ async function resolveFiles(paths: string[]): Promise<string[]> {
     try {
       const stat = await fs.stat(resolved);
       if (stat.isDirectory()) {
-        files.push(...(await collectThaloFiles(resolved)));
+        files.push(...(await collectFiles(resolved, fileTypes)));
       } else if (stat.isFile()) {
-        files.push(resolved);
+        const ext = path.extname(resolved).slice(1); // Remove leading dot
+        if (fileTypes.includes(ext)) {
+          files.push(resolved);
+        }
       }
     } catch {
       console.error(pc.red(`Error: Path not found: ${targetPath}`));
@@ -55,73 +78,57 @@ function relativePath(filePath: string): string {
   return filePath;
 }
 
+function getParser(filePath: string): string {
+  const ext = path.extname(filePath).slice(1);
+  if (ext === "thalo") {
+    return "thalo";
+  }
+  if (ext === "md") {
+    return "markdown";
+  }
+  return "thalo"; // default
+}
+
 async function formatAction(ctx: CommandContext): Promise<void> {
   const { options, args } = ctx;
   const checkOnly = options["check"] as boolean;
   const writeBack = options["write"] as boolean;
+  const fileTypeStr = (options["file-type"] as string) || "md,thalo";
+  const fileTypes = fileTypeStr.split(",").map((t) => t.trim());
 
-  // Handle stdin mode
-  if (options["stdin"]) {
-    const chunks: Buffer[] = [];
-    for await (const chunk of process.stdin) {
-      chunks.push(chunk);
-    }
-    const input = Buffer.concat(chunks).toString("utf-8");
-
-    try {
-      const prettier = await import("prettier");
-      const thaloPrettier = await import("@rejot-dev/thalo-prettier");
-
-      const formatted = await prettier.format(input, {
-        parser: "thalo",
-        plugins: [thaloPrettier],
-      });
-
-      process.stdout.write(formatted);
-    } catch (err) {
-      console.error(pc.red(`Error: ${err instanceof Error ? err.message : err}`));
-      process.exit(1);
-    }
-    return;
-  }
-
-  // Determine target paths
   const targetPaths = args.length > 0 ? args : ["."];
-
-  // Collect files
-  const files = await resolveFiles(targetPaths);
+  const files = await resolveFiles(targetPaths, fileTypes);
 
   if (files.length === 0) {
-    console.log("No .thalo files found.");
+    const fileTypesStr = fileTypes.join(", ");
+    console.log(`No .${fileTypesStr} files found.`);
     process.exit(0);
   }
 
-  // Load prettier and plugin once
   const prettier = await import("prettier");
   const thaloPrettier = await import("@rejot-dev/thalo-prettier");
 
   let changedCount = 0;
   let errorCount = 0;
 
-  // Process files in parallel
   const results = await Promise.allSettled(
     files.map(async (file) => {
       try {
         const content = await fs.readFile(file, "utf-8");
-
+        const parser = getParser(file);
+        // Always include thalo plugin so embedded thalo code blocks in markdown get formatted
         const formatted = await prettier.format(content, {
-          parser: "thalo",
+          filepath: file,
+          parser,
           plugins: [thaloPrettier],
         });
-
-        return { file, content, formatted, isChanged: content !== formatted };
+        return { file, formatted, isChanged: content !== formatted };
       } catch (err) {
         throw { file, err };
       }
     }),
   );
 
-  // Output results
   for (const result of results) {
     if (result.status === "rejected") {
       const { file, err } = result.reason as { file: string; err: unknown };
@@ -135,32 +142,34 @@ async function formatAction(ctx: CommandContext): Promise<void> {
 
     if (checkOnly) {
       if (isChanged) {
-        console.log(relativePath(file));
+        // Make files needing formatting bold with ✗
+        console.log(pc.bold(pc.red(`✗`) + ` ${relativePath(file)}`));
         changedCount++;
+      } else {
+        // Files already formatted
+        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
       }
     } else if (writeBack) {
       if (isChanged) {
         await fs.writeFile(file, formatted, "utf-8");
-        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
+        // Make formatted files bold (like prettier)
+        console.log(pc.bold(pc.green(`✓`) + ` ${relativePath(file)}`));
         changedCount++;
+      } else {
+        // Print unchanged files in regular text
+        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
       }
     } else {
-      // Default: output formatted content (only makes sense for single file)
-      if (files.length === 1) {
-        process.stdout.write(formatted);
+      // This branch shouldn't happen since write defaults to true, but keep for safety
+      if (isChanged) {
+        console.log(pc.yellow(`⚠`) + ` ${relativePath(file)} (needs formatting)`);
+        changedCount++;
       } else {
-        // Multiple files without --write: show diff status
-        if (isChanged) {
-          console.log(pc.yellow(`⚠`) + ` ${relativePath(file)} (needs formatting)`);
-          changedCount++;
-        } else {
-          console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
-        }
+        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
       }
     }
   }
 
-  // Summary for multi-file operations
   if (files.length > 1 || checkOnly) {
     console.log();
     if (checkOnly) {
@@ -186,7 +195,7 @@ async function formatAction(ctx: CommandContext): Promise<void> {
 
 export const formatCommand: CommandDef = {
   name: "format",
-  description: "Format thalo files using Prettier",
+  description: "Format thalo and markdown files using Prettier",
   args: {
     name: "paths",
     description: "Files or directories to format",
@@ -204,12 +213,12 @@ export const formatCommand: CommandDef = {
       type: "boolean",
       short: "w",
       description: "Write formatted output back to files",
-      default: false,
+      default: true,
     },
-    stdin: {
-      type: "boolean",
-      description: "Read input from stdin and write to stdout",
-      default: false,
+    "file-type": {
+      type: "string",
+      description: "Comma-separated list of file types to format (e.g., 'md,thalo')",
+      default: "md,thalo",
     },
   },
   action: formatAction,

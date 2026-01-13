@@ -128,7 +128,7 @@ export class Workspace {
     this.removeDocument(filename);
 
     // Parse and create SemanticModel
-    const parsed = this.parser.parseDocument(source, { fileType });
+    const parsed = this.parser.parseDocument(source, { fileType, filename });
     if (parsed.blocks.length === 0) {
       // Empty document - create minimal model
       const emptyLocation = {

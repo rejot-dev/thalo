@@ -108,4 +108,68 @@ describe("integration", () => {
       ]
     `);
   });
+
+  it("workspace with only a markdown file", () => {
+    const ws = workspaceFromFiles({
+      "notes.md": `# My Notes
+
+This is a simple markdown file.
+
+- Item 1
+- Item 2
+`,
+    });
+
+    const diagnostics = check(ws);
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("contains a link to a timestamp", () => {
+    // Tests that timestamp-based links (^2026-01-05T10:01Z) parse as links but produce
+    // unresolved-link warnings because the `Z` suffix doesn't match actual entry IDs
+    const ws = workspaceFromFiles({
+      "hello.thalo": `
+2026-01-05T10:00Z define-entity reference "External resources or local files"
+  # Metadata
+  related?: link
+
+  # Sections
+  Summary ; "Brief summary of the content"
+  
+2026-01-05T10:01Z create reference "First entry" ^first-entry
+  # Summary
+  This is the first entry.
+
+2026-01-05T10:02Z create reference "Second entry" ^second-entry
+  related: ^2026-01-05T10:01Z
+
+  # Summary
+  This is the second entry.
+`,
+    });
+
+    const diagnostics = check(ws);
+    expect(diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "code": "syntax-parse_error",
+          "file": "hello.thalo",
+          "location": {
+            "endIndex": 364,
+            "endPosition": {
+              "column": 29,
+              "row": 13,
+            },
+            "startIndex": 334,
+            "startPosition": {
+              "column": 63,
+              "row": 12,
+            },
+          },
+          "message": "Parse error: unexpected content "related: ^2026-01-05T10:01Z"",
+          "severity": "error",
+        },
+      ]
+    `);
+  });
 });

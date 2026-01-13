@@ -59,12 +59,11 @@
     }
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && vsce package --no-dependencies",
     "build:watch": "tsdown --watch",
     "types:check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest --watch",
-    "package": "turbo run build && vsce package --no-dependencies"
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"

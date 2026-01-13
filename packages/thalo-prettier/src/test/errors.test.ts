@@ -145,9 +145,9 @@ describe("parse error handling", () => {
 
       expect(warnSpy).toHaveBeenCalled();
       const warning = warnSpy.mock.calls[0]?.[0] as string;
-      // Should include line 1 (where "invalid" is)
-      expect(warning).toContain("Line 1");
-      expect(warning).toContain("column");
+      // Should include line 1 (where "invalid" is) - format is now filepath:line:column
+      expect(warning).toContain(":1:");
+      expect(warning).toContain("2026-01-05T15:30Z invalid lore");
     });
 
     it("should not warn for valid input", async () => {

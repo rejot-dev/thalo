@@ -10,11 +10,6 @@ export interface ErrorLocation {
   lineIndex: number; // 0-indexed (for array access)
 }
 
-export interface ErrorContext {
-  lines: string[];
-  errorAtEndOfLine: boolean;
-}
-
 // =============================================================================
 // Error Node Discovery
 // =============================================================================
@@ -71,32 +66,16 @@ export function deduplicateByLine(locations: ErrorLocation[]): ErrorLocation[] {
 // =============================================================================
 
 /**
- * Extract context lines around an error position.
- * When error is at end of line, includes following non-empty lines
- * since the actual problem is often on the next line.
+ * Extract the error line from source.
  */
-export function getErrorContext(source: string, lineIndex: number, column: number): ErrorContext {
+export function getErrorLine(source: string, lineIndex: number): string | null {
   const allLines = source.split("\n");
 
   if (lineIndex < 0 || lineIndex >= allLines.length) {
-    return { lines: [], errorAtEndOfLine: false };
+    return null;
   }
 
-  const errorLine = allLines[lineIndex];
-  const errorAtEndOfLine = column >= errorLine.length;
-  const lines = [errorLine];
-
-  // If error is at end of line, show following non-empty lines for context
-  if (errorAtEndOfLine) {
-    for (let i = lineIndex + 1; i < allLines.length && i <= lineIndex + 2; i++) {
-      const nextLine = allLines[i];
-      if (nextLine.trim()) {
-        lines.push(nextLine);
-      }
-    }
-  }
-
-  return { lines, errorAtEndOfLine };
+  return allLines[lineIndex];
 }
 
 // =============================================================================
@@ -104,61 +83,33 @@ export function getErrorContext(source: string, lineIndex: number, column: numbe
 // =============================================================================
 
 /**
- * Find the position after "key: " in a metadata line to highlight the value.
- * Returns null if pattern not found.
- */
-export function findValuePosition(line: string): number | null {
-  const match = line.match(/^(\s*\w+:\s*)/);
-  return match ? match[1].length : null;
-}
-
-/**
  * Format context display for a single error location.
  */
-export function formatContextDisplay(
-  lines: string[],
-  errorAtEndOfLine: boolean,
-  column: number,
-): string {
-  if (lines.length === 0) {
+export function formatContextDisplay(line: string, column: number): string {
+  if (!line) {
     return "";
   }
 
-  let display = `\n    ${lines[0]}`;
-
-  if (errorAtEndOfLine && lines.length > 1) {
-    // Error at end of line - point to the issue which is likely on next line(s)
-    display += `\n    ${" ".repeat(lines[0].length)}^ (error may be on following line)`;
-
-    for (let i = 1; i < lines.length; i++) {
-      display += `\n    ${lines[i]}`;
-
-      // Try to highlight likely problematic value (after colon)
-      const valuePos = findValuePosition(lines[i]);
-      if (valuePos !== null) {
-        display += `\n    ${" ".repeat(valuePos)}^ check this value`;
-        break;
-      }
-    }
-  } else {
-    display += `\n    ${" ".repeat(column - 1)}^`;
-  }
-
-  return display;
+  const pointer = " ".repeat(Math.max(0, column - 1)) + "^";
+  return `\n    ${line}\n    ${pointer}`;
 }
 
 /**
  * Format a single error location into a message string.
+ * Uses filepath:line:column format for clickable links in terminals.
  */
-export function formatErrorLocation(source: string, loc: ErrorLocation): string {
-  const { lines, errorAtEndOfLine } = getErrorContext(source, loc.lineIndex, loc.column - 1);
+export function formatErrorLocation(source: string, loc: ErrorLocation, filepath?: string): string {
+  const line = getErrorLine(source, loc.lineIndex);
+  const locationStr = filepath
+    ? `${filepath}:${loc.line}:${loc.column}`
+    : `Line ${loc.line}, column ${loc.column}`;
 
-  if (lines.length === 0) {
-    return `  Line ${loc.line}, column ${loc.column}`;
+  if (!line) {
+    return `  ${locationStr}`;
   }
 
-  const contextDisplay = formatContextDisplay(lines, errorAtEndOfLine, loc.column);
-  return `  Line ${loc.line}, column ${loc.column}:${contextDisplay}`;
+  const contextDisplay = formatContextDisplay(line, loc.column);
+  return `  ${locationStr}${contextDisplay}`;
 }
 
 // =============================================================================
@@ -171,18 +122,27 @@ const PARSE_ERROR_HINT =
 
 /**
  * Format parse errors into a readable message.
+ * When filepath is provided, uses filepath:line:column format for clickable links.
  */
-export function formatParseErrors(source: string, errorNodes: SyntaxNode[]): string {
+export function formatParseErrors(
+  source: string,
+  errorNodes: SyntaxNode[],
+  filepath?: string,
+): string {
   const locations = extractErrorLocations(errorNodes);
   const uniqueLocations = deduplicateByLine(locations);
 
-  const errorMessages = uniqueLocations.slice(0, 3).map((loc) => formatErrorLocation(source, loc));
+  const errorMessages = uniqueLocations
+    .slice(0, 3)
+    .map((loc) => formatErrorLocation(source, loc, filepath));
 
   const remaining = uniqueLocations.length - 3;
   if (remaining > 0) {
     errorMessages.push(`  ... and ${remaining} more line(s) with errors`);
   }
 
-  const firstLine = uniqueLocations[0]?.line ?? "?";
-  return `Parse error at line ${firstLine}:\n` + errorMessages.join("\n\n") + PARSE_ERROR_HINT;
+  const firstLoc = uniqueLocations[0];
+  const locationHeader =
+    filepath && firstLoc ? `${filepath}:${firstLoc.line}` : `line ${firstLoc?.line ?? "?"}`;
+  return `Parse error at ${locationHeader}:\n` + errorMessages.join("\n\n") + PARSE_ERROR_HINT;
 }
