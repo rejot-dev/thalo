@@ -1,148 +1,127 @@
-import * as fs from "node:fs";
 import {
-  formatQuery,
-  findAllSyntheses,
-  findLatestActualize,
-  findEntryFile,
-  getEntrySourceText,
+  runActualize,
   generateInstructions,
+  generateTimestamp,
   DEFAULT_INSTRUCTIONS_TEMPLATE,
-  type InstanceEntry,
-  type ActualizeInfo,
+  type SynthesisOutputInfo,
 } from "@rejot-dev/thalo";
-import {
-  createChangeTracker,
-  parseCheckpoint,
-  formatCheckpoint,
-  type ChangeMarker,
-} from "@rejot-dev/thalo/change-tracker";
+import { createChangeTracker, formatCheckpoint } from "@rejot-dev/thalo/change-tracker";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
-import { resolveFilesSync, loadWorkspaceSync, relativePath } from "../files.js";
+import { loadFullWorkspace, relativePath } from "../files.js";
 
 /**
- * Get the change marker from an actualize entry.
- * Reads from the checkpoint metadata field.
+ * Format a synthesis that is up to date.
  */
-function getActualizeMarker(actualize: ActualizeInfo | null): ChangeMarker | null {
-  if (!actualize) {
-    return null;
-  }
-  const checkpoint = actualize.entry.metadata.find((m) => m.key.value === "checkpoint");
-  return parseCheckpoint(checkpoint?.value.raw);
+function formatUpToDate(synthesis: SynthesisOutputInfo): string {
+  return pc.green(`✓ ${relativePath(synthesis.file)}: ${synthesis.title} - up to date`);
 }
 
 /**
- * Get raw entry text from source file (CLI-specific with filesystem access)
+ * Format a synthesis with pending entries.
  */
-function getEntryRawText(entry: InstanceEntry, file: string): string {
-  try {
-    const source = fs.readFileSync(file, "utf-8");
-    return getEntrySourceText(entry, source);
-  } catch {
-    return `[Could not read entry from ${file}]`;
+function formatSynthesisWithEntries(
+  synthesis: SynthesisOutputInfo,
+  instructionsTemplate: string,
+): string {
+  const lines: string[] = [];
+
+  // Header
+  lines.push("");
+  lines.push(
+    pc.bold(pc.cyan(`=== Synthesis: ${synthesis.title} (${relativePath(synthesis.file)}) ===`)),
+  );
+  lines.push(`Target: ${pc.yellow(`^${synthesis.linkId}`)}`);
+  lines.push(`Sources: ${synthesis.sources.join(", ")}`);
+
+  if (synthesis.lastCheckpoint) {
+    const markerDisplay =
+      synthesis.lastCheckpoint.type === "git"
+        ? `git:${synthesis.lastCheckpoint.value.slice(0, 7)}`
+        : formatCheckpoint(synthesis.lastCheckpoint);
+    lines.push(`Last checkpoint: ${pc.dim(markerDisplay)}`);
   }
+
+  // Prompt
+  lines.push("");
+  lines.push(pc.bold("--- User Prompt ---"));
+  lines.push(synthesis.prompt || pc.dim("(no prompt defined)"));
+
+  // Entries
+  lines.push("");
+  lines.push(pc.bold(`--- Changed Entries (${synthesis.entries.length}) ---`));
+  for (const entry of synthesis.entries) {
+    lines.push("");
+    lines.push(entry.rawText);
+  }
+
+  // Instructions
+  const checkpointValue = formatCheckpoint(synthesis.currentCheckpoint);
+  const instructions = generateInstructions(instructionsTemplate, {
+    file: relativePath(synthesis.file),
+    linkId: synthesis.linkId,
+    checkpoint: checkpointValue,
+    timestamp: generateTimestamp(),
+  });
+
+  lines.push("");
+  lines.push(pc.bold("--- Instructions ---"));
+  lines.push(instructions);
+  lines.push("");
+  lines.push(pc.dim("─".repeat(60)));
+
+  return lines.join("\n");
 }
 
 async function actualizeAction(ctx: CommandContext): Promise<void> {
   const { args, options } = ctx;
   const instructionsTemplate = (options["instructions"] as string) || DEFAULT_INSTRUCTIONS_TEMPLATE;
 
-  // Determine target paths
-  const targetPaths = args.length > 0 ? args : ["."];
-
-  // Collect and load files
-  const files = resolveFilesSync(targetPaths);
+  // Load full workspace from CWD
+  const { workspace, files } = await loadFullWorkspace();
   if (files.length === 0) {
     console.log("No .thalo or .md files found.");
     process.exit(0);
   }
 
-  const workspace = loadWorkspaceSync(files);
-
   // Create change tracker (auto-detects git)
   const tracker = await createChangeTracker({ cwd: process.cwd() });
-  const isGitMode = tracker.type === "git";
 
-  if (isGitMode) {
+  // Run actualize command
+  const result = await runActualize(workspace, {
+    targetLinkIds: args.length > 0 ? args : undefined,
+    tracker,
+  });
+
+  // Show tracker type
+  if (result.trackerType === "git") {
     console.log(pc.dim("Using git-based change tracking"));
   }
 
-  // Find all synthesis definitions
-  const syntheses = findAllSyntheses(workspace);
+  // Warn about not found link IDs
+  for (const id of result.notFoundLinkIds) {
+    console.error(pc.yellow(`Warning: No synthesis found with link ID: ^${id}`));
+  }
 
-  if (syntheses.length === 0) {
+  // Exit early if we filtered to specific IDs but found none
+  if (args.length > 0 && result.syntheses.length === 0 && result.notFoundLinkIds.length > 0) {
+    process.exit(1);
+  }
+
+  if (result.syntheses.length === 0) {
     console.log(pc.dim("No synthesis definitions found."));
     process.exit(0);
   }
 
+  // Output results
   let hasOutput = false;
-
-  for (const synthesis of syntheses) {
-    // Find latest actualize entry
-    const lastActualize = findLatestActualize(workspace, synthesis.linkId);
-    const lastMarker = getActualizeMarker(lastActualize);
-
-    // Get changed entries using the tracker
-    const { entries: newEntries, currentMarker } = await tracker.getChangedEntries(
-      workspace,
-      synthesis.sources,
-      lastMarker,
-    );
-
-    if (newEntries.length === 0) {
-      console.log(pc.green(`✓ ${relativePath(synthesis.file)}: ${synthesis.title} - up to date`));
-      continue;
+  for (const synthesis of result.syntheses) {
+    if (synthesis.isUpToDate) {
+      console.log(formatUpToDate(synthesis));
+    } else {
+      hasOutput = true;
+      console.log(formatSynthesisWithEntries(synthesis, instructionsTemplate));
     }
-
-    hasOutput = true;
-
-    // Output synthesis header
-    console.log();
-    console.log(
-      pc.bold(pc.cyan(`=== Synthesis: ${synthesis.title} (${relativePath(synthesis.file)}) ===`)),
-    );
-    console.log(`Target: ${pc.yellow(`^${synthesis.linkId}`)}`);
-    console.log(`Sources: ${synthesis.sources.map(formatQuery).join(", ")}`);
-    if (lastMarker) {
-      const markerDisplay =
-        lastMarker.type === "git"
-          ? `git:${lastMarker.value.slice(0, 7)}`
-          : formatCheckpoint(lastMarker);
-      console.log(`Last checkpoint: ${pc.dim(markerDisplay)}`);
-    }
-
-    // Output prompt
-    console.log();
-    console.log(pc.bold("--- User Prompt ---"));
-    console.log(synthesis.prompt || pc.dim("(no prompt defined)"));
-
-    // Output new entries
-    console.log();
-    console.log(pc.bold(`--- Changed Entries (${newEntries.length}) ---`));
-    for (const entry of newEntries) {
-      const entryFile = findEntryFile(workspace, entry);
-      console.log();
-      if (!entryFile) {
-        console.log(pc.dim("[Could not locate entry file]"));
-        continue;
-      }
-      console.log(getEntryRawText(entry, entryFile));
-    }
-
-    // Output instructions with checkpoint metadata
-    const checkpointValue = formatCheckpoint(currentMarker);
-    const instructions = generateInstructions(instructionsTemplate, {
-      file: relativePath(synthesis.file),
-      linkId: synthesis.linkId,
-      checkpoint: checkpointValue,
-    });
-
-    console.log();
-    console.log(pc.bold("--- Instructions ---"));
-    console.log(instructions);
-    console.log();
-    console.log(pc.dim("─".repeat(60)));
   }
 
   if (!hasOutput) {
@@ -155,8 +134,9 @@ export const actualizeCommand: CommandDef = {
   name: "actualize",
   description: "Output prompts and entries for pending synthesis updates",
   args: {
-    name: "paths",
-    description: "Files or directories to check for syntheses",
+    name: "links",
+    description:
+      "Link IDs of synthesis definitions to actualize (e.g., ^my-synthesis). If omitted, all syntheses are checked.",
     required: false,
     multiple: true,
   },

@@ -124,24 +124,65 @@ thalo format entries.thalo notes/
 
 ### `thalo actualize`
 
-Generate synthesized content from syntheses.
+Show pending synthesis updates and generate prompts for AI-assisted content generation.
 
 ```bash
-thalo actualize [paths...]
+thalo actualize [links...]
 ```
+
+The command loads all files from the current directory and finds syntheses that need updating based
+on changed source entries. It uses git-based change tracking when available, falling back to
+timestamp-based tracking otherwise.
+
+**Arguments:**
+
+- `links` - Link IDs of synthesis definitions to actualize (e.g., `^my-summary`). If omitted, all
+  syntheses are checked. The `^` prefix is optional.
 
 **Options:**
 
-- `paths` - Files or directories to check for syntheses (defaults to current directory)
+- `-i, --instructions <template>` - Custom instructions template. Placeholders: `{file}`,
+  `{linkId}`, `{checkpoint}`, `{timestamp}`
+
+**Output:**
+
+For each synthesis with pending updates, the command outputs:
+
+1. **Synthesis info** - Title, target link, source queries
+2. **User prompt** - The prompt defined in the synthesis
+3. **Changed entries** - Raw text of entries that have changed since last actualization
+4. **Instructions** - Steps to update the synthesis with a new checkpoint
 
 **Example:**
 
 ```bash
-# Actualize all syntheses
+# Check all syntheses for pending updates
 thalo actualize
 
-# Actualize syntheses in specific directory
-thalo actualize ./my-knowledge
+# Actualize a specific synthesis by link ID
+thalo actualize my-summary
+
+# With ^ prefix (must be quoted to avoid shell interpretation)
+thalo actualize "^my-summary"
+
+# Actualize multiple specific syntheses
+thalo actualize summary-a summary-b
+```
+
+**Change Tracking:**
+
+The actualize command tracks which entries have changed since the last actualization:
+
+- **Git mode** (default when in a git repo): Compares entries against the checkpoint commit hash
+  stored in the last `actualize-synthesis` entry
+- **Timestamp mode** (fallback): Uses entry timestamps to determine what's new
+
+After updating a synthesis, add an `actualize-synthesis` entry with a `checkpoint` metadata field to
+mark the current state:
+
+```thalo
+2026-01-15T10:00Z actualize-synthesis ^my-summary
+  checkpoint: "git:abc1234..."
 ```
 
 ### `thalo query`
@@ -352,11 +393,20 @@ thalo check
 ### Working with Syntheses
 
 ```bash
-# 1. Define a synthesis in a markdown file
-# 2. Actualize it
+# 1. Define a synthesis in a markdown file with define-synthesis
+# 2. Check for pending updates
 thalo actualize
 
-# 3. Review generated content
+# 3. If updates are needed, the command outputs:
+#    - The synthesis prompt
+#    - Changed source entries
+#    - Instructions for updating
+
+# 4. Update the synthesis content and add an actualize entry
+#    with the checkpoint value from the instructions
+
+# 5. Actualize a specific synthesis
+thalo actualize my-summary
 ```
 
 ### CI/CD Integration

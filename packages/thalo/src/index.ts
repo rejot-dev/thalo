@@ -129,6 +129,8 @@ export type { QueryResult, QueryEntryInfo, QueryConditionInfo } from "./commands
 export {
   runActualize,
   generateInstructions,
+  generateTimestamp,
+  parseLinkIds,
   DEFAULT_INSTRUCTIONS_TEMPLATE,
   type RunActualizeOptions,
   type InstructionsParams,
@@ -138,6 +140,9 @@ export type {
   SynthesisOutputInfo,
   ActualizeEntryInfo,
 } from "./commands/actualize.js";
+// Re-export browser-safe change tracker types and timestamp tracker
+export { TimestampChangeTracker } from "./services/change-tracker/timestamp-tracker.js";
+export type { ChangeTracker, ChangeMarker } from "./services/change-tracker/types.js";
 export {
   formatDiagnostic,
   formatCheckResult,

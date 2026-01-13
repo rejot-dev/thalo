@@ -262,7 +262,7 @@ async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<
 
 async function runActualize(content: PlaygroundContent): Promise<CommandResult> {
   const workspace = await createPlaygroundWorkspace(content);
-  const result = runActualizeCommand(workspace);
+  const result = await runActualizeCommand(workspace);
   return {
     command: "thalo actualize",
     lines: formatActualizeResultLines(result),

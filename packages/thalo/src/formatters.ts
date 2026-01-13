@@ -13,6 +13,7 @@ import type {
   SynthesisOutputInfo,
   ActualizeEntryInfo,
 } from "./commands/actualize.js";
+import { formatCheckpoint } from "./services/change-tracker/types.js";
 import type { Timestamp } from "./ast/types.js";
 import { isSyntaxError } from "./ast/types.js";
 
@@ -257,8 +258,8 @@ function formatSynthesisOutput(synthesis: SynthesisOutputInfo): string[] {
   lines.push(`=== Synthesis: ${synthesis.title} (${formatPath(synthesis.file)}) ===`);
   lines.push(`Target: ^${synthesis.linkId}`);
   lines.push(`Sources: ${synthesis.sources.join(", ")}`);
-  if (synthesis.lastUpdated) {
-    lines.push(`Last updated: ${synthesis.lastUpdated}`);
+  if (synthesis.lastCheckpoint) {
+    lines.push(`Last checkpoint: ${formatCheckpoint(synthesis.lastCheckpoint)}`);
   }
 
   // Output prompt
@@ -272,13 +273,14 @@ function formatSynthesisOutput(synthesis: SynthesisOutputInfo): string[] {
 
   // Output new entries
   lines.push("");
-  lines.push(`--- New Entries (${synthesis.entries.length}) ---`);
+  lines.push(`--- Changed Entries (${synthesis.entries.length}) ---`);
   for (const entry of synthesis.entries) {
     lines.push("");
     lines.push(...formatActualizeEntry(entry));
   }
 
   // Output instructions
+  const checkpointValue = formatCheckpoint(synthesis.currentCheckpoint);
   lines.push("");
   lines.push("--- Instructions ---");
   lines.push(
@@ -286,7 +288,7 @@ function formatSynthesisOutput(synthesis: SynthesisOutputInfo): string[] {
   );
   lines.push(`2. Place output BEFORE any subsequent \`\`\`thalo blocks`);
   lines.push(`3. Append to the thalo block: actualize-synthesis ^${synthesis.linkId}`);
-  lines.push(`   with metadata: updated: <current-timestamp>`);
+  lines.push(`   with metadata: checkpoint: "${checkpointValue}"`);
   lines.push("");
   lines.push("─".repeat(60));
 
