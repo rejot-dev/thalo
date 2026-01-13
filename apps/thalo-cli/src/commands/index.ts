@@ -1,6 +1,8 @@
 export { actualizeCommand } from "./actualize.js";
 export { checkCommand } from "./check.js";
+export { formatCommand } from "./format.js";
 export { initCommand } from "./init.js";
+export { lspCommand } from "./lsp.js";
 export { queryCommand } from "./query.js";
 export { rulesCommand } from "./rules.js";
 export { mergeDriverCommand } from "./merge-driver.js";
