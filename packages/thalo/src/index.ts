@@ -117,6 +117,13 @@ export * from "./constants.js";
 // Commands
 export { runCheck, type RunCheckOptions } from "./commands/check.js";
 export type { CheckResult, DiagnosticInfo, DiagnosticSeverity } from "./commands/check.js";
+export { runFormat, formatFile, type RunFormatOptions, type Formatter } from "./commands/format.js";
+export type {
+  FormatResult,
+  FormatFileResult,
+  FormatFileInput,
+  SyntaxErrorInfo,
+} from "./commands/format.js";
 export { runQuery, parseQueryString, type RunQueryOptions } from "./commands/query.js";
 export type { QueryResult, QueryEntryInfo, QueryConditionInfo } from "./commands/query.js";
 export { runActualize, type RunActualizeOptions } from "./commands/actualize.js";

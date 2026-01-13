@@ -54,6 +54,11 @@
       "types": "./dist/commands/check.d.ts",
       "default": "./dist/commands/check.js"
     },
+    "./commands/format": {
+      "development": "./src/commands/format.ts",
+      "types": "./dist/commands/format.d.ts",
+      "default": "./dist/commands/format.js"
+    },
     "./commands/query": {
       "development": "./src/commands/query.ts",
       "types": "./dist/commands/query.d.ts",

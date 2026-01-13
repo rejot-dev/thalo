@@ -74,7 +74,7 @@ describe("parse error handling", () => {
       warnSpy.mockRestore();
     });
 
-    it("should return original source and warn for missing timestamp", async () => {
+    it("should return original source silently for missing timestamp", async () => {
       const input = `create lore "Title"
   type: "fact"`;
 
@@ -83,13 +83,11 @@ describe("parse error handling", () => {
       // Should return original source unchanged (with trailing newline)
       expect(result).toBe(input + "\n");
 
-      // Should warn about the error
-      expect(warnSpy).toHaveBeenCalled();
-      const warning = warnSpy.mock.calls[0]?.[0] as string;
-      expect(warning).toContain("syntax errors");
+      // Should NOT warn - the format command handles error reporting
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it("should return original source and warn for invalid directive", async () => {
+    it("should return original source silently for invalid directive", async () => {
       const input = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
 
@@ -97,7 +95,8 @@ describe("parse error handling", () => {
 
       // Should return original source unchanged
       expect(result).toBe(input + "\n");
-      expect(warnSpy).toHaveBeenCalled();
+      // Should NOT warn - the format command handles error reporting
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
     it("should format successfully for unclosed quote (newline acts as recovery)", async () => {
@@ -116,38 +115,16 @@ describe("parse error handling", () => {
       expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it("should include hint about metadata values in warning", async () => {
-      // Missing timestamp - will produce an error with the hint
+    it("should return original source silently for missing timestamp", async () => {
+      // Missing timestamp - will produce an error
       const input = `create lore "Title"`;
 
-      await format(input);
+      const result = await format(input);
 
-      expect(warnSpy).toHaveBeenCalled();
-      const warning = warnSpy.mock.calls[0]?.[0] as string;
-      expect(warning).toContain("quoted strings");
-    });
-
-    it("should include example in warning hint", async () => {
-      const input = `create lore "Title"`;
-
-      await format(input);
-
-      expect(warnSpy).toHaveBeenCalled();
-      const warning = warnSpy.mock.calls[0]?.[0] as string;
-      expect(warning).toContain('type: "fact"');
-    });
-
-    it("should show specific error location in warning", async () => {
-      const input = `2026-01-05T15:30Z invalid lore "Title"
-  type: "fact"`;
-
-      await format(input);
-
-      expect(warnSpy).toHaveBeenCalled();
-      const warning = warnSpy.mock.calls[0]?.[0] as string;
-      // Should include line 1 (where "invalid" is) - format is now filepath:line:column
-      expect(warning).toContain(":1:");
-      expect(warning).toContain("2026-01-05T15:30Z invalid lore");
+      // Should return original source unchanged (with trailing newline)
+      expect(result).toBe(input + "\n");
+      // Should NOT warn - the format command handles error reporting
+      expect(warnSpy).not.toHaveBeenCalled();
     });
 
     it("should not warn for valid input", async () => {
