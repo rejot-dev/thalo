@@ -333,7 +333,21 @@ export function startServer(connection: Connection = createConnection()): void {
         continue;
       }
 
-      // Skip if the file is currently open (handled by document lifecycle)
+      // For delete events, always process - even if file is open in editor
+      // (VSCode may keep deleted file tabs open, but workspace should reflect reality)
+      if (change.type === FileChangeType.Deleted) {
+        // Get affected files before removing
+        const affected = state.workspace.getAffectedFiles(filePath);
+        allAffectedFiles.push(...affected);
+        state.workspace.removeDocument(filePath);
+        state.documents.delete(change.uri);
+        // Clear diagnostics for the deleted file
+        connection.sendDiagnostics({ uri: change.uri, diagnostics: [] });
+        console.error(`[thalo-lsp] Removed deleted file: ${filePath}`);
+        continue;
+      }
+
+      // Skip create/change if the file is currently open (handled by document lifecycle)
       if (state.documents.has(change.uri)) {
         continue;
       }
@@ -354,14 +368,6 @@ export function startServer(connection: Connection = createConnection()): void {
               `[thalo-lsp] Error loading ${filePath}: ${err instanceof Error ? err.message : err}`,
             );
           }
-          break;
-        }
-        case FileChangeType.Deleted: {
-          // Get affected files before removing
-          const affected = state.workspace.getAffectedFiles(filePath);
-          allAffectedFiles.push(...affected);
-          state.workspace.removeDocument(filePath);
-          console.error(`[thalo-lsp] Removed deleted file: ${filePath}`);
           break;
         }
       }
