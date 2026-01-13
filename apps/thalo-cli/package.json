@@ -25,9 +25,13 @@
   },
   "dependencies": {
     "@rejot-dev/thalo": "workspace:*",
+    "@rejot-dev/thalo-lsp": "workspace:*",
+    "@rejot-dev/thalo-prettier": "workspace:*",
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "picocolors": "^1.1.1",
-    "tree-sitter": "catalog:"
+    "prettier": "^3.5.3",
+    "tree-sitter": "catalog:",
+    "vscode-languageserver": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",

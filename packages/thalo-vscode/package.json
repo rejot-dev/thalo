@@ -5,6 +5,11 @@
   "version": "0.0.1",
   "private": true,
   "publisher": "wilco",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rejot-dev/thalo.git",
+    "directory": "packages/thalo-vscode"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -31,6 +36,22 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "configuration": {
+      "title": "Thalo",
+      "properties": {
+        "thalo.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the thalo CLI executable. Leave empty to use 'thalo' from PATH."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "thalo.restartServer",
+        "title": "Thalo: Restart Language Server"
+      }
+    ],
     "configurationDefaults": {
       "[thalo]": {
         "editor.semanticHighlighting.enabled": true
@@ -43,13 +64,9 @@
     "types:check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest --watch",
-    "package": "vsce package",
-    "publish": "vsce publish --no-dependencies"
+    "package": "turbo run build && vsce package --no-dependencies"
   },
   "dependencies": {
-    "@rejot-dev/thalo-lsp": "workspace:*",
-    "@rejot-dev/thalo-prettier": "workspace:*",
-    "prettier": "^3.5.3",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {

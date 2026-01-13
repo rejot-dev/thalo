@@ -2,7 +2,9 @@ import { runCli, type CommandDef } from "./cli.js";
 import {
   actualizeCommand,
   checkCommand,
+  formatCommand,
   initCommand,
+  lspCommand,
   queryCommand,
   rulesCommand,
   mergeDriverCommand,
@@ -20,7 +22,9 @@ const rootCommand: CommandDef = {
   subcommands: {
     actualize: actualizeCommand,
     check: checkCommand,
+    format: formatCommand,
     init: initCommand,
+    lsp: lspCommand,
     query: queryCommand,
     rules: rulesCommand,
     "merge-driver": mergeDriverCommand,

@@ -1,0 +1,17 @@
+# Source files (we ship bundled dist/)
+src/
+*.ts
+!*.d.ts
+
+# Config files
+tsconfig.json
+tsdown.config.ts
+vitest.config.ts
+
+# Development
+node_modules/
+*.vsix
+
+# Build artifacts
+.turbo/
+*.tsbuildinfo
