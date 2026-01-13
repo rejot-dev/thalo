@@ -11,7 +11,8 @@ import type {
   Link,
   QuotedValue,
   DatetimeValue,
-  DateRangeValue,
+  DaterangeValue,
+  NumberValue,
   Query,
 } from "../ast/types.js";
 
@@ -142,7 +143,7 @@ export const TypeExpr = {
  */
 function matchesPrimitiveContent(
   content: ValueContent,
-  type: "string" | "datetime" | "date-range" | "link",
+  type: "string" | "datetime" | "daterange" | "link" | "number",
 ): boolean {
   switch (type) {
     case "string":
@@ -151,15 +152,18 @@ function matchesPrimitiveContent(
     case "link":
       // Must be a link value
       return content.type === "link_value";
-    case "date-range":
-      // Grammar identifies date ranges by the ~ separator
-      return content.type === "date_range";
+    case "daterange":
+      // Grammar identifies date ranges
+      return content.type === "daterange";
     case "datetime":
       // Date must be datetime_value without time component (YYYY-MM-DD only)
       if (content.type === "datetime_value") {
-        return !content.value.includes("T");
+        return content.time === null;
       }
       return false;
+    case "number":
+      // Must be a number value
+      return content.type === "number_value";
   }
 }
 
@@ -240,7 +244,7 @@ function matchesSingleValueAsArrayElement(
  */
 function matchesSingleValueAsPrimitive(
   content: ValueContent,
-  type: "string" | "datetime" | "date-range" | "link",
+  type: "string" | "datetime" | "daterange" | "link" | "number",
 ): boolean {
   switch (type) {
     case "string":
@@ -248,14 +252,16 @@ function matchesSingleValueAsPrimitive(
       return content.type === "quoted_value" && content.value.length > 0;
     case "link":
       return content.type === "link_value";
-    case "date-range":
-      return content.type === "date_range";
+    case "daterange":
+      return content.type === "daterange";
     case "datetime":
       // Date must be datetime_value without time component (YYYY-MM-DD only)
       if (content.type === "datetime_value") {
-        return !content.value.includes("T");
+        return content.time === null;
       }
       return false;
+    case "number":
+      return content.type === "number_value";
   }
 }
 
@@ -263,7 +269,7 @@ function matchesSingleValueAsPrimitive(
  * Check if an array element matches the expected element type
  */
 function matchesArrayElementContent(
-  element: Link | QuotedValue | DatetimeValue | DateRangeValue | Query,
+  element: Link | QuotedValue | DatetimeValue | DaterangeValue | NumberValue | Query,
   elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType,
 ): boolean {
   switch (elementType.kind) {
@@ -292,8 +298,8 @@ function matchesArrayElementContent(
  * Check if an array element matches a primitive type
  */
 function matchesArrayPrimitiveContent(
-  element: Link | QuotedValue | DatetimeValue | DateRangeValue | Query,
-  type: "string" | "datetime" | "date-range" | "link",
+  element: Link | QuotedValue | DatetimeValue | DaterangeValue | NumberValue | Query,
+  type: "string" | "datetime" | "daterange" | "link" | "number",
 ): boolean {
   switch (type) {
     case "string":
@@ -304,12 +310,12 @@ function matchesArrayPrimitiveContent(
     case "datetime":
       // Date in arrays must be datetime_value without time (YYYY-MM-DD only)
       if (element.type === "datetime_value") {
-        return !element.value.includes("T");
+        return element.time === null;
       }
       return false;
-    case "date-range":
+    case "daterange":
       // Date ranges parsed by grammar are valid
-      if (element.type === "date_range") {
+      if (element.type === "daterange") {
         return true;
       }
       // Also accept quoted date ranges
@@ -317,6 +323,8 @@ function matchesArrayPrimitiveContent(
         return /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/.test(element.value);
       }
       return false;
+    case "number":
+      return element.type === "number_value";
   }
 }
 
@@ -329,7 +337,7 @@ function matchesArrayPrimitiveContent(
  */
 function matchesDefaultPrimitive(
   defaultValue: ModelDefaultValue,
-  type: "string" | "datetime" | "date-range" | "link",
+  type: "string" | "datetime" | "daterange" | "link" | "number",
 ): boolean {
   switch (type) {
     case "string":
@@ -343,9 +351,11 @@ function matchesDefaultPrimitive(
         return !defaultValue.value.includes("T");
       }
       return false;
-    case "date-range":
+    case "daterange":
       // Default values can't be date ranges (grammar doesn't support it)
       return false;
+    case "number":
+      return defaultValue.kind === "number";
   }
 }
 
@@ -381,7 +391,7 @@ function matchesDefaultAsArrayElement(
  */
 function matchesDefaultAsPrimitive(
   defaultValue: ModelDefaultValue,
-  type: "string" | "datetime" | "date-range" | "link",
+  type: "string" | "datetime" | "daterange" | "link" | "number",
 ): boolean {
   switch (type) {
     case "string":
@@ -394,8 +404,10 @@ function matchesDefaultAsPrimitive(
         return !defaultValue.value.includes("T");
       }
       return false;
-    case "date-range":
+    case "daterange":
       // Default values can't be date ranges
       return false;
+    case "number":
+      return defaultValue.kind === "number";
   }
 }

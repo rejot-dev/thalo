@@ -765,5 +765,7 @@ function convertDefaultValue(defaultValue: AstDefaultValue): ModelDefaultValue {
       return { kind: "link", id: defaultValue.content.id, raw };
     case "datetime_value":
       return { kind: "datetime", value: defaultValue.content.value, raw };
+    case "number_value":
+      return { kind: "number", value: defaultValue.content.value, raw };
   }
 }

@@ -12,6 +12,7 @@ import {
 import { createWorkspace } from "@rejot-dev/thalo/native";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
+import { resolveFilesSync, relativePath } from "../files.js";
 
 type SeverityKey = DiagnosticSeverity;
 type OutputFormat = "default" | "json" | "compact" | "github";
@@ -27,15 +28,6 @@ const severityColor = {
   warning: pc.yellow,
   info: pc.cyan,
 } as const;
-
-function relativePath(filePath: string): string {
-  const cwd = process.cwd();
-  if (filePath.startsWith(cwd)) {
-    const rel = filePath.slice(cwd.length + 1);
-    return rel || filePath;
-  }
-  return filePath;
-}
 
 function formatDiagnosticDefault(d: DiagnosticInfo): string {
   const color = severityColor[d.severity];
@@ -56,62 +48,6 @@ function formatDiagnostic(d: DiagnosticInfo, format: OutputFormat): string {
     default:
       return formatDiagnosticDefault(d);
   }
-}
-
-function collectFiles(dir: string, fileTypes: string[]): string[] {
-  const files: string[] = [];
-  const extensions = fileTypes.map((type) => `.${type}`);
-
-  function walk(currentDir: string): void {
-    let entries;
-    try {
-      entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-
-    for (const entry of entries) {
-      const fullPath = path.join(currentDir, entry.name);
-
-      if (entry.isDirectory()) {
-        if (!entry.name.startsWith(".") && entry.name !== "node_modules") {
-          walk(fullPath);
-        }
-      } else if (entry.isFile()) {
-        if (extensions.some((ext) => entry.name.endsWith(ext))) {
-          files.push(fullPath);
-        }
-      }
-    }
-  }
-
-  walk(dir);
-  return files;
-}
-
-function resolveFiles(paths: string[], fileTypes: string[]): string[] {
-  const files: string[] = [];
-
-  for (const targetPath of paths) {
-    const resolved = path.resolve(targetPath);
-
-    if (!fs.existsSync(resolved)) {
-      console.error(pc.red(`Error: Path not found: ${targetPath}`));
-      process.exit(2);
-    }
-
-    const stat = fs.statSync(resolved);
-    if (stat.isDirectory()) {
-      files.push(...collectFiles(resolved, fileTypes));
-    } else if (stat.isFile()) {
-      const ext = path.extname(resolved).slice(1); // Remove leading dot
-      if (fileTypes.includes(ext)) {
-        files.push(resolved);
-      }
-    }
-  }
-
-  return files;
 }
 
 interface RunResult {
@@ -251,7 +187,7 @@ function watchFiles(
     console.log(pc.dim(`[${new Date().toLocaleTimeString()}] Checking...`));
     console.log();
 
-    const files = resolveFiles(paths, fileTypes);
+    const files = resolveFilesSync(paths, fileTypes);
     if (files.length === 0) {
       const fileTypesStr = fileTypes.join(", ");
       console.log(`No .${fileTypesStr} files found.`);
@@ -362,7 +298,7 @@ function checkAction(ctx: CommandContext): void {
   }
 
   // Collect files
-  const files = resolveFiles(targetPaths, fileTypes);
+  const files = resolveFilesSync(targetPaths, fileTypes);
 
   if (files.length === 0) {
     const fileTypesStr = fileTypes.join(", ");

@@ -282,7 +282,7 @@ export function getDirectiveDocumentation(directive: string): string | null {
         '  OptionalSection? ; "description"',
         "```",
         "",
-        '**Field types:** `string`, `date`, `date-range`, `link`, `"literal"`, unions (`|`), arrays (`[]`)',
+        '**Field types:** `string`, `datetime`, `daterange`, `number`, `link`, `"literal"`, unions (`|`), arrays (`[]`)',
       ].join("\n");
 
     case "alter-entity":
@@ -501,12 +501,12 @@ export function getPrimitiveTypeDocumentation(typeName: string): string | null {
         "published: 2024-05-11",
         "```",
         "",
-        "Note: For partial dates (YYYY or YYYY-MM), use `date-range` type.",
+        "Note: For partial dates (YYYY or YYYY-MM), use `daterange` type.",
       ].join("\n");
 
-    case "date-range":
+    case "daterange":
       return [
-        "### Type: `date-range`",
+        "### Type: `daterange`",
         "",
         "A range between two dates, using `~` separator.",
         "",
@@ -537,6 +537,20 @@ export function getPrimitiveTypeDocumentation(typeName: string): string | null {
         "```",
         "supersedes: ^2026-01-05T15:30",
         "subject: ^self",
+        "```",
+      ].join("\n");
+
+    case "number":
+      return [
+        "### Type: `number`",
+        "",
+        "A numeric value (integer or decimal).",
+        "",
+        "**Examples:**",
+        "```",
+        "rating: 5",
+        "score: 4.5",
+        "count: -10",
         "```",
       ].join("\n");
 

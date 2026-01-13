@@ -102,7 +102,7 @@ describe("integration", () => {
               "row": 3,
             },
           },
-          "message": "Unknown type 'date-time'. Valid types: string, datetime, date-range, link",
+          "message": "Unknown type 'date-time'. Valid types: string, datetime, daterange, link, number",
           "severity": "error",
         },
       ]
@@ -152,7 +152,10 @@ This is a simple markdown file.
     expect(diagnostics).toMatchInlineSnapshot(`
       [
         {
-          "code": "syntax-parse_error",
+          "code": "unresolved-link",
+          "data": {
+            "linkId": "2026-01-05T10:01Z",
+          },
           "file": "hello.thalo",
           "location": {
             "endIndex": 364,
@@ -160,14 +163,14 @@ This is a simple markdown file.
               "column": 29,
               "row": 13,
             },
-            "startIndex": 334,
+            "startIndex": 346,
             "startPosition": {
-              "column": 63,
-              "row": 12,
+              "column": 11,
+              "row": 13,
             },
           },
-          "message": "Parse error: unexpected content "related: ^2026-01-05T10:01Z"",
-          "severity": "error",
+          "message": "Unresolved link '^2026-01-05T10:01Z'. No entry defines this link ID.",
+          "severity": "warning",
         },
       ]
     `);

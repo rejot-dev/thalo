@@ -65,6 +65,8 @@ function convertDefaultValue(dv: DefaultValue): ModelDefaultValue {
       return { kind: "link", id: dv.content.id, raw };
     case "datetime_value":
       return { kind: "datetime", value: dv.content.value, raw };
+    case "number_value":
+      return { kind: "number", value: dv.content.value, raw };
   }
 }
 

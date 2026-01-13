@@ -341,7 +341,7 @@ export type TypeExpression = PrimitiveType | LiteralType | ArrayType | UnionType
 
 export interface PrimitiveType extends AstNode {
   type: "primitive_type";
-  name: "string" | "datetime" | "date-range" | "link";
+  name: "string" | "datetime" | "daterange" | "link" | "number";
 }
 
 export interface LiteralType extends AstNode {
@@ -511,7 +511,8 @@ export type ValueContent =
   | QuotedValue
   | LinkValue
   | DatetimeValue
-  | DateRangeValue
+  | DaterangeValue
+  | NumberValue
   | QueryValue
   | ValueArray;
 
@@ -529,14 +530,28 @@ export interface LinkValue extends AstNode {
 
 export interface DatetimeValue extends AstNode {
   type: "datetime_value";
-  /** The datetime value (YYYY-MM-DD or YYYY-MM-DDTHH:MM) */
+  /** The full datetime value string */
   value: string;
+  /** The date part (YYYY-MM-DD) */
+  date: string;
+  /** The time part if present (HH:MM) */
+  time: string | null;
+  /** The timezone if present (Z or +/-HH:MM) */
+  tz: string | null;
 }
 
-export interface DateRangeValue extends AstNode {
-  type: "date_range";
+export interface DaterangeValue extends AstNode {
+  type: "daterange";
   /** The raw date range text */
   raw: string;
+}
+
+export interface NumberValue extends AstNode {
+  type: "number_value";
+  /** The raw number string */
+  raw: string;
+  /** The parsed numeric value */
+  value: number;
 }
 
 export interface QueryValue extends AstNode {
@@ -547,8 +562,8 @@ export interface QueryValue extends AstNode {
 
 export interface ValueArray extends AstNode {
   type: "value_array";
-  /** Elements of the array (links, quoted values, datetimes, date ranges, or queries) */
-  elements: (Link | QuotedValue | DatetimeValue | DateRangeValue | Query)[];
+  /** Elements of the array (links, quoted values, datetimes, dateranges, numbers, or queries) */
+  elements: (Link | QuotedValue | DatetimeValue | DaterangeValue | NumberValue | Query)[];
 }
 
 export interface Query extends AstNode {
@@ -601,6 +616,6 @@ export interface DefaultValue extends AstNode {
   type: "default_value";
   /** The raw default value text */
   raw: string;
-  /** The typed value content (quoted_value, link, or datetime) */
-  content: QuotedValue | Link | DatetimeValue;
+  /** The typed value content (quoted_value, link, datetime, or number) */
+  content: QuotedValue | Link | DatetimeValue | NumberValue;
 }

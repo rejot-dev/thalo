@@ -496,7 +496,7 @@ describe("getDiagnostics", () => {
   tags?: string[]
   authors?: (string | link)[]
   dates?: datetime[]
-  periods?: date-range[]
+  periods?: daterange[]
 
   # Sections
   Summary
@@ -666,7 +666,7 @@ describe("getDiagnostics", () => {
       expect(error!.message).toContain("datetime[]");
     });
 
-    it("should accept valid date-range array", () => {
+    it("should accept valid daterange array", () => {
       const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   periods: 2020 ~ 2022, 2023-01 ~ 2024-06
@@ -683,7 +683,7 @@ describe("getDiagnostics", () => {
       expect(error).toBeUndefined();
     });
 
-    it("should reject invalid date-range array (quoted dates instead of ranges)", () => {
+    it("should reject invalid daterange array (quoted dates instead of ranges)", () => {
       const source = `2026-01-05T18:00Z create reference "Test" #test
   ref-type: "article"
   periods: "2020", "2024"
@@ -697,9 +697,9 @@ describe("getDiagnostics", () => {
       const diagnostics = getDiagnostics(workspace, doc);
       const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
-      // Quoted dates don't match date-range[] type
+      // Quoted dates don't match daterange[] type
       expect(error).toBeDefined();
-      expect(error!.message).toContain("date-range[]");
+      expect(error!.message).toContain("daterange[]");
     });
   });
 });

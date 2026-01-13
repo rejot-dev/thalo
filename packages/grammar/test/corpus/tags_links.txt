@@ -151,3 +151,29 @@ link with dashes
       (identifier)
       (title)
       (link))))
+
+==================
+link with colon (datetime-like)
+==================
+
+
+2026-01-05T18:11Z create lore "Hello"
+  related: ^2026-01-05T17:11Z
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (link))))))

@@ -142,12 +142,12 @@ export default grammar({
     array_type: ($) => seq($._array_element, token.immediate("[]")),
     _array_element: ($) => choice($.primitive_type, $.literal_type, $.paren_type, $.unknown_type),
     paren_type: ($) => seq("(", $.type_expression, ")"),
-    primitive_type: (_) => choice("string", "datetime", "date-range", "link"),
+    primitive_type: (_) => choice("string", "datetime", "daterange", "link", "number"),
     literal_type: (_) => token(/"[^"]*"/),
     // Fallback for unrecognized type identifiers (e.g., "date-time" typo)
     // Tree-sitter prefers exact matches (primitive_type) over regex patterns
     unknown_type: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
-    default_value: ($) => choice($.quoted_value, $.link, $.datetime_value),
+    default_value: ($) => choice($.quoted_value, $.link, $.datetime_value, $.number_value),
 
     // =========================================================================
     // Content (markdown body for instance entries)
@@ -194,7 +194,7 @@ export default grammar({
     timestamp_tz: (_) => token.immediate(/Z|[+-][0-2]\d:[0-5]\d/),
     // Allow unclosed quotes to terminate at newline for error recovery
     title: (_) => token(/"[^"\r\n]*"?/),
-    link: (_) => token(/\^[A-Za-z0-9\-_/.]+/),
+    link: (_) => token(/\^[A-Za-z0-9\-_/.:]*[A-Za-z0-9]/),
     tag: (_) => token(/#[A-Za-z0-9\-_/.]+/),
     key: (_) => token(/[a-z][a-zA-Z0-9\-_]*/),
 
@@ -206,35 +206,64 @@ export default grammar({
     // - Links: ^identifier
     // - Quoted strings: "text" (required for literal types like "fact")
     // - Datetime: YYYY-MM-DD or YYYY-MM-DDTHH:MM (date with optional time)
-    // - Date ranges: YYYY ~ YYYY
+    // - Daterange: YYYY ~ YYYY, YYYY, YYYY-MM, YYYY Q1, etc.
+    // - Numbers: 123, -45.67
     // - Queries: entity where conditions
     // - Arrays: comma-separated values of any type
     value: ($) =>
       choice(
-        prec.dynamic(5, $.value_array), // Comma-separated values (2+ elements)
-        prec.dynamic(5, $.date_range), // DATE ~ DATE
+        prec.dynamic(6, $.value_array), // Comma-separated values (2+ elements)
+        prec.dynamic(5, $.daterange), // Dateranges with ~, Q, or implicit period
         prec.dynamic(4, $.datetime_value), // YYYY-MM-DD or YYYY-MM-DDTHH:MM
         prec.dynamic(3, $.query), // entity where conditions
         prec.dynamic(3, $.link), // ^identifier
         prec.dynamic(3, $.quoted_value), // "quoted text"
+        prec.dynamic(2, $.number_value), // 123, -45.67
       ),
 
     // Quoted string as a value (required for literal types)
     quoted_value: (_) => token(/"[^"]*"/),
 
-    // Datetime value: date with optional time (YYYY-MM-DD or YYYY-MM-DDTHH:MMZ)
-    datetime_value: (_) =>
-      token(/[12]\d{3}-[01]\d-[0-3]\d(T[0-2]\d:[0-5]\d(Z|[+-][0-2]\d:[0-5]\d))?/),
+    // Number value: integer or float (e.g., 123, -45.67)
+    number_value: (_) => token(/-?\d+(\.\d+)?/),
 
-    // Date range: YYYY(-MM(-DD))? ~ YYYY(-MM(-DD))?
-    date_range: (_) => token(/\d{4}(-\d{2}(-\d{2})?)? *~ *\d{4}(-\d{2}(-\d{2})?)?/),
+    // Datetime value: date with optional time (split into tokens)
+    // YYYY-MM-DD or YYYY-MM-DDTHH:MM or YYYY-MM-DDTHH:MMZ
+    datetime_value: ($) =>
+      seq(
+        field("date", $.datetime_date),
+        optional(
+          seq($.datetime_t, field("time", $.datetime_time), optional(field("tz", $.datetime_tz))),
+        ),
+      ),
+    datetime_date: (_) => token(/[12]\d{3}-[01]\d-[0-3]\d/),
+    datetime_t: (_) => token.immediate("T"),
+    datetime_time: (_) => token.immediate(/[0-2]\d:[0-5]\d/),
+    datetime_tz: (_) => token.immediate(/Z|[+-][0-2]\d:[0-5]\d/),
+
+    // Daterange: date period or range
+    // Formats:
+    //   a. Single period: YYYY-MM, YYYY Q1 (implicit start~end - YYYY alone conflicts with number)
+    //   b. Two full dates: YYYY-MM-DD ~ YYYY-MM-DD
+    //   c. Two partial: YYYY ~ YYYY, YYYY-MM ~ YYYY-MM
+    //   d. Open-ended: YYYY ~, YYYY-MM ~ (start till now)
+    // Note: Bare YYYY is ambiguous with number type, so use "YYYY ~" for year periods
+    daterange: (_) =>
+      choice(
+        // Quarter: YYYY Q1-Q4
+        token(/[12]\d{3} +Q[1-4]/),
+        // Range with ~: partial ~ optional(partial) - includes open-ended "YYYY ~"
+        token(/[12]\d{3}(-[01]\d(-[0-3]\d)?)? *~( *[12]\d{3}(-[01]\d(-[0-3]\d)?)?)?/),
+        // Implicit month: YYYY-MM (hyphen disambiguates from number)
+        token(/[12]\d{3}-[01]\d/),
+      ),
 
     // Unified array: comma-separated values of any type
     value_array: ($) =>
       prec.right(seq($._value_array_element, repeat1(seq(",", $._value_array_element)))),
 
     _value_array_element: ($) =>
-      choice($.link, $.quoted_value, $.datetime_value, $.date_range, $.query),
+      choice($.link, $.quoted_value, $.datetime_value, $.daterange, $.query, $.number_value),
 
     // =========================================================================
     // Query expressions (for sources metadata)

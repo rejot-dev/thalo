@@ -11,13 +11,15 @@ import type {
   ValueContent,
   QuotedValue,
   DatetimeValue,
-  DateRangeValue,
+  DaterangeValue,
   Link,
   ValueArray,
 } from "../ast/types.js";
 
 // Helper functions to create type expressions
-function primitive(name: "string" | "datetime" | "date-range" | "link"): ModelPrimitiveType {
+function primitive(
+  name: "string" | "datetime" | "daterange" | "link" | "number",
+): ModelPrimitiveType {
   return { kind: "primitive", name };
 }
 
@@ -54,20 +56,29 @@ function linkValue(id: string): ValueContent {
 }
 
 function datetimeValue(value: string): DatetimeValue {
+  // Parse value to extract components
+  const hasTime = value.includes("T");
+  const date = hasTime ? value.split("T")[0] : value;
+  const timePart = hasTime ? value.split("T")[1] : null;
+  const time = timePart ? timePart.replace(/Z|[+-]\d{2}:\d{2}$/, "") : null;
+  const tz = timePart ? (timePart.match(/Z|[+-]\d{2}:\d{2}$/)?.[0] ?? null) : null;
   return {
     type: "datetime_value",
     value,
+    date,
+    time,
+    tz,
   } as DatetimeValue;
 }
 
-function dateRangeValue(raw: string): DateRangeValue {
+function dateRangeValue(raw: string): DaterangeValue {
   return {
-    type: "date_range",
+    type: "daterange",
     raw,
-  } as DateRangeValue;
+  } as DaterangeValue;
 }
 
-function valueArray(elements: (Link | QuotedValue | DatetimeValue | DateRangeValue)[]): ValueArray {
+function valueArray(elements: (Link | QuotedValue | DatetimeValue | DaterangeValue)[]): ValueArray {
   return {
     type: "value_array",
     elements,
@@ -117,17 +128,17 @@ describe("TypeExpr.matchesContent", () => {
       expect(TypeExpr.matchesContent(quotedValue("2024-05-11"), primitive("datetime"))).toBe(false);
     });
 
-    it("matches date-range type with date_range content", () => {
-      expect(TypeExpr.matchesContent(dateRangeValue("2020 ~ 2024"), primitive("date-range"))).toBe(
+    it("matches daterange type with daterange content", () => {
+      expect(TypeExpr.matchesContent(dateRangeValue("2020 ~ 2024"), primitive("daterange"))).toBe(
         true,
       );
       expect(
-        TypeExpr.matchesContent(dateRangeValue("2020-01 ~ 2024-12"), primitive("date-range")),
+        TypeExpr.matchesContent(dateRangeValue("2020-01 ~ 2024-12"), primitive("daterange")),
       ).toBe(true);
-      expect(TypeExpr.matchesContent(quotedValue("2020 ~ 2024"), primitive("date-range"))).toBe(
+      expect(TypeExpr.matchesContent(quotedValue("2020 ~ 2024"), primitive("daterange"))).toBe(
         false,
       );
-      expect(TypeExpr.matchesContent(datetimeValue("2024-05-11"), primitive("date-range"))).toBe(
+      expect(TypeExpr.matchesContent(datetimeValue("2024-05-11"), primitive("daterange"))).toBe(
         false,
       );
     });
@@ -308,9 +319,9 @@ describe("TypeExpr.matchesDefaultValue", () => {
       );
     });
 
-    it("rejects date-range (not supported as default)", () => {
+    it("rejects daterange (not supported as default)", () => {
       expect(
-        TypeExpr.matchesDefaultValue(quotedDefault("2020 ~ 2024"), primitive("date-range")),
+        TypeExpr.matchesDefaultValue(quotedDefault("2020 ~ 2024"), primitive("daterange")),
       ).toBe(false);
     });
   });
@@ -364,7 +375,8 @@ describe("TypeExpr.toString", () => {
     expect(TypeExpr.toString(primitive("string"))).toBe("string");
     expect(TypeExpr.toString(primitive("link"))).toBe("link");
     expect(TypeExpr.toString(primitive("datetime"))).toBe("datetime");
-    expect(TypeExpr.toString(primitive("date-range"))).toBe("date-range");
+    expect(TypeExpr.toString(primitive("daterange"))).toBe("daterange");
+    expect(TypeExpr.toString(primitive("number"))).toBe("number");
   });
 
   it("formats literal types with quotes", () => {
@@ -381,7 +393,7 @@ describe("TypeExpr.toString", () => {
     expect(TypeExpr.toString(array(primitive("link")))).toBe("link[]");
     expect(TypeExpr.toString(array(primitive("string")))).toBe("string[]");
     expect(TypeExpr.toString(array(primitive("datetime")))).toBe("datetime[]");
-    expect(TypeExpr.toString(array(primitive("date-range")))).toBe("date-range[]");
+    expect(TypeExpr.toString(array(primitive("daterange")))).toBe("daterange[]");
   });
 
   it("formats union array types with parentheses", () => {

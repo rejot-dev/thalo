@@ -37,7 +37,7 @@
   # Metadata
   type: "fact" | "insight" ; "fact = verifiable info, insight = learned wisdom"
   subject: string | link ; "Subject name/slug (use ^self for personal lore)"
-  date?: date-range ; "Relevant date or date range"
+  date?: daterange ; "Relevant date or date range"
 
   # Sections
   Description ; "The lore content"

@@ -1,15 +1,15 @@
 import * as fs from "node:fs";
-import * as path from "node:path";
 import {
   formatQuery,
   findAllSyntheses,
   findLatestActualize,
   findEntryFile,
   getEntrySourceText,
+  generateInstructions,
+  DEFAULT_INSTRUCTIONS_TEMPLATE,
   type InstanceEntry,
   type ActualizeInfo,
 } from "@rejot-dev/thalo";
-import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import {
   createChangeTracker,
   parseCheckpoint,
@@ -18,82 +18,7 @@ import {
 } from "@rejot-dev/thalo/change-tracker";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
-
-/**
- * Collect all thalo and markdown files from a directory
- */
-function collectThaloFiles(dir: string, extensions: string[] = [".thalo", ".md"]): string[] {
-  const files: string[] = [];
-
-  function walk(currentDir: string): void {
-    let entries;
-    try {
-      entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-
-    for (const entry of entries) {
-      const fullPath = path.join(currentDir, entry.name);
-
-      if (entry.isDirectory()) {
-        if (!entry.name.startsWith(".") && entry.name !== "node_modules") {
-          walk(fullPath);
-        }
-      } else if (entry.isFile()) {
-        if (extensions.some((ext) => entry.name.endsWith(ext))) {
-          files.push(fullPath);
-        }
-      }
-    }
-  }
-
-  walk(dir);
-  return files;
-}
-
-/**
- * Resolve file paths from command arguments
- */
-function resolveFiles(paths: string[]): string[] {
-  const files: string[] = [];
-
-  for (const targetPath of paths) {
-    const resolved = path.resolve(targetPath);
-
-    if (!fs.existsSync(resolved)) {
-      console.error(pc.red(`Error: Path not found: ${targetPath}`));
-      process.exit(2);
-    }
-
-    const stat = fs.statSync(resolved);
-    if (stat.isDirectory()) {
-      files.push(...collectThaloFiles(resolved));
-    } else if (stat.isFile()) {
-      files.push(resolved);
-    }
-  }
-
-  return files;
-}
-
-/**
- * Load workspace from files
- */
-function loadWorkspace(files: string[]): Workspace {
-  const workspace = createWorkspace();
-
-  for (const file of files) {
-    try {
-      const source = fs.readFileSync(file, "utf-8");
-      workspace.addDocument(source, { filename: file });
-    } catch (err) {
-      console.error(pc.red(`Error reading ${file}: ${err instanceof Error ? err.message : err}`));
-    }
-  }
-
-  return workspace;
-}
+import { resolveFilesSync, loadWorkspaceSync, relativePath } from "../files.js";
 
 /**
  * Get the change marker from an actualize entry.
@@ -119,32 +44,21 @@ function getEntryRawText(entry: InstanceEntry, file: string): string {
   }
 }
 
-/**
- * Relative path from cwd
- */
-function relativePath(filePath: string): string {
-  const cwd = process.cwd();
-  if (filePath.startsWith(cwd)) {
-    const rel = filePath.slice(cwd.length + 1);
-    return rel || filePath;
-  }
-  return filePath;
-}
-
 async function actualizeAction(ctx: CommandContext): Promise<void> {
-  const { args } = ctx;
+  const { args, options } = ctx;
+  const instructionsTemplate = (options["instructions"] as string) || DEFAULT_INSTRUCTIONS_TEMPLATE;
 
   // Determine target paths
   const targetPaths = args.length > 0 ? args : ["."];
 
   // Collect and load files
-  const files = resolveFiles(targetPaths);
+  const files = resolveFilesSync(targetPaths);
   if (files.length === 0) {
     console.log("No .thalo or .md files found.");
     process.exit(0);
   }
 
-  const workspace = loadWorkspace(files);
+  const workspace = loadWorkspaceSync(files);
 
   // Create change tracker (auto-detects git)
   const tracker = await createChangeTracker({ cwd: process.cwd() });
@@ -217,19 +131,16 @@ async function actualizeAction(ctx: CommandContext): Promise<void> {
     }
 
     // Output instructions with checkpoint metadata
+    const checkpointValue = formatCheckpoint(currentMarker);
+    const instructions = generateInstructions(instructionsTemplate, {
+      file: relativePath(synthesis.file),
+      linkId: synthesis.linkId,
+      checkpoint: checkpointValue,
+    });
+
     console.log();
     console.log(pc.bold("--- Instructions ---"));
-    console.log(
-      `1. Update the content directly below the \`\`\`thalo block in ${relativePath(synthesis.file)}`,
-    );
-    console.log(`2. Place output BEFORE any subsequent \`\`\`thalo blocks`);
-    console.log(
-      `3. Append to the thalo block: ${pc.cyan(`actualize-synthesis ^${synthesis.linkId}`)}`,
-    );
-
-    // Format checkpoint
-    const checkpointValue = formatCheckpoint(currentMarker);
-    console.log(`   with metadata: ${pc.cyan(`checkpoint: "${checkpointValue}"`)}`);
+    console.log(instructions);
     console.log();
     console.log(pc.dim("─".repeat(60)));
   }
@@ -249,6 +160,12 @@ export const actualizeCommand: CommandDef = {
     required: false,
     multiple: true,
   },
-  options: {},
+  options: {
+    instructions: {
+      type: "string",
+      short: "i",
+      description: "Custom instructions template. Use placeholders: {file}, {linkId}, {checkpoint}",
+    },
+  },
   action: actualizeAction,
 };

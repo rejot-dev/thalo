@@ -490,7 +490,7 @@ describe("MetadataKeyProvider", () => {
   # Metadata
   type: "fact" | "insight"
   subject: string
-  date?: date-range
+  date?: daterange
 `;
     workspace.addDocument(schemaSource, { filename: "schema.thalo" });
   });
@@ -765,7 +765,8 @@ describe("TypeExprProvider", () => {
     const labels = items.map((i) => i.label);
     expect(labels).toContain("string");
     expect(labels).toContain("datetime");
-    expect(labels).toContain("date-range");
+    expect(labels).toContain("daterange");
+    expect(labels).toContain("number");
     expect(labels).toContain("link");
   });
 
@@ -803,7 +804,7 @@ describe("handleCompletion integration", () => {
   # Metadata
   type: "fact" | "insight"
   subject: string | link
-  date?: date-range
+  date?: daterange
   # Sections
   Summary?
 

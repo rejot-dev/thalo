@@ -217,7 +217,11 @@ simple actualize-synthesis
       (metadata
         (key)
         (value
-          (datetime_value))))))
+          (datetime_value
+            (datetime_date)
+            (datetime_t)
+            (datetime_time)
+            (datetime_tz)))))))
 
 ==================
 actualize-synthesis with only updated field
@@ -241,7 +245,11 @@ actualize-synthesis with only updated field
       (metadata
         (key)
         (value
-          (datetime_value))))))
+          (datetime_value
+            (datetime_date)
+            (datetime_t)
+            (datetime_time)
+            (datetime_tz)))))))
 
 ==================
 multiple entries in file
@@ -297,7 +305,11 @@ multiple entries in file
       (metadata
         (key)
         (value
-          (datetime_value))))))
+          (datetime_value
+            (datetime_date)
+            (datetime_t)
+            (datetime_time)
+            (datetime_tz)))))))
 
 ==================
 complex sources query

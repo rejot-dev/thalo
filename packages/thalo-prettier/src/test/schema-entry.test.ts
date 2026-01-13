@@ -94,10 +94,10 @@ describe("schema entry formatting", () => {
 `);
   });
 
-  it("should format define-entity with date and date-range types", async () => {
+  it("should format define-entity with date and daterange types", async () => {
     const input = `2026-01-05T18:12Z define-entity lore "Facts"
   # Metadata
-  date?: date-range
+  date?: daterange
   published?: datetime
 `;
 
@@ -105,7 +105,7 @@ describe("schema entry formatting", () => {
 
     expect(output).toBe(`2026-01-05T18:12Z define-entity lore "Facts"
   # Metadata
-  date?: date-range
+  date?: daterange
   published?: datetime
 `);
   });

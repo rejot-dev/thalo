@@ -44,7 +44,8 @@ import type {
   ValueContent,
   QuotedValue,
   DatetimeValue,
-  DateRangeValue,
+  DaterangeValue,
+  NumberValue,
   ValueArray,
   Query,
   QueryCondition,
@@ -552,7 +553,7 @@ export function extractTypeExpression(
     case "unknown_type":
       return createSyntaxError(
         "unknown_type",
-        `Unknown type '${child.text}'. Valid types: string, datetime, date-range, link`,
+        `Unknown type '${child.text}'. Valid types: string, datetime, daterange, link, number`,
         child.text,
         child,
       );
@@ -600,7 +601,7 @@ export function extractArrayType(node: SyntaxNode): ArrayType | SyntaxErrorNode<
     // Unknown element type in array - return syntax error for whole type
     return createSyntaxError(
       "unknown_type",
-      `Unknown type '${child.text}'. Valid types: string, datetime, date-range, link`,
+      `Unknown type '${child.text}'. Valid types: string, datetime, daterange, link, number`,
       node.text,
       node,
     );
@@ -660,7 +661,7 @@ export function extractUnionType(node: SyntaxNode): UnionType | SyntaxErrorNode<
         // Unknown type in union - return syntax error for whole type
         return createSyntaxError(
           "unknown_type",
-          `Unknown type '${child.text}'. Valid types: string, datetime, date-range, link`,
+          `Unknown type '${child.text}'. Valid types: string, datetime, daterange, link, number`,
           node.text,
           node,
         );
@@ -809,14 +810,17 @@ function extractValueContent(node: SyntaxNode): ValueContent {
         link: extractLink(node),
       };
     case "datetime_value":
+      return extractDatetimeValue(node);
+    case "daterange":
       return {
-        ...baseNode(node, "datetime_value"),
-        value: node.text.trim(),
-      };
-    case "date_range":
-      return {
-        ...baseNode(node, "date_range"),
+        ...baseNode(node, "daterange"),
         raw: node.text.trim(),
+      };
+    case "number_value":
+      return {
+        ...baseNode(node, "number_value"),
+        raw: node.text.trim(),
+        value: parseFloat(node.text.trim()),
       };
     case "value_array":
       return extractValueArray(node);
@@ -834,6 +838,23 @@ function extractValueContent(node: SyntaxNode): ValueContent {
   }
 }
 
+/**
+ * Extract a datetime value with its split components
+ */
+function extractDatetimeValue(node: SyntaxNode): DatetimeValue {
+  const dateNode = node.childForFieldName("date");
+  const timeNode = node.childForFieldName("time");
+  const tzNode = node.childForFieldName("tz");
+
+  return {
+    ...baseNode(node, "datetime_value"),
+    value: node.text.trim(),
+    date: dateNode?.text ?? "",
+    time: timeNode?.text ?? null,
+    tz: tzNode?.text ?? null,
+  };
+}
+
 function extractQuotedValue(node: SyntaxNode): QuotedValue {
   return {
     ...baseNode(node, "quoted_value"),
@@ -842,7 +863,8 @@ function extractQuotedValue(node: SyntaxNode): QuotedValue {
 }
 
 function extractValueArray(node: SyntaxNode): ValueArray {
-  const elements: (Link | QuotedValue | DatetimeValue | DateRangeValue | Query)[] = [];
+  const elements: (Link | QuotedValue | DatetimeValue | DaterangeValue | NumberValue | Query)[] =
+    [];
 
   for (const child of node.namedChildren) {
     if (!child) {
@@ -853,14 +875,17 @@ function extractValueArray(node: SyntaxNode): ValueArray {
     } else if (child.type === "quoted_value") {
       elements.push(extractQuotedValue(child));
     } else if (child.type === "datetime_value") {
+      elements.push(extractDatetimeValue(child));
+    } else if (child.type === "daterange") {
       elements.push({
-        ...baseNode(child, "datetime_value"),
-        value: child.text.trim(),
-      });
-    } else if (child.type === "date_range") {
-      elements.push({
-        ...baseNode(child, "date_range"),
+        ...baseNode(child, "daterange"),
         raw: child.text.trim(),
+      });
+    } else if (child.type === "number_value") {
+      elements.push({
+        ...baseNode(child, "number_value"),
+        raw: child.text.trim(),
+        value: parseFloat(child.text.trim()),
       });
     } else if (child.type === "query") {
       elements.push(extractQuery(child));
@@ -1000,9 +1025,13 @@ export function extractDefaultValue(node: SyntaxNode): DefaultValue {
       content = extractLink(child);
       break;
     case "datetime_value":
+      content = extractDatetimeValue(child);
+      break;
+    case "number_value":
       content = {
-        ...baseNode(child, "datetime_value"),
-        value: child.text.trim(),
+        ...baseNode(child, "number_value"),
+        raw: child.text.trim(),
+        value: parseFloat(child.text.trim()),
       };
       break;
     default:
