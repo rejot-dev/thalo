@@ -2,48 +2,10 @@ import type { AstPath, Doc, Printer } from "prettier";
 import type { SyntaxNode } from "tree-sitter";
 import { doc } from "prettier";
 import type { ThaloRootNode } from "./parser";
-import { findErrorNodes, formatParseErrors } from "./parse-errors";
 
 const { hardline, join } = doc.builders;
 
 type ThaloPrinter = Printer<SyntaxNode>;
-
-// Track if we've already warned for this format run to avoid duplicate warnings
-let hasWarnedThisRun = false;
-
-/**
- * Emit a warning about parse errors in the source.
- * Called once per format run when ERROR nodes are present.
- */
-function emitParseWarning(rootNode: ThaloRootNode): void {
-  if (hasWarnedThisRun) {
-    return;
-  }
-  hasWarnedThisRun = true;
-
-  const source = rootNode._thaloSource;
-  if (!source) {
-    return;
-  }
-
-  const errorNodes = findErrorNodes(rootNode);
-  if (errorNodes.length === 0) {
-    return;
-  }
-
-  const filepath = rootNode._thaloFilepath ?? "<unknown>";
-  const message = formatParseErrors(source, errorNodes, filepath);
-  console.warn(
-    `\n[thalo-prettier] Warning: File contains syntax errors. Returning original source unchanged.\n${message}\n`,
-  );
-}
-
-/**
- * Reset warning state. Called at start of each source_file print.
- */
-function resetWarningState(): void {
-  hasWarnedThisRun = false;
-}
 
 // ===================
 // Instance Entry Printing (create/update lore, opinion, etc.)
@@ -505,17 +467,14 @@ const printUnhandledNode = (node: SyntaxNode): Doc => {
 };
 
 const printSourceFile = (node: SyntaxNode): Doc => {
-  // Reset warning state for this format run
-  resetWarningState();
-
   // Check for errors - if present, return original source unchanged
   // Tree-sitter error recovery can produce structurally broken trees where
   // content gets detached from its parent entry, losing indentation context.
   // Safest approach: don't format files with syntax errors.
   const rootNode = node as ThaloRootNode;
   if (rootNode._thaloHasErrors) {
-    emitParseWarning(rootNode);
     // Return original source unchanged (with trailing newline for consistency)
+    // The format command handles error reporting, so we don't output anything here.
     const source = rootNode._thaloSource ?? "";
     return source.endsWith("\n") ? source : source + "\n";
   }

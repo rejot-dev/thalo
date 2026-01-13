@@ -3,6 +3,17 @@ import * as path from "node:path";
 import ignore from "ignore";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
+import { createWorkspace } from "@rejot-dev/thalo/native";
+import {
+  runFormat,
+  type FormatResult,
+  type FormatFileInput,
+  type SyntaxErrorInfo,
+} from "@rejot-dev/thalo";
+
+// ===================
+// File Collection (CLI-specific)
+// ===================
 
 async function loadIgnoreFile(filePath: string): Promise<string[]> {
   try {
@@ -69,6 +80,10 @@ async function resolveFiles(paths: string[], fileTypes: string[]): Promise<strin
   return files;
 }
 
+// ===================
+// Output Formatting (CLI-specific)
+// ===================
+
 function relativePath(filePath: string): string {
   const cwd = process.cwd();
   if (filePath.startsWith(cwd)) {
@@ -77,6 +92,18 @@ function relativePath(filePath: string): string {
   }
   return filePath;
 }
+
+function formatSyntaxError(error: SyntaxErrorInfo): string {
+  const loc = `${error.line}:${error.column}`.padEnd(8);
+  const severityLabel = pc.red("error".padEnd(7));
+  const codeLabel = pc.dim(error.code);
+
+  return `  ${pc.dim(loc)} ${severityLabel} ${error.message}  ${codeLabel}`;
+}
+
+// ===================
+// Prettier Integration
+// ===================
 
 function getParser(filePath: string): string {
   const ext = path.extname(filePath).slice(1);
@@ -89,6 +116,29 @@ function getParser(filePath: string): string {
   return "thalo"; // default
 }
 
+async function createPrettierFormatter(): Promise<
+  (source: string, filepath: string) => Promise<string>
+> {
+  const prettier = await import("prettier");
+  const thaloPrettier = await import("@rejot-dev/thalo-prettier");
+
+  return async (source: string, filepath: string): Promise<string> => {
+    const parser = getParser(filepath);
+    // Load project's prettier config (prettier.config.mjs, .prettierrc, etc.)
+    const resolvedConfig = await prettier.resolveConfig(filepath);
+    return prettier.format(source, {
+      ...resolvedConfig,
+      filepath,
+      parser,
+      plugins: [thaloPrettier],
+    });
+  };
+}
+
+// ===================
+// Command Action
+// ===================
+
 async function formatAction(ctx: CommandContext): Promise<void> {
   const { options, args } = ctx;
   const checkOnly = options["check"] as boolean;
@@ -97,98 +147,111 @@ async function formatAction(ctx: CommandContext): Promise<void> {
   const fileTypes = fileTypeStr.split(",").map((t) => t.trim());
 
   const targetPaths = args.length > 0 ? args : ["."];
-  const files = await resolveFiles(targetPaths, fileTypes);
+  const filePaths = await resolveFiles(targetPaths, fileTypes);
 
-  if (files.length === 0) {
+  if (filePaths.length === 0) {
     const fileTypesStr = fileTypes.join(", ");
     console.log(`No .${fileTypesStr} files found.`);
     process.exit(0);
   }
 
-  const prettier = await import("prettier");
-  const thaloPrettier = await import("@rejot-dev/thalo-prettier");
-
-  let changedCount = 0;
-  let errorCount = 0;
-
-  const results = await Promise.allSettled(
-    files.map(async (file) => {
-      try {
-        const content = await fs.readFile(file, "utf-8");
-        const parser = getParser(file);
-        // Always include thalo plugin so embedded thalo code blocks in markdown get formatted
-        const formatted = await prettier.format(content, {
-          filepath: file,
-          parser,
-          plugins: [thaloPrettier],
-        });
-        return { file, formatted, isChanged: content !== formatted };
-      } catch (err) {
-        throw { file, err };
-      }
-    }),
+  // Read all file contents
+  const files: FormatFileInput[] = await Promise.all(
+    filePaths.map(async (file) => ({
+      file,
+      content: await fs.readFile(file, "utf-8"),
+    })),
   );
 
-  for (const result of results) {
-    if (result.status === "rejected") {
-      const { file, err } = result.reason as { file: string; err: unknown };
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(pc.red(`✗`) + ` ${relativePath(file)}: ${message}`);
-      errorCount++;
-      continue;
-    }
+  // Create workspace and formatter
+  const workspace = createWorkspace();
+  const formatter = await createPrettierFormatter();
 
-    const { file, formatted, isChanged } = result.value;
+  // Run format
+  const result: FormatResult = await runFormat(workspace, files, { formatter });
 
-    if (checkOnly) {
-      if (isChanged) {
+  // Output results
+  let writeCount = 0;
+
+  for (const fileResult of result.fileResults) {
+    const relPath = relativePath(fileResult.file);
+
+    if (fileResult.hasSyntaxErrors) {
+      // File has syntax errors - mark as failed
+      console.log(pc.bold(pc.red(`✗`) + ` ${relPath}`));
+    } else if (checkOnly) {
+      if (fileResult.isChanged) {
         // Make files needing formatting bold with ✗
-        console.log(pc.bold(pc.red(`✗`) + ` ${relativePath(file)}`));
-        changedCount++;
+        console.log(pc.bold(pc.red(`✗`) + ` ${relPath}`));
       } else {
         // Files already formatted
-        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
+        console.log(pc.green(`✓`) + ` ${relPath}`);
       }
     } else if (writeBack) {
-      if (isChanged) {
-        await fs.writeFile(file, formatted, "utf-8");
+      if (fileResult.isChanged) {
+        await fs.writeFile(fileResult.file, fileResult.formatted, "utf-8");
         // Make formatted files bold (like prettier)
-        console.log(pc.bold(pc.green(`✓`) + ` ${relativePath(file)}`));
-        changedCount++;
+        console.log(pc.bold(pc.green(`✓`) + ` ${relPath}`));
+        writeCount++;
       } else {
         // Print unchanged files in regular text
-        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
+        console.log(pc.green(`✓`) + ` ${relPath}`);
       }
     } else {
       // This branch shouldn't happen since write defaults to true, but keep for safety
-      if (isChanged) {
-        console.log(pc.yellow(`⚠`) + ` ${relativePath(file)} (needs formatting)`);
-        changedCount++;
+      if (fileResult.isChanged) {
+        console.log(pc.yellow(`⚠`) + ` ${relPath} (needs formatting)`);
       } else {
-        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
+        console.log(pc.green(`✓`) + ` ${relPath}`);
       }
     }
   }
 
-  if (files.length > 1 || checkOnly) {
+  // Print syntax errors grouped by file (like check command does)
+  const filesWithErrors = result.fileResults.filter((r) => r.hasSyntaxErrors);
+  if (filesWithErrors.length > 0) {
+    console.log();
+    for (const fileResult of filesWithErrors) {
+      console.log();
+      console.log(pc.underline(relativePath(fileResult.file)));
+      for (const error of fileResult.syntaxErrors) {
+        console.log(formatSyntaxError(error));
+      }
+    }
+  }
+
+  // Print summary
+  if (result.filesProcessed > 1 || checkOnly) {
     console.log();
     if (checkOnly) {
-      if (changedCount > 0) {
-        console.log(
-          pc.yellow(
-            `${changedCount} file${changedCount !== 1 ? "s" : ""} need${changedCount === 1 ? "s" : ""} formatting`,
-          ),
-        );
+      const totalIssues = result.changedCount + result.syntaxErrorCount;
+      if (totalIssues > 0) {
+        const parts: string[] = [];
+        if (result.syntaxErrorCount > 0) {
+          parts.push(
+            pc.red(
+              `${result.syntaxErrorCount} file${result.syntaxErrorCount !== 1 ? "s" : ""} with syntax errors`,
+            ),
+          );
+        }
+        if (result.changedCount > 0) {
+          parts.push(
+            pc.yellow(
+              `${result.changedCount} file${result.changedCount !== 1 ? "s" : ""} need${result.changedCount === 1 ? "s" : ""} formatting`,
+            ),
+          );
+        }
+        console.log(parts.join(", "));
         process.exit(1);
       } else {
-        console.log(pc.green(`All ${files.length} files are properly formatted`));
+        console.log(pc.green(`All ${result.filesProcessed} files are properly formatted`));
       }
     } else if (writeBack) {
-      console.log(`Formatted ${changedCount} file${changedCount !== 1 ? "s" : ""}`);
+      console.log(`Formatted ${writeCount} file${writeCount !== 1 ? "s" : ""}`);
     }
   }
 
-  if (errorCount > 0) {
+  if (result.syntaxErrorCount > 0) {
     process.exit(1);
   }
 }
