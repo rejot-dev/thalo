@@ -20,18 +20,19 @@ pnpm add -g @rejot-dev/thalo-cli
 Initialize a new Thalo knowledge base in the current directory.
 
 ```bash
-thalo init
+thalo init [directory]
 ```
 
 Creates:
 
 - `entities.thalo` - Entity schema definitions
-- `entries.thalo` - Your knowledge entries
-- `syntheses.thalo` - Synthesis query definitions
+- `AGENTS.md` - AI agent instructions
+- `personal-bio.md` - Example synthesis file
 
 **Options:**
 
-- None
+- `-n, --dry-run` - Show what would be created without making changes
+- `-f, --force` - Overwrite existing files
 
 **Example:**
 
@@ -46,12 +47,19 @@ thalo init
 Validate Thalo files against their schemas.
 
 ```bash
-thalo check [files...]
+thalo check [paths...]
 ```
 
 **Options:**
 
-- `files` - Specific files to check (defaults to all `.thalo` files in current directory)
+- `paths` - Files or directories to check (defaults to current directory)
+- `-q, --quiet` - Only show errors, suppress warnings and info
+- `-f, --format <format>` - Output format: `default`, `json`, `compact`, or `github`
+- `--severity <level>` - Minimum severity to report: `error`, `warning`, or `info`
+- `--max-warnings <n>` - Exit with error if warnings exceed threshold
+- `--rule <rule>=<severity>` - Set rule severity (e.g., `unknown-entity=off`)
+- `-w, --watch` - Watch files for changes and re-run
+- `--file-type <types>` - Comma-separated list of file types (default: `md,thalo`)
 
 **What it validates:**
 
@@ -70,6 +78,15 @@ thalo check
 
 # Check specific files
 thalo check entries.thalo entities.thalo
+
+# Watch mode
+thalo check --watch
+
+# CI mode with GitHub annotations
+thalo check --format github
+
+# Disable a specific rule
+thalo check --rule unknown-entity=off
 ```
 
 **Exit codes:**
@@ -77,17 +94,45 @@ thalo check entries.thalo entities.thalo
 - `0` - All checks passed
 - `1` - Validation errors found
 
+### `thalo format`
+
+Format Thalo and Markdown files using Prettier.
+
+```bash
+thalo format [paths...]
+```
+
+**Options:**
+
+- `paths` - Files or directories to format (defaults to current directory)
+- `-c, --check` - Check if files are formatted (exit 1 if not)
+- `-w, --write` - Write formatted output back to files (default: true)
+- `--file-type <types>` - Comma-separated list of file types (default: `md,thalo`)
+
+**Example:**
+
+```bash
+# Format all files
+thalo format
+
+# Check formatting without making changes
+thalo format --check
+
+# Format specific files
+thalo format entries.thalo notes/
+```
+
 ### `thalo actualize`
 
 Generate synthesized content from syntheses.
 
 ```bash
-thalo actualize [synthesis-id]
+thalo actualize [paths...]
 ```
 
 **Options:**
 
-- `synthesis-id` - Specific synthesis to actualize (optional)
+- `paths` - Files or directories to check for syntheses (defaults to current directory)
 
 **Example:**
 
@@ -95,8 +140,8 @@ thalo actualize [synthesis-id]
 # Actualize all syntheses
 thalo actualize
 
-# Actualize specific synthesis
-thalo actualize ^prog-philosophy
+# Actualize syntheses in specific directory
+thalo actualize ./my-knowledge
 ```
 
 ### `thalo query`
@@ -151,21 +196,93 @@ thalo query "lore" --limit 5
 thalo query "lore" ./my-knowledge-base
 ```
 
-### `thalo rules`
+### `thalo rules list`
 
-Display validation rules for your knowledge base.
+Display available validation rules.
 
 ```bash
-thalo rules
+thalo rules list
 ```
 
-Shows all entity definitions and their validation rules.
+**Options:**
+
+- `-s, --severity <level>` - Filter by severity: `error`, `warning`, or `info`
+- `-c, --category <cat>` - Filter by category: `instance`, `link`, `schema`, `metadata`, or
+  `content`
+- `--json` - Output as JSON
 
 **Example:**
 
 ```bash
-thalo rules
+# List all rules
+thalo rules list
+
+# Filter by severity
+thalo rules list --severity error
+
+# Output as JSON
+thalo rules list --json
 ```
+
+### `thalo lsp`
+
+Start the Language Server Protocol server for editor integration.
+
+```bash
+thalo lsp
+```
+
+This command is typically invoked by editors (VS Code, etc.) automatically. Communication happens
+over stdio.
+
+**Options:**
+
+- `--stdio` - Use stdio transport (default, accepted for compatibility)
+
+### `thalo setup-merge-driver`
+
+Configure Git to use the semantic merge driver for Thalo files.
+
+```bash
+thalo setup-merge-driver
+```
+
+**Options:**
+
+- `-g, --global` - Configure globally in ~/.gitconfig
+- `--check` - Check if merge driver is configured
+- `--uninstall` - Remove merge driver configuration
+
+**Example:**
+
+```bash
+# Setup for current repository
+thalo setup-merge-driver
+
+# Setup globally
+thalo setup-merge-driver --global
+
+# Check configuration
+thalo setup-merge-driver --check
+
+# Remove configuration
+thalo setup-merge-driver --uninstall
+```
+
+### `thalo merge-driver`
+
+Git merge driver for Thalo files. This command is called by Git during merges and is not intended
+for direct use.
+
+```bash
+thalo merge-driver <base> <ours> <theirs> [path]
+```
+
+**Options:**
+
+- `-q, --quiet` - Suppress output
+- `-v, --verbose` - Show detailed conflict information
+- `--diff3` - Use diff3 conflict style (show base)
 
 ## Global Options
 
@@ -194,7 +311,10 @@ thalo --version
 # 1. Check your entries before committing
 thalo check
 
-# 2. If valid, commit to git
+# 2. Format files
+thalo format
+
+# 3. If valid, commit to git
 git add entries.thalo
 git commit -m "Add new opinion on TypeScript"
 ```
@@ -222,20 +342,34 @@ cd my-knowledge
 # 2. Initialize
 thalo init
 
-# 3. Edit entries.thalo with your content
+# 3. Setup merge driver for better git merges
+thalo setup-merge-driver
 
-# 4. Validate
+# 4. Edit entries and validate
 thalo check
 ```
 
 ### Working with Syntheses
 
 ```bash
-# 1. Define a synthesis in syntheses.thalo
+# 1. Define a synthesis in a markdown file
 # 2. Actualize it
 thalo actualize
 
 # 3. Review generated content
+```
+
+### CI/CD Integration
+
+```bash
+# Check with GitHub Actions annotations
+thalo check --format github
+
+# Fail on any warnings
+thalo check --max-warnings 0
+
+# Check formatting
+thalo format --check
 ```
 
 ## Error Messages
@@ -272,6 +406,15 @@ git commit -m "Add new knowledge entries"
 git log -- entries.thalo
 ```
 
+For smarter merges, set up the Thalo merge driver:
+
+```bash
+thalo setup-merge-driver
+```
+
+This enables semantic merging that understands entry boundaries, reducing conflicts when multiple
+people edit the same file.
+
 ## Editor Integration
 
 For the best experience, use the VSCode extension which provides:
@@ -286,6 +429,7 @@ The CLI is still useful for:
 - CI/CD validation
 - Batch operations
 - Scripting workflows
+- Formatting files
 
 ## Next Steps
 
