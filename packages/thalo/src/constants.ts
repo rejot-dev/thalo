@@ -28,7 +28,7 @@ export const ALL_DIRECTIVES = [
 // ===================
 
 /** Primitive types for field definitions */
-export const PRIMITIVE_TYPES = ["string", "datetime", "date-range", "link"] as const;
+export const PRIMITIVE_TYPES = ["string", "datetime", "daterange", "link", "number"] as const;
 
 // ===================
 // Schema Block Headers

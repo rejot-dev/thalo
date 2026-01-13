@@ -290,12 +290,12 @@ array of date type
               (primitive_type))))))))
 
 ==================
-array of date-range type
+array of daterange type
 ==================
 
 2026-01-05T18:12Z define-entity lore "Lore"
   # Metadata
-  periods: date-range[]
+  periods: daterange[]
 
 ---
 
@@ -407,7 +407,8 @@ default value with datetime
           (type_expression
             (primitive_type))
           (default_value
-            (datetime_value)))))))
+            (datetime_value
+              (datetime_date))))))))
 
 ==================
 default value with string type
@@ -813,12 +814,12 @@ alter-entity all block types
           (section_name))))))
 
 ==================
-date-range type
+daterange type
 ==================
 
 2026-01-05T18:12Z define-entity lore "Facts"
   # Metadata
-  date?: date-range
+  date?: daterange
 
 ---
 
@@ -839,3 +840,61 @@ date-range type
           (optional_marker)
           (type_expression
             (primitive_type)))))))
+
+==================
+number type
+==================
+
+2026-01-05T18:12Z define-entity lore "Facts"
+  # Metadata
+  count?: number
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (schema_directive)
+      (identifier)
+      (title)
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type)))))))
+
+==================
+default value with number
+==================
+
+2026-01-05T18:12Z define-entity lore "Facts"
+  # Metadata
+  priority?: number = 5
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (schema_directive)
+      (identifier)
+      (title)
+      (metadata_block
+        (field_definition
+          (field_name)
+          (optional_marker)
+          (type_expression
+            (primitive_type))
+          (default_value
+            (number_value)))))))

@@ -126,7 +126,13 @@ export type {
 } from "./commands/format.js";
 export { runQuery, parseQueryString, type RunQueryOptions } from "./commands/query.js";
 export type { QueryResult, QueryEntryInfo, QueryConditionInfo } from "./commands/query.js";
-export { runActualize, type RunActualizeOptions } from "./commands/actualize.js";
+export {
+  runActualize,
+  generateInstructions,
+  DEFAULT_INSTRUCTIONS_TEMPLATE,
+  type RunActualizeOptions,
+  type InstructionsParams,
+} from "./commands/actualize.js";
 export type {
   ActualizeResult,
   SynthesisOutputInfo,

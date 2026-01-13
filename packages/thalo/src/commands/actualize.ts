@@ -15,6 +15,37 @@ import {
 import { executeQueries, formatQuery } from "../services/query.js";
 import { formatTimestamp } from "../formatters.js";
 
+/**
+ * Default instructions template for actualization.
+ * Uses placeholders: {file}, {linkId}, {checkpoint}
+ */
+export const DEFAULT_INSTRUCTIONS_TEMPLATE = `1. Update the content directly below the \`\`\`thalo block in {file}
+2. Place output BEFORE any subsequent \`\`\`thalo blocks
+3. Append to the thalo block: actualize-synthesis ^{linkId}
+   with metadata: checkpoint: "{checkpoint}"`;
+
+/**
+ * Parameters for generating instructions.
+ */
+export interface InstructionsParams {
+  /** Relative file path */
+  file: string;
+  /** Link ID for the synthesis */
+  linkId: string;
+  /** Checkpoint value */
+  checkpoint: string;
+}
+
+/**
+ * Generate instructions from a template with placeholder substitution.
+ */
+export function generateInstructions(template: string, params: InstructionsParams): string {
+  return template
+    .replace(/\{file\}/g, params.file)
+    .replace(/\{linkId\}/g, params.linkId)
+    .replace(/\{checkpoint\}/g, params.checkpoint);
+}
+
 // ===================
 // Types
 // ===================

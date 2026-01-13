@@ -61,7 +61,8 @@ import type {
   QuotedValue,
   LinkValue,
   DatetimeValue,
-  DateRangeValue,
+  DaterangeValue,
+  NumberValue,
   QueryValue,
   ValueArray,
   Query,
@@ -150,7 +151,8 @@ export interface AstVisitor<T = void> {
   visitQuotedValue?(node: QuotedValue): T;
   visitLinkValue?(node: LinkValue): T;
   visitDatetimeValue?(node: DatetimeValue): T;
-  visitDateRangeValue?(node: DateRangeValue): T;
+  visitDaterangeValue?(node: DaterangeValue): T;
+  visitNumberValue?(node: NumberValue): T;
   visitQueryValue?(node: QueryValue): T;
   visitValueArray?(node: ValueArray): T;
 
@@ -416,7 +418,8 @@ export function getChildren(node: AstNode): AstNode[] {
     case "description":
     case "quoted_value":
     case "datetime_value":
-    case "date_range":
+    case "daterange":
+    case "number_value":
     case "field_condition":
     case "tag_condition":
     case "link_condition":

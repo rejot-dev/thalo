@@ -53,12 +53,13 @@ export interface ModelFieldDefinition {
 
 /**
  * A typed default value from a field definition.
- * Can be a quoted string, link reference, or datetime.
+ * Can be a quoted string, link reference, datetime, or number.
  */
 export type ModelDefaultValue =
   | { kind: "quoted"; value: string; raw: string }
   | { kind: "link"; id: string; raw: string }
-  | { kind: "datetime"; value: string; raw: string };
+  | { kind: "datetime"; value: string; raw: string }
+  | { kind: "number"; value: number; raw: string };
 
 /**
  * A section definition from a schema entry
@@ -82,7 +83,7 @@ export type ModelTypeExpression =
 
 export interface ModelPrimitiveType {
   kind: "primitive";
-  name: "string" | "datetime" | "date-range" | "link";
+  name: "string" | "datetime" | "daterange" | "link" | "number";
 }
 
 /**

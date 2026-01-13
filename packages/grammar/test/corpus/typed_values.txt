@@ -95,7 +95,11 @@ value: datetime with time
       (metadata
         (key)
         (value
-          (datetime_value))))))
+          (datetime_value
+            (datetime_date)
+            (datetime_t)
+            (datetime_time)
+            (datetime_tz)))))))
 
 ==================
 value: datetime without time (date only)
@@ -120,10 +124,11 @@ value: datetime without time (date only)
       (metadata
         (key)
         (value
-          (datetime_value))))))
+          (datetime_value
+            (datetime_date)))))))
 
 ==================
-value: date range years
+value: daterange years
 ==================
 
 2026-01-05T18:11Z create lore "Entry"
@@ -145,10 +150,10 @@ value: date range years
       (metadata
         (key)
         (value
-          (date_range))))))
+          (daterange))))))
 
 ==================
-value: date range full dates
+value: daterange full dates
 ==================
 
 2026-01-05T18:11Z create lore "Entry"
@@ -170,7 +175,182 @@ value: date range full dates
       (metadata
         (key)
         (value
-          (date_range))))))
+          (daterange))))))
+
+==================
+value: daterange full year (using ~)
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  born: 1990 ~
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (daterange))))))
+
+==================
+value: daterange implicit month
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  started: 2024-05
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (daterange))))))
+
+==================
+value: daterange quarter
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  period: 2024 Q1
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (daterange))))))
+
+==================
+value: daterange open-ended
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  since: 2020 ~
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (daterange))))))
+
+==================
+value: number integer
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  count: 42
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (number_value))))))
+
+==================
+value: number float
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  rating: 4.5
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (number_value))))))
+
+==================
+value: number negative
+==================
+
+2026-01-05T18:11Z create lore "Entry"
+  offset: -10
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (number_value))))))
 
 ==================
 value: array of links
@@ -532,7 +712,7 @@ array: three queries
                     (tag)))))))))))
 
 ==================
-array: date ranges
+array: dateranges
 ==================
 
 2026-01-07T12:00Z create lore "Entry"
@@ -555,8 +735,8 @@ array: date ranges
         (key)
         (value
           (value_array
-            (date_range)
-            (date_range)))))))
+            (daterange)
+            (daterange)))))))
 
 ==================
 array: mixed types
@@ -584,7 +764,7 @@ array: mixed types
           (value_array
             (link)
             (quoted_value)
-            (date_range)))))))
+            (daterange)))))))
 
 ==================
 Unknown type (misspelled datetime)

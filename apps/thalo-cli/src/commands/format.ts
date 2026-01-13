@@ -10,9 +10,10 @@ import {
   type FormatFileInput,
   type SyntaxErrorInfo,
 } from "@rejot-dev/thalo";
+import { relativePath } from "../files.js";
 
 // ===================
-// File Collection (CLI-specific)
+// File Collection (format-specific with ignore patterns)
 // ===================
 
 async function loadIgnoreFile(filePath: string): Promise<string[]> {
@@ -31,7 +32,7 @@ async function createIgnoreFilter(dir: string) {
   return ig;
 }
 
-async function collectFiles(dir: string, fileTypes: string[]): Promise<string[]> {
+async function collectFilesWithIgnore(dir: string, fileTypes: string[]): Promise<string[]> {
   const files: string[] = [];
   const ig = await createIgnoreFilter(dir);
 
@@ -55,7 +56,7 @@ async function collectFiles(dir: string, fileTypes: string[]): Promise<string[]>
   return files;
 }
 
-async function resolveFiles(paths: string[], fileTypes: string[]): Promise<string[]> {
+async function resolveFormatFiles(paths: string[], fileTypes: string[]): Promise<string[]> {
   const files: string[] = [];
 
   for (const targetPath of paths) {
@@ -64,7 +65,7 @@ async function resolveFiles(paths: string[], fileTypes: string[]): Promise<strin
     try {
       const stat = await fs.stat(resolved);
       if (stat.isDirectory()) {
-        files.push(...(await collectFiles(resolved, fileTypes)));
+        files.push(...(await collectFilesWithIgnore(resolved, fileTypes)));
       } else if (stat.isFile()) {
         const ext = path.extname(resolved).slice(1); // Remove leading dot
         if (fileTypes.includes(ext)) {
@@ -78,19 +79,6 @@ async function resolveFiles(paths: string[], fileTypes: string[]): Promise<strin
   }
 
   return files;
-}
-
-// ===================
-// Output Formatting (CLI-specific)
-// ===================
-
-function relativePath(filePath: string): string {
-  const cwd = process.cwd();
-  if (filePath.startsWith(cwd)) {
-    const rel = filePath.slice(cwd.length + 1);
-    return rel || filePath;
-  }
-  return filePath;
 }
 
 function formatSyntaxError(error: SyntaxErrorInfo): string {
@@ -147,7 +135,7 @@ async function formatAction(ctx: CommandContext): Promise<void> {
   const fileTypes = fileTypeStr.split(",").map((t) => t.trim());
 
   const targetPaths = args.length > 0 ? args : ["."];
-  const filePaths = await resolveFiles(targetPaths, fileTypes);
+  const filePaths = await resolveFormatFiles(targetPaths, fileTypes);
 
   if (filePaths.length === 0) {
     const fileTypesStr = fileTypes.join(", ");

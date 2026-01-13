@@ -76,12 +76,12 @@ describe("parseFragment", () => {
       expect(result.node.namedChildren[0]?.type).toBe("datetime_value");
     });
 
-    it("parses a date range value", () => {
+    it("parses a daterange value", () => {
       const result = parseFragment(parser, "value", "2022-05 ~ 2024");
 
       expect(result.valid).toBe(true);
       expect(result.node.type).toBe("value");
-      expect(result.node.namedChildren[0]?.type).toBe("date_range");
+      expect(result.node.namedChildren[0]?.type).toBe("daterange");
     });
 
     it("parses an array value", () => {

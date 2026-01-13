@@ -12,7 +12,7 @@ describe("invalid-date-range-value rule", () => {
       `2026-01-01T00:00Z define-entity lore "Lore entries"
   # Metadata
   type: string
-  period?: date-range
+  period?: daterange
 `,
       { filename: "schema.thalo" },
     );

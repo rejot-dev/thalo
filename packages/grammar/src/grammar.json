@@ -815,11 +815,15 @@
         },
         {
           "type": "STRING",
-          "value": "date-range"
+          "value": "daterange"
         },
         {
           "type": "STRING",
           "value": "link"
+        },
+        {
+          "type": "STRING",
+          "value": "number"
         }
       ]
     },
@@ -851,6 +855,10 @@
         {
           "type": "SYMBOL",
           "name": "datetime_value"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "number_value"
         }
       ]
     },
@@ -1041,7 +1049,7 @@
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\^[A-Za-z0-9\\-_/.]+"
+        "value": "\\^[A-Za-z0-9\\-_/.:]*[A-Za-z0-9]"
       }
     },
     "tag": {
@@ -1063,7 +1071,7 @@
       "members": [
         {
           "type": "PREC_DYNAMIC",
-          "value": 5,
+          "value": 6,
           "content": {
             "type": "SYMBOL",
             "name": "value_array"
@@ -1074,7 +1082,7 @@
           "value": 5,
           "content": {
             "type": "SYMBOL",
-            "name": "date_range"
+            "name": "daterange"
           }
         },
         {
@@ -1108,6 +1116,14 @@
             "type": "SYMBOL",
             "name": "quoted_value"
           }
+        },
+        {
+          "type": "PREC_DYNAMIC",
+          "value": 2,
+          "content": {
+            "type": "SYMBOL",
+            "name": "number_value"
+          }
         }
       ]
     },
@@ -1118,19 +1134,120 @@
         "value": "\"[^\"]*\""
       }
     },
-    "datetime_value": {
+    "number_value": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "[12]\\d{3}-[01]\\d-[0-3]\\d(T[0-2]\\d:[0-5]\\d(Z|[+-][0-2]\\d:[0-5]\\d))?"
+        "value": "-?\\d+(\\.\\d+)?"
       }
     },
-    "date_range": {
+    "datetime_value": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "date",
+          "content": {
+            "type": "SYMBOL",
+            "name": "datetime_date"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "datetime_t"
+                },
+                {
+                  "type": "FIELD",
+                  "name": "time",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "datetime_time"
+                  }
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "FIELD",
+                      "name": "tz",
+                      "content": {
+                        "type": "SYMBOL",
+                        "name": "datetime_tz"
+                      }
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
+    },
+    "datetime_date": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\d{4}(-\\d{2}(-\\d{2})?)? *~ *\\d{4}(-\\d{2}(-\\d{2})?)?"
+        "value": "[12]\\d{3}-[01]\\d-[0-3]\\d"
       }
+    },
+    "datetime_t": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "STRING",
+        "value": "T"
+      }
+    },
+    "datetime_time": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[0-2]\\d:[0-5]\\d"
+      }
+    },
+    "datetime_tz": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "Z|[+-][0-2]\\d:[0-5]\\d"
+      }
+    },
+    "daterange": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "[12]\\d{3} +Q[1-4]"
+          }
+        },
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "[12]\\d{3}(-[01]\\d(-[0-3]\\d)?)? *~( *[12]\\d{3}(-[01]\\d(-[0-3]\\d)?)?)?"
+          }
+        },
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "[12]\\d{3}-[01]\\d"
+          }
+        }
+      ]
     },
     "value_array": {
       "type": "PREC_RIGHT",
@@ -1178,11 +1295,15 @@
         },
         {
           "type": "SYMBOL",
-          "name": "date_range"
+          "name": "daterange"
         },
         {
           "type": "SYMBOL",
           "name": "query"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "number_value"
         }
       ]
     },

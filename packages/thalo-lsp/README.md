@@ -120,18 +120,18 @@ Find all usages of various syntax elements across the workspace:
 
 Context-aware hover information for various syntax elements:
 
-| Element               | Information shown                                             |
-| --------------------- | ------------------------------------------------------------- |
-| `^link-id`            | Entry title, metadata, tags, and file location                |
-| `#tag`                | Usage count and list of entries with that tag                 |
-| Directive             | Documentation with syntax and examples                        |
-| Entity name           | Full schema: fields (with types), sections, and where defined |
-| Metadata key          | Field type, required/optional, default value, and description |
-| Timestamp             | Entry info and hint to add explicit link ID for referencing   |
-| Type expr             | Documentation for `string`, `date`, `date-range`, `link`      |
-| Section header        | Section description and required/optional status from schema  |
-| `define-synthesis`    | Documentation for defining synthesis operations               |
-| `actualize-synthesis` | Documentation for triggering synthesis regeneration           |
+| Element               | Information shown                                                     |
+| --------------------- | --------------------------------------------------------------------- |
+| `^link-id`            | Entry title, metadata, tags, and file location                        |
+| `#tag`                | Usage count and list of entries with that tag                         |
+| Directive             | Documentation with syntax and examples                                |
+| Entity name           | Full schema: fields (with types), sections, and where defined         |
+| Metadata key          | Field type, required/optional, default value, and description         |
+| Timestamp             | Entry info and hint to add explicit link ID for referencing           |
+| Type expr             | Documentation for `string`, `datetime`, `daterange`, `link`, `number` |
+| Section header        | Section description and required/optional status from schema          |
+| `define-synthesis`    | Documentation for defining synthesis operations                       |
+| `actualize-synthesis` | Documentation for triggering synthesis regeneration                   |
 
 ### Completions
 
@@ -147,7 +147,7 @@ Context-aware completions throughout the entry lifecycle:
 | Metadata value  | After `key:`               | Valid values (literals, `^self`, etc.)                                         |
 | Content section | `#` in content area        | Section names from schema (`Claim`, `Reasoning`)                               |
 | Schema block    | `#` in schema entry        | `# Metadata`, `# Sections`, etc.                                               |
-| Field type      | After field name in schema | `string`, `date`, `link`, `date-range`                                         |
+| Field type      | After field name in schema | `string`, `datetime`, `link`, `daterange`, `number`                            |
 | Link reference  | `^`                        | All link IDs from workspace                                                    |
 | Tag             | `#`                        | Existing tags with usage counts                                                |
 

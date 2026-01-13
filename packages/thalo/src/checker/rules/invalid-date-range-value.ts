@@ -8,14 +8,14 @@ const category: RuleCategory = "metadata";
 const dateRangePattern = /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/;
 
 /**
- * Check if a type expression is or contains a date-range type
+ * Check if a type expression is or contains a daterange type
  */
 function isDateRangeType(type: ModelTypeExpression): boolean {
-  if (type.kind === "primitive" && type.name === "date-range") {
+  if (type.kind === "primitive" && type.name === "daterange") {
     return true;
   }
   if (type.kind === "union") {
-    return type.members.some((m) => m.kind === "primitive" && m.name === "date-range");
+    return type.members.some((m) => m.kind === "primitive" && m.name === "daterange");
   }
   return false;
 }
@@ -43,11 +43,11 @@ const visitor: RuleVisitor = {
         continue;
       }
 
-      // Validate the date-range format
+      // Validate the daterange format
       const content = meta.value.content;
 
-      // For date_range content type, it's already validated by the parser
-      if (content.type === "date_range") {
+      // For daterange content type, it's already validated by the parser
+      if (content.type === "daterange") {
         continue;
       }
 

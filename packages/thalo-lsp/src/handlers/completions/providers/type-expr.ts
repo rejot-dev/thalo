@@ -13,10 +13,12 @@ function getPrimitiveTypeDescription(type: PrimitiveType): string {
       return "Any text value";
     case "datetime":
       return "Date value (YYYY-MM-DD)";
-    case "date-range":
-      return "Date range (YYYY ~ YYYY or similar)";
+    case "daterange":
+      return "Date range (YYYY ~ YYYY, YYYY-MM, YYYY Q1, etc.)";
     case "link":
       return "Reference to another entry (^link-id)";
+    case "number":
+      return "Numeric value (integer or float)";
   }
 }
 

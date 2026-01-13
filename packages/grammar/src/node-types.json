@@ -166,6 +166,77 @@
     }
   },
   {
+    "type": "daterange",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "datetime_date",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "datetime_t",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "datetime_time",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "datetime_tz",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "datetime_value",
+    "named": true,
+    "fields": {
+      "date": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "datetime_date",
+            "named": true
+          }
+        ]
+      },
+      "time": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "datetime_time",
+            "named": true
+          }
+        ]
+      },
+      "tz": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "datetime_tz",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "datetime_t",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "default_value",
     "named": true,
     "fields": {},
@@ -179,6 +250,10 @@
         },
         {
           "type": "link",
+          "named": true
+        },
+        {
+          "type": "number_value",
           "named": true
         },
         {
@@ -766,6 +841,26 @@
     }
   },
   {
+    "type": "timestamp_date",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "timestamp_t",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "timestamp_time",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "timestamp_tz",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "type_expression",
     "named": true,
     "fields": {},
@@ -837,7 +932,7 @@
       "required": true,
       "types": [
         {
-          "type": "date_range",
+          "type": "daterange",
           "named": true
         },
         {
@@ -846,6 +941,10 @@
         },
         {
           "type": "link",
+          "named": true
+        },
+        {
+          "type": "number_value",
           "named": true
         },
         {
@@ -872,7 +971,7 @@
       "required": true,
       "types": [
         {
-          "type": "date_range",
+          "type": "daterange",
           "named": true
         },
         {
@@ -881,6 +980,10 @@
         },
         {
           "type": "link",
+          "named": true
+        },
+        {
+          "type": "number_value",
           "named": true
         },
         {
@@ -919,6 +1022,10 @@
     "named": false
   },
   {
+    "type": "T",
+    "named": false
+  },
+  {
     "type": "[]",
     "named": false
   },
@@ -947,20 +1054,12 @@
     "named": false
   },
   {
-    "type": "date-range",
+    "type": "daterange",
     "named": false
-  },
-  {
-    "type": "date_range",
-    "named": true
   },
   {
     "type": "datetime",
     "named": false
-  },
-  {
-    "type": "datetime_value",
-    "named": true
   },
   {
     "type": "define-entity",
@@ -991,6 +1090,14 @@
     "named": true
   },
   {
+    "type": "number",
+    "named": false
+  },
+  {
+    "type": "number_value",
+    "named": true
+  },
+  {
     "type": "optional_marker",
     "named": true
   },
@@ -1004,22 +1111,6 @@
   },
   {
     "type": "tag",
-    "named": true
-  },
-  {
-    "type": "timestamp_date",
-    "named": true
-  },
-  {
-    "type": "timestamp_t",
-    "named": true
-  },
-  {
-    "type": "timestamp_time",
-    "named": true
-  },
-  {
-    "type": "timestamp_tz",
     "named": true
   },
   {

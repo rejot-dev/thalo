@@ -227,7 +227,7 @@ describe("invalid-field-type rule - datetime fields with datetime_value", () => 
   });
 });
 
-describe("invalid-field-type rule - datetime and date-range arrays", () => {
+describe("invalid-field-type rule - datetime and daterange arrays", () => {
   let workspace: Workspace;
 
   beforeEach(() => {
@@ -238,7 +238,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
   type: "fact" | "insight"
   subject: string
   dates?: datetime[]
-  periods?: date-range[]
+  periods?: daterange[]
 
   # Sections
   Content
@@ -266,7 +266,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
     expect(error).toBeUndefined();
   });
 
-  it("accepts valid date-range array", () => {
+  it("accepts valid daterange array", () => {
     workspace.addDocument(
       `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
@@ -285,7 +285,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
     expect(error).toBeUndefined();
   });
 
-  it("accepts single date-range for date-range array", () => {
+  it("accepts single daterange for daterange array", () => {
     workspace.addDocument(
       `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
@@ -304,7 +304,7 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
     expect(error).toBeUndefined();
   });
 
-  it("reports invalid date-range array", () => {
+  it("reports invalid daterange array", () => {
     workspace.addDocument(
       `2026-01-05T18:00Z create lore "Test lore" #test
   type: "fact"
@@ -320,8 +320,8 @@ describe("invalid-field-type rule - datetime and date-range arrays", () => {
     const diagnostics = check(workspace);
     const error = diagnostics.find((d) => d.code === "invalid-field-type");
 
-    // Individual dates don't match date-range format
+    // Individual dates don't match daterange format
     expect(error).toBeDefined();
-    expect(error!.message).toContain("date-range[]");
+    expect(error!.message).toContain("daterange[]");
   });
 });

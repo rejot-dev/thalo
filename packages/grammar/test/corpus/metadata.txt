@@ -120,10 +120,10 @@ metadata with reference value
           (link))))))
 
 ==================
-metadata with date range
+metadata with daterange
 ==================
 
-2026-01-05T18:11Z create lore "Entry with date range"
+2026-01-05T18:11Z create lore "Entry with daterange"
   type: "fact"
   subject: ^acme
   date: 2022 ~ 2024
@@ -152,7 +152,7 @@ metadata with date range
       (metadata
         (key)
         (value
-          (date_range))))))
+          (daterange))))))
 
 ==================
 metadata with hyphenated key
