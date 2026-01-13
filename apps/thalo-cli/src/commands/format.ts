@@ -127,12 +127,84 @@ async function createPrettierFormatter(): Promise<
 // Command Action
 // ===================
 
+async function readStdin(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let data = "";
+    let settled = false;
+    process.stdin.setEncoding("utf-8");
+
+    const cleanup = () => {
+      process.stdin.removeListener("data", onData);
+      process.stdin.removeListener("end", onEnd);
+      process.stdin.removeListener("error", onError);
+      process.stdin.removeListener("close", onClose);
+    };
+
+    const settle = (fn: () => void) => {
+      if (!settled) {
+        settled = true;
+        cleanup();
+        fn();
+      }
+    };
+
+    const onData = (chunk: string) => {
+      data += chunk;
+    };
+
+    const onEnd = () => {
+      settle(() => resolve(data));
+    };
+
+    const onError = (error: Error) => {
+      settle(() => reject(error));
+    };
+
+    const onClose = () => {
+      // This handles cases where stdin closes without 'end' (e.g., EOF)
+      settle(() => resolve(data));
+    };
+
+    // 'data' can fire multiple times, so use 'on'
+    process.stdin.on("data", onData);
+    // 'end', 'error', and 'close' should only fire once, so use 'once'
+    process.stdin.once("end", onEnd);
+    process.stdin.once("error", onError);
+    process.stdin.once("close", onClose);
+  });
+}
+
 async function formatAction(ctx: CommandContext): Promise<void> {
   const { options, args } = ctx;
   const checkOnly = options["check"] as boolean;
   const writeBack = options["write"] as boolean;
+  const useStdin = options["stdin"] as boolean;
   const fileTypeStr = (options["file-type"] as string) || "md,thalo";
   const fileTypes = fileTypeStr.split(",").map((t) => t.trim());
+
+  // Handle stdin mode - read from stdin, output to stdout
+  if (useStdin) {
+    const content = await readStdin();
+    const workspace = createWorkspace();
+    const formatter = await createPrettierFormatter();
+
+    // Use a placeholder filepath for parser detection (default to .thalo)
+    const filepath = args[0] || "stdin.thalo";
+    const files: FormatFileInput[] = [{ file: filepath, content }];
+    const result = await runFormat(workspace, files, { formatter });
+
+    const fileResult = result.fileResults[0];
+    if (fileResult) {
+      // Output formatted content to stdout
+      process.stdout.write(fileResult.formatted);
+    }
+
+    // Exit with error code if there were syntax errors
+    if (result.syntaxErrorCount > 0) {
+      process.exit(1);
+    }
+    return;
+  }
 
   const targetPaths = args.length > 0 ? args : ["."];
   const filePaths = await resolveFormatFiles(targetPaths, fileTypes);
@@ -265,6 +337,11 @@ export const formatCommand: CommandDef = {
       short: "w",
       description: "Write formatted output back to files",
       default: true,
+    },
+    stdin: {
+      type: "boolean",
+      description: "Read from stdin and output to stdout (for editor integration)",
+      default: false,
     },
     "file-type": {
       type: "string",
