@@ -8,7 +8,6 @@ import {
   parseLinkIds,
   DEFAULT_INSTRUCTIONS_TEMPLATE,
 } from "./actualize.js";
-import { TimestampChangeTracker } from "../services/change-tracker/timestamp-tracker.js";
 import type { ChangeTracker } from "../services/change-tracker/types.js";
 
 /**

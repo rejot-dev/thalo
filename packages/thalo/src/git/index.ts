@@ -247,3 +247,62 @@ export async function commitExists(commit: string, cwd: string): Promise<boolean
   const result = await runGit(["cat-file", "-t", commit], cwd);
   return result !== null && result.stdout.trim() === "commit";
 }
+
+/**
+ * Get list of files with uncommitted changes (staged or unstaged).
+ *
+ * @param cwd - Working directory
+ * @param files - Optional list of files to filter (relative to repo root or absolute)
+ * @returns Array of file paths (relative to repo root) with uncommitted changes
+ */
+export async function getUncommittedFiles(cwd: string, files?: string[]): Promise<string[]> {
+  // Get repo root for path normalization
+  const rootResult = await runGit(["rev-parse", "--show-toplevel"], cwd);
+  if (!rootResult) {
+    return [];
+  }
+  const repoRoot = rootResult.stdout.trim();
+
+  // Build git status command - porcelain gives us stable, parseable output
+  const args = ["status", "--porcelain", "--"];
+
+  if (files && files.length > 0) {
+    // Normalize file paths to be relative to repo root
+    for (const file of files) {
+      let gitPath: string;
+      if (path.isAbsolute(file)) {
+        const relativePath = path.relative(repoRoot, file);
+        if (relativePath.startsWith("..")) {
+          continue; // Skip files outside repo
+        }
+        gitPath = relativePath.split(path.sep).join("/");
+      } else {
+        gitPath = file.replace(/\\/g, "/");
+      }
+      args.push(gitPath);
+    }
+  }
+
+  const result = await runGit(args, cwd);
+  if (!result) {
+    return [];
+  }
+
+  // Parse porcelain output: "XY filename" or "XY old -> new" for renames
+  // X = index status, Y = worktree status
+  // We want files where either X or Y indicates a change
+  return result.stdout
+    .trim()
+    .split("\n")
+    .filter((line) => line.length > 0)
+    .map((line) => {
+      // Skip the status codes (first 3 chars: XY + space)
+      const filePart = line.slice(3);
+      // Handle renames: "old -> new"
+      if (filePart.includes(" -> ")) {
+        return filePart.split(" -> ")[1];
+      }
+      return filePart;
+    })
+    .filter((f) => f.length > 0);
+}

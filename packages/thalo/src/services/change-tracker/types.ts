@@ -40,6 +40,31 @@ export interface ChangedEntriesResult {
 export interface ChangeTrackerOptions {
   /** Working directory for git operations */
   cwd?: string;
+  /**
+   * Force operation even if there are uncommitted changes.
+   * When false (default), git tracker will error if source files have uncommitted changes.
+   */
+  force?: boolean;
+}
+
+/**
+ * Error thrown when source files have uncommitted changes.
+ *
+ * This prevents incorrect change tracking since uncommitted changes
+ * are not captured in the checkpoint.
+ */
+export class UncommittedChangesError extends Error {
+  /** Files with uncommitted changes */
+  readonly files: string[];
+
+  constructor(files: string[]) {
+    super(
+      `Source files have uncommitted changes: ${files.join(", ")}. ` +
+        `Commit your changes or use --force to proceed anyway.`,
+    );
+    this.name = "UncommittedChangesError";
+    this.files = files;
+  }
 }
 
 /**

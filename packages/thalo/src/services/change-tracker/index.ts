@@ -5,7 +5,7 @@ export type {
   ChangeTracker,
   ChangeTrackerOptions,
 } from "./types.js";
-export { parseCheckpoint, formatCheckpoint } from "./types.js";
+export { parseCheckpoint, formatCheckpoint, UncommittedChangesError } from "./types.js";
 export { TimestampChangeTracker } from "./timestamp-tracker.js";
 export { GitChangeTracker } from "./git-tracker.js";
 
@@ -39,7 +39,7 @@ export interface CreateChangeTrackerOptions extends ChangeTrackerOptions {
 export async function createChangeTracker(
   options: CreateChangeTrackerOptions = {},
 ): Promise<ChangeTracker> {
-  const { preferredType = "auto", cwd = process.cwd() } = options;
+  const { preferredType = "auto", cwd = process.cwd(), force } = options;
 
   if (preferredType === "timestamp") {
     return new TimestampChangeTracker();
@@ -51,12 +51,12 @@ export async function createChangeTracker(
     if (!gitContext.isGitRepo) {
       throw new Error("Git tracker requested but not in a git repository");
     }
-    return new GitChangeTracker({ cwd });
+    return new GitChangeTracker({ cwd, force });
   }
 
   // Auto mode: use git if available
   if (gitContext.isGitRepo) {
-    return new GitChangeTracker({ cwd });
+    return new GitChangeTracker({ cwd, force });
   }
 
   return new TimestampChangeTracker();

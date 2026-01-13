@@ -5,7 +5,11 @@ import {
   DEFAULT_INSTRUCTIONS_TEMPLATE,
   type SynthesisOutputInfo,
 } from "@rejot-dev/thalo";
-import { createChangeTracker, formatCheckpoint } from "@rejot-dev/thalo/change-tracker";
+import {
+  createChangeTracker,
+  formatCheckpoint,
+  UncommittedChangesError,
+} from "@rejot-dev/thalo/change-tracker";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 import { loadFullWorkspace, relativePath } from "../files.js";
@@ -76,6 +80,7 @@ function formatSynthesisWithEntries(
 async function actualizeAction(ctx: CommandContext): Promise<void> {
   const { args, options } = ctx;
   const instructionsTemplate = (options["instructions"] as string) || DEFAULT_INSTRUCTIONS_TEMPLATE;
+  const force = options["force"] as boolean;
 
   // Load full workspace from CWD
   const { workspace, files } = await loadFullWorkspace();
@@ -85,13 +90,30 @@ async function actualizeAction(ctx: CommandContext): Promise<void> {
   }
 
   // Create change tracker (auto-detects git)
-  const tracker = await createChangeTracker({ cwd: process.cwd() });
+  const tracker = await createChangeTracker({ cwd: process.cwd(), force });
 
   // Run actualize command
-  const result = await runActualize(workspace, {
-    targetLinkIds: args.length > 0 ? args : undefined,
-    tracker,
-  });
+  let result;
+  try {
+    result = await runActualize(workspace, {
+      targetLinkIds: args.length > 0 ? args : undefined,
+      tracker,
+    });
+  } catch (error) {
+    if (error instanceof UncommittedChangesError) {
+      console.error(pc.red("Error: Source files have uncommitted changes:"));
+      for (const file of error.files) {
+        console.error(pc.yellow(`  - ${file}`));
+      }
+      console.error();
+      console.error(pc.dim("Commit your changes or use --force to proceed anyway."));
+      console.error(
+        pc.dim("Note: Using --force may cause already-processed entries to appear again."),
+      );
+      process.exit(1);
+    }
+    throw error;
+  }
 
   // Show tracker type
   if (result.trackerType === "git") {
@@ -145,6 +167,12 @@ export const actualizeCommand: CommandDef = {
       type: "string",
       short: "i",
       description: "Custom instructions template. Use placeholders: {file}, {linkId}, {checkpoint}",
+    },
+    force: {
+      type: "boolean",
+      short: "f",
+      description:
+        "Proceed even if source files have uncommitted changes. May cause duplicate processing.",
     },
   },
   action: actualizeAction,

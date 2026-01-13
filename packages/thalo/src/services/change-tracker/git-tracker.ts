@@ -7,6 +7,7 @@ import {
   getFilesChangedSince,
   getFileAtCommit,
   commitExists,
+  getUncommittedFiles,
   type FileChange,
 } from "../../git/index.js";
 import { getEntryIdentity, serializeIdentity } from "../../merge/entry-matcher.js";
@@ -20,6 +21,7 @@ import type {
   ChangedEntriesResult,
   ChangeTrackerOptions,
 } from "./types.js";
+import { UncommittedChangesError } from "./types.js";
 
 /**
  * Git-based change tracker.
@@ -38,9 +40,11 @@ import type {
 export class GitChangeTracker implements ChangeTracker {
   readonly type = "git" as const;
   private cwd: string;
+  private force: boolean;
 
   constructor(options: ChangeTrackerOptions = {}) {
     this.cwd = options.cwd ?? process.cwd();
+    this.force = options.force ?? false;
   }
 
   async getCurrentMarker(): Promise<ChangeMarker> {
@@ -66,6 +70,17 @@ export class GitChangeTracker implements ChangeTracker {
     }
 
     const currentMarker = await this.getCurrentMarker();
+
+    // Find files that contain matching entries (source files for the queries)
+    const sourceFiles = this.getSourceFiles(workspace, queries);
+
+    // Check for uncommitted changes in source files (unless force is set)
+    if (!this.force && sourceFiles.length > 0) {
+      const uncommitted = await getUncommittedFiles(this.cwd, sourceFiles);
+      if (uncommitted.length > 0) {
+        throw new UncommittedChangesError(uncommitted);
+      }
+    }
 
     // If no marker, return all matching entries (first run)
     if (!marker) {
@@ -131,6 +146,30 @@ export class GitChangeTracker implements ChangeTracker {
       entries: changedEntries,
       currentMarker,
     };
+  }
+
+  /**
+   * Get all files that contain entries matching the queries.
+   */
+  private getSourceFiles(workspace: Workspace, queries: Query[]): string[] {
+    const files = new Set<string>();
+
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "instance_entry") {
+          continue;
+        }
+
+        for (const query of queries) {
+          if (entryMatchesQuery(entry, query)) {
+            files.add(model.file);
+            break;
+          }
+        }
+      }
+    }
+
+    return Array.from(files);
   }
 
   /**

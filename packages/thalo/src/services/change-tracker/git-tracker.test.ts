@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { GitChangeTracker } from "./git-tracker.js";
+import { UncommittedChangesError } from "./types.js";
 import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
 import type { Query } from "../../model/types.js";
@@ -151,6 +152,31 @@ describe("GitChangeTracker", () => {
 
       // No files changed since HEAD, and our test file isn't tracked
       expect(result.entries).toEqual([]);
+    });
+
+    it("should proceed with force option even if there were uncommitted changes", async () => {
+      const forceTracker = new GitChangeTracker({ cwd: repoRoot, force: true });
+
+      workspace.addDocument(`2026-01-07T10:00Z create lore "Entry" ^entry1`, {
+        filename: "test.thalo",
+      });
+
+      // With force: true, this should not throw even if source files had uncommitted changes
+      const result = await forceTracker.getChangedEntries(workspace, [loreQuery], null);
+
+      expect(result.entries).toHaveLength(1);
+    });
+  });
+
+  describe("UncommittedChangesError", () => {
+    it("should have correct error message and files", () => {
+      const error = new UncommittedChangesError(["file1.thalo", "file2.thalo"]);
+
+      expect(error.name).toBe("UncommittedChangesError");
+      expect(error.files).toEqual(["file1.thalo", "file2.thalo"]);
+      expect(error.message).toContain("file1.thalo");
+      expect(error.message).toContain("file2.thalo");
+      expect(error.message).toContain("--force");
     });
   });
 });
