@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   deduplicateByLine,
-  getErrorContext,
-  findValuePosition,
+  getErrorLine,
   formatContextDisplay,
   formatErrorLocation,
   type ErrorLocation,
@@ -47,106 +46,41 @@ describe("deduplicateByLine", () => {
   });
 });
 
-describe("getErrorContext", () => {
+describe("getErrorLine", () => {
   const source = `line one
 line two
 line three
 line four`;
 
-  it("should return error line when error is mid-line", () => {
-    const result = getErrorContext(source, 0, 3);
-
-    expect(result.lines).toEqual(["line one"]);
-    expect(result.errorAtEndOfLine).toBe(false);
-  });
-
-  it("should include following lines when error is at end of line", () => {
-    const result = getErrorContext(source, 0, 8); // "line one" has length 8
-
-    expect(result.lines).toEqual(["line one", "line two", "line three"]);
-    expect(result.errorAtEndOfLine).toBe(true);
-  });
-
-  it("should skip blank lines when gathering context", () => {
-    const sourceWithBlanks = `header line
-
-  content line`;
-
-    const result = getErrorContext(sourceWithBlanks, 0, 11);
-
-    expect(result.lines).toEqual(["header line", "  content line"]);
-    expect(result.errorAtEndOfLine).toBe(true);
+  it("should return error line", () => {
+    expect(getErrorLine(source, 0)).toBe("line one");
+    expect(getErrorLine(source, 1)).toBe("line two");
+    expect(getErrorLine(source, 2)).toBe("line three");
   });
 
   it("should handle invalid line index", () => {
-    expect(getErrorContext(source, -1, 0)).toEqual({
-      lines: [],
-      errorAtEndOfLine: false,
-    });
-
-    expect(getErrorContext(source, 100, 0)).toEqual({
-      lines: [],
-      errorAtEndOfLine: false,
-    });
-  });
-
-  it("should limit context to 2 following lines", () => {
-    const result = getErrorContext(source, 0, 8);
-
-    // Should have original + max 2 following lines
-    expect(result.lines.length).toBeLessThanOrEqual(3);
-  });
-});
-
-describe("findValuePosition", () => {
-  it("should find position after colon and space", () => {
-    expect(findValuePosition('  type: "fact"')).toBe(8);
-    expect(findValuePosition("  subject: ^self")).toBe(11);
-  });
-
-  it("should handle no space after colon", () => {
-    expect(findValuePosition("  key:value")).toBe(6);
-  });
-
-  it("should return null for non-metadata lines", () => {
-    expect(findValuePosition("just some text")).toBeNull();
-    expect(findValuePosition("# Header")).toBeNull();
-    expect(findValuePosition("")).toBeNull();
-  });
-
-  it("should handle various indentation", () => {
-    expect(findValuePosition("key: value")).toBe(5);
-    expect(findValuePosition("    key: value")).toBe(9);
+    expect(getErrorLine(source, -1)).toBeNull();
+    expect(getErrorLine(source, 100)).toBeNull();
   });
 });
 
 describe("formatContextDisplay", () => {
-  it("should show pointer at column for mid-line errors", () => {
-    const result = formatContextDisplay(["some code here"], false, 6);
+  it("should show pointer at column", () => {
+    const result = formatContextDisplay("some code here", 6);
 
     expect(result).toContain("some code here");
     expect(result).toContain("     ^"); // 5 spaces + caret (column 6 = index 5)
   });
 
-  it("should show following line hint for end-of-line errors", () => {
-    const result = formatContextDisplay(["header", "  key: value"], true, 7);
-
-    expect(result).toContain("header");
-    expect(result).toContain("(error may be on following line)");
-    expect(result).toContain("key: value");
-    expect(result).toContain("^ check this value");
-  });
-
   it("should return empty string for empty lines", () => {
-    expect(formatContextDisplay([], false, 1)).toBe("");
+    expect(formatContextDisplay("", 1)).toBe("");
   });
 
-  it("should handle end-of-line error with no following lines", () => {
-    const result = formatContextDisplay(["only line"], true, 10);
+  it("should handle column beyond line length", () => {
+    const result = formatContextDisplay("short", 10);
 
-    expect(result).toContain("only line");
-    // Should still work, just won't have "check this value" hint
-    expect(result).not.toContain("check this value");
+    expect(result).toContain("short");
+    expect(result).toContain("     ^"); // 5 spaces + caret
   });
 });
 
@@ -160,9 +94,21 @@ describe("formatErrorLocation", () => {
 
     expect(result).toContain("Line 2, column 9");
     expect(result).toContain('type: "fact"');
+    expect(result).toContain("^");
   });
 
-  it("should handle end-of-line errors with context", () => {
+  it("should format error location with filepath", () => {
+    const source = `2026-01-07T14:00Z create lore "Test"
+  type: "fact"`;
+
+    const loc: ErrorLocation = { line: 2, column: 9, lineIndex: 1 };
+    const result = formatErrorLocation(source, loc, "test.thalo");
+
+    expect(result).toContain("test.thalo:2:9");
+    expect(result).not.toContain("Line 2, column 9");
+  });
+
+  it("should handle end-of-line errors", () => {
     const source = `2026-01-07T14:00Z actualize-synthesis ^bio
   updated: 2026-01-07`;
 
@@ -171,9 +117,8 @@ describe("formatErrorLocation", () => {
     const result = formatErrorLocation(source, loc);
 
     expect(result).toContain("Line 1, column 43");
-    expect(result).toContain("error may be on following line");
-    expect(result).toContain("updated:");
-    expect(result).toContain("check this value");
+    expect(result).toContain("2026-01-07T14:00Z actualize-synthesis ^bio");
+    expect(result).toContain("^");
   });
 
   it("should handle invalid line gracefully", () => {

@@ -125,6 +125,46 @@ function stripQuotes(text: string): string {
   return text;
 }
 
+/**
+ * Recursively find all ERROR nodes within a syntax tree.
+ * Used to capture syntax errors nested inside entries.
+ */
+function findErrorNodes(node: SyntaxNode): SyntaxNode[] {
+  const errors: SyntaxNode[] = [];
+
+  function walk(n: SyntaxNode): void {
+    if (n.type === "ERROR") {
+      errors.push(n);
+      // Don't recurse into ERROR nodes - they may contain fragments
+      // that look like valid nodes but are part of the error
+      return;
+    }
+    for (const child of n.children) {
+      if (child) {
+        walk(child);
+      }
+    }
+  }
+
+  walk(node);
+  return errors;
+}
+
+/**
+ * Convert an ERROR syntax node to a SyntaxErrorNode
+ */
+function errorNodeToSyntaxError(node: SyntaxNode): SyntaxErrorNode {
+  const text = node.text.trim();
+  return {
+    type: "syntax_error",
+    code: "parse_error",
+    message: `Parse error: unexpected content "${text.slice(0, 50)}${text.length > 50 ? "..." : ""}"`,
+    text: node.text,
+    location: extractLocation(node),
+    syntaxNode: node,
+  };
+}
+
 // ===================
 // Extractors
 // ===================
@@ -151,15 +191,16 @@ export function extractSourceFile(node: SyntaxNode): SourceFile {
       if (entry) {
         entries.push(entry);
       }
+      // Collect ERROR nodes nested inside entries (tree-sitter may nest errors
+      // inside entries when there's recoverable content after the error)
+      if (child.hasError) {
+        const nestedErrors = findErrorNodes(child);
+        for (const errorNode of nestedErrors) {
+          syntaxErrors.push(errorNodeToSyntaxError(errorNode));
+        }
+      }
     } else if (child.type === "ERROR") {
-      syntaxErrors.push({
-        type: "syntax_error",
-        code: "parse_error",
-        message: `Parse error: unexpected content "${child.text.slice(0, 50)}${child.text.length > 50 ? "..." : ""}"`,
-        text: child.text,
-        location: extractLocation(child),
-        syntaxNode: child,
-      });
+      syntaxErrors.push(errorNodeToSyntaxError(child));
     }
   }
 

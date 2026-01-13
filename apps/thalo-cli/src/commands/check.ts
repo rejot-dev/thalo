@@ -58,8 +58,9 @@ function formatDiagnostic(d: DiagnosticInfo, format: OutputFormat): string {
   }
 }
 
-function collectThaloFiles(dir: string, extensions: string[] = [".thalo", ".md"]): string[] {
+function collectFiles(dir: string, fileTypes: string[]): string[] {
   const files: string[] = [];
+  const extensions = fileTypes.map((type) => `.${type}`);
 
   function walk(currentDir: string): void {
     let entries;
@@ -88,7 +89,7 @@ function collectThaloFiles(dir: string, extensions: string[] = [".thalo", ".md"]
   return files;
 }
 
-function resolveFiles(paths: string[]): string[] {
+function resolveFiles(paths: string[], fileTypes: string[]): string[] {
   const files: string[] = [];
 
   for (const targetPath of paths) {
@@ -101,9 +102,12 @@ function resolveFiles(paths: string[]): string[] {
 
     const stat = fs.statSync(resolved);
     if (stat.isDirectory()) {
-      files.push(...collectThaloFiles(resolved));
+      files.push(...collectFiles(resolved, fileTypes));
     } else if (stat.isFile()) {
-      files.push(resolved);
+      const ext = path.extname(resolved).slice(1); // Remove leading dot
+      if (fileTypes.includes(ext)) {
+        files.push(resolved);
+      }
     }
   }
 
@@ -152,6 +156,9 @@ function outputResults(runResult: RunResult, options: OutputOptions): void {
     }
   }
 
+  // Track which files have issues
+  const filesWithIssues = new Set(filtered.map((d) => d.file));
+
   if (options.format === "json") {
     const output = {
       files: files.length,
@@ -174,20 +181,36 @@ function outputResults(runResult: RunResult, options: OutputOptions): void {
     return;
   }
 
+  // Always print all files that were checked
   if (options.format === "default") {
-    // Group diagnostics by file for cleaner output
-    const byFile = new Map<string, DiagnosticInfo[]>();
-    for (const d of filtered) {
-      const existing = byFile.get(d.file) || [];
-      existing.push(d);
-      byFile.set(d.file, existing);
+    // Print all files first
+    for (const file of files) {
+      const hasIssues = filesWithIssues.has(file);
+      if (hasIssues) {
+        // Make files with issues bold
+        console.log(pc.bold(pc.red(`✗`) + ` ${relativePath(file)}`));
+      } else {
+        // Files without issues in regular text
+        console.log(pc.green(`✓`) + ` ${relativePath(file)}`);
+      }
     }
 
-    for (const [file, fileDiagnostics] of byFile) {
+    // Then show diagnostics grouped by file
+    if (filtered.length > 0) {
       console.log();
-      console.log(pc.underline(relativePath(file)));
-      for (const diagnostic of fileDiagnostics) {
-        console.log(formatDiagnosticDefault(diagnostic));
+      const byFile = new Map<string, DiagnosticInfo[]>();
+      for (const d of filtered) {
+        const existing = byFile.get(d.file) || [];
+        existing.push(d);
+        byFile.set(d.file, existing);
+      }
+
+      for (const [file, fileDiagnostics] of byFile) {
+        console.log();
+        console.log(pc.underline(relativePath(file)));
+        for (const diagnostic of fileDiagnostics) {
+          console.log(formatDiagnosticDefault(diagnostic));
+        }
       }
     }
   } else {
@@ -214,7 +237,12 @@ function outputResults(runResult: RunResult, options: OutputOptions): void {
   }
 }
 
-function watchFiles(paths: string[], options: OutputOptions, config: CheckConfig): void {
+function watchFiles(
+  paths: string[],
+  fileTypes: string[],
+  options: OutputOptions,
+  config: CheckConfig,
+): void {
   console.log(pc.dim("Watching for file changes..."));
   console.log();
 
@@ -223,9 +251,10 @@ function watchFiles(paths: string[], options: OutputOptions, config: CheckConfig
     console.log(pc.dim(`[${new Date().toLocaleTimeString()}] Checking...`));
     console.log();
 
-    const files = resolveFiles(paths);
+    const files = resolveFiles(paths, fileTypes);
     if (files.length === 0) {
-      console.log("No .thalo or .md files found.");
+      const fileTypesStr = fileTypes.join(", ");
+      console.log(`No .${fileTypesStr} files found.`);
       return;
     }
 
@@ -247,13 +276,14 @@ function watchFiles(paths: string[], options: OutputOptions, config: CheckConfig
   }
 
   let debounceTimer: NodeJS.Timeout | null = null;
+  const extensions = fileTypes.map((type) => `.${type}`);
 
   for (const dir of watchedDirs) {
     fs.watch(dir, { recursive: true }, (_eventType, filename) => {
       if (!filename) {
         return;
       }
-      if (!filename.endsWith(".thalo") && !filename.endsWith(".md")) {
+      if (!extensions.some((ext) => filename.endsWith(ext))) {
         return;
       }
 
@@ -309,6 +339,10 @@ function checkAction(ctx: CommandContext): void {
     severity = "error";
   }
 
+  // Parse file types
+  const fileTypeStr = (options["file-type"] as string) || "md,thalo";
+  const fileTypes = fileTypeStr.split(",").map((t) => t.trim());
+
   // Parse rule overrides
   const rules = parseRuleOverrides(options["rule"] as string | string[] | undefined);
 
@@ -323,15 +357,16 @@ function checkAction(ctx: CommandContext): void {
 
   // Watch mode
   if (options["watch"]) {
-    watchFiles(targetPaths, { format, severity }, config);
+    watchFiles(targetPaths, fileTypes, { format, severity }, config);
     return;
   }
 
   // Collect files
-  const files = resolveFiles(targetPaths);
+  const files = resolveFiles(targetPaths, fileTypes);
 
   if (files.length === 0) {
-    console.log("No .thalo or .md files found.");
+    const fileTypesStr = fileTypes.join(", ");
+    console.log(`No .${fileTypesStr} files found.`);
     process.exit(0);
   }
 
@@ -370,7 +405,7 @@ function checkAction(ctx: CommandContext): void {
 
 export const checkCommand: CommandDef = {
   name: "check",
-  description: "Check and lint thalo files for errors and warnings",
+  description: "Check and lint thalo and markdown files for errors and warnings",
   args: {
     name: "paths",
     description: "Files or directories to check",
@@ -411,6 +446,11 @@ export const checkCommand: CommandDef = {
       short: "w",
       description: "Watch files for changes and re-run",
       default: false,
+    },
+    "file-type": {
+      type: "string",
+      description: "Comma-separated list of file types to check (e.g., 'md,thalo')",
+      default: "md,thalo",
     },
   },
   action: checkAction,

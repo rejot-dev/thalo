@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", "*.vsix"]
     },
     "build:wasm": {
       "outputs": ["tree-sitter-thalo.wasm"]
