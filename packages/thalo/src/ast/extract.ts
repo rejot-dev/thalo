@@ -951,12 +951,14 @@ function extractQueryCondition(node: SyntaxNode): QueryCondition | null {
       }
 
       // Handle value - could be link, quoted_value, or condition_plain_value
+      // Keep the raw text (including quotes) to match metadata raw values
       let valueText = "";
       if (valueNode) {
         if (valueNode.type === "link") {
           valueText = valueNode.text;
         } else if (valueNode.type === "quoted_value") {
-          valueText = stripQuotes(valueNode.text);
+          // Keep quotes to match metadata.value.raw format
+          valueText = valueNode.text;
         } else {
           // condition_plain_value (aliased)
           const inner = valueNode.namedChildren[0];

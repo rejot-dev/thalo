@@ -215,3 +215,15 @@ export async function loadWorkspace(files: string[]): Promise<Workspace> {
 
   return workspace;
 }
+
+/**
+ * Load the full workspace from the current working directory (async).
+ * This is the standard way to load a workspace - always includes all files from CWD.
+ */
+export async function loadFullWorkspace(
+  fileTypes: string[] = DEFAULT_FILE_TYPES,
+): Promise<{ workspace: Workspace; files: string[] }> {
+  const files = await resolveFiles(["."], fileTypes);
+  const workspace = await loadWorkspace(files);
+  return { workspace, files };
+}
