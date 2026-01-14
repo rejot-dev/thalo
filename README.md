@@ -80,9 +80,9 @@ Define queries over your knowledge base with prompts for AI:
   sources: opinion where #programming, lore where #engineering
 
   # Prompt
-  Synthesize my programming opinions and engineering insights into a coherent philosophy.
-  Note any contradictions or evolution in my thinking over time.
-  Identify the 3-5 core principles that recur most often.
+  Synthesize my programming opinions and engineering insights into a coherent philosophy. Note any
+  contradictions or evolution in my thinking over time. Identify the 3-5 core principles that recur
+  most often.
 ```
 
 **Scattered thoughts → Structured entries → Queries + LLMs → Synthesized understanding.**

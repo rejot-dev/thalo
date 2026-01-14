@@ -45,8 +45,7 @@ Each entity type defines which sections are required/optional in `entities.thalo
   TypeScript enums should be replaced with `as const` objects.
 
   # Reasoning
-  - Enums generate runtime code
-  - `as const` provides the same type safety with zero overhead
+  - Enums generate runtime code - `as const` provides the same type safety with zero overhead
 ```
 
 ## Tips

@@ -3,8 +3,7 @@
   sources: lore where subject = ^self
 
   # Prompt
-  Write a narrative bio from the collected facts and insights.
-  Keep it professional but personable.
+  Write a narrative bio from the collected facts and insights. Keep it professional but personable.
 
 2026-01-07T14:25Z actualize-synthesis ^bio-synthesis
   updated: 2026-01-07T14:25Z

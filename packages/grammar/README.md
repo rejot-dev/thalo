@@ -54,8 +54,8 @@ Create or update instances of entities (lore, opinion, reference, journal):
   date: 2018 ~ 2022
 
   # Summary
-  The company built a custom event streaming system on top of Postgres
-  before Kafka became widely adopted.
+  The company built a custom event streaming system on top of Postgres before Kafka became widely
+  adopted.
 ```
 
 ### Header Line
