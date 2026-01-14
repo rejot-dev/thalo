@@ -86,6 +86,15 @@ When using git tracking, Thalo:
    - Compares entries by identity (link ID or timestamp)
    - Reports entries that are new or modified
 
+#### Ignoring formatting-only commits
+
+If your repo contains a formatting-only commit (or any commit you want to exclude from triggering
+actualization), you can add it to a repo-level `.git-blame-ignore-revs` file.
+
+When this file is present at the git repo root, Thalo's git change tracker will automatically honor
+it when deciding whether an entry has changed since a checkpoint. This helps avoid “everything
+changed” after running formatters.
+
 ### Entry Identity
 
 Thalo matches entries across commits using:

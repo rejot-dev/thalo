@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import * as path from "node:path";
+import * as fs from "node:fs/promises";
 
 const execFileAsync = promisify(execFile);
 
@@ -183,6 +184,128 @@ export async function getFileAtCommit(
 
   const result = await runGit(["show", `${commit}:${gitPath}`], cwd);
   return result?.stdout ?? null;
+}
+
+/**
+ * Read the set of ignored revs for blame-like operations, if configured.
+ *
+ * Prefers the de-facto standard `.git-blame-ignore-revs` at the repo root, and
+ * falls back to `blame.ignoreRevsFile` git config if set.
+ *
+ * Returns the rev SHAs (one per line) or null if no ignore revs are configured.
+ *
+ * @param cwd - Working directory
+ * @returns Array of ignored revs (as strings) or null
+ */
+export async function getBlameIgnoreRevs(cwd: string): Promise<string[] | null> {
+  const rootResult = await runGit(["rev-parse", "--show-toplevel"], cwd);
+  if (!rootResult) {
+    return null;
+  }
+  const repoRoot = rootResult.stdout.trim();
+
+  async function readIgnoreFile(filePath: string): Promise<string[] | null> {
+    try {
+      const raw = await fs.readFile(filePath, "utf8");
+      const revs = raw
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0 && !l.startsWith("#"))
+        // Git accepts abbreviated SHAs in ignore revs; keep them as-is
+        .map((l) => l.split(/\s+/)[0]);
+      return revs.length > 0 ? revs : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const standardPath = path.join(repoRoot, ".git-blame-ignore-revs");
+  const standardRevs = await readIgnoreFile(standardPath);
+  if (standardRevs) {
+    return standardRevs;
+  }
+
+  const configResult = await runGit(["config", "--get", "blame.ignoreRevsFile"], cwd);
+  const configPathRaw = configResult?.stdout.trim();
+  if (!configPathRaw) {
+    return null;
+  }
+
+  const resolved = path.isAbsolute(configPathRaw)
+    ? configPathRaw
+    : path.resolve(repoRoot, configPathRaw);
+  return await readIgnoreFile(resolved);
+}
+
+/**
+ * Check whether `ancestorCommit` is an ancestor of `descendantCommit`.
+ *
+ * Uses `git merge-base ancestor descendant` and compares the result to the ancestor.
+ */
+export async function isCommitAncestorOf(
+  ancestorCommit: string,
+  descendantCommit: string,
+  cwd: string,
+): Promise<boolean> {
+  const result = await runGit(["merge-base", ancestorCommit, descendantCommit], cwd);
+  return result !== null && result.stdout.trim() === ancestorCommit;
+}
+
+/**
+ * Get the set of commits currently blamed for a line range.
+ *
+ * @param file - File path (relative to repo root or absolute)
+ * @param startLine - 1-based inclusive start line
+ * @param endLine - 1-based inclusive end line
+ * @param cwd - Working directory
+ * @param ignoreRevsFile - Optional absolute path to ignore revs file
+ */
+export async function getBlameCommitsForLineRange(
+  file: string,
+  startLine: number,
+  endLine: number,
+  cwd: string,
+  ignoreRevs?: string[] | null,
+): Promise<Set<string>> {
+  // Get repo root to compute relative path
+  const rootResult = await runGit(["rev-parse", "--show-toplevel"], cwd);
+  if (!rootResult) {
+    return new Set();
+  }
+  const repoRoot = rootResult.stdout.trim();
+
+  let gitPath: string;
+  if (path.isAbsolute(file)) {
+    const relativePath = path.relative(repoRoot, file);
+    if (relativePath.startsWith("..")) {
+      return new Set();
+    }
+    gitPath = relativePath.split(path.sep).join("/");
+  } else {
+    gitPath = file.replace(/\\/g, "/");
+  }
+
+  const args = ["blame", "--porcelain", "-L", `${startLine},${endLine}`];
+  if (ignoreRevs && ignoreRevs.length > 0) {
+    for (const rev of ignoreRevs) {
+      args.push("--ignore-rev", rev);
+    }
+  }
+  args.push("HEAD", "--", gitPath);
+
+  const result = await runGit(args, cwd);
+  if (!result) {
+    return new Set();
+  }
+
+  const commits = new Set<string>();
+  for (const line of result.stdout.split("\n")) {
+    // Porcelain blame header line: "<sha> <orig-line> <final-line> <num-lines>"
+    if (/^[0-9a-f]{40}\s/.test(line)) {
+      commits.add(line.slice(0, 40));
+    }
+  }
+  return commits;
 }
 
 /**
