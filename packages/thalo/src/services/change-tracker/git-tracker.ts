@@ -8,6 +8,9 @@ import {
   getFileAtCommit,
   commitExists,
   getUncommittedFiles,
+  getBlameIgnoreRevs,
+  getBlameCommitsForLineRange,
+  isCommitAncestorOf,
   type FileChange,
 } from "../../git/index.js";
 import { getEntryIdentity, serializeIdentity } from "../../merge/entry-matcher.js";
@@ -41,10 +44,19 @@ export class GitChangeTracker implements ChangeTracker {
   readonly type = "git" as const;
   private cwd: string;
   private force: boolean;
+  private blameIgnoreRevs: string[] | null | undefined;
 
   constructor(options: ChangeTrackerOptions = {}) {
     this.cwd = options.cwd ?? process.cwd();
     this.force = options.force ?? false;
+  }
+
+  private async getIgnoreRevs(): Promise<string[] | null> {
+    if (this.blameIgnoreRevs !== undefined) {
+      return this.blameIgnoreRevs;
+    }
+    this.blameIgnoreRevs = await getBlameIgnoreRevs(this.cwd);
+    return this.blameIgnoreRevs;
   }
 
   async getCurrentMarker(): Promise<ChangeMarker> {
@@ -228,6 +240,64 @@ export class GitChangeTracker implements ChangeTracker {
     const currentEntries = model.ast.entries.filter(
       (e): e is InstanceEntry => e.type === "instance_entry",
     );
+
+    // If a blame ignore-revs file exists, use blame-based change detection.
+    // This allows users to ignore formatting-only commits (e.g. via `.git-blame-ignore-revs`)
+    // so they don't retrigger syntheses.
+    const ignoreRevs = await this.getIgnoreRevs();
+    if (ignoreRevs) {
+      const changed: InstanceEntry[] = [];
+
+      // Normalize end line: tree-sitter endPosition is exclusive.
+      function locationToLineRange(entry: InstanceEntry): { startLine: number; endLine: number } {
+        const startRow = entry.location.startPosition.row;
+        const endRow = entry.location.endPosition.row;
+        const endCol = entry.location.endPosition.column;
+        const startLine = startRow + 1;
+        const endLine = endCol === 0 ? endRow : endRow + 1;
+        return { startLine, endLine: Math.max(startLine, endLine) };
+      }
+
+      for (const entry of currentEntries) {
+        // Check if entry matches any query
+        let matchesQuery = false;
+        for (const query of queries) {
+          if (entryMatchesQuery(entry, query)) {
+            matchesQuery = true;
+            break;
+          }
+        }
+        if (!matchesQuery) {
+          continue;
+        }
+
+        const { startLine, endLine } = locationToLineRange(entry);
+        const blamedCommits = await getBlameCommitsForLineRange(
+          change.path,
+          startLine,
+          endLine,
+          this.cwd,
+          ignoreRevs,
+        );
+
+        let isChanged = false;
+        for (const commit of blamedCommits) {
+          // If the blamed commit is not an ancestor of the marker, then the entry
+          // has changes "after" the marker (including merges), after applying ignore-revs.
+          const isBeforeMarker = await isCommitAncestorOf(commit, markerCommit, this.cwd);
+          if (!isBeforeMarker) {
+            isChanged = true;
+            break;
+          }
+        }
+
+        if (isChanged) {
+          changed.push(entry);
+        }
+      }
+
+      return changed;
+    }
 
     // Get old file content - use oldPath for renames, otherwise current path
     const pathAtCommit = change.oldPath ?? change.path;

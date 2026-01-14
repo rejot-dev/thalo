@@ -6,6 +6,16 @@ import { Workspace } from "../../model/workspace.js";
 import type { Query } from "../../model/types.js";
 import * as path from "node:path";
 import * as os from "node:os";
+import * as fs from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+
+async function runGit(args: string[], cwd: string): Promise<string> {
+  const result = await execFileAsync("git", args, { cwd });
+  return result.stdout.toString();
+}
 
 describe("GitChangeTracker", () => {
   // change-tracker/ → services/ → src/ → thalo/ → packages/ → repo root
@@ -165,6 +175,69 @@ describe("GitChangeTracker", () => {
       const result = await forceTracker.getChangedEntries(workspace, [loreQuery], null);
 
       expect(result.entries).toHaveLength(1);
+    });
+
+    it("should honor .git-blame-ignore-revs (ignored commits don't trigger changes)", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-git-tracker-"));
+
+      // Init a minimal git repo
+      await runGit(["init"], tempDir);
+      await runGit(["config", "user.email", "test@example.com"], tempDir);
+      await runGit(["config", "user.name", "Test User"], tempDir);
+
+      const file = "entries.thalo";
+      const baseContent = `2026-01-07T10:00Z create lore "Entry 1" ^entry1
+
+  # Content
+  Hello
+`;
+      await fs.writeFile(path.join(tempDir, file), baseContent, "utf8");
+      await runGit(["add", file], tempDir);
+      await runGit(["commit", "-m", "base"], tempDir);
+      const baseCommit = (await runGit(["rev-parse", "HEAD"], tempDir)).trim();
+
+      // "Formatting" change: change content text (would normally retrigger)
+      const formattedContent = `2026-01-07T10:00Z create lore "Entry 1" ^entry1
+
+  # Content
+  Hello world
+`;
+      await fs.writeFile(path.join(tempDir, file), formattedContent, "utf8");
+      await runGit(["add", file], tempDir);
+      await runGit(["commit", "-m", "formatting"], tempDir);
+      const formattingCommit = (await runGit(["rev-parse", "HEAD"], tempDir)).trim();
+
+      // Add ignore file at repo root (no git config required)
+      await fs.writeFile(
+        path.join(tempDir, ".git-blame-ignore-revs"),
+        `${formattingCommit}\n`,
+        "utf8",
+      );
+      await runGit(["add", ".git-blame-ignore-revs"], tempDir);
+      await runGit(["commit", "-m", "add ignore revs"], tempDir);
+
+      const tempTracker = new GitChangeTracker({ cwd: tempDir });
+      const tempWorkspace = createWorkspace();
+      tempWorkspace.addDocument(formattedContent, { filename: file });
+
+      const result = await tempTracker.getChangedEntries(tempWorkspace, [loreQuery], {
+        type: "git",
+        value: baseCommit,
+      });
+
+      expect(result.entries).toEqual([]);
+
+      // Sanity check: without the ignore file, the formatting change would be detected
+      await runGit(["rm", ".git-blame-ignore-revs"], tempDir);
+      await runGit(["commit", "-m", "remove ignore revs"], tempDir);
+
+      const tempTracker2 = new GitChangeTracker({ cwd: tempDir });
+      const result2 = await tempTracker2.getChangedEntries(tempWorkspace, [loreQuery], {
+        type: "git",
+        value: baseCommit,
+      });
+      expect(result2.entries).toHaveLength(1);
+      expect(result2.entries[0].header.link?.id).toBe("entry1");
     });
   });
 
