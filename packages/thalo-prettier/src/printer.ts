@@ -1,11 +1,77 @@
-import type { AstPath, Doc, Printer } from "prettier";
+import type { AstPath, Doc, Options, Printer } from "prettier";
 import type { SyntaxNode } from "tree-sitter";
 import { doc } from "prettier";
 import type { ThaloRootNode } from "./parser";
 
-const { hardline, join } = doc.builders;
+const { align, fill, hardline, join, line } = doc.builders;
 
 type ThaloPrinter = Printer<SyntaxNode>;
+
+type ThaloOptions = Options & {
+  proseWrap?: "always" | "never" | "preserve";
+};
+
+const getIndent = (options: ThaloOptions): string => {
+  const tabWidth = typeof options.tabWidth === "number" ? options.tabWidth : 2;
+  return options.useTabs ? "\t" : " ".repeat(tabWidth);
+};
+
+const getContentLineText = (node: SyntaxNode): string => {
+  const contentText = node.children.find((c) => c.type === "content_text");
+  if (contentText) {
+    return contentText.text.trim();
+  }
+
+  // Fallback: Content line text, trimmed of leading newline/indent and trailing newline
+  // (grammar includes _content_line_start which has the newline+indent)
+  return node.text.replace(/^[\r\n\s]+/, "").replace(/[\r\n]+$/, "");
+};
+
+const printContentLine = (node: SyntaxNode, _options: ThaloOptions, indent: string): Doc => {
+  return [indent, getContentLineText(node)];
+};
+
+const formatParagraph = (lines: string[], options: ThaloOptions, indent: string): Doc => {
+  if (lines.length === 0) {
+    return "";
+  }
+
+  const proseWrap = options.proseWrap ?? "preserve";
+  const text = lines.join(" ").replace(/\s+/g, " ").trim();
+
+  if (proseWrap === "never") {
+    return [indent, text];
+  }
+
+  if (proseWrap === "always") {
+    const words = text.length > 0 ? text.split(/\s+/) : [];
+    if (words.length === 0) {
+      return indent;
+    }
+
+    const wordDocs: Doc[] = [];
+    for (const [index, word] of words.entries()) {
+      if (index === 0) {
+        wordDocs.push(word);
+      } else {
+        wordDocs.push(line, word);
+      }
+    }
+
+    // Align wrapped lines to the same indent string. align() accepts a string to
+    // reuse the exact indent (spaces or tabs) rather than a fixed width.
+    return [indent, align(indent, fill(wordDocs))];
+  }
+
+  // preserve
+  const trimmedLines = lines.map((l) => l.trim());
+  const [first, ...rest] = trimmedLines;
+  if (rest.length === 0) {
+    return [indent, first];
+  }
+
+  return [indent, join([hardline, indent], [first, ...rest])];
+};
 
 // ===================
 // Instance Entry Printing (create/update lore, opinion, etc.)
@@ -41,7 +107,7 @@ const printEntryHeaderFields = (
   return parts;
 };
 
-const printMetadata = (node: SyntaxNode): Doc => {
+const printMetadata = (node: SyntaxNode, indent: string): Doc => {
   const key = node.childForFieldName("key");
   const value = node.childForFieldName("value");
 
@@ -50,10 +116,10 @@ const printMetadata = (node: SyntaxNode): Doc => {
   }
 
   // Trim leading/trailing whitespace from value (grammar may capture spaces)
-  return ["  ", key.text, ": ", value.text.trim()];
+  return [indent, key.text, ": ", value.text.trim()];
 };
 
-const printMarkdownHeader = (node: SyntaxNode): Doc => {
+const printMarkdownHeader = (node: SyntaxNode, indent: string): Doc => {
   // Extract hashes and text from the node (new grammar uses md_indicator and md_heading_text)
   let hashes = "";
   let text = "";
@@ -75,41 +141,28 @@ const printMarkdownHeader = (node: SyntaxNode): Doc => {
       hashes = match[1];
       text = " " + match[2];
     } else {
-      return ["  ", trimmedText.trim()];
+      return [indent, trimmedText.trim()];
     }
   }
 
   // Normalize multiple spaces to single space in header text
   text = text.replace(/ +/g, " ");
 
-  return ["  ", hashes, text];
+  return [indent, hashes, text];
 };
 
-const printContentLine = (node: SyntaxNode): Doc => {
-  // New grammar: content_line has content_text child
-  const contentText = node.children.find((c) => c.type === "content_text");
-  if (contentText) {
-    return ["  ", contentText.text.trim()];
-  }
-
-  // Fallback: Content line text, trimmed of leading newline/indent and trailing newline
-  // (grammar includes _content_line_start which has the newline+indent)
-  const text = node.text.replace(/^[\r\n\s]+/, "").replace(/[\r\n]+$/, "");
-  return ["  ", text];
-};
-
-const printCommentLine = (node: SyntaxNode): Doc => {
+const printCommentLine = (node: SyntaxNode, indent: string): Doc => {
   // comment_line contains a comment child
   const comment = node.children.find((c) => c.type === "comment");
   if (comment) {
-    return ["  ", comment.text];
+    return [indent, comment.text];
   }
   // Fallback: extract comment from node text
   const text = node.text.replace(/^[\r\n\s]+/, "").replace(/[\r\n]+$/, "");
-  return ["  ", text];
+  return [indent, text];
 };
 
-const printContent = (node: SyntaxNode): Doc => {
+const printContent = (node: SyntaxNode, options: ThaloOptions, indent: string): Doc => {
   const parts: Doc[] = [];
 
   // Get visible content children (markdown_header, content_line, and comment_line)
@@ -118,6 +171,16 @@ const printContent = (node: SyntaxNode): Doc => {
   );
 
   let lastRow = -1;
+  let paragraphLines: string[] = [];
+
+  const flushParagraph = () => {
+    if (paragraphLines.length === 0) {
+      return;
+    }
+    parts.push(hardline, formatParagraph(paragraphLines, options, indent));
+    paragraphLines = [];
+  };
+
   for (const child of contentChildren) {
     const currentRow = child.startPosition.row;
 
@@ -125,6 +188,7 @@ const printContent = (node: SyntaxNode): Doc => {
       // Check for blank lines between elements by comparing row numbers
       const rowGap = currentRow - lastRow;
       if (rowGap > 1) {
+        flushParagraph();
         // Add blank lines for gaps (rowGap - 1 blank lines)
         for (let i = 0; i < rowGap - 1; i++) {
           parts.push(hardline);
@@ -132,17 +196,20 @@ const printContent = (node: SyntaxNode): Doc => {
       }
     }
 
-    parts.push(hardline);
     if (child.type === "markdown_header") {
-      parts.push(printMarkdownHeader(child));
+      flushParagraph();
+      parts.push(hardline, printMarkdownHeader(child, indent));
     } else if (child.type === "comment_line") {
-      parts.push(printCommentLine(child));
+      flushParagraph();
+      parts.push(hardline, printCommentLine(child, indent));
     } else {
-      parts.push(printContentLine(child));
+      paragraphLines.push(getContentLineText(child));
     }
 
     lastRow = currentRow;
   }
+
+  flushParagraph();
 
   if (parts.length === 0) {
     return "";
@@ -156,7 +223,7 @@ const printContent = (node: SyntaxNode): Doc => {
  * Print a data_entry node (handles create, update, define-synthesis, actualize-synthesis).
  * Header fields are inline on the entry node in the new grammar.
  */
-const printDataEntry = (node: SyntaxNode): Doc => {
+const printDataEntry = (node: SyntaxNode, options: ThaloOptions, indent: string): Doc => {
   const parts: Doc[] = [];
 
   // Print header fields directly from the entry node
@@ -168,15 +235,15 @@ const printDataEntry = (node: SyntaxNode): Doc => {
   );
   for (const child of metadataAndComments) {
     if (child.type === "metadata") {
-      parts.push(hardline, printMetadata(child));
+      parts.push(hardline, printMetadata(child, indent));
     } else {
-      parts.push(hardline, printCommentLine(child));
+      parts.push(hardline, printCommentLine(child, indent));
     }
   }
 
   const content = node.children.find((c) => c.type === "content");
   if (content) {
-    parts.push(printContent(content));
+    parts.push(printContent(content, options, indent));
   }
 
   return parts;
@@ -227,8 +294,8 @@ const printArrayType = (node: SyntaxNode): Doc => {
   return node.text;
 };
 
-const printFieldDefinition = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = ["  "];
+const printFieldDefinition = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [indent];
 
   // Field name (includes newline+indent in token, extract just the name)
   const fieldName = node.children.find((c) => c.type === "field_name");
@@ -275,8 +342,8 @@ const printFieldDefinition = (node: SyntaxNode): Doc => {
   return parts;
 };
 
-const printSectionDefinition = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = ["  "];
+const printSectionDefinition = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [indent];
 
   // Section name (includes newline+indent in token, extract just the name)
   const sectionName = node.children.find((c) => c.type === "section_name");
@@ -306,8 +373,8 @@ const printSectionDefinition = (node: SyntaxNode): Doc => {
   return parts;
 };
 
-const printFieldRemoval = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = ["  "];
+const printFieldRemoval = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [indent];
 
   // Field name
   const fieldName = node.children.find((c) => c.type === "field_name");
@@ -327,8 +394,8 @@ const printFieldRemoval = (node: SyntaxNode): Doc => {
   return parts;
 };
 
-const printSectionRemoval = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = ["  "];
+const printSectionRemoval = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [indent];
 
   // Section name
   const sectionName = node.children.find((c) => c.type === "section_name");
@@ -351,45 +418,45 @@ const printSectionRemoval = (node: SyntaxNode): Doc => {
   return parts;
 };
 
-const printMetadataBlock = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = [hardline, "  # Metadata"];
+const printMetadataBlock = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [hardline, indent, "# Metadata"];
 
   const fieldDefs = node.children.filter((c) => c.type === "field_definition");
   for (const field of fieldDefs) {
-    parts.push(hardline, printFieldDefinition(field));
+    parts.push(hardline, printFieldDefinition(field, indent));
   }
 
   return parts;
 };
 
-const printSectionsBlock = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = [hardline, "  # Sections"];
+const printSectionsBlock = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [hardline, indent, "# Sections"];
 
   const sectionDefs = node.children.filter((c) => c.type === "section_definition");
   for (const section of sectionDefs) {
-    parts.push(hardline, printSectionDefinition(section));
+    parts.push(hardline, printSectionDefinition(section, indent));
   }
 
   return parts;
 };
 
-const printRemoveMetadataBlock = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = [hardline, "  # Remove Metadata"];
+const printRemoveMetadataBlock = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [hardline, indent, "# Remove Metadata"];
 
   const fieldRemovals = node.children.filter((c) => c.type === "field_removal");
   for (const removal of fieldRemovals) {
-    parts.push(hardline, printFieldRemoval(removal));
+    parts.push(hardline, printFieldRemoval(removal, indent));
   }
 
   return parts;
 };
 
-const printRemoveSectionsBlock = (node: SyntaxNode): Doc => {
-  const parts: Doc[] = [hardline, "  # Remove Sections"];
+const printRemoveSectionsBlock = (node: SyntaxNode, indent: string): Doc => {
+  const parts: Doc[] = [hardline, indent, "# Remove Sections"];
 
   const sectionRemovals = node.children.filter((c) => c.type === "section_removal");
   for (const removal of sectionRemovals) {
-    parts.push(hardline, printSectionRemoval(removal));
+    parts.push(hardline, printSectionRemoval(removal, indent));
   }
 
   return parts;
@@ -399,7 +466,7 @@ const printRemoveSectionsBlock = (node: SyntaxNode): Doc => {
  * Print a schema_entry node (handles define-entity, alter-entity).
  * Header fields are inline on the entry node in the new grammar.
  */
-const printSchemaEntry = (node: SyntaxNode): Doc => {
+const printSchemaEntry = (node: SyntaxNode, _options: ThaloOptions, indent: string): Doc => {
   const parts: Doc[] = [];
 
   // Print header fields directly from the entry node
@@ -411,24 +478,24 @@ const printSchemaEntry = (node: SyntaxNode): Doc => {
   // Print blocks in order they appear
   for (const child of node.children) {
     if (child.type === "metadata_block") {
-      parts.push(printMetadataBlock(child));
+      parts.push(printMetadataBlock(child, indent));
       hasBlockBefore = true;
     } else if (child.type === "sections_block") {
       // Add blank line before # Sections if there's a preceding block
       if (hasBlockBefore) {
         parts.push(hardline);
       }
-      parts.push(printSectionsBlock(child));
+      parts.push(printSectionsBlock(child, indent));
       hasBlockBefore = true;
     } else if (child.type === "remove_metadata_block") {
-      parts.push(printRemoveMetadataBlock(child));
+      parts.push(printRemoveMetadataBlock(child, indent));
       hasBlockBefore = true;
     } else if (child.type === "remove_sections_block") {
       // Add blank line before # Remove Sections if there's a preceding block
       if (hasBlockBefore) {
         parts.push(hardline);
       }
-      parts.push(printRemoveSectionsBlock(child));
+      parts.push(printRemoveSectionsBlock(child, indent));
       hasBlockBefore = true;
     }
   }
@@ -440,25 +507,25 @@ const printSchemaEntry = (node: SyntaxNode): Doc => {
 // Entry Printing (dispatches to instance or schema)
 // ===================
 
-const printEntry = (node: SyntaxNode): Doc => {
+const printEntry = (node: SyntaxNode, options: ThaloOptions, indent: string): Doc => {
   const dataEntry = node.children.find((c) => c.type === "data_entry");
   if (dataEntry) {
-    return printDataEntry(dataEntry);
+    return printDataEntry(dataEntry, options, indent);
   }
 
   const schemaEntry = node.children.find((c) => c.type === "schema_entry");
   if (schemaEntry) {
-    return printSchemaEntry(schemaEntry);
+    return printSchemaEntry(schemaEntry, options, indent);
   }
 
   // For unhandled entry types, preserve the original text
   return node.text;
 };
 
-const printComment = (node: SyntaxNode): Doc => {
+const printComment = (node: SyntaxNode, indent: string): Doc => {
   // Use column position to determine if comment was indented
   const isIndented = node.startPosition.column > 0;
-  return isIndented ? ["  ", node.text] : node.text;
+  return isIndented ? [indent, node.text] : node.text;
 };
 
 const printUnhandledNode = (node: SyntaxNode): Doc => {
@@ -466,7 +533,7 @@ const printUnhandledNode = (node: SyntaxNode): Doc => {
   return node.text;
 };
 
-const printSourceFile = (node: SyntaxNode): Doc => {
+const printSourceFile = (node: SyntaxNode, options: ThaloOptions, indent: string): Doc => {
   // Check for errors - if present, return original source unchanged
   // Tree-sitter error recovery can produce structurally broken trees where
   // content gets detached from its parent entry, losing indentation context.
@@ -497,7 +564,7 @@ const printSourceFile = (node: SyntaxNode): Doc => {
 
       if (isIndented) {
         // Indented comment - belongs to preceding entry, no blank line
-        docs.push(hardline, printComment(child));
+        docs.push(hardline, printComment(child, indent));
         lastWasIndentedComment = true;
       } else {
         // Top-level comment - add blank line after entry
@@ -506,7 +573,7 @@ const printSourceFile = (node: SyntaxNode): Doc => {
         } else if (docs.length > 0) {
           docs.push(hardline);
         }
-        docs.push(printComment(child));
+        docs.push(printComment(child, indent));
         lastWasIndentedComment = false;
       }
       lastWasEntry = false;
@@ -515,7 +582,7 @@ const printSourceFile = (node: SyntaxNode): Doc => {
       if (docs.length > 0) {
         docs.push(hardline, hardline);
       }
-      docs.push(printEntry(child));
+      docs.push(printEntry(child, options, indent));
       lastWasEntry = true;
       lastWasIndentedComment = false;
     } else {
@@ -533,46 +600,47 @@ const printSourceFile = (node: SyntaxNode): Doc => {
 };
 
 export const printer: ThaloPrinter = {
-  print(path: AstPath<SyntaxNode>): Doc {
+  print(path: AstPath<SyntaxNode>, options: ThaloOptions, _print): Doc {
     const node = path.node;
+    const indent = getIndent(options);
 
     switch (node.type) {
       case "source_file":
-        return printSourceFile(node);
+        return printSourceFile(node, options, indent);
       case "entry":
-        return printEntry(node);
+        return printEntry(node, options, indent);
       case "data_entry":
-        return printDataEntry(node);
+        return printDataEntry(node, options, indent);
       case "schema_entry":
-        return printSchemaEntry(node);
+        return printSchemaEntry(node, options, indent);
       case "metadata":
-        return printMetadata(node);
+        return printMetadata(node, indent);
       case "content":
-        return printContent(node);
+        return printContent(node, options, indent);
       case "markdown_header":
-        return printMarkdownHeader(node);
+        return printMarkdownHeader(node, indent);
       case "content_line":
-        return printContentLine(node);
+        return printContentLine(node, options, indent);
       case "comment_line":
-        return printCommentLine(node);
+        return printCommentLine(node, indent);
       case "comment":
-        return printComment(node);
+        return printComment(node, indent);
       case "metadata_block":
-        return printMetadataBlock(node);
+        return printMetadataBlock(node, indent);
       case "sections_block":
-        return printSectionsBlock(node);
+        return printSectionsBlock(node, indent);
       case "remove_metadata_block":
-        return printRemoveMetadataBlock(node);
+        return printRemoveMetadataBlock(node, indent);
       case "remove_sections_block":
-        return printRemoveSectionsBlock(node);
+        return printRemoveSectionsBlock(node, indent);
       case "field_definition":
-        return printFieldDefinition(node);
+        return printFieldDefinition(node, indent);
       case "section_definition":
-        return printSectionDefinition(node);
+        return printSectionDefinition(node, indent);
       case "field_removal":
-        return printFieldRemoval(node);
+        return printFieldRemoval(node, indent);
       case "section_removal":
-        return printSectionRemoval(node);
+        return printSectionRemoval(node, indent);
       case "type_expression":
         return printTypeExpression(node);
       case "union_type":
