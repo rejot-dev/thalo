@@ -162,7 +162,12 @@ const printCommentLine = (node: SyntaxNode, indent: string): Doc => {
   return [indent, text];
 };
 
-const printContent = (node: SyntaxNode, options: ThaloOptions, indent: string): Doc => {
+const printContent = (
+  node: SyntaxNode,
+  options: ThaloOptions,
+  indent: string,
+  insertBlankLineBeforeContent: boolean,
+): Doc => {
   const parts: Doc[] = [];
 
   // Get visible content children (markdown_header, content_line, and comment_line)
@@ -215,8 +220,9 @@ const printContent = (node: SyntaxNode, options: ThaloOptions, indent: string): 
     return "";
   }
 
-  // Blank line before content (extra hardline), then content
-  return [hardline, ...parts];
+  // `parts` always begins with a `hardline` (because each child is printed as `[hardline, ...]`).
+  // If we want a *blank line* before content, prepend an extra `hardline`.
+  return insertBlankLineBeforeContent ? [hardline, ...parts] : parts;
 };
 
 /**
@@ -233,6 +239,10 @@ const printDataEntry = (node: SyntaxNode, options: ThaloOptions, indent: string)
   const metadataAndComments = node.children.filter(
     (c) => c.type === "metadata" || c.type === "comment_line",
   );
+  // If there are any lines between header and content (metadata or indented comments),
+  // keep a blank line before the first section. If there are none, don't insert an
+  // empty line between the header and the first section.
+  const hasHeaderPreludeLines = metadataAndComments.length > 0;
   for (const child of metadataAndComments) {
     if (child.type === "metadata") {
       parts.push(hardline, printMetadata(child, indent));
@@ -243,7 +253,8 @@ const printDataEntry = (node: SyntaxNode, options: ThaloOptions, indent: string)
 
   const content = node.children.find((c) => c.type === "content");
   if (content) {
-    parts.push(printContent(content, options, indent));
+    // If there is no metadata, don't insert an empty line between the header and the first section.
+    parts.push(printContent(content, options, indent, hasHeaderPreludeLines));
   }
 
   return parts;
@@ -616,7 +627,7 @@ export const printer: ThaloPrinter = {
       case "metadata":
         return printMetadata(node, indent);
       case "content":
-        return printContent(node, options, indent);
+        return printContent(node, options, indent, true);
       case "markdown_header":
         return printMarkdownHeader(node, indent);
       case "content_line":

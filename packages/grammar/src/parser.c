@@ -2359,19 +2359,15 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       END_STATE();
     case 238:
       ACCEPT_TOKEN(sym__metadata_header);
-      if (lookahead == ' ') ADVANCE(238);
       END_STATE();
     case 239:
       ACCEPT_TOKEN(sym__sections_header);
-      if (lookahead == ' ') ADVANCE(239);
       END_STATE();
     case 240:
       ACCEPT_TOKEN(sym__remove_metadata_header);
-      if (lookahead == ' ') ADVANCE(240);
       END_STATE();
     case 241:
       ACCEPT_TOKEN(sym__remove_sections_header);
-      if (lookahead == ' ') ADVANCE(241);
       END_STATE();
     case 242:
       ACCEPT_TOKEN(anon_sym_EQ);

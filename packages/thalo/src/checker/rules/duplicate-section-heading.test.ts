@@ -99,6 +99,34 @@ describe("duplicate-section-heading rule", () => {
     expect(messages).toContain("Reasoning");
   });
 
+  it("does not include trailing whitespace in diagnostic location for a header line", () => {
+    const source = `2026-01-05T18:00Z create opinion "Test" #test
+  confidence: high
+
+  # Claim
+  First claim.
+
+  # Reasoning
+  My reasoning.
+
+  # Claim    
+  Second claim (duplicate).
+`;
+    workspace.addDocument(source, { filename: "test.thalo" });
+
+    const diagnostics = check(workspace);
+    const error = diagnostics.find((d) => d.code === "duplicate-section-heading");
+
+    expect(error).toBeDefined();
+    expect(error!.severity).toBe("error");
+
+    // The diagnostic should point at the duplicate header line itself, excluding trailing spaces.
+    const snippet = source.slice(error!.location.startIndex, error!.location.endIndex);
+    expect(snippet).toContain("# Claim");
+    // Must not be "# Claim    " (spaces after the header text).
+    expect(snippet).toMatch(/# Claim(\r?\n|$)/);
+  });
+
   it("does not confuse sections across entries", () => {
     workspace.addDocument(
       `2026-01-05T17:00Z create opinion "First" #test

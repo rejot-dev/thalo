@@ -79,12 +79,13 @@ export default grammar({
     _section_lines: ($) => prec.right(repeat1($.section_definition)),
 
     // Block headers: newline + optional blank lines + indent + "# BlockName"
-    _metadata_header: (_) => token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Metadata */),
-    _sections_header: (_) => token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Sections */),
+    // Note: do NOT consume trailing spaces; they are ignored via `extras`.
+    _metadata_header: (_) => token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Metadata/),
+    _sections_header: (_) => token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Sections/),
     _remove_metadata_header: (_) =>
-      token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Remove Metadata */),
+      token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Remove Metadata/),
     _remove_sections_header: (_) =>
-      token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Remove Sections */),
+      token(/\r?\n(?:[ \t]*\r?\n)*(?:\t|[ \t][ \t])+# Remove Sections/),
 
     // =========================================================================
     // Field definitions (for schema metadata blocks)

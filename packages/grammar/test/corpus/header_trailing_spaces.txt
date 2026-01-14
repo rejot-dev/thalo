@@ -1,0 +1,107 @@
+==================
+schema block headers with trailing spaces
+==================
+
+2026-01-05T10:00Z define-entity test "Test entity"
+  # Metadata    
+  name: string
+
+  # Sections    
+  Summary
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (schema_directive)
+      (identifier)
+      (title)
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type))))
+      (sections_block
+        (section_definition
+          (section_name))))))
+
+==================
+markdown headers with trailing spaces
+==================
+
+2026-01-05T18:11Z create lore "Entry with content"
+  type: "fact"
+
+  # Summary    
+  hello
+
+  # Details    
+  world
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (quoted_value)))
+      (content
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))
+        (markdown_header
+          (md_indicator)
+          (md_heading_text))
+        (content_line
+          (content_text))))))
+
+==================
+entry header with trailing whitespace
+==================
+
+2026-01-05T10:00Z define-entity test "Test entity"  
+  # Metadata    
+  name: string
+
+  # Sections    
+  Summary
+
+---
+
+(source_file
+  (entry
+    (schema_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (schema_directive)
+      (identifier)
+      (title)
+      (metadata_block
+        (field_definition
+          (field_name)
+          (type_expression
+            (primitive_type))))
+      (sections_block
+        (section_definition
+          (section_name))))))

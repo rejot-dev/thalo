@@ -63,6 +63,24 @@ describe("integration", () => {
     `);
   });
 
+  it("does not produce syntax errors for trailing whitespace after an entry header line", () => {
+    const ws = workspaceFromFiles({
+      "schema.thalo": `
+2026-01-07T11:40Z define-entity test "Test entity"  
+  # Metadata
+  name: string
+
+  # Sections
+  Summary
+`,
+    });
+
+    const diagnostics = check(ws);
+    const syntaxErrors = diagnostics.filter((d) => d.code.startsWith("syntax-"));
+
+    expect(syntaxErrors).toEqual([]);
+  });
+
   it("accidentally created a 'date-time' field instead of 'datetime'", () => {
     const ws = workspaceFromFiles({
       "schema.thalo": `

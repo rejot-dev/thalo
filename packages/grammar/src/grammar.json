@@ -421,28 +421,28 @@
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Metadata *"
+        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Metadata"
       }
     },
     "_sections_header": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Sections *"
+        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Sections"
       }
     },
     "_remove_metadata_header": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Remove Metadata *"
+        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Remove Metadata"
       }
     },
     "_remove_sections_header": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Remove Sections *"
+        "value": "\\r?\\n(?:[ \\t]*\\r?\\n)*(?:\\t|[ \\t][ \\t])+# Remove Sections"
       }
     },
     "field_definition": {

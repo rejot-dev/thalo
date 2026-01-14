@@ -64,7 +64,6 @@ describe("edge cases", () => {
     const output = await format(input);
 
     expect(output).toBe(`2026-01-05T18:00Z create journal "Direct content"
-
   # Summary
   Content starts right after header.
 `);

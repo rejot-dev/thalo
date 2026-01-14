@@ -715,9 +715,28 @@ export function extractContent(node: SyntaxNode): Content {
  * Extract a MarkdownHeader
  */
 export function extractMarkdownHeader(node: SyntaxNode): MarkdownHeader {
+  // Tree-sitter includes any trailing spaces in the node range, which can cause
+  // diagnostics to highlight "invisible" whitespace. Trim the *location* to the
+  // last non-whitespace character while still keeping the original syntaxNode.
+  const raw = node.text;
+  const trimmedRight = raw.replace(/[ \t]+$/, "");
+  const trimDelta = raw.length - trimmedRight.length;
+  const base = baseNode(node, "markdown_header");
+
   return {
-    ...baseNode(node, "markdown_header"),
-    text: node.text.trim(),
+    ...base,
+    location:
+      trimDelta === 0
+        ? base.location
+        : {
+            ...base.location,
+            endIndex: base.location.endIndex - trimDelta,
+            endPosition: {
+              ...base.location.endPosition,
+              column: Math.max(0, base.location.endPosition.column - trimDelta),
+            },
+          },
+    text: raw.trim(),
   };
 }
 
