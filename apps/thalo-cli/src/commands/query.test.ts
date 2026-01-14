@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { executeQuery, parseQueryString } from "@rejot-dev/thalo";
+import { executeQueries, parseQueryString } from "@rejot-dev/thalo";
 import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 
 describe("query command", () => {
@@ -7,19 +7,23 @@ describe("query command", () => {
     it("parses entity-only query", () => {
       const result = parseQueryString("lore");
 
-      expect(result).toEqual({
-        entity: "lore",
-        conditions: [],
-      });
+      expect(result).toEqual([
+        {
+          entity: "lore",
+          conditions: [],
+        },
+      ]);
     });
 
     it("parses entity with hyphen", () => {
       const result = parseQueryString("my-entity");
 
-      expect(result).toEqual({
-        entity: "my-entity",
-        conditions: [],
-      });
+      expect(result).toEqual([
+        {
+          entity: "my-entity",
+          conditions: [],
+        },
+      ]);
     });
 
     it("rejects invalid entity names", () => {
@@ -30,59 +34,69 @@ describe("query command", () => {
     it("parses query with tag condition", () => {
       const result = parseQueryString("lore where #career");
 
-      expect(result).toEqual({
-        entity: "lore",
-        conditions: [{ kind: "tag", tag: "career" }],
-      });
+      expect(result).toEqual([
+        {
+          entity: "lore",
+          conditions: [{ kind: "tag", tag: "career" }],
+        },
+      ]);
     });
 
     it("parses query with link condition", () => {
       const result = parseQueryString("opinion where ^my-topic");
 
-      expect(result).toEqual({
-        entity: "opinion",
-        conditions: [{ kind: "link", link: "my-topic" }],
-      });
+      expect(result).toEqual([
+        {
+          entity: "opinion",
+          conditions: [{ kind: "link", link: "my-topic" }],
+        },
+      ]);
     });
 
     it("parses query with field condition", () => {
       const result = parseQueryString('lore where type = "fact"');
 
-      expect(result).toEqual({
-        entity: "lore",
-        conditions: [{ kind: "field", field: "type", value: '"fact"' }],
-      });
+      expect(result).toEqual([
+        {
+          entity: "lore",
+          conditions: [{ kind: "field", field: "type", value: '"fact"' }],
+        },
+      ]);
     });
 
     it("parses query with multiple conditions", () => {
       const result = parseQueryString('lore where #career and type = "insight"');
 
-      expect(result).toEqual({
-        entity: "lore",
-        conditions: [
-          { kind: "tag", tag: "career" },
-          { kind: "field", field: "type", value: '"insight"' },
-        ],
-      });
+      expect(result).toEqual([
+        {
+          entity: "lore",
+          conditions: [
+            { kind: "tag", tag: "career" },
+            { kind: "field", field: "type", value: '"insight"' },
+          ],
+        },
+      ]);
     });
 
     it("parses query with all condition types", () => {
       const result = parseQueryString('lore where #tag and ^link and field = "value"');
 
-      expect(result).toEqual({
-        entity: "lore",
-        conditions: [
-          { kind: "tag", tag: "tag" },
-          { kind: "link", link: "link" },
-          { kind: "field", field: "field", value: '"value"' },
-        ],
-      });
+      expect(result).toEqual([
+        {
+          entity: "lore",
+          conditions: [
+            { kind: "tag", tag: "tag" },
+            { kind: "link", link: "link" },
+            { kind: "field", field: "field", value: '"value"' },
+          ],
+        },
+      ]);
     });
 
     it("preserves quotes in field values", () => {
       const result = parseQueryString('lore where type = "fact"');
 
-      expect(result?.conditions[0]).toEqual({
+      expect(result?.[0].conditions[0]).toEqual({
         kind: "field",
         field: "type",
         value: '"fact"',
@@ -92,14 +106,25 @@ describe("query command", () => {
     it("handles link values in field conditions", () => {
       const result = parseQueryString("lore where subject = ^self");
 
-      expect(result).toEqual({
-        entity: "lore",
-        conditions: [{ kind: "field", field: "subject", value: "^self" }],
-      });
+      expect(result).toEqual([
+        {
+          entity: "lore",
+          conditions: [{ kind: "field", field: "subject", value: "^self" }],
+        },
+      ]);
+    });
+
+    it("parses comma-separated multiple queries", () => {
+      const result = parseQueryString("lore, journal");
+
+      expect(result).toEqual([
+        { entity: "lore", conditions: [] },
+        { entity: "journal", conditions: [] },
+      ]);
     });
   });
 
-  describe("executeQuery integration", () => {
+  describe("executeQueries integration", () => {
     let workspace: Workspace;
 
     beforeEach(() => {
@@ -143,15 +168,15 @@ describe("query command", () => {
     });
 
     it("queries all entries of an entity type", () => {
-      const query = parseQueryString("lore")!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString("lore")!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(3);
     });
 
     it("filters by tag", () => {
-      const query = parseQueryString("lore where #career")!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString("lore where #career")!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(2);
       expect(results[0].header.title.value).toBe("Career insight");
@@ -159,45 +184,45 @@ describe("query command", () => {
     });
 
     it("filters by link", () => {
-      const query = parseQueryString("lore where ^career-insight")!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString("lore where ^career-insight")!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(1);
       expect(results[0].header.title.value).toBe("Career insight");
     });
 
     it("filters by field value", () => {
-      const query = parseQueryString('lore where type = "fact"')!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString('lore where type = "fact"')!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(1);
       expect(results[0].header.title.value).toBe("Tech fact");
     });
 
     it("combines multiple conditions with AND", () => {
-      const query = parseQueryString('lore where #career and type = "insight"')!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString('lore where #career and type = "insight"')!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(2);
     });
 
     it("returns empty for no matches", () => {
-      const query = parseQueryString("lore where #nonexistent")!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString("lore where #nonexistent")!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(0);
     });
 
     it("returns empty for wrong entity type", () => {
-      const query = parseQueryString("opinion")!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString("opinion")!;
+      const results = executeQueries(workspace, queries);
 
       expect(results).toHaveLength(0);
     });
 
     it("results are sorted by timestamp", () => {
-      const query = parseQueryString("lore")!;
-      const results = executeQuery(workspace, query);
+      const queries = parseQueryString("lore")!;
+      const results = executeQueries(workspace, queries);
 
       expect(results[0].header.title.value).toBe("Career insight");
       expect(results[1].header.title.value).toBe("Tech fact");

@@ -1,4 +1,9 @@
-import { runQuery, formatQueryResultRaw, type QueryEntryInfo } from "@rejot-dev/thalo";
+import {
+  runQuery,
+  formatQueryResultRaw,
+  isQueryValidationError,
+  type QueryEntryInfo,
+} from "@rejot-dev/thalo";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 import { resolveFiles, loadWorkspace, relativePath } from "../files.js";
@@ -85,6 +90,12 @@ async function queryAction(ctx: CommandContext): Promise<void> {
   if (!result) {
     console.error(pc.red(`Error: Invalid query syntax`));
     console.error(pc.dim(`Query: ${queryStr}`));
+    process.exit(2);
+  }
+
+  // Handle validation errors
+  if (isQueryValidationError(result)) {
+    console.error(pc.red(`Error: ${result.message}`));
     process.exit(2);
   }
 

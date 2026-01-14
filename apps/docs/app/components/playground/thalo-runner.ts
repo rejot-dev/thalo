@@ -9,7 +9,11 @@
 
 import { Workspace } from "@rejot-dev/thalo";
 import { runCheck as runCheckCommand, type CheckResult } from "@rejot-dev/thalo/commands/check";
-import { runQuery as runQueryCommand, type QueryResult } from "@rejot-dev/thalo/commands/query";
+import {
+  runQuery as runQueryCommand,
+  isQueryValidationError,
+  type QueryResult,
+} from "@rejot-dev/thalo/commands/query";
 import {
   runActualize as runActualizeCommand,
   type ActualizeResult,
@@ -250,6 +254,18 @@ async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<
         { type: "header", text: `=== Query: ${query} ===` },
         { type: "blank", text: "" },
         { type: "error", text: "Invalid query syntax" },
+      ],
+    };
+  }
+
+  // Handle validation errors (e.g., unknown entity)
+  if (isQueryValidationError(result)) {
+    return {
+      command: `thalo query '${query}'`,
+      lines: [
+        { type: "header", text: `=== Query: ${query} ===` },
+        { type: "blank", text: "" },
+        { type: "error", text: result.message },
       ],
     };
   }

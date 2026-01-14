@@ -5,9 +5,17 @@
 import type { Workspace } from "../model/workspace.js";
 import type { Query, QueryCondition } from "../model/types.js";
 import type { InstanceEntry } from "../ast/types.js";
-import { executeQuery, formatQuery } from "../services/query.js";
+import {
+  parseQueryString as parseQueryStringService,
+  validateQueryEntities,
+  executeQueries,
+  formatQuery,
+} from "../services/query.js";
 import { findEntryFile, getEntrySourceText } from "../services/synthesis.js";
 import { formatTimestamp } from "../formatters.js";
+
+// Re-export parseQueryString from service for backward compatibility
+export { parseQueryString } from "../services/query.js";
 
 // ===================
 // Types
@@ -52,7 +60,7 @@ export interface QueryEntryInfo {
 }
 
 /**
- * Result of running the query command.
+ * Result of running the query command (single query).
  */
 export interface QueryResult {
   /** The parsed query */
@@ -66,6 +74,31 @@ export interface QueryResult {
 }
 
 /**
+ * Result of running queries (multiple queries).
+ */
+export interface QueriesResult {
+  /** The parsed queries */
+  queries: Query[];
+  /** Formatted query string for display */
+  queryString: string;
+  /** Matching entries (deduplicated across all queries) */
+  entries: QueryEntryInfo[];
+  /** Total count (may be more than entries.length if limited) */
+  totalCount: number;
+}
+
+/**
+ * Error result when queries reference unknown entities.
+ */
+export interface QueryValidationError {
+  kind: "unknown-entities";
+  /** The unknown entity names */
+  entities: string[];
+  /** Human-readable error message */
+  message: string;
+}
+
+/**
  * Options for running the query command.
  */
 export interface RunQueryOptions {
@@ -73,6 +106,8 @@ export interface RunQueryOptions {
   limit?: number;
   /** Include raw source text in results */
   includeRawText?: boolean;
+  /** Whether to validate that queried entities exist (default: true) */
+  validateEntities?: boolean;
 }
 
 /**
@@ -106,82 +141,41 @@ function toQueryEntryInfo(
 }
 
 /**
- * Parse query conditions from the "where" clause string.
- */
-function parseConditions(conditionsStr: string): Query["conditions"] {
-  const conditions: Query["conditions"] = [];
-  const condParts = conditionsStr.split(/\s+and\s+/);
-
-  for (const part of condParts) {
-    const trimmed = part.trim();
-
-    if (trimmed.startsWith("#")) {
-      conditions.push({ kind: "tag", tag: trimmed.slice(1) });
-      continue;
-    }
-
-    if (trimmed.startsWith("^")) {
-      conditions.push({ kind: "link", link: trimmed.slice(1) });
-      continue;
-    }
-
-    const fieldMatch = trimmed.match(/^(\S+)\s*=\s*(.+)$/);
-    if (fieldMatch) {
-      const [, field, value] = fieldMatch;
-      conditions.push({ kind: "field", field, value });
-    }
-  }
-
-  return conditions;
-}
-
-/**
- * Parse a query string into a Query object.
- * Uses regex-based parsing to work in both Node.js and browser environments.
- */
-export function parseQueryString(queryStr: string): Query | null {
-  const trimmed = queryStr.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  // Match: entity [where conditions]
-  const queryMatch = trimmed.match(/^([a-z][a-z0-9-]*?)(?:\s+where\s+(.+))?$/i);
-
-  if (!queryMatch) {
-    return null;
-  }
-
-  const [, entity, conditionsStr] = queryMatch;
-  const conditions = conditionsStr ? parseConditions(conditionsStr) : [];
-
-  return { entity, conditions };
-}
-
-/**
- * Run the query command on a workspace.
+ * Run multiple queries on a workspace.
+ * Supports comma-separated query syntax like "lore, journal where #career".
  *
  * @param workspace - The workspace to query
- * @param queryString - The query string to parse and execute
+ * @param queryString - The query string to parse and execute (may contain multiple queries)
  * @param options - Query options
- * @returns Structured query results, or null if query is invalid
+ * @returns Structured query results, validation error, or null if query syntax is invalid
  */
-export function runQuery(
+export function runQueries(
   workspace: Workspace,
   queryString: string,
   options: RunQueryOptions = {},
-): QueryResult | null {
-  const { limit, includeRawText = false } = options;
+): QueriesResult | QueryValidationError | null {
+  const { limit, includeRawText = false, validateEntities = true } = options;
 
-  // Parse the query
-  const query = parseQueryString(queryString);
-  if (!query) {
+  // Parse the queries
+  const queries = parseQueryStringService(queryString);
+  if (!queries) {
     return null;
   }
 
-  // Execute the query
-  const results = executeQuery(workspace, query);
+  // Validate entity names if requested
+  if (validateEntities) {
+    const unknownEntities = validateQueryEntities(workspace, queries);
+    if (unknownEntities.length > 0) {
+      return {
+        kind: "unknown-entities",
+        entities: unknownEntities,
+        message: `Unknown entity type${unknownEntities.length > 1 ? "s" : ""}: ${unknownEntities.map((e) => `'${e}'`).join(", ")}. Define ${unknownEntities.length > 1 ? "them" : "it"} using 'define-entity'.`,
+      };
+    }
+  }
+
+  // Execute all queries
+  const results = executeQueries(workspace, queries);
 
   // Convert to QueryEntryInfo
   const entries: QueryEntryInfo[] = [];
@@ -195,9 +189,54 @@ export function runQuery(
   }
 
   return {
-    query,
-    queryString: formatQuery(query),
+    queries,
+    queryString: queries.map(formatQuery).join(", "),
     entries,
     totalCount: results.length,
   };
+}
+
+/**
+ * Run the query command on a workspace.
+ * For backward compatibility, this only supports a single query.
+ * Use `runQueries` for multiple queries or comma-separated syntax.
+ *
+ * @param workspace - The workspace to query
+ * @param queryString - The query string to parse and execute
+ * @param options - Query options
+ * @returns Structured query results, validation error, or null if query is invalid
+ */
+export function runQuery(
+  workspace: Workspace,
+  queryString: string,
+  options: RunQueryOptions = {},
+): QueryResult | QueryValidationError | null {
+  const result = runQueries(workspace, queryString, options);
+
+  if (!result) {
+    return null;
+  }
+
+  // Return validation errors as-is
+  if ("kind" in result) {
+    return result;
+  }
+
+  // For backward compatibility, return single query format
+  // If multiple queries were parsed, use the first one
+  return {
+    query: result.queries[0],
+    queryString: result.queryString,
+    entries: result.entries,
+    totalCount: result.totalCount,
+  };
+}
+
+/**
+ * Type guard to check if a query result is a validation error.
+ */
+export function isQueryValidationError(
+  result: QueryResult | QueriesResult | QueryValidationError | null,
+): result is QueryValidationError {
+  return result !== null && "kind" in result && result.kind === "unknown-entities";
 }

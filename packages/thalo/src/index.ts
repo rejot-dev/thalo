@@ -124,8 +124,20 @@ export type {
   FormatFileInput,
   SyntaxErrorInfo,
 } from "./commands/format.js";
-export { runQuery, parseQueryString, type RunQueryOptions } from "./commands/query.js";
-export type { QueryResult, QueryEntryInfo, QueryConditionInfo } from "./commands/query.js";
+export {
+  runQuery,
+  runQueries,
+  parseQueryString,
+  isQueryValidationError,
+  type RunQueryOptions,
+} from "./commands/query.js";
+export type {
+  QueryResult,
+  QueriesResult,
+  QueryValidationError,
+  QueryEntryInfo,
+  QueryConditionInfo,
+} from "./commands/query.js";
 export {
   runActualize,
   generateInstructions,

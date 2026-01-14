@@ -43,6 +43,7 @@ import { missingTitleRule } from "./missing-title.js";
 import { synthesisMissingSourcesRule } from "./synthesis-missing-sources.js";
 import { synthesisMissingPromptRule } from "./synthesis-missing-prompt.js";
 import { synthesisEmptyQueryRule } from "./synthesis-empty-query.js";
+import { synthesisUnknownQueryEntityRule } from "./synthesis-unknown-query-entity.js";
 import { actualizeUnresolvedTargetRule } from "./actualize-unresolved-target.js";
 import { actualizeMissingUpdatedRule } from "./actualize-missing-updated.js";
 
@@ -93,6 +94,7 @@ export const allRules: Rule[] = [
   synthesisMissingSourcesRule,
   synthesisMissingPromptRule,
   synthesisEmptyQueryRule,
+  synthesisUnknownQueryEntityRule,
   actualizeUnresolvedTargetRule,
   actualizeMissingUpdatedRule,
 ];

@@ -1,7 +1,151 @@
 import type { Workspace } from "../model/workspace.js";
-import type { InstanceEntry } from "../ast/types.js";
+import type {
+  InstanceEntry,
+  Query as AstQuery,
+  QueryCondition as AstQueryCondition,
+} from "../ast/types.js";
 import type { Query, QueryCondition } from "../model/types.js";
 import { formatTimestamp } from "../formatters.js";
+
+// ===================
+// Query Parsing
+// ===================
+
+/**
+ * Convert an AST Query to a Model Query.
+ * The AST Query comes from parsing, while Model Query is used for execution.
+ */
+export function astQueryToModelQuery(astQuery: AstQuery): Query {
+  return {
+    entity: astQuery.entity,
+    conditions: astQuery.conditions.map((c: AstQueryCondition): QueryCondition => {
+      switch (c.type) {
+        case "field_condition":
+          return { kind: "field", field: c.field, value: c.value };
+        case "tag_condition":
+          return { kind: "tag", tag: c.tag };
+        case "link_condition":
+          return { kind: "link", link: c.linkId };
+      }
+    }),
+  };
+}
+
+/**
+ * Parse query conditions from the "where" clause string.
+ */
+function parseConditions(conditionsStr: string): QueryCondition[] {
+  const conditions: QueryCondition[] = [];
+  const condParts = conditionsStr.split(/\s+and\s+/i);
+
+  for (const part of condParts) {
+    const trimmed = part.trim();
+
+    if (trimmed.startsWith("#")) {
+      conditions.push({ kind: "tag", tag: trimmed.slice(1) });
+      continue;
+    }
+
+    if (trimmed.startsWith("^")) {
+      conditions.push({ kind: "link", link: trimmed.slice(1) });
+      continue;
+    }
+
+    const fieldMatch = trimmed.match(/^(\S+)\s*=\s*(.+)$/);
+    if (fieldMatch) {
+      const [, field, value] = fieldMatch;
+      conditions.push({ kind: "field", field, value });
+    }
+  }
+
+  return conditions;
+}
+
+/**
+ * Parse a single query from a string.
+ * Returns null if the string is not a valid query.
+ */
+function parseSingleQuery(queryStr: string): Query | null {
+  const trimmed = queryStr.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  // Match: entity [where conditions]
+  const queryMatch = trimmed.match(/^([a-z][a-z0-9-]*?)(?:\s+where\s+(.+))?$/i);
+
+  if (!queryMatch) {
+    return null;
+  }
+
+  const [, entity, conditionsStr] = queryMatch;
+  const conditions = conditionsStr ? parseConditions(conditionsStr) : [];
+
+  return { entity, conditions };
+}
+
+/**
+ * Parse a query string into Query objects.
+ * Supports both single queries and comma-separated multiple queries.
+ * Uses regex-based parsing to work in both Node.js and browser environments.
+ *
+ * @example
+ * parseQueryString("lore")                           // [{ entity: "lore", conditions: [] }]
+ * parseQueryString("lore where #career")             // [{ entity: "lore", conditions: [...] }]
+ * parseQueryString("lore, journal")                  // [{ entity: "lore", ... }, { entity: "journal", ... }]
+ * parseQueryString("lore where #career, journal")    // [{ entity: "lore", ... }, { entity: "journal", ... }]
+ *
+ * @returns Array of Query objects, or null if the input is invalid
+ */
+export function parseQueryString(queryStr: string): Query[] | null {
+  const trimmed = queryStr.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  // Split by comma to support multiple queries
+  const parts = trimmed.split(/\s*,\s*/);
+  const queries: Query[] = [];
+
+  for (const part of parts) {
+    const query = parseSingleQuery(part);
+    if (!query) {
+      return null; // If any part is invalid, the whole query is invalid
+    }
+    queries.push(query);
+  }
+
+  return queries.length > 0 ? queries : null;
+}
+
+// ===================
+// Query Validation
+// ===================
+
+/**
+ * Validate that all query entities exist in the schema registry.
+ *
+ * @param workspace - The workspace containing the schema registry
+ * @param queries - The queries to validate
+ * @returns Array of unknown entity names (empty if all are valid)
+ */
+export function validateQueryEntities(workspace: Workspace, queries: Query[]): string[] {
+  const registry = workspace.schemaRegistry;
+  const unknown: string[] = [];
+
+  for (const query of queries) {
+    if (!registry.has(query.entity)) {
+      // Avoid duplicates
+      if (!unknown.includes(query.entity)) {
+        unknown.push(query.entity);
+      }
+    }
+  }
+
+  return unknown;
+}
 
 /**
  * Options for executing queries

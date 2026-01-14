@@ -4,10 +4,10 @@ import type {
   ActualizeEntry,
   InstanceEntry,
   Query as AstQuery,
-  QueryCondition as AstQueryCondition,
 } from "../ast/types.js";
-import type { Query, QueryCondition } from "../model/types.js";
+import type { Query } from "../model/types.js";
 import { formatTimestamp } from "../formatters.js";
+import { astQueryToModelQuery } from "./query.js";
 
 /**
  * Information about a synthesis definition including file context
@@ -44,25 +44,8 @@ export interface ActualizeInfo {
 // Re-export formatTimestamp from formatters for backward compatibility
 export { formatTimestamp } from "../formatters.js";
 
-/**
- * Convert an AST Query to a Model Query.
- * The AST Query comes from parsing, while Model Query is used for execution.
- */
-export function astQueryToModelQuery(astQuery: AstQuery): Query {
-  return {
-    entity: astQuery.entity,
-    conditions: astQuery.conditions.map((c: AstQueryCondition): QueryCondition => {
-      switch (c.type) {
-        case "field_condition":
-          return { kind: "field", field: c.field, value: c.value };
-        case "tag_condition":
-          return { kind: "tag", tag: c.tag };
-        case "link_condition":
-          return { kind: "link", link: c.linkId };
-      }
-    }),
-  };
-}
+// Re-export astQueryToModelQuery for backward compatibility
+export { astQueryToModelQuery } from "./query.js";
 
 /**
  * Extract source queries from a synthesis entry's metadata.
