@@ -13,9 +13,9 @@ import type {
   SynthesisOutputInfo,
   ActualizeEntryInfo,
 } from "./commands/actualize.js";
-import { formatCheckpoint } from "./services/change-tracker/types.js";
-import type { Timestamp } from "./ast/types.js";
-import { isSyntaxError } from "./ast/types.js";
+import { formatCheckpoint } from "./services/change-tracker/change-tracker.js";
+import type { Timestamp } from "./ast/ast-types.js";
+import { isSyntaxError } from "./ast/ast-types.js";
 
 /**
  * Output format style for diagnostics.

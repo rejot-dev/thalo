@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { detectConflicts } from "./conflict-detector.js";
-import type { EntryMatch } from "./types.js";
+import type { EntryMatch } from "./entry-matcher.js";
 import { mockInstanceEntry } from "./test-utils.js";
 
 describe("conflict-detector", () => {

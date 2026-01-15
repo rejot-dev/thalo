@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor, VisitorContext } from "../visitor.js";
-import type { Timestamp } from "../../ast/types.js";
+import type { Timestamp } from "../../ast/ast-types.js";
 import { formatTimestamp } from "../../formatters.js";
 
 const category: RuleCategory = "instance";

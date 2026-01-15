@@ -4,12 +4,12 @@ import type {
   SchemaEntry,
   SynthesisEntry,
   ActualizeEntry,
-} from "../ast/types.js";
-import type { SemanticModel } from "../semantic/types.js";
+} from "../ast/ast-types.js";
+import type { SemanticModel } from "../semantic/analyzer.js";
 import type { SourceMap } from "../source-map.js";
 import type { Workspace } from "../model/workspace.js";
 import type { WorkspaceIndex } from "./workspace-index.js";
-import type { PartialDiagnostic } from "./types.js";
+import type { PartialDiagnostic } from "./check.js";
 
 /**
  * Context available to visitors during the check phase.

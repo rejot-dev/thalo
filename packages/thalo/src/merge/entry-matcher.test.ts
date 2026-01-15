@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { matchEntries, getEntryIdentity, serializeIdentity } from "./entry-matcher.js";
-import type { Entry, InstanceEntry } from "../ast/types.js";
+import type { Entry, InstanceEntry } from "../ast/ast-types.js";
 import {
   mockInstanceEntry,
   mockSchemaEntry,

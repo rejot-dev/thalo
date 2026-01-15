@@ -30,7 +30,7 @@ import type {
   ValueContent,
   QuotedValue,
   LinkValue,
-} from "../ast/types.js";
+} from "../ast/ast-types.js";
 
 /**
  * Creates a mock Location object

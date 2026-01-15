@@ -3,7 +3,7 @@ import { defineConfig } from "tsdown";
 export default defineConfig([
   // Unbundled output for library use
   {
-    entry: ["./src/index.ts", "./src/server.ts"],
+    entry: ["./src/mod.ts", "./src/server.ts"],
     dts: true,
     unbundle: true,
   },

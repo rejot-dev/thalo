@@ -1,4 +1,4 @@
-import type { Location } from "../ast/types.js";
+import type { Location } from "../ast/ast-types.js";
 import type { SourceMap } from "../source-map.js";
 
 // ===================

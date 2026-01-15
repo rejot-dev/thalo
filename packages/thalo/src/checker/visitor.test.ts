@@ -10,7 +10,7 @@ import {
   type RuleVisitor,
   type EntryContext,
 } from "./visitor.js";
-import type { InstanceEntry, SchemaEntry, SynthesisEntry } from "../ast/types.js";
+import type { InstanceEntry, SchemaEntry, SynthesisEntry } from "../ast/ast-types.js";
 
 describe("Visitor", () => {
   let workspace: Workspace;

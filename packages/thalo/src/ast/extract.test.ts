@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import type { SyntaxNode } from "tree-sitter";
 import { parseDocument } from "../parser.js";
 import { extractTypeExpression } from "./extract.js";
-import { isSyntaxError } from "./types.js";
+import { isSyntaxError } from "./ast-types.js";
 
 /** Recursively find a node of a given type in the tree */
 function findNodeByType(node: SyntaxNode, type: string): SyntaxNode | null {

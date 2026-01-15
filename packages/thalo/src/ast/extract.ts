@@ -1,4 +1,4 @@
-import type { SyntaxNode } from "./types.js";
+import type { SyntaxNode } from "./ast-types.js";
 import { buildTimestamp, createSyntaxError } from "./builder.js";
 import type {
   AstNode,
@@ -53,7 +53,7 @@ import type {
   SectionName,
   Description,
   DefaultValue,
-} from "./types.js";
+} from "./ast-types.js";
 
 /**
  * Extract location information from a tree-sitter node

@@ -5,11 +5,8 @@ import {
   DEFAULT_INSTRUCTIONS_TEMPLATE,
   type SynthesisOutputInfo,
 } from "@rejot-dev/thalo";
-import {
-  createChangeTracker,
-  formatCheckpoint,
-  UncommittedChangesError,
-} from "@rejot-dev/thalo/change-tracker";
+import { formatCheckpoint } from "@rejot-dev/thalo/change-tracker";
+import { createChangeTracker, UncommittedChangesError } from "@rejot-dev/thalo/change-tracker/node";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 import { loadFullWorkspace, relativePath } from "../files.js";

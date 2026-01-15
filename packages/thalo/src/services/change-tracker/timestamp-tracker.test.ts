@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { TimestampChangeTracker } from "./timestamp-tracker.js";
 import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
-import type { Query } from "../../model/types.js";
+import type { Query } from "../query.js";
 
 describe("TimestampChangeTracker", () => {
   let tracker: TimestampChangeTracker;

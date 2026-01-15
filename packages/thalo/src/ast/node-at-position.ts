@@ -1,4 +1,4 @@
-import type { SyntaxNode, Point } from "./types.js";
+import type { SyntaxNode, Point } from "./ast-types.js";
 import type { ParsedDocument, ParsedBlock, GenericTree } from "../parser.shared.js";
 import {
   findBlockAtPosition,
@@ -16,7 +16,7 @@ import type {
   FieldName,
   SectionName,
   Location,
-} from "./types.js";
+} from "./ast-types.js";
 import {
   extractLink,
   extractTag,

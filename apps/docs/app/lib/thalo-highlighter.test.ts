@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { tokensToLines, linesToHtml, type HighlightedLine } from "./thalo-highlighter";
-import type { SemanticToken } from "@rejot-dev/thalo/services";
+import type { SemanticToken } from "@rejot-dev/thalo/services/semantic-tokens";
 
 describe("tokensToLines", () => {
   test("returns empty line for empty code", () => {

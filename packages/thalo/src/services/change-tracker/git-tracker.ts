@@ -1,5 +1,5 @@
-import type { Entry, InstanceEntry } from "../../ast/types.js";
-import type { Query } from "../../model/types.js";
+import type { Entry, InstanceEntry } from "../../ast/ast-types.js";
+import type { Query } from "../query.js";
 import type { Workspace } from "../../model/workspace.js";
 import {
   detectGitContext,
@@ -12,7 +12,7 @@ import {
   getBlameCommitsForLineRange,
   isCommitAncestorOf,
   type FileChange,
-} from "../../git/index.js";
+} from "../../git/git.js";
 import { getEntryIdentity, serializeIdentity } from "../../merge/entry-matcher.js";
 import { entriesEqual } from "../../merge/entry-merger.js";
 import { entryMatchesQuery } from "../query.js";
@@ -23,8 +23,8 @@ import type {
   ChangeMarker,
   ChangedEntriesResult,
   ChangeTrackerOptions,
-} from "./types.js";
-import { UncommittedChangesError } from "./types.js";
+} from "./change-tracker.js";
+import { UncommittedChangesError } from "./change-tracker.js";
 
 /**
  * Git-based change tracker.

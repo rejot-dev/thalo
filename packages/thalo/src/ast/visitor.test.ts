@@ -23,7 +23,7 @@ import type {
   QuotedValue,
   SyntaxErrorNode,
   Link,
-} from "./types.js";
+} from "./ast-types.js";
 
 // ===================
 // Test Helpers

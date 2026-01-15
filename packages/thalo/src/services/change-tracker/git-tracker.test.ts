@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { GitChangeTracker } from "./git-tracker.js";
-import { UncommittedChangesError } from "./types.js";
+import { UncommittedChangesError } from "./change-tracker.js";
 import { createWorkspace } from "../../parser.native.js";
 import { Workspace } from "../../model/workspace.js";
-import type { Query } from "../../model/types.js";
+import type { Query } from "../query.js";
 import * as path from "node:path";
 import * as os from "node:os";
 import * as fs from "node:fs/promises";

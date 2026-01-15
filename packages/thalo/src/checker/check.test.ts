@@ -11,7 +11,7 @@ import type {
   Title,
   Location,
   SyntaxErrorNode,
-} from "../ast/types.js";
+} from "../ast/ast-types.js";
 
 // ===================
 // Test Helpers

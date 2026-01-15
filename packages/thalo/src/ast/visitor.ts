@@ -74,7 +74,7 @@ import type {
   Description,
   DefaultValue,
   SyntaxErrorNode,
-} from "./types.js";
+} from "./ast-types.js";
 
 /**
  * Visitor interface with optional methods for each AST node type.

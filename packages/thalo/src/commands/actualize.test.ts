@@ -8,7 +8,7 @@ import {
   parseLinkIds,
   DEFAULT_INSTRUCTIONS_TEMPLATE,
 } from "./actualize.js";
-import type { ChangeTracker } from "../services/change-tracker/types.js";
+import type { ChangeTracker } from "../services/change-tracker/change-tracker.js";
 
 /**
  * Create a mock change tracker for testing.

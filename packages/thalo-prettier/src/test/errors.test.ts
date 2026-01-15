@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import * as prettier from "prettier";
-import * as plugin from "../index";
+import * as plugin from "../mod";
 import { formatParseErrors, parseThalo, findErrorNodes } from "../parser";
 
 const format = async (code: string): Promise<string> => {

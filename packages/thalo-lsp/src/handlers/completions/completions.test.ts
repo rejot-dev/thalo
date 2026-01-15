@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
 import { CompletionItemKind, type CompletionParams, type Position } from "vscode-languageserver";
-import { handleCompletion, handleCompletionResolve, detectContext } from "./index.js";
+import { handleCompletion, handleCompletionResolve, detectContext } from "./completions.js";
 import type { CompletionContext, CompletionContextKind } from "./context.js";
 import {
   timestampProvider,
@@ -15,7 +15,7 @@ import {
   sectionProvider,
   schemaBlockProvider,
   typeExprProvider,
-} from "./providers/index.js";
+} from "./providers/providers.js";
 
 // ===================
 // Test Helpers

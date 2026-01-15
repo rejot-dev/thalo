@@ -1,6 +1,6 @@
 import type { Workspace } from "../model/workspace.js";
-import type { EntitySchema, FieldSchema, SectionSchema } from "../schema/types.js";
-import { TypeExpr } from "../schema/types.js";
+import type { EntitySchema, FieldSchema, SectionSchema } from "../schema/registry.js";
+import { TypeExpr } from "../schema/registry.js";
 import type {
   Location,
   Entry,
@@ -9,7 +9,7 @@ import type {
   SynthesisEntry,
   ActualizeEntry,
   Timestamp,
-} from "../ast/types.js";
+} from "../ast/ast-types.js";
 import type { NodeContext } from "../ast/node-at-position.js";
 import { toFileLocation } from "../source-map.js";
 import { formatTimestamp } from "../formatters.js";

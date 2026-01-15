@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor, VisitorContext } from "../visitor.js";
-import type { Entry } from "../../ast/types.js";
+import type { Entry } from "../../ast/ast-types.js";
 
 const category: RuleCategory = "instance";
 
@@ -93,7 +93,7 @@ function hasExplicitLinkId(entry: Entry): boolean {
 /**
  * Get the location of the timestamp in an entry (for error reporting)
  */
-function getTimestampLocation(entry: Entry): import("../../ast/types.js").Location {
+function getTimestampLocation(entry: Entry): import("../../ast/ast-types.js").Location {
   switch (entry.type) {
     case "instance_entry":
     case "schema_entry":

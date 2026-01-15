@@ -1,15 +1,13 @@
 import { runCli, type CommandDef } from "./cli.js";
-import {
-  actualizeCommand,
-  checkCommand,
-  formatCommand,
-  initCommand,
-  lspCommand,
-  queryCommand,
-  rulesCommand,
-  mergeDriverCommand,
-  setupMergeDriverCommand,
-} from "./commands/index.js";
+import { actualizeCommand } from "./commands/actualize.js";
+import { checkCommand } from "./commands/check.js";
+import { formatCommand } from "./commands/format.js";
+import { initCommand } from "./commands/init.js";
+import { lspCommand } from "./commands/lsp.js";
+import { queryCommand } from "./commands/query.js";
+import { rulesCommand } from "./commands/rules.js";
+import { mergeDriverCommand } from "./commands/merge-driver.js";
+import { setupMergeDriverCommand } from "./commands/setup-merge-driver.js";
 
 /**
  * Root command definition

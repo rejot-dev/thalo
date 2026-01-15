@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor } from "../visitor.js";
-import type { InstanceEntry } from "../../ast/types.js";
+import type { InstanceEntry } from "../../ast/ast-types.js";
 
 const category: RuleCategory = "instance";
 
@@ -10,7 +10,7 @@ const category: RuleCategory = "instance";
 function getMetadataLink(
   entry: InstanceEntry,
   key: string,
-): { id: string; location: import("../../ast/types.js").Location } | null {
+): { id: string; location: import("../../ast/ast-types.js").Location } | null {
   const meta = entry.metadata.find((m) => m.key.value === key);
   if (!meta) {
     return null;

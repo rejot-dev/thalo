@@ -5,9 +5,9 @@
   "type": "module",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "development": "./src/mod.ts",
+      "types": "./dist/mod.d.ts",
+      "default": "./dist/mod.js"
     },
     "./native": {
       "development": "./src/parser.native.ts",
@@ -19,35 +19,35 @@
       "types": "./dist/parser.web.d.ts",
       "default": "./dist/parser.web.js"
     },
-    "./ast": {
-      "development": "./src/ast/index.ts",
-      "types": "./dist/ast/index.d.ts",
-      "default": "./dist/ast/index.js"
+    "./services/semantic-tokens": {
+      "development": "./src/services/semantic-tokens.ts",
+      "types": "./dist/services/semantic-tokens.d.ts",
+      "default": "./dist/services/semantic-tokens.js"
     },
-    "./model": {
-      "development": "./src/model/index.ts",
-      "types": "./dist/model/index.d.ts",
-      "default": "./dist/model/index.js"
+    "./services/definition": {
+      "development": "./src/services/definition.ts",
+      "types": "./dist/services/definition.d.ts",
+      "default": "./dist/services/definition.js"
     },
-    "./schema": {
-      "development": "./src/schema/index.ts",
-      "types": "./dist/schema/index.d.ts",
-      "default": "./dist/schema/index.js"
+    "./services/references": {
+      "development": "./src/services/references.ts",
+      "types": "./dist/services/references.d.ts",
+      "default": "./dist/services/references.js"
     },
-    "./checker": {
-      "development": "./src/checker/index.ts",
-      "types": "./dist/checker/index.d.ts",
-      "default": "./dist/checker/index.js"
-    },
-    "./services": {
-      "development": "./src/services/index.ts",
-      "types": "./dist/services/index.d.ts",
-      "default": "./dist/services/index.js"
+    "./services/hover": {
+      "development": "./src/services/hover.ts",
+      "types": "./dist/services/hover.d.ts",
+      "default": "./dist/services/hover.js"
     },
     "./change-tracker": {
-      "development": "./src/services/change-tracker/index.ts",
-      "types": "./dist/services/change-tracker/index.d.ts",
-      "default": "./dist/services/change-tracker/index.js"
+      "development": "./src/services/change-tracker/change-tracker.ts",
+      "types": "./dist/services/change-tracker/change-tracker.d.ts",
+      "default": "./dist/services/change-tracker/change-tracker.js"
+    },
+    "./change-tracker/node": {
+      "development": "./src/services/change-tracker/create-tracker.ts",
+      "types": "./dist/services/change-tracker/create-tracker.d.ts",
+      "default": "./dist/services/change-tracker/create-tracker.js"
     },
     "./commands/check": {
       "development": "./src/commands/check.ts",
@@ -75,8 +75,8 @@
       "default": "./dist/formatters.js"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/mod.js",
+  "types": "./dist/mod.d.ts",
   "scripts": {
     "build": "tsdown",
     "build:watch": "tsdown --watch",

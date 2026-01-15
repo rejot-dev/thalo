@@ -9,7 +9,7 @@ import {
   toBlockLocation,
   type Position,
 } from "./source-map.js";
-import type { Location } from "./ast/types.js";
+import type { Location } from "./ast/ast-types.js";
 
 describe("SourceMap", () => {
   describe("identitySourceMap", () => {

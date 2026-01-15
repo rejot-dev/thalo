@@ -1,5 +1,5 @@
 import type { Workspace } from "../model/workspace.js";
-import type { Location, Entry, SchemaEntry, InstanceEntry } from "../ast/types.js";
+import type { Location, Entry, SchemaEntry, InstanceEntry } from "../ast/ast-types.js";
 
 // ===================
 // Entity Navigation

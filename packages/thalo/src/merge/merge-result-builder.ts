@@ -1,7 +1,74 @@
-import type { EntryMatch, MergeConflict, MergeResult, MergeStats, MergeOptions } from "./types.js";
+import type { EntryMatch } from "./entry-matcher.js";
+import type { MergeConflict } from "./conflict-detector.js";
+import type { MergeOptions } from "./driver.js";
 import { formatConflict, formatEntry } from "./conflict-formatter.js";
 import { mergeEntry, entriesEqual } from "./entry-merger.js";
 import { serializeIdentity } from "./entry-matcher.js";
+
+/**
+ * Statistics about a merge operation
+ */
+export interface MergeStats {
+  /**
+   * Total entries in merged result
+   */
+  totalEntries: number;
+
+  /**
+   * Entries present only in ours (additions)
+   */
+  oursOnly: number;
+
+  /**
+   * Entries present only in theirs (additions)
+   */
+  theirsOnly: number;
+
+  /**
+   * Entries present in all three versions unchanged
+   */
+  common: number;
+
+  /**
+   * Entries successfully auto-merged
+   */
+  autoMerged: number;
+
+  /**
+   * Number of conflicts detected
+   */
+  conflicts: number;
+}
+
+/**
+ * Result of a three-way merge operation
+ */
+export interface MergeResult {
+  /**
+   * Whether the merge completed without conflicts
+   * - `true`: Clean merge, all changes reconciled
+   * - `false`: Conflicts detected, manual resolution required
+   */
+  success: boolean;
+
+  /**
+   * The merged content as a string
+   * - On success: Clean merged entries
+   * - On failure: Includes conflict markers
+   */
+  content: string;
+
+  /**
+   * List of conflicts detected during merge
+   * Empty array if success is true
+   */
+  conflicts: MergeConflict[];
+
+  /**
+   * Statistics about the merge operation
+   */
+  stats: MergeStats;
+}
 
 /**
  * Build the final merged result from matches and conflicts

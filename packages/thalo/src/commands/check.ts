@@ -4,7 +4,7 @@
 
 import type { Workspace } from "../model/workspace.js";
 import { check } from "../checker/check.js";
-import type { CheckConfig, Diagnostic } from "../checker/types.js";
+import type { CheckConfig, Diagnostic } from "../checker/check.js";
 
 // ===================
 // Types

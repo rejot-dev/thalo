@@ -15,7 +15,28 @@ import type { CompletionItem, CompletionParams } from "vscode-languageserver";
 import type { TextDocument } from "vscode-languageserver-textdocument";
 import type { Workspace } from "@rejot-dev/thalo";
 import { detectContext } from "./context.js";
-import { allProviders } from "./providers/index.js";
+import type { CompletionContext, CompletionContextKind } from "./context.js";
+import { allProviders } from "./providers/providers.js";
+
+/**
+ * A completion provider that handles one or more context kinds.
+ */
+export interface CompletionProvider {
+  /** Human-readable name for debugging */
+  readonly name: string;
+
+  /** Which context kinds this provider handles */
+  readonly contextKinds: readonly CompletionContextKind[];
+
+  /**
+   * Get completions for the given context.
+   *
+   * @param ctx - The completion context (cursor position, partial text, etc.)
+   * @param workspace - The thalo workspace for schema/link lookups
+   * @returns Array of completion items
+   */
+  getCompletions(ctx: CompletionContext, workspace: Workspace): CompletionItem[];
+}
 
 /**
  * Handle textDocument/completion request.
@@ -57,5 +78,4 @@ export function handleCompletionResolve(item: CompletionItem): CompletionItem {
 
 // Re-export types and utilities for testing
 export { detectContext, type CompletionContext, type CompletionContextKind } from "./context.js";
-export { type CompletionProvider } from "./types.js";
-export { allProviders } from "./providers/index.js";
+export { allProviders } from "./providers/providers.js";

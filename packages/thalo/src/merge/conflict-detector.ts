@@ -1,5 +1,110 @@
-import type { Entry, Content, FieldDefinition } from "../ast/types.js";
-import type { EntryMatch, MergeConflict, ConflictRule, MergeOptions } from "./types.js";
+import type { Entry, Content, FieldDefinition } from "../ast/ast-types.js";
+import type { EntryMatch, EntryIdentity } from "./entry-matcher.js";
+import type { MergeOptions } from "./driver.js";
+
+/**
+ * Types of conflicts that can be detected
+ */
+export type ConflictType =
+  | "duplicate-link-id" // Both sides created entry with same ^link-id
+  | "concurrent-metadata-update" // Both modified same metadata key
+  | "incompatible-schema-change" // Conflicting schema modifications
+  | "concurrent-content-edit" // Both modified content of same entry
+  | "concurrent-title-change" // Both changed title of same entry
+  | "parse-error" // Failed to parse one or more versions
+  | "merge-error"; // Internal merge failure
+
+/**
+ * Additional context for conflicts
+ */
+export interface ConflictContext {
+  /**
+   * The metadata key involved (for metadata conflicts)
+   */
+  metadataKey?: string;
+
+  /**
+   * The link ID involved (for link conflicts)
+   */
+  linkId?: string;
+
+  /**
+   * The entity name involved (for schema conflicts)
+   */
+  entityName?: string;
+
+  /**
+   * The field name involved (for schema field conflicts)
+   */
+  fieldName?: string;
+
+  /**
+   * Error message (for parse-error and merge-error conflicts)
+   */
+  errorMessage?: string;
+}
+
+/**
+ * A conflict detected during merging
+ */
+export interface MergeConflict {
+  /**
+   * Type of conflict detected
+   */
+  type: ConflictType;
+
+  /**
+   * Human-readable description of the conflict
+   */
+  message: string;
+
+  /**
+   * Line number in the merged output where conflict appears
+   * (Computed during result building)
+   */
+  location: number;
+
+  /**
+   * Identity of the conflicting entry (for unique keying)
+   */
+  identity: EntryIdentity;
+
+  /**
+   * The base entry (common ancestor), if applicable
+   */
+  base?: Entry;
+
+  /**
+   * The ours entry (local/current version)
+   */
+  ours?: Entry;
+
+  /**
+   * The theirs entry (incoming version)
+   */
+  theirs?: Entry;
+
+  /**
+   * Additional context about the conflict
+   */
+  context?: ConflictContext;
+}
+
+/**
+ * A conflict detection rule
+ */
+export interface ConflictRule {
+  /**
+   * Rule identifier
+   */
+  name: string;
+
+  /**
+   * Check if this rule applies to a match
+   * @returns MergeConflict if conflict detected, null otherwise
+   */
+  detect: (match: EntryMatch) => MergeConflict | null;
+}
 
 /**
  * Detect conflicts in matched entries

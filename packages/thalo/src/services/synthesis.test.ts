@@ -359,10 +359,10 @@ describe("synthesis service", () => {
       expect(entry2).toBeDefined();
 
       // findEntryFile should locate each entry in its correct file
-      expect(findEntryFile(workspace, entry1 as import("../ast/types.js").InstanceEntry)).toBe(
+      expect(findEntryFile(workspace, entry1 as import("../ast/ast-types.js").InstanceEntry)).toBe(
         "file1.thalo",
       );
-      expect(findEntryFile(workspace, entry2 as import("../ast/types.js").InstanceEntry)).toBe(
+      expect(findEntryFile(workspace, entry2 as import("../ast/ast-types.js").InstanceEntry)).toBe(
         "file2.thalo",
       );
     });

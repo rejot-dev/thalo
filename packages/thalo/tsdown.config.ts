@@ -2,15 +2,15 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
   entry: [
-    "./src/index.ts",
+    "./src/mod.ts",
     "./src/parser.native.ts",
     "./src/parser.web.ts",
-    "./src/ast/index.ts",
-    "./src/model/index.ts",
-    "./src/schema/index.ts",
-    "./src/checker/index.ts",
-    "./src/services/index.ts",
-    "./src/services/change-tracker/index.ts",
+    "./src/services/semantic-tokens.ts",
+    "./src/services/definition.ts",
+    "./src/services/references.ts",
+    "./src/services/hover.ts",
+    "./src/services/change-tracker/change-tracker.ts",
+    "./src/services/change-tracker/create-tracker.ts",
     "./src/commands/check.ts",
     "./src/commands/format.ts",
     "./src/commands/query.ts",

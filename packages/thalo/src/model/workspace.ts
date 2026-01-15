@@ -1,10 +1,115 @@
-import type {
-  ModelSchemaEntry,
-  ModelFieldDefinition,
-  ModelSectionDefinition,
-  ModelDefaultValue,
-  ModelTypeExpression,
-} from "./types.js";
+// ===================
+// Schema Entry Types (used by SchemaRegistry)
+// ===================
+
+import type { Location } from "../ast/ast-types.js";
+import type { SourceMap } from "../source-map.js";
+
+/**
+ * A schema entry (define-entity/alter-entity)
+ */
+export interface ModelSchemaEntry {
+  kind: "schema";
+  /** The timestamp from the header */
+  timestamp: string;
+  /** The directive (define-entity or alter-entity) */
+  directive: "define-entity" | "alter-entity";
+  /** The entity name being defined/altered */
+  entityName: string;
+  /** The title/description */
+  title: string;
+  /** Explicit link ID from header (if any) */
+  linkId: string | null;
+  /** Tags from the header */
+  tags: string[];
+  /** Field definitions (for define/alter) */
+  fields: ModelFieldDefinition[];
+  /** Section definitions (for define/alter) */
+  sections: ModelSectionDefinition[];
+  /** Field removals (for alter) */
+  removeFields: string[];
+  /** Section removals (for alter) */
+  removeSections: string[];
+  /** Location in source (block-relative) */
+  location: Location;
+  /** The file path containing this entry */
+  file: string;
+  /** Source map for translating block-relative to file-absolute positions */
+  sourceMap: SourceMap;
+}
+
+/**
+ * A field definition from a schema entry
+ */
+export interface ModelFieldDefinition {
+  name: string;
+  optional: boolean;
+  type: ModelTypeExpression;
+  /** The typed default value content (quoted, link, or datetime) */
+  defaultValue: ModelDefaultValue | null;
+  description: string | null;
+  location: Location;
+}
+
+/**
+ * A typed default value from a field definition.
+ * Can be a quoted string, link reference, datetime, or number.
+ */
+export type ModelDefaultValue =
+  | { kind: "quoted"; value: string; raw: string }
+  | { kind: "link"; id: string; raw: string }
+  | { kind: "datetime"; value: string; raw: string }
+  | { kind: "number"; value: number; raw: string };
+
+/**
+ * A section definition from a schema entry
+ */
+export interface ModelSectionDefinition {
+  name: string;
+  optional: boolean;
+  description: string | null;
+  location: Location;
+}
+
+/**
+ * Type expressions in field definitions
+ */
+export type ModelTypeExpression =
+  | ModelPrimitiveType
+  | ModelLiteralType
+  | ModelArrayType
+  | ModelUnionType
+  | ModelUnknownType;
+
+export interface ModelPrimitiveType {
+  kind: "primitive";
+  name: "string" | "datetime" | "daterange" | "link" | "number";
+}
+
+/**
+ * An unknown/invalid type (e.g., typo like "date-time" instead of "datetime").
+ * Fields with this type are included in the schema but type validation is skipped.
+ */
+export interface ModelUnknownType {
+  kind: "unknown";
+  /** The unrecognized type name as written */
+  name: string;
+}
+
+export interface ModelLiteralType {
+  kind: "literal";
+  value: string;
+}
+
+export interface ModelArrayType {
+  kind: "array";
+  elementType: ModelPrimitiveType | ModelLiteralType | ModelUnionType | ModelUnknownType;
+}
+
+export interface ModelUnionType {
+  kind: "union";
+  members: (ModelPrimitiveType | ModelLiteralType | ModelArrayType | ModelUnknownType)[];
+}
 import type {
   Entry,
   SchemaEntry,
@@ -15,13 +120,18 @@ import type {
   SectionDefinition,
   TypeExpression,
   DefaultValue as AstDefaultValue,
-} from "../ast/types.js";
-import type { SemanticModel, LinkIndex, LinkDefinition, LinkReference } from "../semantic/types.js";
+} from "../ast/ast-types.js";
+import type {
+  SemanticModel,
+  LinkIndex,
+  LinkDefinition,
+  LinkReference,
+} from "../semantic/analyzer.js";
 import type { ThaloParser, GenericTree, FileType } from "../parser.shared.js";
 import { extractSourceFile } from "../ast/extract.js";
 import { analyze, updateSemanticModel } from "../semantic/analyzer.js";
 import { SchemaRegistry } from "../schema/registry.js";
-import { identitySourceMap, type SourceMap } from "../source-map.js";
+import { identitySourceMap } from "../source-map.js";
 import { Document, type EditResult } from "./document.js";
 import { LineIndex, computeEdit } from "./line-index.js";
 import { formatTimestamp } from "../formatters.js";
@@ -726,7 +836,7 @@ function convertSectionDefinition(section: SectionDefinition): ModelSectionDefin
 }
 
 function convertTypeExpression(
-  expr: TypeExpression | import("../ast/types.js").SyntaxErrorNode<"unknown_type">,
+  expr: TypeExpression | import("../ast/ast-types.js").SyntaxErrorNode<"unknown_type">,
 ): ModelTypeExpression {
   switch (expr.type) {
     case "primitive_type":

@@ -1,9 +1,34 @@
 import { parseDocument } from "../parser.js";
 import { extractSourceFile } from "../ast/extract.js";
-import type { MergeResult, MergeOptions } from "./types.js";
+import type { MergeResult } from "./merge-result-builder.js";
+import type { MergeConflict, ConflictRule } from "./conflict-detector.js";
 import { matchEntries } from "./entry-matcher.js";
 import { detectConflicts } from "./conflict-detector.js";
 import { buildMergedResult } from "./merge-result-builder.js";
+
+/**
+ * Options for the merge driver
+ */
+export interface MergeOptions {
+  /**
+   * Conflict marker style
+   * - "git": Standard Git style (ours/theirs)
+   * - "diff3": Include base section
+   */
+  markerStyle?: "git" | "diff3";
+
+  /**
+   * Whether to include base in markers (diff3 style)
+   * Deprecated: Use markerStyle: "diff3" instead
+   */
+  showBase?: boolean;
+
+  /**
+   * Custom conflict detection rules
+   * Applied after default rules
+   */
+  conflictRules?: ConflictRule[];
+}
 
 /**
  * Perform three-way merge of thalo files
@@ -54,7 +79,7 @@ export function mergeThaloFiles(
         : { entries: [], syntaxErrors: [] };
 
     // Surface syntax errors as parse-error conflicts
-    const syntaxErrorConflicts: import("./types.js").MergeConflict[] = [];
+    const syntaxErrorConflicts: MergeConflict[] = [];
     if (baseAst.syntaxErrors.length > 0) {
       syntaxErrorConflicts.push({
         type: "parse-error",

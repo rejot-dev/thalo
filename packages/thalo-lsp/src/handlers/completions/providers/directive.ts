@@ -7,7 +7,7 @@ import {
   type Directive,
 } from "@rejot-dev/thalo";
 import type { CompletionContext } from "../context.js";
-import type { CompletionProvider } from "../types.js";
+import type { CompletionProvider } from "../completions.js";
 
 /**
  * Get description for a directive.

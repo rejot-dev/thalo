@@ -4,7 +4,7 @@
  */
 
 import { createSourceMap, identitySourceMap, type SourceMap } from "./source-map.js";
-import type { SyntaxNode } from "./ast/types.js";
+import type { SyntaxNode } from "./ast/ast-types.js";
 
 /**
  * Edit parameters for incremental parsing.

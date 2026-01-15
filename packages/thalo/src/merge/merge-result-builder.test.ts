@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { buildMergedResult } from "./merge-result-builder.js";
-import type { Entry } from "../ast/types.js";
-import type { EntryMatch, MergeConflict } from "./types.js";
+import type { Entry } from "../ast/ast-types.js";
+import type { EntryMatch } from "./entry-matcher.js";
+import type { MergeConflict } from "./conflict-detector.js";
 import { mockInstanceEntry } from "./test-utils.js";
 
 describe("merge-result-builder", () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { formatConflict, formatEntry } from "./conflict-formatter.js";
-import type { Entry } from "../ast/types.js";
-import type { MergeConflict } from "./types.js";
+import type { Entry } from "../ast/ast-types.js";
+import type { MergeConflict } from "./conflict-detector.js";
 import {
   mockInstanceEntry,
   mockSchemaEntry,
