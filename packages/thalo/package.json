@@ -73,6 +73,11 @@
       "development": "./src/formatters.ts",
       "types": "./dist/formatters.d.ts",
       "default": "./dist/formatters.js"
+    },
+    "./files": {
+      "development": "./src/files.ts",
+      "types": "./dist/files.d.ts",
+      "default": "./dist/files.js"
     }
   },
   "main": "./dist/mod.js",
