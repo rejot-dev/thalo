@@ -109,4 +109,4 @@ zig-out/
 *.jar
 
 # Playwright
-.playwright-mcp/
+.playwright-mcp/.thalo-pending.json

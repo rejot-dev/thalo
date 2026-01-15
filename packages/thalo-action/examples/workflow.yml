@@ -1,0 +1,43 @@
+# Example GitHub Actions workflow for Thalo Synthesis
+#
+# This workflow runs when .thalo or .md files change on the main branch.
+# It detects syntheses that need updating and runs your command to generate them.
+#
+# Copy this file to .github/workflows/synthesis.yml in your repository.
+
+name: Thalo Synthesis
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.thalo"
+      - "**/*.md"
+
+jobs:
+  synthesize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Need full history for git-based change tracking
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update Syntheses
+        uses: rejot-dev/thalo/packages/thalo-action@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Your command that processes each synthesis (receives JSON on stdin)
+          command: node scripts/synthesize.js
+          # Optional: only process specific syntheses
+          # syntheses: "^reading-summary, ^career-reflections"
+        env:
+          # Add any API keys your command needs
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

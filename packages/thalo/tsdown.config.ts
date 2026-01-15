@@ -16,6 +16,7 @@ export default defineConfig({
     "./src/commands/query.ts",
     "./src/commands/actualize.ts",
     "./src/formatters.ts",
+    "./src/files.ts",
   ],
   dts: true,
   unbundle: true,
