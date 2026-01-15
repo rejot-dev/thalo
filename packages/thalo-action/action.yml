@@ -1,0 +1,64 @@
+name: "Thalo Synthesis"
+description: "Automatically update Thalo syntheses when entries change"
+inputs:
+  github-token:
+    description: "GitHub token for creating PRs"
+    required: true
+  command:
+    description:
+      "Command to run for each synthesis. Receives synthesis JSON on stdin. Should update files as
+      needed."
+    required: true
+  syntheses:
+    description:
+      "Specific synthesis link IDs to process (comma-separated). If empty, processes all."
+    required: false
+    default: ""
+  working-directory:
+    description: "Working directory for thalo files"
+    required: false
+    default: "."
+  branch-name:
+    description: "Branch name for the PR"
+    required: false
+    default: "thalo/update-syntheses"
+  pr-title:
+    description: "Title for the PR"
+    required: false
+    default: "Update Thalo Syntheses"
+  commit-message:
+    description: "Commit message"
+    required: false
+    default: "chore: update syntheses"
+  base-branch:
+    description: "Base branch for the PR"
+    required: false
+    default: "main"
+
+outputs:
+  pull-request-url:
+    description: "URL of the created or updated PR"
+    value: ${{ steps.run-action.outputs.pull-request-url }}
+  pull-request-number:
+    description: "Number of the created or updated PR"
+    value: ${{ steps.run-action.outputs.pull-request-number }}
+  syntheses-updated:
+    description: "Number of syntheses that were updated"
+    value: ${{ steps.run-action.outputs.syntheses-updated }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Thalo Synthesis
+      id: run-action
+      shell: bash
+      run: node ${{ github.action_path }}/dist/mod.js
+      env:
+        INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
+        INPUT_COMMAND: ${{ inputs.command }}
+        INPUT_SYNTHESES: ${{ inputs.syntheses }}
+        INPUT_WORKING-DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_BRANCH-NAME: ${{ inputs.branch-name }}
+        INPUT_PR-TITLE: ${{ inputs.pr-title }}
+        INPUT_COMMIT-MESSAGE: ${{ inputs.commit-message }}
+        INPUT_BASE-BRANCH: ${{ inputs.base-branch }}

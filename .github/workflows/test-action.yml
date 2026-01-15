@@ -1,0 +1,46 @@
+# Test workflow for the Thalo Synthesis GitHub Action
+#
+# This workflow runs on PRs that modify the thalo-action package
+# and actually tests the action against the thalo-test directory.
+
+name: Test Thalo Action
+
+on:
+  pull_request:
+    paths:
+      - "packages/thalo-action/**"
+      - "packages/thalo/**"
+  workflow_dispatch: # Allow manual triggering for testing
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: CXXFLAGS="-std=c++20" pnpm install
+
+      - name: Build packages
+        run: pnpm exec turbo run build --filter=@rejot-dev/thalo-action...
+
+      - name: Test action (dry run)
+        uses: ./packages/thalo-action
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          command: jq .
+          syntheses: ^typescript-guide
+          working-directory: thalo-test
