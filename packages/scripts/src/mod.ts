@@ -13,13 +13,14 @@ const getParser = (): Parser => {
   return parser;
 };
 
-export const hello = () => {
+// Note: These are exported for internal tests, not used by other packages
+export function hello() {
   console.log("Hello from @rejot-dev/scripts!");
-};
+}
 
-export const parseThalo = (source: string): Parser.Tree => {
+export function parseThalo(source: string): Parser.Tree {
   return getParser().parse(source);
-};
+}
 
 if (import.meta.main) {
   hello();

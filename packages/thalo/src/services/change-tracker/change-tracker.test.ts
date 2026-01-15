@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { TimestampChangeTracker } from "./change-tracker.js";
-import { createChangeTracker, GitChangeTracker } from "./create-tracker.js";
+import { createChangeTracker, GitChangeTracker, NotInGitRepoError } from "./create-tracker.js";
 import * as path from "node:path";
 import * as os from "node:os";
 
@@ -31,13 +31,13 @@ describe("createChangeTracker", () => {
       expect(tracker).toBeInstanceOf(GitChangeTracker);
     });
 
-    it("should throw when not in git repo", async () => {
+    it("should throw NotInGitRepoError when not in git repo", async () => {
       await expect(
         createChangeTracker({
           cwd: os.tmpdir(),
           preferredType: "git",
         }),
-      ).rejects.toThrow("Git tracker requested but not in a git repository");
+      ).rejects.toThrow(NotInGitRepoError);
     });
   });
 
