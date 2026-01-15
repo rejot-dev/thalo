@@ -252,4 +252,158 @@ describe("GitChangeTracker", () => {
       expect(error.message).toContain("--force");
     });
   });
+
+  describe("findModelByRelativePath (path matching)", () => {
+    const loreQuery: Query = { entity: "lore", conditions: [] };
+
+    it("should match files when running from a subdirectory of the git repo", async () => {
+      // Create a git repo with a subdirectory structure
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-git-subdir-"));
+      const subDir = path.join(tempDir, "project");
+      await fs.mkdir(subDir);
+
+      // Init git repo at root
+      await runGit(["init"], tempDir);
+      await runGit(["config", "user.email", "test@example.com"], tempDir);
+      await runGit(["config", "user.name", "Test User"], tempDir);
+
+      // Create initial commit with a file in the subdirectory
+      const file = "entries.thalo";
+      const filePath = path.join(subDir, file);
+      const content1 = `2026-01-07T10:00Z create lore "Entry 1" ^entry1
+
+  # Content
+  First version.
+`;
+      await fs.writeFile(filePath, content1, "utf8");
+      await runGit(["add", "."], tempDir);
+      await runGit(["commit", "-m", "initial"], tempDir);
+      const baseCommit = (await runGit(["rev-parse", "HEAD"], tempDir)).trim();
+
+      // Make a change
+      const content2 = `2026-01-07T10:00Z create lore "Entry 1" ^entry1
+
+  # Content
+  Second version with changes.
+`;
+      await fs.writeFile(filePath, content2, "utf8");
+      await runGit(["add", "."], tempDir);
+      await runGit(["commit", "-m", "update"], tempDir);
+
+      // Run tracker from SUBDIRECTORY (not repo root)
+      // Git will return "project/entries.thalo" but workspace has "entries.thalo"
+      const tracker = new GitChangeTracker({ cwd: subDir });
+      const workspace = createWorkspace();
+      workspace.addDocument(content2, { filename: file }); // Just "entries.thalo"
+
+      const result = await tracker.getChangedEntries(workspace, [loreQuery], {
+        type: "git",
+        value: baseCommit,
+      });
+
+      // Should find the entry despite path mismatch
+      expect(result.entries).toHaveLength(1);
+      expect(result.entries[0].header.link?.id).toBe("entry1");
+
+      // Cleanup
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("should match files when workspace has absolute paths", async () => {
+      // Create a git repo
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-git-abspath-"));
+
+      await runGit(["init"], tempDir);
+      await runGit(["config", "user.email", "test@example.com"], tempDir);
+      await runGit(["config", "user.name", "Test User"], tempDir);
+
+      const file = "entries.thalo";
+      const absolutePath = path.join(tempDir, file);
+      const content1 = `2026-01-07T10:00Z create lore "Entry 1" ^entry1
+
+  # Content
+  First version.
+`;
+      await fs.writeFile(absolutePath, content1, "utf8");
+      await runGit(["add", "."], tempDir);
+      await runGit(["commit", "-m", "initial"], tempDir);
+      const baseCommit = (await runGit(["rev-parse", "HEAD"], tempDir)).trim();
+
+      // Make a change
+      const content2 = `2026-01-07T10:00Z create lore "Entry 1" ^entry1
+
+  # Content
+  Second version.
+`;
+      await fs.writeFile(absolutePath, content2, "utf8");
+      await runGit(["add", "."], tempDir);
+      await runGit(["commit", "-m", "update"], tempDir);
+
+      const tracker = new GitChangeTracker({ cwd: tempDir });
+      const workspace = createWorkspace();
+      // Workspace stores ABSOLUTE path, git returns relative "entries.thalo"
+      workspace.addDocument(content2, { filename: absolutePath });
+
+      const result = await tracker.getChangedEntries(workspace, [loreQuery], {
+        type: "git",
+        value: baseCommit,
+      });
+
+      expect(result.entries).toHaveLength(1);
+      expect(result.entries[0].header.link?.id).toBe("entry1");
+
+      // Cleanup
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("should handle nested subdirectories", async () => {
+      // Create a deeply nested structure
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-git-nested-"));
+      const nestedDir = path.join(tempDir, "a", "b", "c");
+      await fs.mkdir(nestedDir, { recursive: true });
+
+      await runGit(["init"], tempDir);
+      await runGit(["config", "user.email", "test@example.com"], tempDir);
+      await runGit(["config", "user.name", "Test User"], tempDir);
+
+      const file = "entries.thalo";
+      const filePath = path.join(nestedDir, file);
+      const content1 = `2026-01-07T10:00Z create lore "Nested Entry" ^nested1
+
+  # Content
+  Deeply nested.
+`;
+      await fs.writeFile(filePath, content1, "utf8");
+      await runGit(["add", "."], tempDir);
+      await runGit(["commit", "-m", "initial"], tempDir);
+      const baseCommit = (await runGit(["rev-parse", "HEAD"], tempDir)).trim();
+
+      // Make a change
+      const content2 = `2026-01-07T10:00Z create lore "Nested Entry" ^nested1
+
+  # Content
+  Deeply nested and modified.
+`;
+      await fs.writeFile(filePath, content2, "utf8");
+      await runGit(["add", "."], tempDir);
+      await runGit(["commit", "-m", "update"], tempDir);
+
+      // Run from the deeply nested directory
+      // Git returns "a/b/c/entries.thalo", workspace has "entries.thalo"
+      const tracker = new GitChangeTracker({ cwd: nestedDir });
+      const workspace = createWorkspace();
+      workspace.addDocument(content2, { filename: file });
+
+      const result = await tracker.getChangedEntries(workspace, [loreQuery], {
+        type: "git",
+        value: baseCommit,
+      });
+
+      expect(result.entries).toHaveLength(1);
+      expect(result.entries[0].header.link?.id).toBe("nested1");
+
+      // Cleanup
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+  });
 });
