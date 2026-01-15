@@ -5,18 +5,11 @@
  * - Go to Definition (^link-id → definition location)
  * - Find All References (find all usages of a ^link-id)
  * - Semantic Highlighting (syntax-aware token coloring)
- * - Diagnostics (validation errors and warnings) [planned]
- * - Hover information (show link target details) [planned]
- * - Completions (suggest ^link-ids) [planned]
+ * - Diagnostics (validation errors and warnings)
+ * - Hover information (show link target details)
+ * - Completions (suggest ^link-ids)
  *
  * The server uses @rejot-dev/thalo for parsing and semantic analysis.
  */
 
-export { createConnection, startServer, tokenLegend } from "./server.js";
-export { serverCapabilities } from "./capabilities.js";
-export { handleDefinition } from "./handlers/definition.js";
-export { handleReferences } from "./handlers/references.js";
-export { handleSemanticTokens } from "./handlers/semantic-tokens.js";
-export { getDiagnostics } from "./handlers/diagnostics.js";
-export { handleHover } from "./handlers/hover.js";
-export { handleCompletion, handleCompletionResolve } from "./handlers/completions/completions.js";
+export { startServer } from "./server.js";

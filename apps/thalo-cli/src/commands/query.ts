@@ -2,8 +2,11 @@ import {
   runQuery,
   formatQueryResultRaw,
   isQueryValidationError,
+  isCheckpointError,
   type QueryEntryInfo,
 } from "@rejot-dev/thalo";
+import { createChangeTracker, NotInGitRepoError } from "@rejot-dev/thalo/change-tracker/node";
+import { parseCheckpoint } from "@rejot-dev/thalo";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 import { resolveFiles, loadWorkspace, relativePath } from "../files.js";
@@ -58,8 +61,9 @@ async function queryAction(ctx: CommandContext): Promise<void> {
     process.exit(2);
   }
 
-  // Handle format
-  const format = (options["format"] as OutputFormat) || "default";
+  // Handle format - --json flag overrides --format option
+  const jsonFlag = options["json"] as boolean;
+  const format = jsonFlag ? "json" : (options["format"] as OutputFormat) || "default";
   if (format === "json") {
     process.env["NO_COLOR"] = "1";
   }
@@ -67,6 +71,9 @@ async function queryAction(ctx: CommandContext): Promise<void> {
   // Handle limit
   const limitStr = options["limit"] as string | undefined;
   const limit = limitStr ? parseInt(limitStr, 10) : undefined;
+
+  // Handle since checkpoint
+  const since = options["since"] as string | undefined;
 
   // Determine target paths
   const targetPaths = args.slice(1);
@@ -81,10 +88,35 @@ async function queryAction(ctx: CommandContext): Promise<void> {
 
   const workspace = await loadWorkspace(files);
 
+  // Create tracker if git checkpoint is used
+  let tracker;
+  if (since) {
+    const marker = parseCheckpoint(since);
+    if (marker?.type === "git") {
+      try {
+        tracker = await createChangeTracker({ cwd: process.cwd() });
+      } catch (err) {
+        if (err instanceof NotInGitRepoError) {
+          console.error(
+            pc.red(`Error: Cannot use git checkpoint "${since}" - not in a git repository`),
+          );
+          console.error(pc.dim(`Directory: ${err.cwd}`));
+        } else {
+          const message = err instanceof Error ? err.message : String(err);
+          console.error(pc.red(`Error: Failed to create git tracker for checkpoint "${since}"`));
+          console.error(pc.dim(message));
+        }
+        process.exit(2);
+      }
+    }
+  }
+
   // Execute query using shared command
-  const result = runQuery(workspace, queryStr, {
+  const result = await runQuery(workspace, queryStr, {
     limit,
     includeRawText: format === "raw",
+    since,
+    tracker,
   });
 
   if (!result) {
@@ -95,6 +127,12 @@ async function queryAction(ctx: CommandContext): Promise<void> {
 
   // Handle validation errors
   if (isQueryValidationError(result)) {
+    console.error(pc.red(`Error: ${result.message}`));
+    process.exit(2);
+  }
+
+  // Handle checkpoint errors
+  if (isCheckpointError(result)) {
     console.error(pc.red(`Error: ${result.message}`));
     process.exit(2);
   }
@@ -162,10 +200,20 @@ export const queryCommand: CommandDef = {
       choices: ["default", "json", "raw"],
       default: "default",
     },
+    json: {
+      type: "boolean",
+      description: "Output as JSON (shorthand for --format json)",
+      default: false,
+    },
     limit: {
       type: "string",
       short: "n",
       description: "Maximum number of results to show",
+    },
+    since: {
+      type: "string",
+      short: "s",
+      description: "Only show entries since checkpoint (ts:2026-01-10T15:00Z or git:abc123)",
     },
   },
   action: queryAction,

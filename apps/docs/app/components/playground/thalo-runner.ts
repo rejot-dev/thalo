@@ -12,6 +12,7 @@ import { runCheck as runCheckCommand, type CheckResult } from "@rejot-dev/thalo/
 import {
   runQuery as runQueryCommand,
   isQueryValidationError,
+  isCheckpointError,
   type QueryResult,
 } from "@rejot-dev/thalo/commands/query";
 import {
@@ -245,7 +246,7 @@ async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<
   // Default query if none provided
   const query = queryStr || "opinion";
 
-  const result = runQueryCommand(workspace, query);
+  const result = await runQueryCommand(workspace, query);
 
   if (!result) {
     return {
@@ -260,6 +261,18 @@ async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<
 
   // Handle validation errors (e.g., unknown entity)
   if (isQueryValidationError(result)) {
+    return {
+      command: `thalo query '${query}'`,
+      lines: [
+        { type: "header", text: `=== Query: ${query} ===` },
+        { type: "blank", text: "" },
+        { type: "error", text: result.message },
+      ],
+    };
+  }
+
+  // Handle checkpoint errors
+  if (isCheckpointError(result)) {
     return {
       command: `thalo query '${query}'`,
       lines: [

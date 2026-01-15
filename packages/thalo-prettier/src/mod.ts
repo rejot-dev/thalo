@@ -18,7 +18,3 @@ export const parsers: Plugin<SyntaxNode>["parsers"] = {
 export const printers: Plugin<SyntaxNode>["printers"] = {
   "thalo-ast": printer,
 };
-
-// Re-export for convenience
-export { parser } from "./parser";
-export { printer } from "./printer";

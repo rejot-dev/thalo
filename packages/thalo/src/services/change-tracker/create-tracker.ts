@@ -12,6 +12,21 @@ import { GitChangeTracker } from "./git-tracker.js";
 import { TimestampChangeTracker } from "./timestamp-tracker.js";
 
 /**
+ * Error thrown when a git tracker is requested but the current directory
+ * is not inside a git repository.
+ */
+export class NotInGitRepoError extends Error {
+  /** The directory that was checked */
+  readonly cwd: string;
+
+  constructor(cwd: string) {
+    super(`Git tracker requested but "${cwd}" is not in a git repository`);
+    this.name = "NotInGitRepoError";
+    this.cwd = cwd;
+  }
+}
+
+/**
  * Options for creating a change tracker
  */
 export interface CreateChangeTrackerOptions extends ChangeTrackerOptions {
@@ -50,7 +65,7 @@ export async function createChangeTracker(
 
   if (preferredType === "git") {
     if (!gitContext.isGitRepo) {
-      throw new Error("Git tracker requested but not in a git repository");
+      throw new NotInGitRepoError(nodeCwd);
     }
     return new GitChangeTracker({ cwd: nodeCwd, force });
   }

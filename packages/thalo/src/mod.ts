@@ -15,8 +15,6 @@ export type { FragmentType, ParsedFragment } from "./fragment.js";
 
 // Model classes
 export { Workspace } from "./model/workspace.js";
-export { Document } from "./model/document.js";
-export { LineIndex, computeEdit } from "./model/line-index.js";
 export type { DocumentBlock, EditRange, EditResult } from "./model/document.js";
 export type { Position as LinePosition } from "./model/line-index.js";
 export type { InvalidationResult } from "./model/workspace.js";
@@ -36,7 +34,6 @@ export type {
 } from "./services/query.js";
 
 // Semantic types (new API - uses AST Entry types)
-export { updateSemanticModel } from "./semantic/analyzer.js";
 export type {
   SemanticModel,
   LinkDefinition,
@@ -62,7 +59,7 @@ export type {
   Query as AstQuery,
   QueryCondition as AstQueryCondition,
 } from "./ast/ast-types.js";
-export { isSyntaxError, isValidResult } from "./ast/ast-types.js";
+export { isSyntaxError } from "./ast/ast-types.js";
 
 // AST node-at-position utility
 export { findNodeAtPosition } from "./ast/node-at-position.js";
@@ -83,28 +80,12 @@ export type {
   UnknownContext,
 } from "./ast/node-at-position.js";
 
-// Source mapping for embedded blocks
-export {
-  identitySourceMap,
-  isIdentityMap,
-  createSourceMap,
-  toFilePosition,
-  toBlockPosition,
-  toFileLocation,
-  toBlockLocation,
-  pointToPosition,
-  positionToPoint,
-  positionFromOffset,
-  findBlockAtPosition,
-  type SourceMap,
-  type Position,
-  type BlockMatch,
-} from "./source-map.js";
+// Source mapping types for embedded blocks
+export type { SourceMap, Position, BlockMatch } from "./source-map.js";
 
 // Checker
-export { check, checkDocument } from "./checker/check.js";
-export { allRules, getRule } from "./checker/rules/rules.js";
-export { RULE_CATEGORIES } from "./checker/rules/rules.js";
+export { checkDocument } from "./checker/check.js";
+export { allRules, RULE_CATEGORIES } from "./checker/rules/rules.js";
 export type { Rule, RuleCategory, Severity } from "./checker/rules/rules.js";
 export type { Diagnostic, CheckConfig } from "./checker/check.js";
 
@@ -143,7 +124,7 @@ export * from "./constants.js";
 // Commands
 export { runCheck, type RunCheckOptions } from "./commands/check.js";
 export type { CheckResult, DiagnosticInfo, DiagnosticSeverity } from "./commands/check.js";
-export { runFormat, formatFile, type RunFormatOptions, type Formatter } from "./commands/format.js";
+export { runFormat, type RunFormatOptions, type Formatter } from "./commands/format.js";
 export type {
   FormatResult,
   FormatFileResult,
@@ -155,12 +136,17 @@ export {
   runQueries,
   parseQueryString,
   isQueryValidationError,
+  isCheckpointError,
+  isQueryError,
+  isQuerySuccess,
+  isQueriesSuccess,
   type RunQueryOptions,
 } from "./commands/query.js";
 export type {
   QueryResult,
   QueriesResult,
   QueryValidationError,
+  CheckpointError,
   QueryEntryInfo,
   QueryConditionInfo,
 } from "./commands/query.js";
@@ -168,7 +154,6 @@ export {
   runActualize,
   generateInstructions,
   generateTimestamp,
-  parseLinkIds,
   DEFAULT_INSTRUCTIONS_TEMPLATE,
   type RunActualizeOptions,
   type InstructionsParams,
@@ -178,14 +163,7 @@ export type {
   SynthesisOutputInfo,
   ActualizeEntryInfo,
 } from "./commands/actualize.js";
-// Re-export browser-safe change tracker types and timestamp tracker
-export { TimestampChangeTracker } from "./services/change-tracker/timestamp-tracker.js";
+// Re-export browser-safe change tracker types and functions
+export { parseCheckpoint } from "./services/change-tracker/change-tracker.js";
 export type { ChangeTracker, ChangeMarker } from "./services/change-tracker/change-tracker.js";
-export {
-  formatDiagnostic,
-  formatCheckResult,
-  formatQueryResult,
-  formatQueryResultRaw,
-  formatActualizeResult,
-  type DiagnosticFormat,
-} from "./formatters.js";
+export { formatDiagnostic, formatQueryResultRaw, type DiagnosticFormat } from "./formatters.js";

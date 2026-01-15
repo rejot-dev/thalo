@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createWorkspace } from "../parser.native.js";
 import type { Workspace } from "../model/workspace.js";
-import { parseQueryString, runQuery, runQueries, isQueryValidationError } from "./query.js";
+import {
+  parseQueryString,
+  runQuery,
+  runQueries,
+  isQueryValidationError,
+  isQuerySuccess,
+  isQueriesSuccess,
+} from "./query.js";
 
 /**
  * Helper to create a workspace from a file structure.
@@ -187,24 +194,24 @@ describe("query command", () => {
   });
 
   describe("runQuery", () => {
-    it("returns all entries for entity-only query", () => {
-      const result = runQuery(workspace, "lore");
+    it("returns all entries for entity-only query", async () => {
+      const result = await runQuery(workspace, "lore");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(4);
         expect(result.totalCount).toBe(4);
         expect(result.queryString).toBe("lore");
       }
     });
 
-    it("filters by tag", () => {
-      const result = runQuery(workspace, "lore where #career");
+    it("filters by tag", async () => {
+      const result = await runQuery(workspace, "lore where #career");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(2);
         expect(result.entries[0].title).toBe("First entry");
         expect(result.entries[1].title).toBe("Second entry");
@@ -212,12 +219,12 @@ describe("query command", () => {
       }
     });
 
-    it("filters by field value", () => {
-      const result = runQuery(workspace, 'lore where type = "fact"');
+    it("filters by field value", async () => {
+      const result = await runQuery(workspace, 'lore where type = "fact"');
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(2);
         expect(result.entries[0].title).toBe("First entry");
         expect(result.entries[1].title).toBe("Fourth entry");
@@ -225,12 +232,12 @@ describe("query command", () => {
       }
     });
 
-    it("filters by link id (matches both header link and metadata links)", () => {
-      const result = runQuery(workspace, "lore where ^first-entry");
+    it("filters by link id (matches both header link and metadata links)", async () => {
+      const result = await runQuery(workspace, "lore where ^first-entry");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         // Matches both the entry with ^first-entry in header AND entries that reference it
         expect(result.entries).toHaveLength(2);
         expect(result.entries[0].title).toBe("First entry");
@@ -239,61 +246,61 @@ describe("query command", () => {
       }
     });
 
-    it("filters by multiple conditions", () => {
-      const result = runQuery(workspace, 'lore where #career and type = "fact"');
+    it("filters by multiple conditions", async () => {
+      const result = await runQuery(workspace, 'lore where #career and type = "fact"');
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(1);
         expect(result.entries[0].title).toBe("First entry");
       }
     });
 
-    it("returns empty results when no matches", () => {
-      const result = runQuery(workspace, "lore where #nonexistent");
+    it("returns empty results when no matches", async () => {
+      const result = await runQuery(workspace, "lore where #nonexistent");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(0);
         expect(result.totalCount).toBe(0);
       }
     });
 
-    it("returns null for invalid query string", () => {
-      const result = runQuery(workspace, "invalid query!!!");
+    it("returns null for invalid query string", async () => {
+      const result = await runQuery(workspace, "invalid query!!!");
 
       expect(result).toBeNull();
     });
 
-    it("limits results when limit option is provided", () => {
-      const result = runQuery(workspace, "lore", { limit: 2 });
+    it("limits results when limit option is provided", async () => {
+      const result = await runQuery(workspace, "lore", { limit: 2 });
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(2);
         expect(result.totalCount).toBe(4); // Total count is still 4
       }
     });
 
-    it("ignores limit when it's 0", () => {
-      const result = runQuery(workspace, "lore", { limit: 0 });
+    it("ignores limit when it's 0", async () => {
+      const result = await runQuery(workspace, "lore", { limit: 0 });
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(4);
       }
     });
 
-    it("includes entry metadata in results", () => {
-      const result = runQuery(workspace, "lore where #tech");
+    it("includes entry metadata in results", async () => {
+      const result = await runQuery(workspace, "lore where #tech");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         const entry = result.entries[0];
         expect(entry.entity).toBe("lore");
         expect(entry.title).toBe("First entry");
@@ -306,31 +313,31 @@ describe("query command", () => {
       }
     });
 
-    it("does not include raw text by default", () => {
-      const result = runQuery(workspace, "lore where ^first-entry");
+    it("does not include raw text by default", async () => {
+      const result = await runQuery(workspace, "lore where ^first-entry");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries[0].rawText).toBeUndefined();
       }
     });
 
-    it("includes raw text when includeRawText option is true", () => {
-      const result = runQuery(workspace, "lore where ^first-entry", {
+    it("includes raw text when includeRawText option is true", async () => {
+      const result = await runQuery(workspace, "lore where ^first-entry", {
         includeRawText: true,
       });
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries[0].rawText).toBeDefined();
         expect(result.entries[0].rawText).toContain("First entry");
         expect(result.entries[0].rawText).toContain("This is the first entry");
       }
     });
 
-    it("handles entries with no tags", () => {
+    it("handles entries with no tags", async () => {
       // Add an entry without tags
       workspace.addDocument(
         `
@@ -344,34 +351,34 @@ describe("query command", () => {
         { filename: "test.thalo" },
       );
 
-      const result = runQuery(workspace, "lore");
+      const result = await runQuery(workspace, "lore");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         const noTagsEntry = result.entries.find((e) => e.title === "No tags entry");
         expect(noTagsEntry).toBeDefined();
         expect(noTagsEntry!.tags).toEqual([]);
       }
     });
 
-    it("handles entries with no link id", () => {
-      const result = runQuery(workspace, "lore");
+    it("handles entries with no link id", async () => {
+      const result = await runQuery(workspace, "lore");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         const entries = result.entries;
         expect(entries.every((e) => e.linkId !== null)).toBe(true); // All our test entries have links
       }
     });
 
-    it("returns entries sorted by timestamp", () => {
-      const result = runQuery(workspace, "lore");
+    it("returns entries sorted by timestamp", async () => {
+      const result = await runQuery(workspace, "lore");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         const timestamps = result.entries.map((e) => e.timestamp);
         expect(timestamps).toEqual([
           "2026-01-05T10:00Z",
@@ -382,12 +389,12 @@ describe("query command", () => {
       }
     });
 
-    it("includes query object in result", () => {
-      const result = runQuery(workspace, 'lore where #tech and type = "fact"');
+    it("includes query object in result", async () => {
+      const result = await runQuery(workspace, 'lore where #tech and type = "fact"');
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.query).toEqual({
           entity: "lore",
           conditions: [
@@ -398,18 +405,18 @@ describe("query command", () => {
       }
     });
 
-    it("includes formatted query string in result", () => {
-      const result = runQuery(workspace, 'lore where #tech and type = "fact"');
+    it("includes formatted query string in result", async () => {
+      const result = await runQuery(workspace, 'lore where #tech and type = "fact"');
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.queryString).toBe('lore where #tech and type = "fact"');
       }
     });
 
-    it("returns validation error for unknown entity", () => {
-      const result = runQuery(workspace, "journal");
+    it("returns validation error for unknown entity", async () => {
+      const result = await runQuery(workspace, "journal");
 
       expect(result).not.toBeNull();
       expect(isQueryValidationError(result)).toBe(true);
@@ -420,8 +427,8 @@ describe("query command", () => {
       }
     });
 
-    it("returns validation error for multiple unknown entities", () => {
-      const result = runQuery(workspace, "journal, opinion");
+    it("returns validation error for multiple unknown entities", async () => {
+      const result = await runQuery(workspace, "journal, opinion");
 
       expect(result).not.toBeNull();
       expect(isQueryValidationError(result)).toBe(true);
@@ -431,19 +438,19 @@ describe("query command", () => {
       }
     });
 
-    it("can disable entity validation", () => {
-      const result = runQuery(workspace, "journal", { validateEntities: false });
+    it("can disable entity validation", async () => {
+      const result = await runQuery(workspace, "journal", { validateEntities: false });
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQuerySuccess(result)).toBe(true);
+      if (isQuerySuccess(result)) {
         expect(result.entries).toHaveLength(0); // No matches, but no error
       }
     });
   });
 
   describe("runQueries", () => {
-    it("executes multiple comma-separated queries", () => {
+    it("executes multiple comma-separated queries", async () => {
       // Add another entity type
       workspace.addDocument(
         `
@@ -467,23 +474,23 @@ describe("query command", () => {
         { filename: "journal.thalo" },
       );
 
-      const result = runQueries(workspace, "lore, journal");
+      const result = await runQueries(workspace, "lore, journal");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQueriesSuccess(result)).toBe(true);
+      if (isQueriesSuccess(result)) {
         expect(result.queries).toHaveLength(2);
         expect(result.entries.length).toBeGreaterThan(4); // 4 lore + 1 journal
         expect(result.queryString).toBe("lore, journal");
       }
     });
 
-    it("deduplicates entries matching multiple queries", () => {
-      const result = runQueries(workspace, "lore where #career, lore where #tech");
+    it("deduplicates entries matching multiple queries", async () => {
+      const result = await runQueries(workspace, "lore where #career, lore where #tech");
 
       expect(result).not.toBeNull();
-      expect(isQueryValidationError(result)).toBe(false);
-      if (!isQueryValidationError(result) && result) {
+      expect(isQueriesSuccess(result)).toBe(true);
+      if (isQueriesSuccess(result)) {
         // First entry has both #career and #tech, should only appear once
         const firstEntryCount = result.entries.filter((e) => e.title === "First entry").length;
         expect(firstEntryCount).toBe(1);
