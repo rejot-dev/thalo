@@ -1,6 +1,6 @@
 import type { Workspace } from "../model/workspace.js";
-import type { Location } from "../ast/types.js";
-import type { LinkReference, LinkDefinition } from "../semantic/types.js";
+import type { Location } from "../ast/ast-types.js";
+import type { LinkReference, LinkDefinition } from "../semantic/analyzer.js";
 import { toFileLocation, positionFromOffset } from "../source-map.js";
 import { findNodeAtPosition } from "../ast/node-at-position.js";
 

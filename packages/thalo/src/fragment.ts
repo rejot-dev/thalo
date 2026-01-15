@@ -1,4 +1,4 @@
-import type { SyntaxNode } from "./ast/types.js";
+import type { SyntaxNode } from "./ast/ast-types.js";
 import type { ThaloParser, GenericTree } from "./parser.shared.js";
 
 /**

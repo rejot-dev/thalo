@@ -1,4 +1,4 @@
-import type { Entry } from "../ast/types.js";
+import type { Entry } from "../ast/ast-types.js";
 
 /**
  * Result of a three-way merge operation

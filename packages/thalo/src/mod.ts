@@ -15,16 +15,25 @@ export type { FragmentType, ParsedFragment } from "./fragment.js";
 
 // Model classes
 export { Workspace } from "./model/workspace.js";
-export { Document, LineIndex, computeEdit } from "./model/index.js";
+export { Document } from "./model/document.js";
+export { LineIndex, computeEdit } from "./model/line-index.js";
 export type { DocumentBlock, EditRange, EditResult } from "./model/document.js";
 export type { Position as LinePosition } from "./model/line-index.js";
 export type { InvalidationResult } from "./model/workspace.js";
 export type {
   ModelSchemaEntry,
   ModelTypeExpression,
+  ModelFieldDefinition,
+  ModelSectionDefinition,
+  ModelDefaultValue,
+} from "./model/workspace.js";
+export type {
   Query,
   QueryCondition,
-} from "./model/types.js";
+  FieldCondition,
+  TagCondition,
+  LinkCondition,
+} from "./services/query.js";
 
 // Semantic types (new API - uses AST Entry types)
 export { updateSemanticModel } from "./semantic/analyzer.js";
@@ -35,11 +44,11 @@ export type {
   LinkIndex,
   SemanticModelDirtyFlags,
   SemanticUpdateResult,
-} from "./semantic/types.js";
+} from "./semantic/analyzer.js";
 
 // Schema
-export { TypeExpr } from "./schema/types.js";
-export type { EntitySchema, FieldSchema, SectionSchema } from "./schema/types.js";
+export { TypeExpr } from "./schema/registry.js";
+export type { EntitySchema, FieldSchema, SectionSchema } from "./schema/registry.js";
 
 // AST types
 export type {
@@ -52,8 +61,8 @@ export type {
   Timestamp,
   Query as AstQuery,
   QueryCondition as AstQueryCondition,
-} from "./ast/types.js";
-export { isSyntaxError, isValidResult } from "./ast/types.js";
+} from "./ast/ast-types.js";
+export { isSyntaxError, isValidResult } from "./ast/ast-types.js";
 
 // AST node-at-position utility
 export { findNodeAtPosition } from "./ast/node-at-position.js";
@@ -94,22 +103,39 @@ export {
 
 // Checker
 export { check, checkDocument } from "./checker/check.js";
-export { allRules, getRule } from "./checker/rules/index.js";
-export { RULE_CATEGORIES } from "./checker/types.js";
-export type { Diagnostic, Severity, CheckConfig, Rule, RuleCategory } from "./checker/types.js";
+export { allRules, getRule } from "./checker/rules/rules.js";
+export { RULE_CATEGORIES } from "./checker/rules/rules.js";
+export type { Rule, RuleCategory, Severity } from "./checker/rules/rules.js";
+export type { Diagnostic, CheckConfig } from "./checker/check.js";
 
 // Services
-export * from "./services/index.js";
+export * from "./services/definition.js";
+export * from "./services/references.js";
+export {
+  extractSemanticTokens,
+  encodeSemanticTokens,
+  tokenTypes,
+  tokenModifiers,
+  type SemanticToken,
+  type TokenType,
+  type TokenModifier,
+} from "./services/semantic-tokens.js";
+export * from "./services/entity-navigation.js";
+export * from "./services/query.js";
+export * from "./services/hover.js";
+export * from "./services/synthesis.js";
 
 // Merge driver
 export { mergeThaloFiles } from "./merge/driver.js";
+export type { MergeResult, MergeStats } from "./merge/merge-result-builder.js";
 export type {
-  MergeResult,
   MergeConflict,
   ConflictType,
-  MergeOptions,
-  MergeStats,
-} from "./merge/types.js";
+  ConflictContext,
+  ConflictRule,
+} from "./merge/conflict-detector.js";
+export type { EntryMatch, EntryIdentity } from "./merge/entry-matcher.js";
+export type { MergeOptions } from "./merge/driver.js";
 
 // Constants
 export * from "./constants.js";
@@ -154,7 +180,7 @@ export type {
 } from "./commands/actualize.js";
 // Re-export browser-safe change tracker types and timestamp tracker
 export { TimestampChangeTracker } from "./services/change-tracker/timestamp-tracker.js";
-export type { ChangeTracker, ChangeMarker } from "./services/change-tracker/types.js";
+export type { ChangeTracker, ChangeMarker } from "./services/change-tracker/change-tracker.js";
 export {
   formatDiagnostic,
   formatCheckResult,

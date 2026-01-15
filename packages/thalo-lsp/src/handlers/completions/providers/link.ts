@@ -3,7 +3,7 @@ import type { Workspace, Entry, Timestamp } from "@rejot-dev/thalo";
 import { isSyntaxError } from "@rejot-dev/thalo";
 import type { LinkDefinition } from "@rejot-dev/thalo";
 import type { CompletionContext } from "../context.js";
-import type { CompletionProvider } from "../types.js";
+import type { CompletionProvider } from "../completions.js";
 
 /**
  * Format a timestamp to string

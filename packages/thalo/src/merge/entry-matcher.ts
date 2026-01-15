@@ -1,5 +1,54 @@
-import type { Entry } from "../ast/types.js";
-import type { EntryMatch, EntryIdentity } from "./types.js";
+import type { Entry } from "../ast/ast-types.js";
+
+/**
+ * Identity used to match entries across versions
+ */
+export interface EntryIdentity {
+  /**
+   * Primary identity: Explicit link ID (^link-id)
+   * Used when available for matching
+   */
+  linkId?: string;
+
+  /**
+   * Fallback identity: Timestamp for entries without explicit links
+   * Combined with entryType for uniqueness
+   */
+  timestamp?: string;
+
+  /**
+   * Entry type (for validation and fallback matching)
+   */
+  entryType: string;
+}
+
+/**
+ * A matched set of entries across three versions
+ */
+export interface EntryMatch {
+  /**
+   * Identity used to match this entry across versions
+   */
+  identity: EntryIdentity;
+
+  /**
+   * Entry from base version (common ancestor)
+   * null if entry was added in ours or theirs
+   */
+  base: Entry | null;
+
+  /**
+   * Entry from ours version (local/current)
+   * null if entry was deleted in ours
+   */
+  ours: Entry | null;
+
+  /**
+   * Entry from theirs version (incoming)
+   * null if entry was deleted in theirs
+   */
+  theirs: Entry | null;
+}
 
 /**
  * Match entries across three versions based on identity

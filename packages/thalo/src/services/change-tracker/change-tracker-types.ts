@@ -1,5 +1,5 @@
-import type { InstanceEntry } from "../../ast/types.js";
-import type { Query } from "../../model/types.js";
+import type { InstanceEntry } from "../../ast/ast-types.js";
+import type { Query } from "../../services/query.js";
 import type { Workspace } from "../../model/workspace.js";
 
 /**

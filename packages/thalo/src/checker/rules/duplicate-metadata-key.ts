@@ -1,4 +1,4 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 
 const category: RuleCategory = "metadata";
 

@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { TypeExpr } from "./types.js";
+import { TypeExpr } from "./registry.js";
 import type {
   ModelPrimitiveType,
   ModelLiteralType,
   ModelArrayType,
   ModelUnionType,
   ModelDefaultValue,
-} from "../model/types.js";
+} from "../model/workspace.js";
 import type {
   ValueContent,
   QuotedValue,
@@ -14,7 +14,7 @@ import type {
   DaterangeValue,
   Link,
   ValueArray,
-} from "../ast/types.js";
+} from "../ast/ast-types.js";
 
 // Helper functions to create type expressions
 function primitive(

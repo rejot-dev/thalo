@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { hello, parseThalo } from "./index";
+import { hello, parseThalo } from "./mod";
 
 describe("hello", () => {
   it("should log the correct message", () => {

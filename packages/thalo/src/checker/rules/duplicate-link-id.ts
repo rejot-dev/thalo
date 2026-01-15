@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor, VisitorContext } from "../visitor.js";
-import type { LinkDefinition } from "../../semantic/types.js";
+import type { LinkDefinition } from "../../semantic/analyzer.js";
 
 const category: RuleCategory = "link";
 

@@ -1,4 +1,74 @@
-import type { Rule } from "../types.js";
+/**
+ * Severity levels for diagnostics
+ */
+export type Severity = "error" | "warning" | "info" | "off";
+
+/**
+ * Rule categories for grouping related rules
+ */
+export type RuleCategory = "instance" | "link" | "schema" | "metadata" | "content";
+
+/**
+ * Display order and labels for rule categories
+ */
+export const RULE_CATEGORIES: Record<RuleCategory, { order: number; label: string }> = {
+  instance: { order: 1, label: "Instance Entry Rules" },
+  link: { order: 2, label: "Link Rules" },
+  schema: { order: 3, label: "Schema Definition Rules" },
+  metadata: { order: 4, label: "Metadata Value Rules" },
+  content: { order: 5, label: "Content Rules" },
+};
+
+/**
+ * Rule scope - determines when a rule needs to re-run.
+ *
+ * - "entry": Rule only looks at individual entries, can run incrementally on changed entries
+ * - "document": Rule looks at entries within a single document, runs on full document
+ * - "workspace": Rule looks across multiple documents, runs on full workspace
+ */
+export type RuleScope = "entry" | "document" | "workspace";
+
+/**
+ * Dependency declaration for a rule.
+ * Used for incremental checking to determine when a rule needs to re-run.
+ */
+export interface RuleDependencies {
+  /** Rule scope - determines when rule needs to re-run */
+  scope: RuleScope;
+  /** Rule needs schema registry data */
+  schemas?: boolean;
+  /** Rule needs link index data */
+  links?: boolean;
+  /** Entity names this rule cares about (for targeted invalidation) */
+  entities?: "all" | string[];
+}
+
+/**
+ * A validation rule
+ */
+export interface Rule {
+  /** Unique rule code (e.g., "unknown-entity") */
+  code: string;
+  /** Human-readable rule name */
+  name: string;
+  /** Short description of what this rule checks */
+  description: string;
+  /** Category for grouping related rules */
+  category: RuleCategory;
+  /** Default severity for this rule */
+  defaultSeverity: Severity;
+
+  /**
+   * Dependency declaration for incremental checking.
+   */
+  dependencies: RuleDependencies;
+
+  /**
+   * Visitor-based implementation.
+   * Allows single-pass checking with other rules.
+   */
+  visitor: import("../visitor.js").RuleVisitor;
+}
 
 // Existing rules
 import { unknownEntityRule } from "./unknown-entity.js";

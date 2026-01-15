@@ -1,4 +1,4 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor } from "../visitor.js";
 import { formatTimestamp } from "../../formatters.js";
 

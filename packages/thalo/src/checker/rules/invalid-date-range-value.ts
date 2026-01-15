@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor } from "../visitor.js";
-import type { ModelTypeExpression } from "../../model/types.js";
+import type { ModelTypeExpression } from "../../model/workspace.js";
 
 const category: RuleCategory = "metadata";
 

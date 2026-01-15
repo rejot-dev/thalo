@@ -10,7 +10,7 @@
  * Note: This module runs alongside extract.ts during the migration period.
  * Once migration is complete, extract.ts can be removed.
  */
-import type { SyntaxNode, Point } from "./types.js";
+import type { SyntaxNode, Point } from "./ast-types.js";
 import type {
   Location,
   SyntaxErrorCode,
@@ -20,7 +20,7 @@ import type {
   TimezonePart,
   Timestamp,
   Result,
-} from "./types.js";
+} from "./ast-types.js";
 
 // ===================
 // Location Utilities

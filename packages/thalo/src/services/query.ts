@@ -3,9 +3,53 @@ import type {
   InstanceEntry,
   Query as AstQuery,
   QueryCondition as AstQueryCondition,
-} from "../ast/types.js";
-import type { Query, QueryCondition } from "../model/types.js";
+} from "../ast/ast-types.js";
 import { formatTimestamp } from "../formatters.js";
+
+// ===================
+// Query Types
+// ===================
+
+/**
+ * A parsed query for filtering entries
+ * Example: "lore where subject = ^self and #career"
+ */
+export interface Query {
+  /** The entity type to query (lore, opinion, etc.) */
+  entity: string;
+  /** Filter conditions (ANDed together) */
+  conditions: QueryCondition[];
+}
+
+/**
+ * A single condition in a query
+ */
+export type QueryCondition = FieldCondition | TagCondition | LinkCondition;
+
+/**
+ * A field equality condition: field = value
+ */
+export interface FieldCondition {
+  kind: "field";
+  field: string;
+  value: string;
+}
+
+/**
+ * A tag condition: #tag (entry must have this tag)
+ */
+export interface TagCondition {
+  kind: "tag";
+  tag: string;
+}
+
+/**
+ * A link condition: ^link (entry must have this link)
+ */
+export interface LinkCondition {
+  kind: "link";
+  link: string;
+}
 
 // ===================
 // Query Parsing

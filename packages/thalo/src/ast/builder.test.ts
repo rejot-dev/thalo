@@ -11,7 +11,7 @@ import {
   getTimezoneValue,
   formatTimestamp,
 } from "./builder.js";
-import { isSyntaxError, isValidResult } from "./types.js";
+import { isSyntaxError, isValidResult } from "./ast-types.js";
 
 // Helper to create a mock syntax node (simple version for non-timestamp nodes)
 function mockSyntaxNode(text: string, startIndex: number = 0): SyntaxNode {

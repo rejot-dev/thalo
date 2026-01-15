@@ -5,7 +5,7 @@ import type {
   ModelUnionType,
   ModelUnknownType,
   ModelDefaultValue,
-} from "../model/types.js";
+} from "../model/workspace.js";
 import type {
   ValueContent,
   Link,
@@ -14,7 +14,7 @@ import type {
   DaterangeValue,
   NumberValue,
   Query,
-} from "../ast/types.js";
+} from "../ast/ast-types.js";
 
 /**
  * A resolved entity schema (after applying all define-entity and alter-entity entries)

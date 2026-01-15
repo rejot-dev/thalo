@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import type { SyntaxErrorNode, TimezonePart, Result } from "./types.js";
-import { isSyntaxError, isValidResult } from "./types.js";
+import type { SyntaxErrorNode, TimezonePart, Result } from "./ast-types.js";
+import { isSyntaxError, isValidResult } from "./ast-types.js";
 import type { Point } from "tree-sitter";
 
 // Helper to create a mock location

@@ -1,4 +1,4 @@
-import type { CompletionProvider } from "../types.js";
+import type { CompletionProvider } from "../completions.js";
 import { timestampProvider } from "./timestamp.js";
 import { directiveProvider } from "./directive.js";
 import { entityProvider } from "./entity.js";

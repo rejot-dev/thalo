@@ -2,7 +2,7 @@ import type { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import type { Workspace } from "@rejot-dev/thalo";
 import { TypeExpr } from "@rejot-dev/thalo";
 import type { CompletionContext } from "../context.js";
-import type { CompletionProvider } from "../types.js";
+import type { CompletionProvider } from "../completions.js";
 
 /**
  * Provider for metadata key completion in instance entries.

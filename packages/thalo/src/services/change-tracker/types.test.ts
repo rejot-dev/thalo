@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseCheckpoint, formatCheckpoint } from "./types.js";
+import { parseCheckpoint, formatCheckpoint } from "./change-tracker.js";
 
 describe("parseCheckpoint", () => {
   describe("git checkpoints", () => {

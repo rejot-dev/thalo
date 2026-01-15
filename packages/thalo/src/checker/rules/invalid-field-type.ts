@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor } from "../visitor.js";
-import { TypeExpr } from "../../schema/types.js";
+import { TypeExpr } from "../../schema/registry.js";
 
 const category: RuleCategory = "instance";
 

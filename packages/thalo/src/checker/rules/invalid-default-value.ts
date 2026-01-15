@@ -1,9 +1,9 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor } from "../visitor.js";
-import type { DefaultValue, TypeExpression } from "../../ast/types.js";
-import { isSyntaxError } from "../../ast/types.js";
-import type { ModelDefaultValue, ModelTypeExpression } from "../../model/types.js";
-import { TypeExpr } from "../../schema/types.js";
+import type { DefaultValue, TypeExpression } from "../../ast/ast-types.js";
+import { isSyntaxError } from "../../ast/ast-types.js";
+import type { ModelDefaultValue, ModelTypeExpression } from "../../model/workspace.js";
+import { TypeExpr } from "../../schema/registry.js";
 
 const category: RuleCategory = "schema";
 

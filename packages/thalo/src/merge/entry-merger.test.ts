@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mergeEntry } from "./entry-merger.js";
-import type { EntryMatch } from "./types.js";
+import type { EntryMatch } from "./entry-matcher.js";
 import { mockInstanceEntry } from "./test-utils.js";
 
 describe("entry-merger", () => {

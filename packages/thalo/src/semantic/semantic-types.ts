@@ -1,4 +1,4 @@
-import type { Location, SourceFile, Entry, SchemaEntry } from "../ast/types.js";
+import type { Location, SourceFile, Entry, SchemaEntry } from "../ast/ast-types.js";
 import type { SourceMap } from "../source-map.js";
 import type { ParsedBlock, GenericTree } from "../parser.shared.js";
 

@@ -11,7 +11,9 @@
 
 import { Link } from "react-router";
 import { BookOpen, ArrowRight } from "lucide-react";
-import { PlaygroundProvider, PlaygroundTabs, AnimatedTerminal } from "@/components/playground";
+import { PlaygroundProvider } from "@/components/playground/playground-context";
+import { PlaygroundTabs } from "@/components/playground/playground-tabs";
+import { AnimatedTerminal } from "@/components/playground/animated-terminal";
 
 export function meta() {
   return [

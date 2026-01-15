@@ -4,7 +4,7 @@
  */
 
 import type { Workspace } from "../model/workspace.js";
-import type { InstanceEntry } from "../ast/types.js";
+import type { InstanceEntry } from "../ast/ast-types.js";
 import {
   findAllSyntheses,
   findLatestActualize,
@@ -21,7 +21,7 @@ import {
   parseCheckpoint,
   type ChangeTracker,
   type ChangeMarker,
-} from "../services/change-tracker/types.js";
+} from "../services/change-tracker/change-tracker.js";
 import { TimestampChangeTracker } from "../services/change-tracker/timestamp-tracker.js";
 
 /**

@@ -1,5 +1,6 @@
-import type { Entry } from "../ast/types.js";
-import type { MergeConflict, MergeOptions } from "./types.js";
+import type { Entry } from "../ast/ast-types.js";
+import type { MergeConflict } from "./conflict-detector.js";
+import type { MergeOptions } from "./driver.js";
 
 /**
  * Format a conflict with Git-style markers

@@ -1,7 +1,7 @@
 import type { CompletionItem, CompletionItemKind } from "vscode-languageserver";
 import type { Workspace } from "@rejot-dev/thalo";
 import type { CompletionContext } from "../context.js";
-import type { CompletionProvider } from "../types.js";
+import type { CompletionProvider } from "../completions.js";
 
 /**
  * Provider for section header completion in content area (# Section).

@@ -4,8 +4,8 @@ import type {
   ActualizeEntry,
   InstanceEntry,
   Query as AstQuery,
-} from "../ast/types.js";
-import type { Query } from "../model/types.js";
+} from "../ast/ast-types.js";
+import type { Query } from "./query.js";
 import { formatTimestamp } from "../formatters.js";
 import { astQueryToModelQuery } from "./query.js";
 

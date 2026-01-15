@@ -20,9 +20,9 @@ import type {
   Value,
   Metadata,
   Identifier,
-} from "../ast/types.js";
+} from "../ast/ast-types.js";
 import { analyze, updateSemanticModel } from "./analyzer.js";
-import type { LinkIndex, SemanticModel } from "./types.js";
+import type { LinkIndex, SemanticModel } from "./analyzer.js";
 import type { SourceMap } from "../source-map.js";
 
 /**

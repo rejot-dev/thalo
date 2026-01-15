@@ -1,16 +1,13 @@
-export type {
-  CheckpointProvider,
-  ChangeMarker,
-  ChangedEntriesResult,
-  ChangeTracker,
-  ChangeTrackerOptions,
-} from "./types.js";
-export { parseCheckpoint, formatCheckpoint, UncommittedChangesError } from "./types.js";
-export { TimestampChangeTracker } from "./timestamp-tracker.js";
-export { GitChangeTracker } from "./git-tracker.js";
+/**
+ * Node.js-only module for creating change trackers.
+ *
+ * This module imports git functionality directly and should only be used
+ * in Node.js environments (CLI, scripts). For browser code, use
+ * TimestampChangeTracker directly from "./change-tracker.js".
+ */
 
-import { detectGitContext } from "../../git/index.js";
-import type { ChangeTracker, ChangeTrackerOptions } from "./types.js";
+import { detectGitContext } from "../../git/git.js";
+import type { ChangeTracker, ChangeTrackerOptions } from "./change-tracker.js";
 import { GitChangeTracker } from "./git-tracker.js";
 import { TimestampChangeTracker } from "./timestamp-tracker.js";
 
@@ -33,31 +30,39 @@ export interface CreateChangeTrackerOptions extends ChangeTrackerOptions {
  * By default, auto-detects git repository and uses GitChangeTracker
  * if available, otherwise falls back to TimestampChangeTracker.
  *
+ * NOTE: This is a Node.js-only function. For browser environments,
+ * use TimestampChangeTracker directly.
+ *
  * @param options - Tracker creation options
  * @returns Appropriate change tracker implementation
  */
 export async function createChangeTracker(
   options: CreateChangeTrackerOptions = {},
 ): Promise<ChangeTracker> {
-  const { preferredType = "auto", cwd = process.cwd(), force } = options;
+  const { preferredType = "auto", cwd, force } = options;
 
   if (preferredType === "timestamp") {
     return new TimestampChangeTracker();
   }
 
-  const gitContext = await detectGitContext(cwd);
+  const nodeCwd = cwd ?? process.cwd();
+  const gitContext = await detectGitContext(nodeCwd);
 
   if (preferredType === "git") {
     if (!gitContext.isGitRepo) {
       throw new Error("Git tracker requested but not in a git repository");
     }
-    return new GitChangeTracker({ cwd, force });
+    return new GitChangeTracker({ cwd: nodeCwd, force });
   }
 
   // Auto mode: use git if available
   if (gitContext.isGitRepo) {
-    return new GitChangeTracker({ cwd, force });
+    return new GitChangeTracker({ cwd: nodeCwd, force });
   }
 
   return new TimestampChangeTracker();
 }
+
+// Re-export things CLI needs
+export { GitChangeTracker } from "./git-tracker.js";
+export { UncommittedChangesError } from "./change-tracker.js";

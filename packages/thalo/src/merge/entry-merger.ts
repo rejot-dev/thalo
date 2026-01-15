@@ -1,5 +1,5 @@
-import type { Entry, Metadata, Content } from "../ast/types.js";
-import type { EntryMatch } from "./types.js";
+import type { Entry, Metadata, Content } from "../ast/ast-types.js";
+import type { EntryMatch } from "./entry-matcher.js";
 
 /**
  * Merge a single entry match (assumes no conflicts)

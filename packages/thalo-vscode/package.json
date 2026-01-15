@@ -17,7 +17,7 @@
     "Programming Languages",
     "Formatters"
   ],
-  "main": "./dist/index.js",
+  "main": "./dist/mod.js",
   "activationEvents": [
     "onLanguage:thalo"
   ],

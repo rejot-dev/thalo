@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as prettier from "prettier";
-import * as plugin from "../index";
+import * as plugin from "../mod";
 
 const format = async (code: string, opts: prettier.Options = {}): Promise<string> => {
   return prettier.format(code, {

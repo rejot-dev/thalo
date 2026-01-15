@@ -14,4 +14,9 @@
 
 export { createConnection, startServer, tokenLegend } from "./server.js";
 export { serverCapabilities } from "./capabilities.js";
-export * from "./handlers/index.js";
+export { handleDefinition } from "./handlers/definition.js";
+export { handleReferences } from "./handlers/references.js";
+export { handleSemanticTokens } from "./handlers/semantic-tokens.js";
+export { getDiagnostics } from "./handlers/diagnostics.js";
+export { handleHover } from "./handlers/hover.js";
+export { handleCompletion, handleCompletionResolve } from "./handlers/completions/completions.js";

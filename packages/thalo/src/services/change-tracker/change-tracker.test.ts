@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createChangeTracker, GitChangeTracker, TimestampChangeTracker } from "./index.js";
+import { TimestampChangeTracker } from "./change-tracker.js";
+import { createChangeTracker, GitChangeTracker } from "./create-tracker.js";
 import * as path from "node:path";
 import * as os from "node:os";
 
@@ -71,13 +72,25 @@ describe("createChangeTracker", () => {
 });
 
 describe("exports", () => {
-  it("should export all types and classes", async () => {
-    const exports = await import("./index.js");
+  it("should export browser-safe parts from change-tracker.js", async () => {
+    const exports = await import("./change-tracker.js");
 
-    expect(exports.createChangeTracker).toBeDefined();
-    expect(exports.GitChangeTracker).toBeDefined();
+    // Browser-safe exports
     expect(exports.TimestampChangeTracker).toBeDefined();
     expect(exports.parseCheckpoint).toBeDefined();
     expect(exports.formatCheckpoint).toBeDefined();
+    expect(exports.UncommittedChangesError).toBeDefined();
+
+    // createChangeTracker and GitChangeTracker are NOT exported here (Node-only)
+    expect(exports).not.toHaveProperty("createChangeTracker");
+    expect(exports).not.toHaveProperty("GitChangeTracker");
+  });
+
+  it("should export Node-only parts from create-tracker.js", async () => {
+    const exports = await import("./create-tracker.js");
+
+    expect(exports.createChangeTracker).toBeDefined();
+    expect(exports.GitChangeTracker).toBeDefined();
+    expect(exports.UncommittedChangesError).toBeDefined();
   });
 });

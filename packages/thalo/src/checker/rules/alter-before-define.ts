@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor, VisitorContext } from "../visitor.js";
-import type { SchemaEntry } from "../../ast/types.js";
+import type { SchemaEntry } from "../../ast/ast-types.js";
 import type { IndexedEntry } from "../workspace-index.js";
 import { formatTimestamp } from "../../formatters.js";
 

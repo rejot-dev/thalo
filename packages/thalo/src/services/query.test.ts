@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createWorkspace } from "../parser.native.js";
 import { Workspace } from "../model/workspace.js";
 import { executeQuery, executeQueries, entryMatchesQuery, formatQuery } from "./query.js";
-import type { Query } from "../model/types.js";
-import type { InstanceEntry } from "../ast/types.js";
+import type { Query } from "./query.js";
+import type { InstanceEntry } from "../ast/ast-types.js";
 import { formatTimestamp } from "../formatters.js";
 
 /**

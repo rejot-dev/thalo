@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createWorkspace } from "../parser.native.js";
 import { Workspace } from "./workspace.js";
-import type { Query, QueryCondition } from "./types.js";
-import type { InstanceEntry, SynthesisEntry, ActualizeEntry } from "../ast/types.js";
+import type { Query, QueryCondition } from "../services/query.js";
+import type { InstanceEntry, SynthesisEntry, ActualizeEntry } from "../ast/ast-types.js";
 import { formatTimestamp } from "../formatters.js";
 
 /**
@@ -21,7 +21,7 @@ function getSynthesisSources(synthesis: SynthesisEntry): Query[] {
   }
   if (content.type === "value_array") {
     return content.elements
-      .filter((e): e is import("../ast/types.js").Query => e.type === "query")
+      .filter((e): e is import("../ast/ast-types.js").Query => e.type === "query")
       .map(astQueryToModelQuery);
   }
   return [];
@@ -30,7 +30,7 @@ function getSynthesisSources(synthesis: SynthesisEntry): Query[] {
 /**
  * Convert AST Query to Model Query
  */
-function astQueryToModelQuery(astQuery: import("../ast/types.js").Query): Query {
+function astQueryToModelQuery(astQuery: import("../ast/ast-types.js").Query): Query {
   return {
     entity: astQuery.entity,
     conditions: astQuery.conditions.map((c): QueryCondition => {

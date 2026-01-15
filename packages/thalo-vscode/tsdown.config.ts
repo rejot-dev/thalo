@@ -1,7 +1,7 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["./src/index.ts"],
+  entry: ["./src/mod.ts"],
   format: "cjs",
   dts: true,
   // vscode is provided by VS Code runtime

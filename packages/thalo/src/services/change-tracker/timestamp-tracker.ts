@@ -1,9 +1,9 @@
-import type { Timestamp, InstanceEntry } from "../../ast/types.js";
-import type { Query } from "../../model/types.js";
+import type { Timestamp, InstanceEntry } from "../../ast/ast-types.js";
+import type { Query } from "../query.js";
 import type { Workspace } from "../../model/workspace.js";
 import { entryMatchesQuery } from "../query.js";
 import { formatTimestamp } from "../../formatters.js";
-import type { ChangeTracker, ChangeMarker, ChangedEntriesResult } from "./types.js";
+import type { ChangeTracker, ChangeMarker, ChangedEntriesResult } from "./change-tracker.js";
 
 /**
  * Convert a timestamp to epoch milliseconds for correct comparison across timezones

@@ -14,7 +14,11 @@ import {
 } from "@codemirror/view";
 import { StateField, StateEffect, type Extension } from "@codemirror/state";
 import type { ThaloParser, Tree } from "@rejot-dev/thalo/web";
-import { extractSemanticTokens, tokenTypes, type SemanticToken } from "@rejot-dev/thalo/services";
+import {
+  extractSemanticTokens,
+  tokenTypes,
+  type SemanticToken,
+} from "@rejot-dev/thalo/services/semantic-tokens";
 import type { ParsedDocument as NativeParsedDocument } from "@rejot-dev/thalo";
 
 /**

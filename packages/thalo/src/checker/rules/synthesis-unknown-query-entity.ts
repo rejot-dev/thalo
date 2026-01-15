@@ -1,6 +1,6 @@
-import type { Rule, RuleCategory } from "../types.js";
+import type { Rule, RuleCategory } from "../rules/rules.js";
 import type { RuleVisitor } from "../visitor.js";
-import type { Query as AstQuery } from "../../ast/types.js";
+import type { Query as AstQuery } from "../../ast/ast-types.js";
 
 const category: RuleCategory = "instance";
 

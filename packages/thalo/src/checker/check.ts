@@ -1,14 +1,63 @@
 import type { Workspace, InvalidationResult } from "../model/workspace.js";
-import type { SemanticModel } from "../semantic/types.js";
-import type { Entry, SourceFile } from "../ast/types.js";
-import type { Diagnostic, CheckConfig, Rule, Severity, PartialDiagnostic } from "./types.js";
-import { getEffectiveSeverity } from "./types.js";
-import { allRules } from "./rules/index.js";
+import type { SemanticModel } from "../semantic/analyzer.js";
+import type { Entry, SourceFile } from "../ast/ast-types.js";
+import type { Rule, Severity } from "./rules/rules.js";
+import { allRules } from "./rules/rules.js";
 import { toFileLocation, type SourceMap } from "../source-map.js";
 import { collectSyntaxErrors as collectSyntaxErrorNodes } from "../ast/visitor.js";
 import { buildWorkspaceIndex } from "./workspace-index.js";
 import { runVisitors, runVisitorsOnModel, runVisitorsOnEntries } from "./visitor.js";
 import type { RuleVisitor } from "./visitor.js";
+import type { Location } from "../ast/ast-types.js";
+
+/**
+ * A diagnostic message from the checker
+ */
+export interface Diagnostic {
+  /** The rule code that generated this diagnostic */
+  code: string;
+  /** Severity level */
+  severity: Exclude<Severity, "off">;
+  /** Human-readable message */
+  message: string;
+  /** File path where the issue was found */
+  file: string;
+  /** Location in the source (file-absolute) */
+  location: Location;
+  /** Additional data for the diagnostic (rule-specific) */
+  data?: Record<string, unknown>;
+}
+
+/**
+ * Partial diagnostic with optional sourceMap for position mapping
+ */
+export interface PartialDiagnostic {
+  /** Human-readable message */
+  message: string;
+  /** File path where the issue was found */
+  file: string;
+  /** Location in the source (block-relative) */
+  location: Location;
+  /** Source map for converting block-relative to file-absolute positions */
+  sourceMap?: SourceMap;
+  /** Additional data for the diagnostic (rule-specific) */
+  data?: Record<string, unknown>;
+}
+
+/**
+ * Configuration for the checker
+ */
+export interface CheckConfig {
+  /** Override severity for specific rules */
+  rules?: Partial<Record<string, Severity>>;
+}
+
+/**
+ * Get the effective severity for a rule given a config
+ */
+export function getEffectiveSeverity(rule: Rule, config: CheckConfig): Severity {
+  return config.rules?.[rule.code] ?? rule.defaultSeverity;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
