@@ -358,6 +358,10 @@ export class GitChangeTracker implements ChangeTracker {
   /**
    * Find a model in the workspace by relative path.
    * Normalizes path separators for cross-platform compatibility.
+   *
+   * Handles cases where:
+   * - Git returns paths relative to repo root (e.g., "project/entries.thalo")
+   * - Workspace has files relative to cwd (e.g., "entries.thalo")
    */
   private findModelByRelativePath(
     workspace: Workspace,
@@ -375,9 +379,19 @@ export class GitChangeTracker implements ChangeTracker {
         return model;
       }
 
-      // Suffix match: ensure we're matching complete path segments
-      // This prevents "oo.thalo" from matching "bar/foo.thalo"
       const modelParts = normalizedModel.split("/");
+
+      // Check if git path ends with model path (user running from subdirectory)
+      // e.g., git returns "project/entries.thalo", model is "entries.thalo"
+      if (relativeParts.length >= modelParts.length) {
+        const relativeSuffix = relativeParts.slice(-modelParts.length).join("/");
+        if (relativeSuffix === normalizedModel) {
+          return model;
+        }
+      }
+
+      // Check if model path ends with git path (model has absolute/longer path)
+      // e.g., model is "/repo/project/entries.thalo", git returns "entries.thalo"
       if (modelParts.length >= relativeParts.length) {
         const modelSuffix = modelParts.slice(-relativeParts.length).join("/");
         if (modelSuffix === normalizedRelative) {
