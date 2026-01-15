@@ -11,7 +11,7 @@ pnpm install
 pnpm exec turbo run build --filter=@rejot-dev/thalo-cli
 
 # Run directly
-node apps/thalo-cli/dist/index.js --help
+node apps/thalo-cli/dist/mod.js --help
 ```
 
 ## Usage
