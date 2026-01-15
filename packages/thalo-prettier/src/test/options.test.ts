@@ -116,4 +116,93 @@ describe("prettier options", () => {
   Second line
 `);
   });
+
+  it("preserves bullet points when proseWrap is never", async () => {
+    const input = `2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - First point
+  - Second point
+  - Third point
+`;
+
+    const output = await format(input, { proseWrap: "never" });
+
+    expect(output).toBe(`2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - First point
+  - Second point
+  - Third point
+`);
+  });
+
+  it("preserves bullet points when proseWrap is always", async () => {
+    const input = `2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - First point
+  - Second point
+  - Third point
+`;
+
+    const output = await format(input, { proseWrap: "always", printWidth: 80 });
+
+    expect(output).toBe(`2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - First point
+  - Second point
+  - Third point
+`);
+  });
+
+  it("wraps long bullet items when proseWrap is always", async () => {
+    const input = `2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - This is a very long bullet point that should wrap to the next line
+  - Short point
+`;
+
+    const output = await format(input, { proseWrap: "always", printWidth: 40 });
+
+    expect(output).toBe(`2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - This is a very long bullet point
+    that should wrap to the next line
+  - Short point
+`);
+  });
+
+  it("re-formats wrapped bullet items stably", async () => {
+    // Input is already wrapped from a previous format
+    const input = `2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - This is a very long bullet point
+    that should wrap to the next line
+  - Short point
+`;
+
+    // Re-formatting should produce identical output
+    const output = await format(input, { proseWrap: "always", printWidth: 40 });
+
+    expect(output).toBe(`2026-01-05T18:00Z create reference "Book" #reading
+  ref-type: "book"
+
+  # Key Takeaways
+  - This is a very long bullet point
+    that should wrap to the next line
+  - Short point
+`);
+  });
 });

@@ -16,6 +16,13 @@ const getIndent = (options: ThaloOptions): string => {
   return options.useTabs ? "\t" : " ".repeat(tabWidth);
 };
 
+/**
+ * Detect markdown list items: "- item", "* item", "+ item", "1. item", etc.
+ */
+const isListItem = (line: string): boolean => {
+  return /^[-*+]\s|^\d+\.\s/.test(line);
+};
+
 const getContentLineText = (node: SyntaxNode): string => {
   const contentText = node.children.find((c) => c.type === "content_text");
   if (contentText) {
@@ -37,6 +44,76 @@ const formatParagraph = (lines: string[], options: ThaloOptions, indent: string)
   }
 
   const proseWrap = options.proseWrap ?? "preserve";
+
+  // Check if any line is a list item - if so, preserve each on its own line
+  const hasListItems = lines.some(isListItem);
+  if (hasListItems) {
+    // Group lines into list items: a bullet line and its continuation lines form one item
+    // This ensures stable formatting regardless of how lines were previously wrapped
+    const listItems: string[][] = [];
+    for (const rawLine of lines) {
+      const trimmedLine = rawLine.trim();
+      if (isListItem(trimmedLine)) {
+        // Start a new list item
+        listItems.push([trimmedLine]);
+      } else if (listItems.length > 0) {
+        // Continuation of the current list item
+        listItems[listItems.length - 1].push(trimmedLine);
+      } else {
+        // Non-list line before any list item (prose before the list)
+        listItems.push([trimmedLine]);
+      }
+    }
+
+    // Format each list item
+    const docs: Doc[] = [];
+    for (const [itemIndex, itemLines] of listItems.entries()) {
+      if (itemIndex > 0) {
+        docs.push(hardline);
+      }
+
+      const firstLine = itemLines[0];
+      if (isListItem(firstLine)) {
+        // This is a bullet item - combine all its lines and format as one unit
+        const match = firstLine.match(/^([-*+]\s|\d+\.\s)(.*)$/);
+        if (match) {
+          const [, marker, firstContent] = match;
+          // Combine bullet content with continuation lines
+          const allContent = [firstContent, ...itemLines.slice(1)]
+            .join(" ")
+            .replace(/\s+/g, " ")
+            .trim();
+          const words = allContent.length > 0 ? allContent.split(/\s+/) : [];
+
+          if (words.length === 0) {
+            docs.push(indent, marker.trimEnd());
+          } else if (proseWrap === "always") {
+            const wordDocs: Doc[] = [];
+            for (const [wordIndex, word] of words.entries()) {
+              if (wordIndex === 0) {
+                wordDocs.push(word);
+              } else {
+                wordDocs.push(line, word);
+              }
+            }
+            // Align continuation to after the marker
+            const markerIndent = indent + " ".repeat(marker.length);
+            docs.push(indent, marker, align(markerIndent, fill(wordDocs)));
+          } else {
+            // For "never" or "preserve", keep content on one line after the marker
+            docs.push(indent, marker, allContent);
+          }
+        } else {
+          docs.push(indent, firstLine);
+        }
+      } else {
+        // Non-list item (prose that appeared before the first bullet)
+        docs.push(indent, itemLines.join(" ").replace(/\s+/g, " ").trim());
+      }
+    }
+    return docs;
+  }
+
   const text = lines.join(" ").replace(/\s+/g, " ").trim();
 
   if (proseWrap === "never") {

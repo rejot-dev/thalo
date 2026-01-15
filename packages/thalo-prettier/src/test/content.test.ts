@@ -139,4 +139,108 @@ describe("content formatting", () => {
   Second thought after double blank.
 `);
   });
+
+  it("should preserve bullet points on separate lines", async () => {
+    const input = `2026-01-05T16:00Z create reference "Clean Code" #programming
+  ref-type: "book"
+
+  # Key Takeaways
+  - Functions should do one thing
+  - Names should reveal intent
+  - Comments explain why, not what
+`;
+
+    const output = await format(input);
+
+    expect(output).toBe(`2026-01-05T16:00Z create reference "Clean Code" #programming
+  ref-type: "book"
+
+  # Key Takeaways
+  - Functions should do one thing
+  - Names should reveal intent
+  - Comments explain why, not what
+`);
+  });
+
+  it("should preserve asterisk bullet points on separate lines", async () => {
+    const input = `2026-01-05T16:00Z create opinion "Testing practices" #testing
+  confidence: "high"
+
+  # Claim
+  Test behavior, not implementation.
+
+  # Reasoning
+  * Tests should be resilient to refactoring
+  * Implementation details change frequently
+  * Behavior is what users care about
+`;
+
+    const output = await format(input);
+
+    expect(output).toBe(`2026-01-05T16:00Z create opinion "Testing practices" #testing
+  confidence: "high"
+
+  # Claim
+  Test behavior, not implementation.
+
+  # Reasoning
+  * Tests should be resilient to refactoring
+  * Implementation details change frequently
+  * Behavior is what users care about
+`);
+  });
+
+  it("should preserve numbered lists on separate lines", async () => {
+    const input = `2026-01-05T16:00Z create lore "Development process" #workflow
+  type: "fact"
+
+  # Description
+  Our standard development process:
+  1. Write failing test
+  2. Implement minimal code
+  3. Refactor
+`;
+
+    const output = await format(input);
+
+    expect(output).toBe(`2026-01-05T16:00Z create lore "Development process" #workflow
+  type: "fact"
+
+  # Description
+  Our standard development process:
+  1. Write failing test
+  2. Implement minimal code
+  3. Refactor
+`);
+  });
+
+  it("should handle mixed prose and bullet points", async () => {
+    const input = `2026-01-05T16:00Z create opinion "Code reviews" #process
+  confidence: "medium"
+
+  # Claim
+  Code reviews are essential for quality.
+
+  # Reasoning
+  Benefits include:
+  - Knowledge sharing across the team
+  - Catching bugs early
+  - Maintaining code consistency
+`;
+
+    const output = await format(input);
+
+    expect(output).toBe(`2026-01-05T16:00Z create opinion "Code reviews" #process
+  confidence: "medium"
+
+  # Claim
+  Code reviews are essential for quality.
+
+  # Reasoning
+  Benefits include:
+  - Knowledge sharing across the team
+  - Catching bugs early
+  - Maintaining code consistency
+`);
+  });
 });
