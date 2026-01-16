@@ -8,16 +8,12 @@ const category: RuleCategory = "metadata";
 const dateRangePattern = /^\d{4}(-\d{2}(-\d{2})?)?\s*~\s*\d{4}(-\d{2}(-\d{2})?)?$/;
 
 /**
- * Check if a type expression is or contains a daterange type
+ * Check if a type expression is strictly a daterange type (not a union containing daterange).
+ * Union types like `datetime | daterange` are handled by the invalid-field-type rule
+ * which correctly validates that the value matches ANY member of the union.
  */
-function isDateRangeType(type: ModelTypeExpression): boolean {
-  if (type.kind === "primitive" && type.name === "daterange") {
-    return true;
-  }
-  if (type.kind === "union") {
-    return type.members.some((m) => m.kind === "primitive" && m.name === "daterange");
-  }
-  return false;
+function isStrictDateRangeType(type: ModelTypeExpression): boolean {
+  return type.kind === "primitive" && type.name === "daterange";
 }
 
 const visitor: RuleVisitor = {
@@ -38,8 +34,8 @@ const visitor: RuleVisitor = {
         continue; // Will be caught by unknown-field rule
       }
 
-      // Check if this field expects a date-range type
-      if (!isDateRangeType(fieldSchema.type)) {
+      // Check if this field expects a strict date-range type (not a union)
+      if (!isStrictDateRangeType(fieldSchema.type)) {
         continue;
       }
 

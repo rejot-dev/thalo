@@ -193,4 +193,50 @@ This is a simple markdown file.
       ]
     `);
   });
+
+  it("metadata field with datetime | daterange union type used with single date", () => {
+    const ws = workspaceFromFiles({
+      "schema.thalo": `
+2026-01-07T11:40Z define-entity event "An event with flexible date"
+  # Metadata
+  when?: datetime | daterange ; "Single date or date range"
+
+  # Sections
+  Description
+`,
+      "entries.thalo": `
+2026-01-05T10:00Z create event "My Event" ^my-event
+  when: 2026-01-15
+
+  # Description
+  This event happens on a single date.
+`,
+    });
+
+    const diagnostics = check(ws);
+    expect(diagnostics).toEqual([]);
+  });
+
+  it("array field with (datetime | daterange)[] union type used with single dates", () => {
+    const ws = workspaceFromFiles({
+      "schema.thalo": `
+2026-01-07T11:40Z define-entity event "An event with flexible dates"
+  # Metadata
+  dates?: (datetime | daterange)[] ; "Array of dates or ranges"
+
+  # Sections
+  Description
+`,
+      "entries.thalo": `
+2026-01-05T10:00Z create event "My Event" ^my-event
+  dates: 2026-01-15, 2026-02-20
+
+  # Description
+  This event happens on multiple dates.
+`,
+    });
+
+    const diagnostics = check(ws);
+    expect(diagnostics).toEqual([]);
+  });
 });
