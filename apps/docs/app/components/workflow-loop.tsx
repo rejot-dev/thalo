@@ -104,17 +104,22 @@ function HexagonalNode({
         `}
       />
 
-      {/* Image container - oversized to crop whitespace */}
-      <g transform="translate(-50, -55)">
-        <foreignObject width="100" height="100" className="overflow-hidden pointer-events-none">
-          <img
-            src={node.image}
-            alt={node.title}
-            draggable={false}
-            className="size-full scale-125 object-contain select-none"
-          />
-        </foreignObject>
-      </g>
+      {/* Image container - using clipPath for cross-browser support */}
+      <defs>
+        <clipPath id={`hex-clip-${node.id}`}>
+          <polygon points={innerPoints} />
+        </clipPath>
+      </defs>
+      <image
+        href={node.image}
+        x="-50"
+        y="-55"
+        width="100"
+        height="100"
+        preserveAspectRatio="xMidYMid slice"
+        clipPath={`url(#hex-clip-${node.id})`}
+        className="pointer-events-none"
+      />
 
       {/* Node number */}
       <text y="28" textAnchor="middle" className="fill-muted-foreground text-[12px] font-mono">
