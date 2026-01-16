@@ -99,7 +99,9 @@ function HexagonalNode({
         className={`
           transition-all duration-300
           ${
-            isActive ? "fill-accent/50 dark:fill-accent/30" : "fill-background/80 dark:fill-card/80"
+            isActive
+              ? "fill-accent/50 dark:fill-background/90"
+              : "fill-background/80 dark:fill-background/90"
           }
         `}
       />
@@ -118,13 +120,8 @@ function HexagonalNode({
         height="100"
         preserveAspectRatio="xMidYMid slice"
         clipPath={`url(#hex-clip-${node.id})`}
-        className="pointer-events-none"
+        className="pointer-events-none dark:opacity-70"
       />
-
-      {/* Node number */}
-      <text y="28" textAnchor="middle" className="fill-muted-foreground text-[12px] font-mono">
-        0{node.id}
-      </text>
 
       {/* Caption below hexagon */}
       <text y="92" textAnchor="middle" className="fill-foreground text-[13px] font-semibold">
@@ -141,6 +138,7 @@ function FlowConnector({
   index,
   centerX,
   centerY,
+  activeNode,
 }: {
   from: { x: number; y: number };
   to: { x: number; y: number };
@@ -148,6 +146,7 @@ function FlowConnector({
   index: number;
   centerX: number;
   centerY: number;
+  activeNode: number;
 }) {
   // Calculate control points for curved path
   const midX = (from.x + to.x) / 2;
@@ -187,10 +186,9 @@ function FlowConnector({
         `}
       />
 
-      {/* Animated flow particle - slower animation to match stage duration */}
       {isActive && (
-        <circle r="4" className="fill-primary dark:fill-primary">
-          <animateMotion dur="2800ms" repeatCount="indefinite">
+        <circle key={`particle-${activeNode}`} r="4" className="fill-primary dark:fill-primary">
+          <animateMotion dur="3000ms" repeatCount="indefinite">
             <mpath href={`#${pathId}`} />
           </animateMotion>
         </circle>
@@ -317,7 +315,7 @@ export function WorkflowLoop() {
       <div className="pointer-events-none absolute left-1/4 top-1/4 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
       <div className="pointer-events-none absolute bottom-1/4 right-1/4 size-[500px] translate-x-1/2 translate-y-1/2 rounded-full bg-amber-500/5 blur-3xl dark:bg-amber-400/5" />
 
-      <div className="relative mx-auto max-w-7xl px-6 md:px-8" ref={containerRef}>
+      <div className="relative mx-auto max-w-6xl px-6 md:px-8" ref={containerRef}>
         {/* Section header */}
         <div className="mb-12 md:mb-16">
           <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
@@ -375,6 +373,7 @@ export function WorkflowLoop() {
                       index={i}
                       centerX={centerX}
                       centerY={centerY}
+                      activeNode={activeNode}
                     />
                   );
                 })}

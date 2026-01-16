@@ -159,9 +159,12 @@ export function DemoPanel({
 
       {/* Content area */}
       <div
-        className={cn("flex-1 overflow-auto", isTerminal ? "bg-zinc-900 text-zinc-100" : "bg-card")}
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-x-auto",
+          isTerminal ? "bg-zinc-900 text-zinc-100" : "bg-card",
+        )}
       >
-        {children}
+        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>
   );
@@ -184,7 +187,7 @@ export function PanelCode({
     <pre
       className={cn(
         "p-4 text-sm leading-relaxed",
-        wordWrap ? "whitespace-pre-wrap break-all" : "overflow-x-auto",
+        wordWrap ? "whitespace-pre-wrap break-all w-full" : "w-max min-w-full",
         className,
       )}
     >

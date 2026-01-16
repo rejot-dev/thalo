@@ -18,13 +18,13 @@ function SearchBar() {
     <button
       type="button"
       onClick={() => setOpenSearch(true)}
-      className="border-fd-border/70 bg-fd-background/55 text-fd-muted-foreground hover:bg-fd-accent/35 hover:text-fd-accent-foreground focus-visible:ring-fd-ring fixed left-1/2 z-50 inline-flex -translate-x-1/2 items-center gap-2 space-x-6 rounded-full border px-3 py-1.5 text-sm shadow-sm backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2"
+      className="fixed left-1/2 z-50 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-sm text-foreground/80 shadow-lg shadow-primary/10 backdrop-blur-md transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       aria-label="Open Search"
       data-search
     >
       <Search className="size-4" />
-      <span className="text-fd-muted-foreground hidden sm:inline">Search Docs</span>
-      <kbd className="bg-fd-background/70 text-fd-muted-foreground ring-fd-border inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-medium leading-none ring-1">
+      <span className="hidden sm:inline text-muted-foreground">Search Docs</span>
+      <kbd className="inline-flex items-center rounded-full border border-border/60 bg-muted/60 px-2 py-0.5 text-[12px] font-medium leading-none text-muted-foreground">
         {hotkeyParts.map((k, idx) => (
           <span key={typeof k.key === "string" ? k.key : "mod"} className={idx === 0 ? "" : "ms-1"}>
             {k.display}
@@ -60,7 +60,7 @@ export function HomeLayoutWithFooter({
         },
       }}
       themeSwitch={{
-        enabled: true,
+        enabled: false,
         mode: "light-dark-system",
       }}
       nav={{

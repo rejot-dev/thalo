@@ -130,7 +130,7 @@ export function HomeFooter() {
         <div className="mb-12 flex flex-col items-center">
           <Flourish className="mb-8 h-5 w-48 text-border" />
           <p className="max-w-md text-center font-serif text-lg italic text-muted-foreground">
-            "Your notes should outlive every app."
+            "Structure knowledge, collaborate with AI."
           </p>
         </div>
 

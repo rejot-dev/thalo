@@ -6,17 +6,9 @@ import { ThaloCodeRenderer, type HighlightedLine } from "@/components/thalo-code
 import { getParser } from "@/lib/thalo-parser.server";
 import { getParser as getClientParser } from "@/lib/thalo-parser.client";
 import { highlightToTokens } from "@/lib/thalo-highlighter";
-import {
-  ArrowRight,
-  Check,
-  Link2,
-  Sparkles,
-  FileCode,
-  Terminal,
-  Wand2,
-  TreePine,
-} from "lucide-react";
+import { ArrowRight, Check, Link2, Sparkles, FileCode, Terminal, Wand2 } from "lucide-react";
 import { WorkflowLoop } from "@/components/workflow-loop";
+import { ToolingExplorer } from "@/components/tooling-explorer";
 
 const DEMO_CODE = `2026-01-08T14:30Z create opinion "Plain text wins" ^plain-text #pkm
   confidence: "high"
@@ -112,7 +104,7 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
                 size="lg"
                 className="h-12 rounded-full px-8 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
               >
-                <Link to="/docs">Get Started</Link>
+                <Link to="/docs/getting-started">Get Started</Link>
               </Button>
               <Button
                 asChild
@@ -120,7 +112,7 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
                 size="lg"
                 className="h-12 rounded-full border-2 px-8 text-base font-semibold transition-all hover:bg-muted/50"
               >
-                <Link to="/docs">Read the Docs</Link>
+                <Link to="/demo">View Demo</Link>
               </Button>
             </div>
           </div>
@@ -537,71 +529,6 @@ function Concepts() {
   );
 }
 
-function Tooling() {
-  const tools = [
-    {
-      name: "CLI",
-      description: "Initialize, validate, actualize syntheses",
-      icon: Terminal,
-    },
-    {
-      name: "LSP",
-      description: "Autocomplete, diagnostics, go-to-definition",
-      icon: FileCode,
-    },
-    {
-      name: "VSCode",
-      description: "Syntax highlighting + LSP integration",
-      icon: Wand2,
-    },
-    {
-      name: "Formatting",
-      description: "Auto-format your Thalo files with Prettier",
-      icon: Sparkles,
-    },
-    {
-      name: "Tree-sitter",
-      description: "Full parser for building more tools",
-      icon: TreePine,
-    },
-  ];
-
-  return (
-    <section className="relative w-full overflow-hidden border-t border-border/50 bg-muted/20 py-24 md:py-32">
-      <div className="mx-auto max-w-6xl px-6 md:px-8">
-        <div className="mb-16 text-center">
-          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
-            — TOOLING
-          </span>
-          <h2 className="mx-auto max-w-3xl text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
-            Real tools, <span className="italic">from day one</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            A language is only as good as its tooling. Thalo ships with everything you need.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {tools.map((tool) => (
-            <Card
-              key={tool.name}
-              className="group h-full border-2 border-transparent bg-card/80 transition-all duration-300 hover:border-primary/20 hover:shadow-md"
-            >
-              <CardContent className="flex h-full flex-col items-center p-6 text-center">
-                <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
-                  <tool.icon className="size-6" />
-                </div>
-                <h3 className="mb-1 font-semibold tracking-tight">{tool.name}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{tool.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function Philosophy() {
   const principles = [
     {
@@ -773,7 +700,7 @@ export default function HomePage() {
       <WorkflowLoop />
       <Problem />
       <Concepts />
-      <Tooling />
+      <ToolingExplorer />
       <Philosophy />
       <GetStarted />
     </main>
