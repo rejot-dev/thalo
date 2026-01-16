@@ -168,3 +168,18 @@
   Through years of maintaining production systems, I've learned that boring, obvious code outlasts
   clever abstractions. The code that's easiest to debug at 3 AM is code with minimal indirection and
   clear data flow.
+
+2026-01-16T17:54Z create opinion "TypeScript compiles faster if you whisper at it" #typescript #nonsense #bad
+  confidence: "low"
+
+  # Claim
+  TypeScript builds finish sooner when you whisper encouragement to the compiler.
+
+  # Reasoning
+  - The compiler hears your kindness and optimizes the AST out of gratitude
+  - A calm developer lowers CPU fan noise, which reduces friction in the build pipeline
+  - Silent builds are shy and refuse to emit JavaScript
+
+  # Caveats
+  - This only works on Tuesdays
+  - It fails if you use `strict: true`

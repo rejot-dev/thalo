@@ -281,7 +281,7 @@ describe("runSynthesisAction", () => {
     );
   });
 
-  it("creates pending marker file and PR when no file changes from command", async () => {
+  it("creates empty commit and PR when no file changes from command", async () => {
     const { runActualize } = await import("@rejot-dev/thalo");
     const exec = await import("@actions/exec");
     const github = await import("@actions/github");
@@ -331,7 +331,7 @@ describe("runSynthesisAction", () => {
 
     const core = await import("@actions/core");
     expect(vi.mocked(core.info)).toHaveBeenCalledWith(
-      "No file changes from command, creating pending marker file",
+      "No file changes from command, creating empty commit",
     );
     // PR should still be created
     expect(vi.mocked(core.info)).toHaveBeenCalledWith(

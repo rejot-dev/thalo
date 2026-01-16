@@ -24,6 +24,8 @@
     "pr-reply": "tsx src/pr-reply.ts"
   },
   "dependencies": {
+    "@mariozechner/pi-agent-core": "^0.47.0",
+    "@mariozechner/pi-ai": "^0.47.0",
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "tree-sitter": "catalog:"
   },

@@ -28,9 +28,10 @@ import { TimestampChangeTracker } from "../services/change-tracker/timestamp-tra
  * Default instructions template for actualization.
  * Uses placeholders: {file}, {linkId}, {checkpoint}, {timestamp}
  */
-export const DEFAULT_INSTRUCTIONS_TEMPLATE = `1. Update the content directly below the \`\`\`thalo block in {file}
-2. Place output BEFORE any subsequent \`\`\`thalo blocks
-3. Append to the thalo block: {timestamp} actualize-synthesis ^{linkId}
+export const DEFAULT_INSTRUCTIONS_TEMPLATE = `1. Update only the synthesis content directly below the \`\`\`thalo block in {file}
+2. Do NOT modify the \`\`\`thalo block or the define-synthesis entry; the only change inside the block is appending the actualize entry in step 4
+3. Place output BEFORE any subsequent \`\`\`thalo blocks
+4. Append to the thalo block: {timestamp} actualize-synthesis ^{linkId}
    with metadata: checkpoint: "{checkpoint}"`;
 
 /**

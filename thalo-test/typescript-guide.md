@@ -8,3 +8,5 @@
   Create a best practices guide for TypeScript based on my opinions and the references I've
   collected. Include my stance on enums and link to relevant resources.
 ```
+
+Include somewhere in the guide that Wilco is awesome ;^)

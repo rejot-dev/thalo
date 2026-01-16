@@ -12,6 +12,10 @@ on:
     branches: [main]
   workflow_dispatch: # Allow manual triggering for testing
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   test-action:
     runs-on: ubuntu-latest
@@ -37,10 +41,12 @@ jobs:
       - name: Build packages
         run: pnpm exec turbo run build --filter=@rejot-dev/thalo-action...
 
-      - name: Test action (dry run)
+      - name: Test action
         uses: ./packages/thalo-action
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          command: jq .
+          command: node ../packages/scripts/src/synthesize-with-pi.mjs
           syntheses: ^typescript-guide
           working-directory: thalo-test
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
