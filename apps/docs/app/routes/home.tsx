@@ -120,7 +120,7 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
           {/* Right column: Code overlay - visible on lg and up */}
           <div className="relative hidden lg:flex lg:justify-end lg:items-end">
             {/* Code block overlay */}
-            <div className="w-full max-w-md lg:-mb-16 xl:max-w-lg xl:-mb-32">
+            <div className="w-full max-w-lg lg:-mb-16 xl:max-w-5xl xl:-mb-32 2xl:translate-x-32">
               <div className="overflow-hidden rounded-xl border border-amber-900/20 bg-amber-50 shadow-2xl dark:border-zinc-700/50 dark:bg-zinc-900/95 dark:backdrop-blur-sm">
                 {/* Terminal header */}
                 <div className="flex items-center gap-2 border-b border-amber-900/10 bg-amber-100/50 px-4 py-2.5 dark:border-zinc-700/50 dark:bg-transparent">
@@ -488,15 +488,7 @@ function Concepts() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {concepts.map((concept) => (
-            <Card
-              key={concept.name}
-              className="group relative h-full overflow-hidden border-2 transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5"
-            >
-              {/* Gradient accent on hover */}
-              <div
-                className={`absolute inset-0 bg-linear-to-br ${concept.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-              />
-
+            <Card key={concept.name} className="relative h-full overflow-hidden border-2">
               <CardContent className="relative flex h-full flex-col p-0">
                 <div className="flex-1 p-6">
                   <div className="mb-4 flex items-start justify-between">
@@ -613,8 +605,7 @@ function GetStarted() {
             — GET STARTED
           </span>
           <h2 className="mx-auto max-w-2xl text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
-            From zero to structured knowledge{" "}
-            <span className="italic text-primary">in 30 seconds</span>
+            Start structuring your <span className="italic text-primary">knowledge</span>
           </h2>
         </div>
 

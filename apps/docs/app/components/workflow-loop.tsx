@@ -438,28 +438,30 @@ export function WorkflowLoop() {
                 </div>
               </div>
 
-              {/* Active node indicator */}
-              <div className="relative mb-4 flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <span className="font-mono text-xl font-bold">0{activeNode + 1}</span>
+              <div className="min-h-[160px]">
+                {/* Active node indicator */}
+                <div className="relative mb-4 flex items-center gap-3">
+                  <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <span className="font-mono text-xl font-bold">0{activeNode + 1}</span>
+                  </div>
+                  <div>
+                    <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                      Current Stage
+                    </p>
+                    <p className="font-semibold text-foreground">{activeNodeData.title}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                    Current Stage
-                  </p>
-                  <p className="font-semibold text-foreground">{activeNodeData.title}</p>
-                </div>
+
+                {/* Caption */}
+                <h3 className="relative mb-2 text-2xl font-bold tracking-tight text-foreground">
+                  {activeNodeData.caption}
+                </h3>
+
+                {/* Subtext */}
+                <p className="relative mb-6 leading-relaxed text-muted-foreground">
+                  {activeNodeData.subtext}
+                </p>
               </div>
-
-              {/* Caption */}
-              <h3 className="relative mb-2 text-2xl font-bold tracking-tight text-foreground">
-                {activeNodeData.caption}
-              </h3>
-
-              {/* Subtext */}
-              <p className="relative mb-6 leading-relaxed text-muted-foreground">
-                {activeNodeData.subtext}
-              </p>
 
               {/* Progress indicator */}
               <div className="relative flex gap-1.5">
