@@ -105,3 +105,63 @@ entry header with trailing whitespace
       (sections_block
         (section_definition
           (section_name))))))
+
+==================
+metadata value with trailing whitespace (link)
+==================
+
+2026-01-05T10:00Z create test "Entry"
+  subject: ^acme-corp  
+  name: "hello"
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (link)))
+      (metadata
+        (key)
+        (value
+          (quoted_value))))))
+
+==================
+metadata value with trailing whitespace (quoted)
+==================
+
+2026-01-05T10:00Z create test "Entry"
+  name: "hello"  
+  other: "world"
+
+---
+
+(source_file
+  (entry
+    (data_entry
+      (timestamp
+        (timestamp_date)
+        (timestamp_t)
+        (timestamp_time)
+        (timestamp_tz))
+      (data_directive)
+      (identifier)
+      (title)
+      (metadata
+        (key)
+        (value
+          (quoted_value)))
+      (metadata
+        (key)
+        (value
+          (quoted_value))))))

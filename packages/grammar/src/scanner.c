@@ -192,12 +192,27 @@ static bool look_ahead_for_indented_content(TSLexer *lexer)
 }
 
 /**
+ * @brief Skip horizontal whitespace without including it in the token
+ *
+ * Tree-sitter extras are not consumed before external scanners are called,
+ * so we need to manually skip trailing whitespace to find the newline.
+ */
+static void skip_hspace(TSLexer *lexer)
+{
+    while (is_hspace(lexer->lookahead))
+    {
+        lexer->advance(lexer, true); // true = skip (don't include in token)
+    }
+}
+
+/**
  * @brief Unified newline scanner
  *
  * This function handles both INDENT and CONTENT_BLANK in a single pass
  * to avoid advancing the lexer before knowing what token to produce.
  *
  * Algorithm:
+ * 0. Skip any trailing horizontal whitespace (extras aren't auto-consumed for externals)
  * 1. Consume the initial newline
  * 2. Count indentation on the current line
  * 3. If we have valid indent and content: return INDENT
@@ -208,7 +223,11 @@ static bool look_ahead_for_indented_content(TSLexer *lexer)
  */
 static bool scan_newline(TSLexer *lexer, const bool *valid_symbols)
 {
-    // Must start at a newline
+    // Skip any trailing whitespace before the newline
+    // (tree-sitter extras are not automatically consumed for external scanners)
+    skip_hspace(lexer);
+
+    // Must now be at a newline
     if (!is_newline(lexer->lookahead))
     {
         return false;

@@ -239,4 +239,71 @@ This is a simple markdown file.
     const diagnostics = check(ws);
     expect(diagnostics).toEqual([]);
   });
+
+  it("trailing whitespace after a link value in metadata does not cause parsing errors", () => {
+    const ws = workspaceFromFiles({
+      "schema.thalo": `
+2026-01-07T11:40Z define-entity repository "A git repository"
+  # Metadata
+  url: string
+
+  # Sections
+  Description
+
+2026-01-07T11:41Z define-entity git-commit "A git commit"
+  # Metadata
+  repository: link
+  hash: string
+
+  # Sections
+  Summary
+`,
+      // Note: the trailing spaces after ^repo-viaduct are intentional
+      "entries.thalo": `
+2026-01-05T10:00Z create repository "Viaduct" ^repo-viaduct
+  url: "https://github.com/example/viaduct"
+
+  # Description
+  A repository.
+
+2026-01-05T10:01Z create git-commit "Some commit" ^commit-abc123
+  repository: ^repo-viaduct  
+  hash: "abc123"
+
+  # Summary
+  A commit message.
+`,
+    });
+
+    const diagnostics = check(ws);
+    const syntaxErrors = diagnostics.filter((d) => d.code.startsWith("syntax-"));
+    expect(syntaxErrors).toEqual([]);
+  });
+
+  it("trailing whitespace after a quoted value in metadata does not cause parsing errors", () => {
+    const ws = workspaceFromFiles({
+      "schema.thalo": `
+2026-01-07T11:40Z define-entity test "Test"
+  # Metadata
+  name: string
+  other: string
+
+  # Sections
+  Description
+`,
+      // Note: the trailing spaces after the quoted value are intentional
+      "entries.thalo": `
+2026-01-05T10:00Z create test "Test entry" ^test-1
+  name: "hello"  
+  other: "world"
+
+  # Description
+  A test.
+`,
+    });
+
+    const diagnostics = check(ws);
+    const syntaxErrors = diagnostics.filter((d) => d.code.startsWith("syntax-"));
+    expect(syntaxErrors).toEqual([]);
+  });
 });
