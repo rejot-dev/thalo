@@ -16,17 +16,18 @@ import {
   Wand2,
   TreePine,
 } from "lucide-react";
+import { WorkflowLoop } from "@/components/workflow-loop";
 
 const DEMO_CODE = `2026-01-08T14:30Z create opinion "Plain text wins" ^plain-text #pkm
   confidence: "high"
 
   # Claim
-  Your notes should outlive every app.
+  Your notes should be plain text.
 
   # Reasoning
-  - Apps die. Plain text is forever.
-  - grep > proprietary search
-  - AI speaks text natively`;
+  - Plain text is portable
+  - AI works best with file systems
+  - grep > proprietary search`;
 
 /** Server loader - runs during SSR. */
 export async function loader() {
@@ -101,7 +102,7 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
             {/* Description */}
             <p className="mb-8 text-lg  leading-relaxed text-muted-foreground md:text-xl">
               A plain-text, structured format for capturing knowledge. Store quick notes, create
-              durable data. Human-readable, versionable, and LLMs love to work with it.
+              usable data. Human-readable, versionable, and LLMs love to work with it.
             </p>
 
             {/* CTA Buttons */}
@@ -172,9 +173,9 @@ function LiveDemo({ highlightedLines }: { highlightedLines: HighlightedLine[] })
     },
     {
       icon: Sparkles,
-      title: "AI Synthesis",
+      title: "Works with AI",
       description:
-        "Query your knowledge and let AI synthesize. Scattered thoughts → coherent understanding.",
+        "Answer questions with agentic search. Let the LLM create structure: scattered thoughts → coherent understanding.",
       color: "text-amber-600 dark:text-amber-400",
       bg: "bg-amber-500/10",
     },
@@ -273,7 +274,7 @@ function Problem() {
     {
       label: "Apps",
       headline: "Too rigid",
-      body: "Lock-in, proprietary formats, features you don't need. When they shut down, your notes are orphaned.",
+      body: "Lock-in, proprietary formats, features you don't need. Constrained to their AI.",
     },
     {
       label: "AI",
@@ -440,7 +441,8 @@ function Concepts() {
     {
       name: "Entities",
       number: "01",
-      description: "Define what kinds of knowledge you track. Opinions, journals, references, lore",
+      description:
+        "Define what kinds of knowledge you track. Opinions, references, goals, git commits, anything.",
       codeComponent: ConceptCodeEntity,
       icon: FileCode,
       accent: "from-amber-500/20 to-orange-500/20",
@@ -630,11 +632,11 @@ function Philosophy() {
               — PHILOSOPHY
             </span>
             <h2 className="text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              A manifesto for{" "}
+              Structure knowledge,{" "}
               <span className="relative">
-                <span className="italic text-primary">durable</span>
+                <span className="italic text-primary">collaborate with AI</span>
                 <svg
-                  className="absolute -bottom-1 left-0 h-2 w-full text-primary/30"
+                  className="absolute -bottom-1 left-0 h-2 w-full text-primary/30 overflow-visible"
                   viewBox="0 0 100 8"
                   preserveAspectRatio="none"
                 >
@@ -646,7 +648,6 @@ function Philosophy() {
                   />
                 </svg>
               </span>{" "}
-              knowledge
             </h2>
           </div>
 
@@ -769,6 +770,7 @@ export default function HomePage() {
     <main className="relative flex min-h-screen flex-col overflow-x-hidden">
       <Hero highlightedLines={highlightedLines} />
       <LiveDemo highlightedLines={highlightedLines} />
+      <WorkflowLoop />
       <Problem />
       <Concepts />
       <Tooling />
