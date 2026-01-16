@@ -23,6 +23,16 @@ const isListItem = (line: string): boolean => {
   return /^[-*+]\s|^\d+\.\s/.test(line);
 };
 
+/**
+ * Check if a word starts with a character that cannot begin a content line.
+ * In thalo syntax, content lines cannot start with:
+ * - # (would be parsed as markdown header attempt)
+ * - // (would be parsed as a comment)
+ */
+const startsWithProblematicChar = (word: string): boolean => {
+  return word.startsWith("#") || word.startsWith("//");
+};
+
 const getContentLineText = (node: SyntaxNode): string => {
   const contentText = node.children.find((c) => c.type === "content_text");
   if (contentText) {
@@ -92,6 +102,10 @@ const formatParagraph = (lines: string[], options: ThaloOptions, indent: string)
             for (const [wordIndex, word] of words.entries()) {
               if (wordIndex === 0) {
                 wordDocs.push(word);
+              } else if (startsWithProblematicChar(word)) {
+                // Words starting with # or // cannot begin a content line in thalo syntax.
+                // Use a non-breaking space to keep them attached to the previous word.
+                wordDocs.push(" ", word);
               } else {
                 wordDocs.push(line, word);
               }
@@ -130,6 +144,10 @@ const formatParagraph = (lines: string[], options: ThaloOptions, indent: string)
     for (const [index, word] of words.entries()) {
       if (index === 0) {
         wordDocs.push(word);
+      } else if (startsWithProblematicChar(word)) {
+        // Words starting with # or // cannot begin a content line in thalo syntax.
+        // Use a non-breaking space to keep them attached to the previous word.
+        wordDocs.push(" ", word);
       } else {
         wordDocs.push(line, word);
       }
