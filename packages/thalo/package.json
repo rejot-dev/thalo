@@ -29,6 +29,11 @@
       "types": "./dist/parser.web.d.ts",
       "default": "./dist/parser.web.js"
     },
+    "./node": {
+      "development": "./src/parser.node.ts",
+      "types": "./dist/parser.node.d.ts",
+      "default": "./dist/parser.node.js"
+    },
     "./services/semantic-tokens": {
       "development": "./src/services/semantic-tokens.ts",
       "types": "./dist/services/semantic-tokens.d.ts",

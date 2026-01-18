@@ -3,7 +3,7 @@ import * as path from "node:path";
 import ignore from "ignore";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
-import { createWorkspace } from "@rejot-dev/thalo/native";
+import { createWorkspace } from "@rejot-dev/thalo/node";
 import {
   runFormat,
   type FormatResult,

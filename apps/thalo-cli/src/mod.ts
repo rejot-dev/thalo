@@ -1,3 +1,4 @@
+import { initParser } from "@rejot-dev/thalo/node";
 import { runCli, type CommandDef } from "./cli.js";
 import { actualizeCommand } from "./commands/actualize.js";
 import { checkCommand } from "./commands/check.js";
@@ -30,4 +31,14 @@ const rootCommand: CommandDef = {
   },
 };
 
-runCli(rootCommand);
+// Initialize parser (with WASM fallback if native bindings unavailable)
+// then run the CLI
+initParser()
+  .then(() => {
+    runCli(rootCommand);
+  })
+  .catch((err) => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Error: Failed to initialize parser: ${message}`);
+    process.exit(1);
+  });

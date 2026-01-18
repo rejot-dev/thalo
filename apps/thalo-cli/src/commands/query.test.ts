@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { executeQueries, parseQueryString } from "@rejot-dev/thalo";
-import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
+import { createWorkspace, Workspace, initParser } from "@rejot-dev/thalo/node";
 
 describe("query command", () => {
+  // Initialize parser once for all tests
+  beforeAll(async () => {
+    await initParser();
+  });
   describe("parseQueryString", () => {
     it("parses entity-only query", () => {
       const result = parseQueryString("lore");

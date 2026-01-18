@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "./src/mod.ts",
     "./src/parser.native.ts",
+    "./src/parser.node.ts",
     "./src/parser.web.ts",
     "./src/services/semantic-tokens.ts",
     "./src/services/definition.ts",

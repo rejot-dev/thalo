@@ -272,12 +272,12 @@ importers:
       prettier:
         specifier: ^3.5.3
         version: 3.6.2
-      tree-sitter:
-        specifier: 'catalog:'
-        version: 0.25.0
       vscode-languageserver:
         specifier: ^9.0.1
         version: 9.0.1
+      web-tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.10(patch_hash=c35b0a0c6fb8d018f279f0f307240fc083bb7278dca75c113b83567ee15c526b)
     devDependencies:
       '@rejot-private/typescript-config':
         specifier: workspace:*
@@ -297,6 +297,10 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
+    optionalDependencies:
+      tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.0
 
   packages/grammar:
     devDependencies:
@@ -429,6 +433,9 @@ importers:
       vscode-languageserver-textdocument:
         specifier: ^1.0.12
         version: 1.0.12
+      web-tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.10(patch_hash=c35b0a0c6fb8d018f279f0f307240fc083bb7278dca75c113b83567ee15c526b)
     devDependencies:
       '@rejot-private/typescript-config':
         specifier: workspace:*
@@ -445,6 +452,10 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
+    optionalDependencies:
+      tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.0
 
   packages/thalo-prettier:
     dependencies:

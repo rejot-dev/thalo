@@ -10,7 +10,7 @@ import {
   type Workspace,
   type Position as ThaloPosition,
 } from "@rejot-dev/thalo";
-import { parseDocument } from "@rejot-dev/thalo/native";
+import { parseDocument } from "@rejot-dev/thalo/node";
 
 /**
  * Convert a file path to a URI

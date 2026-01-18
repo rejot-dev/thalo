@@ -7,7 +7,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import * as path from "node:path";
 import { join, resolve } from "node:path";
 import pc from "picocolors";
-import { createWorkspace, type Workspace } from "@rejot-dev/thalo/native";
+import { createWorkspace, type Workspace } from "@rejot-dev/thalo/node";
 
 /**
  * Default file extensions for thalo files.

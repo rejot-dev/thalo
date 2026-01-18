@@ -11,7 +11,7 @@ import {
 } from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import type { FileType } from "@rejot-dev/thalo";
-import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
+import { initParser, createWorkspace, Workspace } from "@rejot-dev/thalo/node";
 
 import { serverCapabilities, tokenLegend } from "./capabilities.js";
 import { handleDefinition } from "./handlers/definition.js";
@@ -560,7 +560,17 @@ export function startServer(connection: Connection = createConnection()): void {
 
 // Run server when executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  startServer();
+  // Initialize parser (with WASM fallback if native bindings unavailable)
+  // then start the server
+  initParser()
+    .then(() => {
+      startServer();
+    })
+    .catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[thalo-lsp] Failed to initialize parser: ${message}`);
+      process.exit(1);
+    });
 }
 
 // Export for testing
