@@ -88,6 +88,11 @@
       "development": "./src/files.ts",
       "types": "./dist/files.d.ts",
       "default": "./dist/files.js"
+    },
+    "./api": {
+      "development": "./src/api.ts",
+      "types": "./dist/api.d.ts",
+      "default": "./dist/api.js"
     }
   },
   "main": "./dist/mod.js",
