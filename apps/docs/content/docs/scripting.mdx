@@ -1,0 +1,451 @@
+---
+title: Scripting API
+description: Automate and extend your knowledge base with the Thalo scripting API
+---
+
+# Scripting API
+
+The Thalo scripting API provides programmatic access to your knowledge base, enabling you to write
+scripts that iterate over entries, find connections, run queries, and create custom validation
+rules.
+
+## Installation
+
+The scripting API is part of the main `@rejot-dev/thalo` package:
+
+```bash
+pnpm add @rejot-dev/thalo
+```
+
+## Quick Start
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+
+// Load your knowledge base
+const workspace = await loadThalo("./my-knowledge-base");
+
+// Iterate over all entries
+for (const entry of workspace.entries()) {
+  console.log(`${entry.timestamp} - ${entry.title}`);
+}
+
+// Query for specific entries
+const codingOpinions = workspace.query("opinion where #coding");
+
+// Find all references to a link (^my-important-note)
+const refs = workspace.findReferences("my-important-note");
+```
+
+## Loading a Workspace
+
+### From a Directory
+
+The most common way to load a workspace is from a directory containing your `.thalo` and `.md`
+files:
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+
+// Load all .thalo and .md files from a directory
+const workspace = await loadThalo("./my-knowledge-base");
+
+// Only load .thalo files
+const workspace = await loadThalo("./kb", { extensions: [".thalo"] });
+```
+
+### From Specific Files
+
+You can also load specific files:
+
+```typescript
+import { loadThaloFiles } from "@rejot-dev/thalo/api";
+
+const workspace = await loadThaloFiles(["./entries.thalo", "./syntheses.thalo"]);
+```
+
+## Iterating Over Entries
+
+### All Entries
+
+```typescript
+// Get all entries across all files
+const allEntries = workspace.entries();
+
+// Get entries from a specific file
+const fileEntries = workspace.entriesInFile("./entries.thalo");
+```
+
+### By Entry Type
+
+```typescript
+// Instance entries (create/update)
+const instances = workspace.instanceEntries();
+for (const entry of instances) {
+  console.log(`${entry.entity}: ${entry.title}`);
+  console.log(`  Directive: ${entry.directive}`); // "create" or "update"
+}
+
+// Schema entries (define-entity/alter-entity)
+const schemas = workspace.schemaEntries();
+for (const entry of schemas) {
+  console.log(`Entity: ${entry.entityName}`);
+  console.log(`  Directive: ${entry.directive}`); // "define-entity" or "alter-entity"
+}
+
+// Synthesis entries (define-synthesis)
+const syntheses = workspace.synthesisEntries();
+
+// Actualize entries (actualize-synthesis)
+const actualizations = workspace.actualizeEntries();
+```
+
+### Entry Properties
+
+Every `ThaloEntry` has these common properties:
+
+```typescript
+interface ThaloEntry {
+  type: "instance" | "schema" | "synthesis" | "actualize";
+  file: string; // File path
+  timestamp: string; // ISO format (e.g., "2026-01-08T14:30Z")
+  title: string; // Entry title
+  linkId?: string; // Link ID without ^ prefix
+  tags: string[]; // Tags without # prefix
+  location: Location; // Source location
+  raw: Entry; // Raw AST for advanced use
+}
+```
+
+## Navigation
+
+Navigate your knowledge base using links (`^link-id`) and tags (`#tag-name`). Both methods require
+the prefix to be explicit.
+
+### Find Definition
+
+Jump to where a link ID is defined. Only works with links (`^`), not tags.
+
+```typescript
+// Find where ^my-note is defined
+const def = workspace.findDefinition("^my-note");
+
+if (def) {
+  console.log(`Defined in ${def.file}`);
+  console.log(`Line ${def.location.startPosition.row + 1}`);
+  console.log(`Entry: ${def.entry.title}`);
+}
+
+// Error: tags don't have definitions
+// workspace.findDefinition("#coding"); // throws Error
+```
+
+### Find References
+
+Find all places that reference a link (`^link-id`) or all entries with a tag (`#tag-name`).
+
+#### Link References
+
+```typescript
+// Find all occurrences of ^my-note (including where it's defined)
+const linkRefs = workspace.findReferences("^my-note");
+
+// Only references, not the definition
+const refsOnly = workspace.findReferences("^my-note", false);
+
+for (const ref of linkRefs) {
+  if (ref.kind === "link") {
+    const label = ref.isDefinition ? "defined" : "referenced";
+    console.log(`${label} in ${ref.file}:${ref.location.startPosition.row + 1}`);
+  }
+}
+```
+
+#### Tag References
+
+```typescript
+// Find all entries with a tag
+const tagRefs = workspace.findReferences("#coding");
+
+for (const ref of tagRefs) {
+  if (ref.kind === "tag") {
+    console.log(`${ref.entry.title} in ${ref.file}`);
+  }
+}
+```
+
+<Callout>
+  The prefix is required. Calling `findReferences("my-note")` without `^` or `#` will throw an
+  error.
+</Callout>
+
+## Querying
+
+Use the Thalo query syntax to find entries:
+
+```typescript
+// All opinions
+const opinions = workspace.query("opinion");
+
+// Opinions with a specific tag
+const codingOpinions = workspace.query("opinion where #coding");
+
+// With field conditions
+const highConfidence = workspace.query('opinion where confidence = "high"');
+
+// Multiple conditions (AND)
+const filtered = workspace.query('opinion where #coding and confidence = "high"');
+
+// Multiple entity types (OR)
+const mixed = workspace.query("opinion, lore");
+```
+
+Query errors throw exceptions:
+
+```typescript
+try {
+  const results = workspace.query("nonexistent-entity");
+} catch (error) {
+  console.error(error.message);
+  // "Unknown entity type: 'nonexistent-entity'. Define it using 'define-entity'."
+}
+```
+
+## Validation
+
+Run the checker to find issues:
+
+```typescript
+const diagnostics = workspace.check();
+
+for (const d of diagnostics) {
+  console.log(`${d.severity}: ${d.message}`);
+  console.log(`  ${d.file}:${d.line}:${d.column}`);
+  console.log(`  Rule: ${d.code}`);
+}
+```
+
+Configure which rules run:
+
+```typescript
+const diagnostics = workspace.check({
+  rules: {
+    "unknown-entity": "error",
+    "missing-title": "warning",
+    "empty-section": "off",
+  },
+});
+```
+
+## Custom Visitors
+
+The visitor pattern lets you process entries with custom logic:
+
+```typescript
+// Count entries by entity type
+const counts = new Map<string, number>();
+
+workspace.visit({
+  visitInstanceEntry(entry) {
+    const count = counts.get(entry.entity) ?? 0;
+    counts.set(entry.entity, count + 1);
+  },
+});
+
+console.log(counts);
+// Map { "opinion" => 15, "lore" => 42, "journal" => 8 }
+```
+
+### Visitor Interface
+
+```typescript
+interface EntryVisitor {
+  visitInstanceEntry?(entry: ThaloInstanceEntry, context: VisitorContext): void;
+  visitSchemaEntry?(entry: ThaloSchemaEntry, context: VisitorContext): void;
+  visitSynthesisEntry?(entry: ThalaSynthesisEntry, context: VisitorContext): void;
+  visitActualizeEntry?(entry: ThaloActualizeEntry, context: VisitorContext): void;
+}
+```
+
+The context provides access to the workspace and current file:
+
+```typescript
+workspace.visit({
+  visitInstanceEntry(entry, context) {
+    console.log(`Processing entry in ${context.file}`);
+
+    // Access the workspace for cross-referencing
+    if (entry.linkId) {
+      const refs = context.workspace.findReferences(`^${entry.linkId}`, false);
+      console.log(`Found ${refs.length} incoming reference(s).`);
+    }
+  },
+});
+```
+
+## Example Scripts
+
+### Export to JSON
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+import { writeFileSync } from "fs";
+
+async function exportToJson() {
+  const workspace = await loadThalo(".");
+
+  const data = workspace.instanceEntries().map((entry) => ({
+    type: entry.entity,
+    title: entry.title,
+    timestamp: entry.timestamp,
+    tags: entry.tags,
+    linkId: entry.linkId,
+  }));
+
+  writeFileSync("export.json", JSON.stringify(data, null, 2));
+}
+
+exportToJson();
+```
+
+### Find Orphaned Links
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+
+async function findOrphanedLinks() {
+  const workspace = await loadThalo(".");
+  const orphans: string[] = [];
+
+  workspace.visit({
+    visitInstanceEntry(entry) {
+      if (entry.linkId) {
+        const refs = workspace.findReferences(`^${entry.linkId}`, false);
+        if (refs.length === 0) {
+          orphans.push(`^${entry.linkId} (${entry.title})`);
+        }
+      }
+    },
+  });
+
+  if (orphans.length > 0) {
+    console.log("Entries with no incoming references:");
+    orphans.forEach((o) => console.log(`  ${o}`));
+  } else {
+    console.log("All entries are referenced!");
+  }
+}
+
+findOrphanedLinks();
+```
+
+### Tag Statistics
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+
+async function tagStats() {
+  const workspace = await loadThalo(".");
+  const tagCounts = new Map<string, number>();
+
+  workspace.visit({
+    visitInstanceEntry(entry) {
+      for (const tag of entry.tags) {
+        tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+      }
+    },
+  });
+
+  // Sort by count
+  const sorted = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
+
+  console.log("Tag usage:");
+  for (const [tag, count] of sorted) {
+    console.log(`  #${tag}: ${count}`);
+  }
+}
+
+tagStats();
+```
+
+### Custom Validation Rule
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+
+async function customValidation() {
+  const workspace = await loadThalo(".");
+  const issues: string[] = [];
+
+  workspace.visit({
+    visitInstanceEntry(entry) {
+      // Rule: Opinions must have exactly one tag
+      if (entry.entity === "opinion" && entry.tags.length !== 1) {
+        issues.push(
+          `${entry.file}:${entry.location.startPosition.row + 1}: ` +
+            `Opinion "${entry.title}" should have exactly one tag, ` +
+            `found ${entry.tags.length}`,
+        );
+      }
+
+      // Rule: All entries should have a link ID
+      if (!entry.linkId) {
+        issues.push(
+          `${entry.file}:${entry.location.startPosition.row + 1}: ` +
+            `Entry "${entry.title}" is missing a link ID`,
+        );
+      }
+    },
+  });
+
+  if (issues.length > 0) {
+    console.log("Custom validation issues:");
+    issues.forEach((i) => console.log(`  ${i}`));
+    process.exit(1);
+  } else {
+    console.log("All custom validations passed!");
+  }
+}
+
+customValidation();
+```
+
+## Accessing Raw AST
+
+For advanced use cases, access the raw AST through the `raw` property:
+
+```typescript
+workspace.visit({
+  visitInstanceEntry(entry) {
+    // Access metadata fields
+    for (const meta of entry.raw.metadata) {
+      console.log(`${meta.key.value}: ${meta.value.raw}`);
+    }
+
+    // Access content sections
+    if (entry.raw.content) {
+      for (const child of entry.raw.content.children) {
+        if (child.type === "markdown_header") {
+          console.log(`Section: ${child.text}`);
+        }
+      }
+    }
+  },
+});
+```
+
+## TypeScript Support
+
+The API is fully typed. Import types as needed:
+
+```typescript
+import type {
+  ThaloWorkspaceInterface,
+  ThaloEntry,
+  ThaloInstanceEntry,
+  ThaloSchemaEntry,
+  EntryVisitor,
+  VisitorContext,
+  DiagnosticInfo,
+} from "@rejot-dev/thalo/api";
+```

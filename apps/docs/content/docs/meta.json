@@ -1,3 +1,11 @@
 {
-  "pages": ["getting-started", "syntax", "entities", "change-tracking", "cli", "examples"]
+  "pages": [
+    "getting-started",
+    "syntax",
+    "entities",
+    "change-tracking",
+    "cli",
+    "scripting",
+    "examples"
+  ]
 }

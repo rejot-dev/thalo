@@ -7,6 +7,7 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowRight,
+  Code,
 } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
@@ -17,7 +18,7 @@ interface Capability {
   icon: React.ComponentType<{ className?: string }>;
   description: string;
   features: string[];
-  visual: "feedback" | "navigation" | "tidy" | "anywhere";
+  visual: "feedback" | "navigation" | "tidy" | "anywhere" | "scripting";
 }
 
 const capabilities: Capability[] = [
@@ -79,6 +80,21 @@ const capabilities: Capability[] = [
       "Version control — track changes with Git, sync with Dropbox or any other file-based sync service",
     ],
     visual: "anywhere",
+  },
+  {
+    id: "scripting",
+    name: "Scripting API",
+    tagline: "Automate your knowledge",
+    icon: Code,
+    description:
+      "Write scripts that interact with your knowledge base. Iterate over entries, run queries, find connections, and create custom validation rules — all with a clean TypeScript API.",
+    features: [
+      "Load and iterate — loop over all entries or filter by file",
+      "Query entries — use the familiar `entity where #tag` syntax",
+      "Navigate links — find definitions and all references",
+      "Custom visitors — write your own validation rules",
+    ],
+    visual: "scripting",
   },
 ];
 
@@ -332,6 +348,66 @@ function AnywhereVisual() {
   );
 }
 
+/** Code snippet mockup showing scripting API */
+function ScriptingVisual() {
+  return (
+    <div className="relative h-full w-full overflow-hidden rounded-lg border border-cyan-500/30 bg-zinc-900 font-mono text-xs shadow-xl shadow-cyan-500/5">
+      {/* Editor header */}
+      <div className="flex items-center gap-2 border-b border-zinc-800 bg-zinc-900/80 px-3 py-2">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-red-500/80" />
+          <span className="size-2.5 rounded-full bg-yellow-500/80" />
+          <span className="size-2.5 rounded-full bg-green-500/80" />
+        </div>
+        <span className="text-[10px] text-zinc-500">analyze.ts</span>
+      </div>
+
+      {/* Code content */}
+      <div className="p-3 leading-relaxed text-zinc-300">
+        <div className="text-zinc-500">
+          <span className="text-purple-400">import</span> {"{"} loadThalo {"}"}{" "}
+          <span className="text-purple-400">from</span>{" "}
+          <span className="text-emerald-400">"@rejot-dev/thalo/api"</span>;
+        </div>
+        <div className="mt-2" />
+        <div>
+          <span className="text-purple-400">const</span>{" "}
+          <span className="text-cyan-400">workspace</span> ={" "}
+          <span className="text-purple-400">await</span>{" "}
+          <span className="text-amber-400">loadThalo</span>(
+          <span className="text-emerald-400">"."</span>);
+        </div>
+        <div className="mt-2" />
+        <div className="text-zinc-500">// Query your knowledge base</div>
+        <div>
+          <span className="text-purple-400">const</span>{" "}
+          <span className="text-cyan-400">opinions</span> = workspace.
+          <span className="text-amber-400">query</span>(
+        </div>
+        <div className="pl-4">
+          <span className="text-emerald-400">"opinion where #coding"</span>
+        </div>
+        <div>);</div>
+        <div className="mt-2" />
+        <div className="text-zinc-500">// Find all link references</div>
+        <div>
+          <span className="text-purple-400">const</span> <span className="text-cyan-400">refs</span>{" "}
+          = workspace.
+          <span className="text-amber-400">findReferences</span>(
+          <span className="text-emerald-400">"^my-note"</span>);
+        </div>
+        <div className="mt-2" />
+        <div className="text-zinc-500">// Custom visitor</div>
+        <div>
+          workspace.<span className="text-amber-400">visit</span>({"{"}{" "}
+          <span className="text-cyan-400">visitInstanceEntry</span>
+          (e) {"=>"} {"{"} ... {"}"} {"}"});
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function VisualDemo({ type }: { type: Capability["visual"] }) {
   switch (type) {
     case "feedback":
@@ -342,6 +418,8 @@ function VisualDemo({ type }: { type: Capability["visual"] }) {
       return <TidyVisual />;
     case "anywhere":
       return <AnywhereVisual />;
+    case "scripting":
+      return <ScriptingVisual />;
   }
 }
 
