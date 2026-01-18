@@ -1,8 +1,13 @@
 {
   "name": "@rejot-dev/tree-sitter-thalo",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rejot-dev/thalo.git",
+    "directory": "packages/grammar"
+  },
+  "license": "MIT",
   "main": "bindings/node/index.js",
   "types": "bindings/node/index.d.ts",
   "exports": {
@@ -30,7 +35,7 @@
     "types:check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@rejot-dev/typescript-config": "workspace:*",
+    "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "node-gyp": "^10.2.0",
     "tree-sitter-cli": "^0.26.3",

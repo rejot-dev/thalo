@@ -1,8 +1,16 @@
 {
   "name": "@rejot-dev/thalo-prettier",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rejot-dev/thalo.git",
+    "directory": "packages/thalo-prettier"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "development": "./src/mod.ts",
@@ -29,7 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@rejot-dev/typescript-config": "workspace:*",
+    "@rejot-private/typescript-config": "workspace:*",
     "prettier": "^3.5.3",
     "tsdown": "catalog:",
     "typescript": "catalog:",

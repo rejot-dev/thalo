@@ -1,5 +1,5 @@
 {
-  "extends": "@rejot-dev/typescript-config/tsconfig.base.json",
+  "extends": "@rejot-private/typescript-config/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src"

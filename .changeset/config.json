@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@rejot-dev/thalo",
+      "@rejot-dev/thalo-cli",
+      "@rejot-dev/thalo-lsp",
+      "@rejot-dev/thalo-prettier",
+      "@rejot-dev/tree-sitter-thalo"
+    ]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "@rejot-dev/thalo-docs",
+    "@rejot-dev/thalo-action",
+    "@rejot-dev/scripts",
+    "thalo-vscode",
+    "@rejot-private/*"
+  ]
+}

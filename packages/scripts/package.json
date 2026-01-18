@@ -30,7 +30,7 @@
     "tree-sitter": "catalog:"
   },
   "devDependencies": {
-    "@rejot-dev/typescript-config": "workspace:*",
+    "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",

@@ -1,8 +1,16 @@
 {
   "name": "@rejot-dev/thalo-lsp",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rejot-dev/thalo.git",
+    "directory": "packages/thalo-lsp"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "development": "./src/mod.ts",
@@ -29,7 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "@rejot-dev/typescript-config": "workspace:*",
+    "@rejot-private/typescript-config": "workspace:*",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

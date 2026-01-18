@@ -1,8 +1,17 @@
 {
   "name": "@rejot-dev/thalo-cli",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rejot-dev/thalo.git",
+    "directory": "apps/thalo-cli"
+  },
+  "license": "MIT",
+  "files": [
+    "dist",
+    "bin"
+  ],
   "bin": {
     "thalo": "./bin/run.js"
   },
@@ -35,7 +44,7 @@
     "vscode-languageserver": "^9.0.1"
   },
   "devDependencies": {
-    "@rejot-dev/typescript-config": "workspace:*",
+    "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",

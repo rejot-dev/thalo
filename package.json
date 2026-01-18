@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.18.2",
   "type": "module",
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@rejot-dev/thalo-prettier": "workspace:*",
     "lefthook": "^1.13.6",
     "oxlint": "^1.36.0",
@@ -28,6 +29,8 @@
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "pr-review": "pnpm --filter @rejot-dev/scripts pr-review",
-    "pr-reply": "pnpm --filter @rejot-dev/scripts pr-reply"
+    "pr-reply": "pnpm --filter @rejot-dev/scripts pr-reply",
+    "ci:version": "changeset version && pnpm update && pnpm install",
+    "ci:publish": "changeset publish && changeset tag"
   }
 }

@@ -1,0 +1,103 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch }}
+
+jobs:
+  release:
+    if:
+      ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event ==
+      'push' && github.event.workflow_run.head_branch == 'main' }}
+    name: Release
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: CXXFLAGS="-std=c++20" pnpm install --frozen-lockfile
+
+      - name: Build Publishable Packages
+        run: pnpm exec turbo run build --filter='./packages/*' --filter='./apps/thalo-cli'
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm run ci:version
+          publish: pnpm run ci:publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Get CLI version for release
+        if: steps.changesets.outputs.published == 'true'
+        id: cli-version
+        run: |
+          CLI_VERSION=$(node -p "require('./apps/thalo-cli/package.json').version")
+          echo "version=$CLI_VERSION" >> $GITHUB_OUTPUT
+          echo "CLI version: $CLI_VERSION"
+
+      - name: Build VS Code Extension
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          cd packages/thalo-vscode
+          # Sync vsix version with CLI version
+          node -e "
+            const pkg = require('./package.json');
+            pkg.version = '${{ steps.cli-version.outputs.version }}';
+            require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          pnpm exec vsce package --no-dependencies
+          ls -la *.vsix
+
+      - name: Create GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "@rejot-dev/thalo-cli@${{ steps.cli-version.outputs.version }}"
+          name: "Thalo v${{ steps.cli-version.outputs.version }}"
+          body: |
+            ## Installation
+
+            ### CLI (npm)
+            ```bash
+            npm install -g @rejot-dev/thalo-cli@${{ steps.cli-version.outputs.version }}
+            ```
+
+            ### VS Code Extension
+            Download `thalo-vscode-${{ steps.cli-version.outputs.version }}.vsix` below and install via:
+            - VS Code: Extensions → ⋯ → Install from VSIX...
+            - CLI: `code --install-extension thalo-vscode-${{ steps.cli-version.outputs.version }}.vsix`
+
+            ## Published Packages
+            ${{ steps.changesets.outputs.publishedPackages }}
+          files: |
+            packages/thalo-vscode/thalo-vscode-${{ steps.cli-version.outputs.version }}.vsix
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,8 +1,18 @@
 {
   "name": "@rejot-dev/thalo",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rejot-dev/thalo.git",
+    "directory": "packages/thalo"
+  },
+  "license": "MIT",
+  "files": [
+    "dist",
+    "tree-sitter-thalo.wasm",
+    "web-tree-sitter.wasm"
+  ],
   "exports": {
     ".": {
       "development": "./src/mod.ts",
@@ -89,15 +99,14 @@
     "test": "vitest run",
     "test:watch": "vitest --watch"
   },
+  "dependencies": {
+    "@rejot-dev/tree-sitter-thalo": "workspace:*"
+  },
   "peerDependencies": {
-    "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "tree-sitter": "catalog:",
     "web-tree-sitter": "catalog:"
   },
   "peerDependenciesMeta": {
-    "@rejot-dev/tree-sitter-thalo": {
-      "optional": true
-    },
     "tree-sitter": {
       "optional": true
     },
@@ -106,8 +115,7 @@
     }
   },
   "devDependencies": {
-    "@rejot-dev/tree-sitter-thalo": "workspace:*",
-    "@rejot-dev/typescript-config": "workspace:*",
+    "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "tree-sitter": "catalog:",
     "tsdown": "catalog:",
