@@ -40,8 +40,11 @@
     "ignore": "^7.0.5",
     "picocolors": "^1.1.1",
     "prettier": "^3.5.3",
-    "tree-sitter": "catalog:",
-    "vscode-languageserver": "^9.0.1"
+    "vscode-languageserver": "^9.0.1",
+    "web-tree-sitter": "catalog:"
+  },
+  "optionalDependencies": {
+    "tree-sitter": "catalog:"
   },
   "devDependencies": {
     "@rejot-private/typescript-config": "workspace:*",

@@ -6,7 +6,7 @@ import {
   type Workspace,
   type Position as ThaloPosition,
 } from "@rejot-dev/thalo";
-import { parseDocument } from "@rejot-dev/thalo/native";
+import { parseDocument } from "@rejot-dev/thalo/node";
 
 /**
  * Get the file type from a URI

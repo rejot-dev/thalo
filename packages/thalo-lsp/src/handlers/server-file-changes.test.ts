@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { FileChangeType } from "vscode-languageserver";
-import { createWorkspace, Workspace } from "@rejot-dev/thalo/native";
+import { initParser, createWorkspace, Workspace } from "@rejot-dev/thalo/node";
+
+// Initialize parser once for all tests
+beforeAll(async () => {
+  await initParser();
+});
 import { handleDefinition } from "./definition.js";
 import type { Position } from "vscode-languageserver";
 

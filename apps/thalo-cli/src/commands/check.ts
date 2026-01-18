@@ -9,7 +9,7 @@ import {
   type DiagnosticInfo,
   type DiagnosticSeverity,
 } from "@rejot-dev/thalo";
-import { createWorkspace } from "@rejot-dev/thalo/native";
+import { createWorkspace } from "@rejot-dev/thalo/node";
 import pc from "picocolors";
 import type { CommandDef, CommandContext } from "../cli.js";
 import { resolveFilesSync, relativePath } from "../files.js";

@@ -1,6 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { initParser } from "@rejot-dev/thalo/node";
 import { handleSemanticTokens } from "./semantic-tokens.js";
+
+// Initialize parser once for all tests
+beforeAll(async () => {
+  await initParser();
+});
 
 /**
  * Create a TextDocument for testing
