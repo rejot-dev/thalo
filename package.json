@@ -30,7 +30,7 @@
     "test:watch": "turbo run test:watch",
     "pr-review": "pnpm --filter @rejot-dev/scripts pr-review",
     "pr-reply": "pnpm --filter @rejot-dev/scripts pr-reply",
-    "ci:version": "changeset version && pnpm update && pnpm install",
+    "ci:version": "changeset version && pnpm update && pnpm install && pnpm run format:changed",
     "ci:publish": "changeset publish && changeset tag"
   }
 }
