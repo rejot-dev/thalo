@@ -1,5 +1,17 @@
 # @rejot-dev/thalo-cli
 
+## 0.2.0
+
+### Patch Changes
+
+- dd5e57e: Add Node.js parser fallback to WASM when native bindings are unavailable.
+- Updated dependencies [dab147a]
+- Updated dependencies [dd5e57e]
+  - @rejot-dev/thalo@0.2.0
+  - @rejot-dev/thalo-lsp@0.2.0
+  - @rejot-dev/thalo-prettier@0.2.0
+  - @rejot-dev/tree-sitter-thalo@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes
