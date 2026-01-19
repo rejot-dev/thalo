@@ -6,6 +6,16 @@ syntax.
 ## Installation
 
 ```bash
+# Install globally
+npm install -g @rejot-dev/thalo-cli
+
+# Or with pnpm
+pnpm add -g @rejot-dev/thalo-cli
+```
+
+### Development
+
+```bash
 # From the monorepo root
 pnpm install
 pnpm exec turbo run build --filter=@rejot-dev/thalo-cli
@@ -13,6 +23,11 @@ pnpm exec turbo run build --filter=@rejot-dev/thalo-cli
 # Run directly
 node apps/thalo-cli/dist/mod.js --help
 ```
+
+### Parser
+
+The CLI uses a WebAssembly-based parser (via `web-tree-sitter`) that works on all platforms and
+Node.js versions, including Node.js 24+. Run `thalo --version` to see which parser is active.
 
 ## Usage
 

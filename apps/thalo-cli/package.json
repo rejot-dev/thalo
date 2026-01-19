@@ -43,9 +43,6 @@
     "vscode-languageserver": "^9.0.1",
     "web-tree-sitter": "catalog:"
   },
-  "optionalDependencies": {
-    "tree-sitter": "catalog:"
-  },
   "devDependencies": {
     "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
