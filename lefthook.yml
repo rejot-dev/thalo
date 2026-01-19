@@ -17,3 +17,7 @@ pre-commit:
       root: "packages/grammar"
       glob: "{packages/grammar/grammar.js,packages/grammar/src/*.c}"
       run: node scripts/check-rebuild.mjs --fix
+    - name: "grammar: validate binding.gyp"
+      root: "packages/grammar"
+      glob: "packages/grammar/binding.gyp"
+      run: pnpm exec node-gyp configure --loglevel=warn

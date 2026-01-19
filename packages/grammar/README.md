@@ -17,7 +17,7 @@ using fenced code blocks with the `thalo` language identifier:
 
 Some markdown content here.
 
-```thalo
+```
 2026-01-05T18:00Z create lore "An insight" #example
   type: "insight"
   subject: ^self
@@ -47,7 +47,7 @@ Create or update instances of entities (lore, opinion, reference, journal):
 
 ### Example
 
-```thalo
+```
 2026-01-05T18:11Z create lore "Custom event streaming system" ^event-streaming #architecture #distributed
   type: "fact"
   subject: ^acme-corp
@@ -117,7 +117,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
 
 ### Example
 
-```thalo
+```
 2026-01-05T18:12Z define-entity reference "Collected resources"
   # Metadata
   url?: string ; "the url to the resource"
@@ -135,7 +135,7 @@ Define or alter entity schemas using `define-entity` and `alter-entity` directiv
 
 Modify existing entity schemas by adding or removing fields/sections:
 
-```thalo
+```
 2026-01-10T14:00Z alter-entity reference "Add published field, remove legacy"
   # Metadata
   published: datetime ; "publication date"
@@ -319,6 +319,39 @@ pnpm exec tree-sitter test
 
 # Parse a file
 pnpm exec tree-sitter parse path/to/file.thalo
+```
+
+## Building Native Bindings
+
+The package includes native Node.js bindings that require compilation. The `binding.gyp` uses C++20
+to support Node.js 24+ (which requires C++20 for V8 headers).
+
+```bash
+# Build native bindings
+pnpm run build:native
+
+# Validate binding.gyp syntax (without building)
+pnpm run check:gyp
+```
+
+### Requirements
+
+- **C++20 compiler**: GCC 10+, Clang 10+, or MSVC 2019+
+- **Python 3.6+**: Required by node-gyp
+- **Node.js 18+**: For running the bindings
+
+### WASM Alternative
+
+If native compilation fails or isn't available, consumers can use the WASM build instead:
+
+```javascript
+import { Parser, Language } from "web-tree-sitter";
+import thaloWasm from "@rejot-dev/tree-sitter-thalo/tree-sitter-thalo.wasm";
+
+await Parser.init();
+const parser = new Parser();
+const language = await Language.load(thaloWasm);
+parser.setLanguage(language);
 ```
 
 ## Limitations

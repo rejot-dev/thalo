@@ -56,6 +56,10 @@ jobs:
       - name: Verify grammar builds are up-to-date
         run: node packages/grammar/scripts/check-rebuild.mjs
 
+      - name: Validate binding.gyp
+        working-directory: packages/grammar
+        run: pnpm exec node-gyp configure --loglevel=warn
+
       - name: Check types & build
         run: pnpm exec turbo run types:check build
 

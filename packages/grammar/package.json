@@ -31,6 +31,7 @@
     "build:wasm": "tree-sitter build --wasm --output tree-sitter-thalo.wasm",
     "build:native": "pnpm exec node-gyp rebuild",
     "check:native": "node scripts/check-rebuild.mjs",
+    "check:gyp": "node-gyp configure --loglevel=warn",
     "test": "tree-sitter test",
     "types:check": "tsc --noEmit"
   },
