@@ -1,5 +1,13 @@
 # @rejot-dev/thalo
 
+## 0.2.1
+
+### Patch Changes
+
+- 3fe4a0c: Fix WASM fallback not activating when native tree-sitter bindings are unavailable; add
+  git hash and parser backend to `--version` output.
+  - @rejot-dev/tree-sitter-thalo@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

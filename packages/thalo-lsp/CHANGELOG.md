@@ -1,5 +1,12 @@
 # @rejot-dev/thalo-lsp
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [3fe4a0c]
+  - @rejot-dev/thalo@0.2.1
+
 ## 0.2.0
 
 ### Patch Changes
