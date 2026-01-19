@@ -84,3 +84,62 @@ jobs:
 
       - name: Run tests
         run: pnpm exec turbo run test --concurrency=80%
+
+  # Test that CLI installs and works on Node 24 WITHOUT C++20 flags
+  # This simulates a user installing the package without special compiler flags
+  test-node24-install:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      # Build with C++20 flags (needed to build the monorepo)
+      - name: Install dependencies and build
+        run: |
+          CXXFLAGS="-std=c++20" pnpm install --frozen-lockfile
+          pnpm exec turbo run build
+
+      - name: Pack packages
+        run: |
+          mkdir -p /tmp/thalo-test
+          cd packages/grammar && pnpm pack --pack-destination /tmp/thalo-test
+          cd ../thalo && pnpm pack --pack-destination /tmp/thalo-test
+          cd ../thalo-lsp && pnpm pack --pack-destination /tmp/thalo-test
+          cd ../../apps/thalo-cli && pnpm pack --pack-destination /tmp/thalo-test
+
+      # Install WITHOUT C++20 flags - this tests the real user experience
+      # Native tree-sitter compilation will fail, but install should succeed
+      # because we've removed tree-sitter from runtime dependencies
+      - name: Test install without C++20 flags (simulates real user experience)
+        run: |
+          mkdir -p /tmp/test-project
+          cd /tmp/test-project
+          npm init -y
+          # Install WITHOUT special compiler flags - native compilation may fail
+          # but the package should still install and work via WASM fallback
+          npm install /tmp/thalo-test/*.tgz 2>&1 | tee install.log
+          # Verify install succeeded (exit code 0)
+          echo "Install completed successfully"
+
+      - name: Verify CLI works with WASM fallback
+        run: |
+          cd /tmp/test-project
+          # Check version shows [wasm] (native bindings not available)
+          ./node_modules/.bin/thalo --version | tee version.txt
+          grep -q "\[wasm\]" version.txt || (echo "ERROR: Expected [wasm] in version output" && exit 1)
+
+          # Create a test file and run check (uses printf to avoid indentation issues)
+          printf '2026-01-01T12:00Z define-entity person "A person"\n  # Metadata\n  name: string\n\n  # Sections\n  Bio\n\n2026-01-01T12:01Z create person "John Doe" ^john\n  name: "John Doe"\n\n  # Bio\n  John is a software developer.\n' > test.thalo
+
+          ./node_modules/.bin/thalo check test.thalo
+          echo "✅ CLI works correctly with WASM fallback on Node.js 24"

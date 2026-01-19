@@ -28,6 +28,7 @@
     "types:check": "turbo run types:check",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
+    "test:wasm-fallback": "pnpm --filter @rejot-dev/scripts test:wasm-fallback",
     "pr-review": "pnpm --filter @rejot-dev/scripts pr-review",
     "pr-reply": "pnpm --filter @rejot-dev/scripts pr-reply",
     "ci:version": "changeset version && pnpm update && pnpm install && pnpm run format:changed",
