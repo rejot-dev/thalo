@@ -1,5 +1,15 @@
 # @rejot-dev/thalo-cli
 
+## 0.2.3
+
+### Patch Changes
+
+- 1836f55: fix: remove tree-sitter from optionalDependencies for Node.js 24 compatibility
+  - @rejot-dev/thalo@0.2.3
+  - @rejot-dev/thalo-lsp@0.2.3
+  - @rejot-dev/thalo-prettier@0.2.3
+  - @rejot-dev/tree-sitter-thalo@0.2.3
+
 ## 0.2.2
 
 ### Patch Changes
