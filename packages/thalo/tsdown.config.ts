@@ -21,4 +21,6 @@ export default defineConfig({
   ],
   dts: true,
   unbundle: true,
+  // Externalize native modules to prevent bundling
+  external: ["tree-sitter", "node-gyp-build"],
 });

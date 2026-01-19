@@ -16,7 +16,7 @@ import {
 import { getEntryIdentity, serializeIdentity } from "../../merge/entry-matcher.js";
 import { entriesEqual } from "../../merge/entry-merger.js";
 import { entryMatchesQuery } from "../query.js";
-import { parseDocument } from "../../parser.js";
+import { parseDocument } from "../../parser.node.js";
 import { extractSourceFile } from "../../ast/extract.js";
 import type {
   ChangeTracker,

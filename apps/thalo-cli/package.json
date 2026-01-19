@@ -35,7 +35,6 @@
   "dependencies": {
     "@rejot-dev/thalo": "workspace:*",
     "@rejot-dev/thalo-lsp": "workspace:*",
-    "@rejot-dev/thalo-prettier": "workspace:*",
     "@rejot-dev/tree-sitter-thalo": "workspace:*",
     "ignore": "^7.0.5",
     "picocolors": "^1.1.1",
@@ -44,6 +43,7 @@
     "web-tree-sitter": "catalog:"
   },
   "devDependencies": {
+    "@rejot-dev/thalo-prettier": "workspace:*",
     "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

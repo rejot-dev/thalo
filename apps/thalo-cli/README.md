@@ -29,6 +29,17 @@ node apps/thalo-cli/dist/mod.js --help
 The CLI uses a WebAssembly-based parser (via `web-tree-sitter`) that works on all platforms and
 Node.js versions, including Node.js 24+. Run `thalo --version` to see which parser is active.
 
+### Format Command
+
+The `thalo format` command requires the optional `@rejot-dev/thalo-prettier` plugin:
+
+```bash
+npm install @rejot-dev/thalo-prettier
+```
+
+Note: `thalo-prettier` requires native tree-sitter bindings. If compilation fails on Node.js 24+,
+use Node.js 22 LTS for formatting. All other CLI commands work on Node.js 24+ via WASM fallback.
+
 ## Usage
 
 ```bash

@@ -113,13 +113,9 @@
     "@rejot-dev/tree-sitter-thalo": "workspace:*"
   },
   "peerDependencies": {
-    "tree-sitter": "catalog:",
     "web-tree-sitter": "catalog:"
   },
   "peerDependenciesMeta": {
-    "tree-sitter": {
-      "optional": true
-    },
     "web-tree-sitter": {
       "optional": true
     }
