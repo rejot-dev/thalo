@@ -1,5 +1,12 @@
 # @rejot-dev/thalo
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [ec09f91]
+  - @rejot-dev/tree-sitter-thalo@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes

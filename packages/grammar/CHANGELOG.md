@@ -1,5 +1,11 @@
 # @rejot-dev/tree-sitter-thalo
 
+## 0.2.2
+
+### Patch Changes
+
+- ec09f91: fix: add C++20 compiler flags to binding.gyp for Node.js 24 compatibility
+
 ## 0.2.1
 
 ## 0.2.0
