@@ -22,8 +22,6 @@
  * ```
  */
 
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import {
   createThaloParser,
   type ThaloParser,
@@ -43,8 +41,6 @@ export type { FileType, ParseOptions, ThaloParser };
 
 // Re-export Workspace for convenience
 export { Workspace } from "./model/workspace.js";
-
-const require = createRequire(import.meta.url);
 
 // Parser factory function - set after initialization
 let parserFactory: (() => ThaloParser<GenericTree>) | null = null;
@@ -110,6 +106,11 @@ export async function initParser(): Promise<void> {
   // Fall back to WASM
   try {
     const { Parser, Language } = await import("web-tree-sitter");
+
+    // Dynamically import Node.js APIs for WASM file loading
+    const { readFileSync } = await import("node:fs");
+    const { createRequire } = await import("node:module");
+    const require = createRequire(import.meta.url);
 
     // Resolve WASM file paths from installed dependencies
     const treeSitterWasmPath = require.resolve("web-tree-sitter/tree-sitter.wasm");
