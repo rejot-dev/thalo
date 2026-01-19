@@ -1,4 +1,4 @@
-import { parseDocument } from "../parser.js";
+import { parseDocument } from "../parser.node.js";
 import { extractSourceFile } from "../ast/extract.js";
 import type { MergeResult } from "./merge-result-builder.js";
 import type { MergeConflict, ConflictRule } from "./conflict-detector.js";
@@ -37,14 +37,25 @@ export interface MergeOptions {
  * It parses all three versions, matches entries, detects conflicts,
  * and produces a merged result.
  *
+ * This function is synchronous but requires the parser to be initialized first.
+ * Call `await initParser()` from `@rejot-dev/thalo/node` before using this function.
+ * Internally uses `parseDocument` which depends on the initialized parser.
+ *
  * @param base - Base version content (common ancestor)
  * @param ours - Our version content (local changes)
  * @param theirs - Their version content (incoming changes)
  * @param options - Merge options
  * @returns MergeResult with merged content and conflict information
+ * @throws Error if the parser has not been initialized
  *
  * @example
  * ```typescript
+ * import { initParser } from "@rejot-dev/thalo/node";
+ * import { mergeThaloFiles } from "@rejot-dev/thalo";
+ *
+ * // Initialize the parser first (required)
+ * await initParser();
+ *
  * const base = '2026-01-01T00:00Z define-entity lore "Lore"';
  * const ours = base + '\n2026-01-02T00:00Z create lore "My entry" ^entry1';
  * const theirs = base + '\n2026-01-03T00:00Z create lore "Their entry" ^entry2';

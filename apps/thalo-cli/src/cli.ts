@@ -1,7 +1,6 @@
 import { parseArgs, type ParseArgsConfig } from "node:util";
 import pc from "picocolors";
-
-const VERSION = "0.1.0";
+import { getVersionInfo, formatVersion } from "./version.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -259,8 +258,16 @@ export function runCli(rootCommand: CommandDef, argv: string[] = process.argv.sl
 
   // Handle version (only at root level)
   if (values["version"] && commandPath.length === 1) {
-    console.log(`thalo v${VERSION}`);
-    process.exit(0);
+    getVersionInfo()
+      .then((info) => {
+        console.log(formatVersion(info));
+        process.exit(0);
+      })
+      .catch(() => {
+        console.log("thalo (version unknown)");
+        process.exit(0);
+      });
+    return;
   }
 
   // Handle help

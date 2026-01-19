@@ -1,7 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { mergeThaloFiles } from "./driver.js";
+import { initParser } from "../parser.node.js";
 
 describe("mergeThaloFiles", () => {
+  beforeAll(async () => {
+    await initParser();
+  });
+
   describe("clean merges", () => {
     it("merges independent additions from both sides", () => {
       const base = `2026-01-01T00:00Z define-entity lore "Lore"
