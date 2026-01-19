@@ -108,7 +108,22 @@ async function createPrettierFormatter(): Promise<
   (source: string, filepath: string) => Promise<string>
 > {
   const prettier = await import("prettier");
-  const thaloPrettier = await import("@rejot-dev/thalo-prettier");
+
+  let thaloPrettier: Awaited<typeof import("@rejot-dev/thalo-prettier")>;
+  try {
+    thaloPrettier = await import("@rejot-dev/thalo-prettier");
+  } catch {
+    console.error(pc.red("Error: @rejot-dev/thalo-prettier is not installed."));
+    console.error();
+    console.error("The 'format' command requires the thalo-prettier plugin.");
+    console.error("Install it with:");
+    console.error();
+    console.error(pc.cyan("  npm install @rejot-dev/thalo-prettier"));
+    console.error();
+    console.error(pc.dim("Note: thalo-prettier requires native tree-sitter bindings."));
+    console.error(pc.dim("If compilation fails on Node.js 24+, use Node.js 22 LTS instead."));
+    process.exit(1);
+  }
 
   return async (source: string, filepath: string): Promise<string> => {
     const parser = getParser(filepath);

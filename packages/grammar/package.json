@@ -17,10 +17,10 @@
     },
     "./tree-sitter-thalo.wasm": "./tree-sitter-thalo.wasm"
   },
+  "gypfile": false,
   "files": [
     "grammar.js",
     "binding.gyp",
-    "prebuilds/**",
     "bindings/node/*",
     "queries/*",
     "src/**",
@@ -35,12 +35,14 @@
     "test": "tree-sitter test",
     "types:check": "tsc --noEmit"
   },
+  "dependencies": {
+    "node-gyp-build": "^4.8.4"
+  },
   "devDependencies": {
     "@rejot-private/typescript-config": "workspace:*",
     "@types/node": "catalog:",
-    "node-gyp": "^10.2.0",
-    "tree-sitter-cli": "^0.26.3",
     "node-addon-api": "^8.5.0",
-    "node-gyp-build": "^4.8.4"
+    "node-gyp": "^10.2.0",
+    "tree-sitter-cli": "^0.26.3"
   }
 }
