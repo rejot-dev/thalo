@@ -1,5 +1,11 @@
 # @rejot-dev/tree-sitter-thalo
 
+## 0.2.4
+
+### Patch Changes
+
+- 53bba55: fix: Node.js 24 compatibility - use WASM fallback when native compilation fails
+
 ## 0.2.3
 
 ## 0.2.2
