@@ -1,5 +1,13 @@
 # @rejot-dev/thalo-lsp
 
+## 0.2.4
+
+### Patch Changes
+
+- 53bba55: fix: Node.js 24 compatibility - use WASM fallback when native compilation fails
+- Updated dependencies [53bba55]
+  - @rejot-dev/thalo@0.2.4
+
 ## 0.2.3
 
 ### Patch Changes
