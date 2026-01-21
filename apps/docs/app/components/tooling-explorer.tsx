@@ -152,8 +152,8 @@ function FeedbackVisual() {
         <div className="mt-2 flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-2 py-1.5 text-[10px]">
           <AlertTriangle className="mt-0.5 size-3 shrink-0 text-yellow-400" />
           <div>
-            <p className="font-medium text-yellow-300">Missing optional section</p>
-            <p className="text-yellow-400/80">Entity "opinion" has section "# Reasoning"</p>
+            <p className="font-medium text-yellow-300">Missing required section</p>
+            <p className="text-yellow-400/80">Entity "opinion" should have section "# Reasoning"</p>
           </div>
         </div>
       </div>
