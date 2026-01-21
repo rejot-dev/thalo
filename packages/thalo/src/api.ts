@@ -50,9 +50,15 @@ import { loadWorkspaceFromDirectory, loadWorkspaceFromFiles } from "./files.js";
 import { Workspace } from "./model/workspace.js";
 import { findDefinition as findDefinitionService } from "./services/definition.js";
 import { findReferences as findReferencesService } from "./services/references.js";
+import type { Query } from "./services/query.js";
 import { parseQueryString, executeQueries, validateQueryEntities } from "./services/query.js";
 import { runCheck } from "./commands/check.js";
 import { formatTimestamp } from "./formatters.js";
+import {
+  parseCheckpoint,
+  type ChangeTracker,
+  type ChangeMarker,
+} from "./services/change-tracker/change-tracker.js";
 
 // ===================
 // Entry Types
@@ -311,6 +317,17 @@ export interface LoadOptions {
   extensions?: string[];
 }
 
+/**
+ * Options for filtering a workspace by checkpoint.
+ */
+export interface FilteredSinceOptions {
+  /**
+   * Change tracker for git-based checkpoints.
+   * Required when using git checkpoints (git:...).
+   */
+  tracker?: ChangeTracker;
+}
+
 // ===================
 // Workspace Interface
 // ===================
@@ -361,6 +378,20 @@ export interface ThaloWorkspaceInterface {
    * Get all file paths in the workspace.
    */
   files(): string[];
+
+  /**
+   * Create a filtered workspace view containing entries since a checkpoint.
+   *
+   * - Timestamp checkpoints (ts:...) filter all entries by timestamp.
+   * - Git checkpoints (git:...) filter instance entries using a change tracker.
+   *
+   * @param checkpoint - Checkpoint string (e.g., "ts:2026-01-10T15:00Z" or "git:abc123")
+   * @param options - Filter options
+   */
+  filteredSince(
+    checkpoint: string,
+    options?: FilteredSinceOptions,
+  ): Promise<ThaloWorkspaceInterface>;
 
   // ===================
   // Navigation
@@ -628,6 +659,142 @@ function wrapActualizeEntry(entry: ActualizeEntry, file: string): ThaloActualize
 // ThaloWorkspace Implementation
 // ===================
 
+function buildAllEntityQueries(entries: ThaloInstanceEntry[]): Query[] {
+  const entities = new Set<string>();
+
+  for (const entry of entries) {
+    if (entry.entity) {
+      entities.add(entry.entity);
+    }
+  }
+
+  return Array.from(entities).map((entity) => ({
+    entity,
+    conditions: [],
+  }));
+}
+
+function parseCheckpointOrThrow(checkpoint: string): ChangeMarker {
+  const marker = parseCheckpoint(checkpoint);
+  if (!marker) {
+    throw new Error(
+      `Invalid checkpoint format: "${checkpoint}". Use "ts:2026-01-10T15:00Z" for timestamps or "git:abc123" for git commits.`,
+    );
+  }
+  return marker;
+}
+
+class FilteredThaloWorkspace implements ThaloWorkspaceInterface {
+  private readonly base: ThaloWorkspaceInterface;
+  private readonly entryFilter: (entry: ThaloEntry) => boolean;
+  private readonly instanceFilter: (entry: ThaloInstanceEntry) => boolean;
+
+  constructor(
+    base: ThaloWorkspaceInterface,
+    entryFilter: (entry: ThaloEntry) => boolean,
+    instanceFilter: (entry: ThaloInstanceEntry) => boolean,
+  ) {
+    this.base = base;
+    this.entryFilter = entryFilter;
+    this.instanceFilter = instanceFilter;
+  }
+
+  get _internal(): Workspace {
+    return this.base._internal;
+  }
+
+  entries(): ThaloEntry[] {
+    return this.base.entries().filter((entry) => this.entryFilter(entry));
+  }
+
+  entriesInFile(path: string): ThaloEntry[] {
+    return this.base.entriesInFile(path).filter((entry) => this.entryFilter(entry));
+  }
+
+  instanceEntries(): ThaloInstanceEntry[] {
+    return this.base.instanceEntries().filter((entry) => this.instanceFilter(entry));
+  }
+
+  schemaEntries(): ThaloSchemaEntry[] {
+    return this.base.schemaEntries().filter((entry) => this.entryFilter(entry));
+  }
+
+  synthesisEntries(): ThalaSynthesisEntry[] {
+    return this.base.synthesisEntries().filter((entry) => this.entryFilter(entry));
+  }
+
+  actualizeEntries(): ThaloActualizeEntry[] {
+    return this.base.actualizeEntries().filter((entry) => this.entryFilter(entry));
+  }
+
+  files(): string[] {
+    return this.base.files();
+  }
+
+  findDefinition(identifier: string): DefinitionLocation | undefined {
+    return this.base.findDefinition(identifier);
+  }
+
+  findReferences(identifier: string, includeDefinition?: boolean): ReferenceLocation[] {
+    return this.base.findReferences(identifier, includeDefinition);
+  }
+
+  query(queryString: string): ThaloEntry[] {
+    return this.base
+      .query(queryString)
+      .filter((entry) => this.instanceFilter(entry as ThaloInstanceEntry));
+  }
+
+  async filteredSince(
+    checkpoint: string,
+    options: FilteredSinceOptions = {},
+  ): Promise<ThaloWorkspaceInterface> {
+    const next = await this.base.filteredSince(checkpoint, options);
+    return new FilteredThaloWorkspace(
+      next,
+      (entry) => this.entryFilter(entry),
+      (entry) => this.instanceFilter(entry),
+    );
+  }
+
+  check(config?: CheckConfig): DiagnosticInfo[] {
+    return this.base.check(config);
+  }
+
+  visit(visitor: EntryVisitor): void {
+    this.base.visit({
+      visitInstanceEntry: visitor.visitInstanceEntry
+        ? (entry, context) => {
+            if (this.instanceFilter(entry)) {
+              visitor.visitInstanceEntry?.(entry, context);
+            }
+          }
+        : undefined,
+      visitSchemaEntry: visitor.visitSchemaEntry
+        ? (entry, context) => {
+            if (this.entryFilter(entry)) {
+              visitor.visitSchemaEntry?.(entry, context);
+            }
+          }
+        : undefined,
+      visitSynthesisEntry: visitor.visitSynthesisEntry
+        ? (entry, context) => {
+            if (this.entryFilter(entry)) {
+              visitor.visitSynthesisEntry?.(entry, context);
+            }
+          }
+        : undefined,
+      visitActualizeEntry: visitor.visitActualizeEntry
+        ? (entry, context) => {
+            if (this.entryFilter(entry)) {
+              visitor.visitActualizeEntry?.(entry, context);
+            }
+          }
+        : undefined,
+    });
+  }
+}
+
 /**
  * Implementation of the ThaloWorkspace interface.
  */
@@ -714,6 +881,57 @@ class ThaloWorkspace implements ThaloWorkspaceInterface {
 
   files(): string[] {
     return this.workspace.files();
+  }
+
+  async filteredSince(
+    checkpoint: string,
+    options: FilteredSinceOptions = {},
+  ): Promise<ThaloWorkspaceInterface> {
+    const marker = parseCheckpointOrThrow(checkpoint);
+
+    if (marker.type === "git" && !options.tracker) {
+      throw new Error(
+        `Git checkpoints require a change tracker. Provide a tracker option or use timestamp checkpoints (ts:...).`,
+      );
+    }
+
+    if (marker.type === "ts") {
+      const sinceEpoch = Date.parse(marker.value);
+      if (Number.isNaN(sinceEpoch)) {
+        throw new Error(
+          `Invalid timestamp checkpoint: "${checkpoint}". Expected ISO format like "ts:2026-01-10T15:00Z".`,
+        );
+      }
+
+      const entryFilter = (entry: ThaloEntry): boolean => Date.parse(entry.timestamp) > sinceEpoch;
+      const instanceFilter = (entry: ThaloInstanceEntry): boolean =>
+        Date.parse(entry.timestamp) > sinceEpoch;
+
+      return new FilteredThaloWorkspace(this, entryFilter, instanceFilter);
+    }
+
+    const tracker = options.tracker!;
+    const queries = buildAllEntityQueries(this.instanceEntries());
+    const changedResult = await tracker.getChangedEntries(this.workspace, queries, marker);
+    const changedEntries = new Set<InstanceEntry>(changedResult.entries);
+    const changedSchemas = tracker.getChangedSchemaEntries
+      ? new Set<SchemaEntry>(await tracker.getChangedSchemaEntries(this.workspace, marker))
+      : null;
+
+    const entryFilter = (entry: ThaloEntry): boolean => {
+      if (entry.type !== "instance") {
+        if (entry.type === "schema") {
+          return changedSchemas ? changedSchemas.has(entry.raw as SchemaEntry) : true;
+        }
+        return true;
+      }
+      return changedEntries.has(entry.raw as InstanceEntry);
+    };
+
+    const instanceFilter = (entry: ThaloInstanceEntry): boolean =>
+      changedEntries.has(entry.raw as InstanceEntry);
+
+    return new FilteredThaloWorkspace(this, entryFilter, instanceFilter);
   }
 
   // ===================

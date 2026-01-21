@@ -1,4 +1,4 @@
-import type { Entry, InstanceEntry } from "../../ast/ast-types.js";
+import type { Entry, InstanceEntry, SchemaEntry } from "../../ast/ast-types.js";
 import type { Query } from "../query.js";
 import type { Workspace } from "../../model/workspace.js";
 import {
@@ -160,6 +160,61 @@ export class GitChangeTracker implements ChangeTracker {
     };
   }
 
+  async getChangedSchemaEntries(
+    workspace: Workspace,
+    marker: ChangeMarker | null,
+  ): Promise<SchemaEntry[]> {
+    const gitContext = await detectGitContext(this.cwd);
+    if (!gitContext.isGitRepo) {
+      throw new Error("Not in a git repository");
+    }
+
+    // Check for uncommitted changes in schema source files (unless force is set)
+    const sourceFiles = this.getSchemaSourceFiles(workspace);
+    if (!this.force && sourceFiles.length > 0) {
+      const uncommitted = await getUncommittedFiles(this.cwd, sourceFiles);
+      if (uncommitted.length > 0) {
+        throw new UncommittedChangesError(uncommitted);
+      }
+    }
+
+    // If no marker or switching from timestamp, return all schema entries
+    if (!marker || marker.type === "ts") {
+      return this.getAllSchemaEntries(workspace);
+    }
+
+    const exists = await commitExists(marker.value, this.cwd);
+    if (!exists) {
+      return this.getAllSchemaEntries(workspace);
+    }
+
+    const changedFiles = await getFilesChangedSince(marker.value, this.cwd);
+    const thaloChanges = changedFiles.filter(
+      (f) => f.path.endsWith(".thalo") || f.path.endsWith(".md"),
+    );
+
+    if (thaloChanges.length === 0) {
+      return [];
+    }
+
+    const changedEntries: SchemaEntry[] = [];
+    const seenKeys = new Set<string>();
+
+    for (const change of thaloChanges) {
+      const entries = await this.getChangedSchemaEntriesInFile(workspace, change, marker.value);
+
+      for (const entry of entries) {
+        const key = `${change.path}:${serializeIdentity(getEntryIdentity(entry))}`;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          changedEntries.push(entry);
+        }
+      }
+    }
+
+    return changedEntries;
+  }
+
   /**
    * Get all files that contain entries matching the queries.
    */
@@ -177,6 +232,24 @@ export class GitChangeTracker implements ChangeTracker {
             files.add(model.file);
             break;
           }
+        }
+      }
+    }
+
+    return Array.from(files);
+  }
+
+  /**
+   * Get all files that contain schema entries.
+   */
+  private getSchemaSourceFiles(workspace: Workspace): string[] {
+    const files = new Set<string>();
+
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type === "schema_entry") {
+          files.add(model.file);
+          break;
         }
       }
     }
@@ -210,6 +283,32 @@ export class GitChangeTracker implements ChangeTracker {
             break;
           }
         }
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Get all schema entries in the workspace.
+   */
+  private getAllSchemaEntries(workspace: Workspace): SchemaEntry[] {
+    const results: SchemaEntry[] = [];
+    const seen = new Set<string>();
+
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+
+        const key = `${model.file}:${serializeIdentity(getEntryIdentity(entry))}`;
+        if (seen.has(key)) {
+          continue;
+        }
+
+        seen.add(key);
+        results.push(entry);
       }
     }
 
@@ -347,6 +446,101 @@ export class GitChangeTracker implements ChangeTracker {
       // Entry is changed if:
       // 1. It didn't exist at the marker commit (new entry)
       // 2. Its content differs from the marker commit (modified entry)
+      if (!oldEntry || !entriesEqual(oldEntry, entry)) {
+        changed.push(entry);
+      }
+    }
+
+    return changed;
+  }
+
+  /**
+   * Get changed schema entries in a specific file.
+   */
+  private async getChangedSchemaEntriesInFile(
+    workspace: Workspace,
+    change: FileChange,
+    markerCommit: string,
+  ): Promise<SchemaEntry[]> {
+    const model = this.findModelByRelativePath(workspace, change.path);
+    if (!model) {
+      return [];
+    }
+
+    const currentEntries = model.ast.entries.filter(
+      (e): e is SchemaEntry => e.type === "schema_entry",
+    );
+
+    const ignoreRevs = await this.getIgnoreRevs();
+    if (ignoreRevs) {
+      const changed: SchemaEntry[] = [];
+
+      function locationToLineRange(entry: SchemaEntry): { startLine: number; endLine: number } {
+        const startRow = entry.location.startPosition.row;
+        const endRow = entry.location.endPosition.row;
+        const endCol = entry.location.endPosition.column;
+        const startLine = startRow + 1;
+        const endLine = endCol === 0 ? endRow : endRow + 1;
+        return { startLine, endLine: Math.max(startLine, endLine) };
+      }
+
+      for (const entry of currentEntries) {
+        const { startLine, endLine } = locationToLineRange(entry);
+        const blamedCommits = await getBlameCommitsForLineRange(
+          change.path,
+          startLine,
+          endLine,
+          this.cwd,
+          ignoreRevs,
+        );
+
+        let isChanged = false;
+        for (const commit of blamedCommits) {
+          const isBeforeMarker = await isCommitAncestorOf(commit, markerCommit, this.cwd);
+          if (!isBeforeMarker) {
+            isChanged = true;
+            break;
+          }
+        }
+
+        if (isChanged) {
+          changed.push(entry);
+        }
+      }
+
+      return changed;
+    }
+
+    const pathAtCommit = change.oldPath ?? change.path;
+    const oldContent = await getFileAtCommit(pathAtCommit, markerCommit, this.cwd);
+
+    const oldEntryMap = new Map<string, Entry>();
+    if (oldContent) {
+      try {
+        const fileType = pathAtCommit.endsWith(".md") ? "markdown" : "thalo";
+        const oldDoc = parseDocument(oldContent, { fileType });
+
+        for (const block of oldDoc.blocks) {
+          const oldAst = extractSourceFile(block.tree.rootNode);
+          for (const entry of oldAst.entries) {
+            if (entry.type !== "schema_entry") {
+              continue;
+            }
+            const key = serializeIdentity(getEntryIdentity(entry));
+            oldEntryMap.set(key, entry);
+          }
+        }
+      } catch {
+        // Parse error in old content - treat all current entries as changed
+      }
+    }
+
+    const changed: SchemaEntry[] = [];
+
+    for (const entry of currentEntries) {
+      const key = serializeIdentity(getEntryIdentity(entry));
+      const oldEntry = oldEntryMap.get(key);
+
       if (!oldEntry || !entriesEqual(oldEntry, entry)) {
         changed.push(entry);
       }

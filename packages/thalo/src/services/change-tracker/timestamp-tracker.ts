@@ -1,4 +1,4 @@
-import type { Timestamp, InstanceEntry } from "../../ast/ast-types.js";
+import type { Timestamp, InstanceEntry, SchemaEntry } from "../../ast/ast-types.js";
 import type { Query } from "../query.js";
 import type { Workspace } from "../../model/workspace.js";
 import { entryMatchesQuery } from "../query.js";
@@ -107,5 +107,44 @@ export class TimestampChangeTracker implements ChangeTracker {
       entries: results.map((r) => r.entry),
       currentMarker: await this.getCurrentMarker(),
     };
+  }
+
+  async getChangedSchemaEntries(
+    workspace: Workspace,
+    marker: ChangeMarker | null,
+  ): Promise<SchemaEntry[]> {
+    const afterTimestamp = marker?.type === "ts" ? marker.value : null;
+    const afterEpoch = afterTimestamp ? parseTimestampToEpoch(afterTimestamp) : null;
+
+    const results: { entry: SchemaEntry; timestampEpoch: number }[] = [];
+    const seen = new Set<string>();
+
+    for (const model of workspace.allModels()) {
+      for (const entry of model.ast.entries) {
+        if (entry.type !== "schema_entry") {
+          continue;
+        }
+
+        const timestampEpoch = timestampToEpoch(entry.header.timestamp);
+        const timestampStr = formatTimestamp(entry.header.timestamp);
+        const entityName = entry.header.entityName?.value ?? "unknown";
+        const directive = entry.header.directive ?? "define-entity";
+        const key = `${model.file}:${timestampStr}:${directive}:${entityName}`;
+
+        if (seen.has(key)) {
+          continue;
+        }
+
+        if (afterEpoch !== null && timestampEpoch <= afterEpoch) {
+          continue;
+        }
+
+        results.push({ entry, timestampEpoch });
+        seen.add(key);
+      }
+    }
+
+    results.sort((a, b) => a.timestampEpoch - b.timestampEpoch);
+    return results.map((r) => r.entry);
   }
 }

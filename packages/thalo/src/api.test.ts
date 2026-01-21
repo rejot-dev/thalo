@@ -745,6 +745,31 @@ describe("Thalo Scripting API", () => {
     });
   });
 
+  describe("filteredSince()", () => {
+    it("filters entries by timestamp checkpoint", async () => {
+      const workspace = createTestWorkspace({
+        "schema.thalo": `2026-01-01T00:00Z define-entity note "Note"
+  # Sections
+  Content
+`,
+        "entries.thalo": `2026-01-05T10:00Z create note "Early" ^early
+  # Content
+  Early entry.
+
+2026-01-06T10:00Z create note "Late" ^late
+  # Content
+  Late entry.
+`,
+      });
+
+      const filtered = await workspace.filteredSince("ts:2026-01-05T12:00Z");
+
+      const entries = filtered.entries();
+      expect(entries).toHaveLength(1);
+      expect(entries[0].title).toBe("Late");
+    });
+  });
+
   describe("wrapWorkspace()", () => {
     it("creates an empty workspace", () => {
       const internal = createWorkspace();

@@ -241,6 +241,49 @@ describe("GitChangeTracker", () => {
     });
   });
 
+  describe("getChangedSchemaEntries", () => {
+    it("should detect schema changes since a git checkpoint", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-git-schema-"));
+
+      await runGit(["init"], tempDir);
+      await runGit(["config", "user.email", "test@example.com"], tempDir);
+      await runGit(["config", "user.name", "Test User"], tempDir);
+
+      const file = "schema.thalo";
+      const baseContent = `2026-01-07T10:00Z define-entity lore "Lore"
+  # Sections
+  Summary
+`;
+      await fs.writeFile(path.join(tempDir, file), baseContent, "utf8");
+      await runGit(["add", file], tempDir);
+      await runGit(["commit", "-m", "base schema"], tempDir);
+      const baseCommit = (await runGit(["rev-parse", "HEAD"], tempDir)).trim();
+
+      const updatedContent = `2026-01-07T10:00Z define-entity lore "Lore"
+  # Sections
+  Summary
+  Details
+`;
+      await fs.writeFile(path.join(tempDir, file), updatedContent, "utf8");
+      await runGit(["add", file], tempDir);
+      await runGit(["commit", "-m", "update schema"], tempDir);
+
+      const tracker = new GitChangeTracker({ cwd: tempDir });
+      const workspace = createWorkspace();
+      workspace.addDocument(updatedContent, { filename: file });
+
+      const result = await tracker.getChangedSchemaEntries!(workspace, {
+        type: "git",
+        value: baseCommit,
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].header.entityName.value).toBe("lore");
+
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+  });
+
   describe("UncommittedChangesError", () => {
     it("should have correct error message and files", () => {
       const error = new UncommittedChangesError(["file1.thalo", "file2.thalo"]);

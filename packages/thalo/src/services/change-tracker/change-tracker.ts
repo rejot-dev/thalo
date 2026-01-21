@@ -1,4 +1,4 @@
-import type { InstanceEntry } from "../../ast/ast-types.js";
+import type { InstanceEntry, SchemaEntry } from "../../ast/ast-types.js";
 import type { Query } from "../query.js";
 import type { Workspace } from "../../model/workspace.js";
 import { TimestampChangeTracker } from "./timestamp-tracker.js";
@@ -105,6 +105,23 @@ export interface ChangeTracker {
     queries: Query[],
     marker: ChangeMarker | null,
   ): Promise<ChangedEntriesResult>;
+
+  /**
+   * Get schema entries that have changed since a marker.
+   *
+   * For git tracker: Finds schema entries in files modified since the commit
+   * and compares entry content to identify changes.
+   *
+   * For timestamp tracker: Filters schema entries with timestamps after the marker.
+   *
+   * @param workspace - The workspace containing current entries
+   * @param marker - The marker to compare against (from previous actualization)
+   * @returns Changed schema entries
+   */
+  getChangedSchemaEntries?(
+    workspace: Workspace,
+    marker: ChangeMarker | null,
+  ): Promise<SchemaEntry[]>;
 }
 
 /**

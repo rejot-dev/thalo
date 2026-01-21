@@ -211,6 +211,34 @@ try {
 }
 ```
 
+## Filtering by Checkpoint
+
+Create a filtered workspace view that only includes entries after a checkpoint:
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+import { createChangeTracker } from "@rejot-dev/thalo/change-tracker/node";
+
+const workspace = await loadThalo(".");
+
+// Timestamp-based filtering
+const sinceTimestamp = await workspace.filteredSince("ts:2026-01-10T15:00Z");
+
+// Git-based filtering (requires tracker)
+const tracker = await createChangeTracker();
+const sinceGit = await workspace.filteredSince("git:abc123def456", { tracker });
+
+for (const entry of sinceGit.entries()) {
+  console.log(`${entry.timestamp} - ${entry.title}`);
+}
+```
+
+<Callout>
+  Git-based filtering uses the change tracker and applies to instance entries (create/update) and
+  schema entries (define/alter-entity). Other entry types are left unfiltered. Use timestamp
+  checkpoints if you need all entry types filtered by time.
+</Callout>
+
 ## Validation
 
 Run the checker to find issues:

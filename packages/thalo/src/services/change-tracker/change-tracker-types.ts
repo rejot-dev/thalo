@@ -1,4 +1,4 @@
-import type { InstanceEntry } from "../../ast/ast-types.js";
+import type { InstanceEntry, SchemaEntry } from "../../ast/ast-types.js";
 import type { Query } from "../../services/query.js";
 import type { Workspace } from "../../model/workspace.js";
 
@@ -104,6 +104,14 @@ export interface ChangeTracker {
     queries: Query[],
     marker: ChangeMarker | null,
   ): Promise<ChangedEntriesResult>;
+
+  /**
+   * Get schema entries that have changed since a marker.
+   */
+  getChangedSchemaEntries?(
+    workspace: Workspace,
+    marker: ChangeMarker | null,
+  ): Promise<SchemaEntry[]>;
 }
 
 /**

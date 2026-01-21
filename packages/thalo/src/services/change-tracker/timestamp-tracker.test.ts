@@ -158,4 +158,28 @@ describe("TimestampChangeTracker", () => {
       expect(result.entries[0].header.link?.id).toBe("lore1");
     });
   });
+
+  describe("getChangedSchemaEntries", () => {
+    it("should filter schema entries after timestamp marker", async () => {
+      workspace.addDocument(
+        `2026-01-07T10:00Z define-entity lore "Lore"
+  # Sections
+  Summary
+
+2026-01-07T12:00Z define-entity opinion "Opinion"
+  # Sections
+  Claim
+`,
+        { filename: "schema.thalo" },
+      );
+
+      const result = await tracker.getChangedSchemaEntries(workspace, {
+        type: "ts",
+        value: "2026-01-07T11:00Z",
+      });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].header.entityName.value).toBe("opinion");
+    });
+  });
 });
