@@ -625,14 +625,10 @@ function GetStarted() {
               </div>
               <pre className="overflow-x-auto p-6 text-sm md:text-base">
                 <code className="font-mono leading-relaxed">
-                  <span className="text-muted-foreground"># Install the CLI</span>
+                  <span className="text-muted-foreground"># Install the CLI (or use npm/yarn)</span>
                   {"\n"}
                   <span className="text-primary">pnpm</span>
-                  {" add -g @rejot-dev/thalo-cli "}
-                  <span className="inline-flex translate-y-[-2px] items-center gap-1.5 align-middle rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-700 dark:text-amber-400">
-                    <span className="size-1.5 rounded-full bg-amber-500" />
-                    coming soon — not published yet
-                  </span>
+                  {" add -g @rejot-dev/thalo-cli"}
                   {"\n\n"}
                   <span className="text-muted-foreground"># Initialize your knowledge base</span>
                   {"\n"}
