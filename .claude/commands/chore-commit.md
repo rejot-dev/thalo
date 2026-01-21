@@ -1,5 +1,7 @@
 ### Commit
 
+Use `specs/COMMIT.md` for the full commit conventions.
+
 Create a concise conventional commit message and description for the current changes.
 
 ## Steps
