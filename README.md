@@ -34,6 +34,22 @@ Cursor or by Claude Code.
   - Understanding failure modes matters more than preventing them.
 ```
 
+### Quick Start
+
+```bash
+// (or use a different package manager)
+pnpm add -g @rejot-dev/thalo-cli
+mkdir my-knowledge && cd my-knowledge
+thalo init
+thalo check
+```
+
+This creates an `entities.thalo` file with the default entities. You can then create a file such as
+`entries.thalo` and add an entry like the example above.
+
+The VSCode / Cursor extension can be downloaded as `vsix` package from the
+[releases page](https://github.com/rejot-dev/thalo/releases).
+
 ## Thalo provides a feedback loop for agents/LLMs
 
 LLMs can easily extract structured information from unstructured text, but they need a feedback loop
@@ -146,9 +162,7 @@ Thalo is a small ecosystem of tools:
 Thalo CLI uses `git` (if available) to track changes for actualization. It is entirely possible to
 write Thalo as code blocks inside of Markdown files, the CLI will work with them just fine.
 
-## Quick Start
-
-_(Thalo is not published yet, so you need to build it yourself for now.)_
+## Building from source
 
 ```bash
 # Clone and build
