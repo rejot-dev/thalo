@@ -328,6 +328,38 @@ export interface FilteredSinceOptions {
   tracker?: ChangeTracker;
 }
 
+/**
+ * Options for watching workspace changes.
+ */
+export interface WorkspaceWatchOptions {
+  /**
+   * File extensions to watch (default: .thalo, .md).
+   */
+  extensions?: string[];
+  /**
+   * Debounce time for file change events in milliseconds (default: 100).
+   */
+  debounceMs?: number;
+  /**
+   * Emit an initial event containing all current entries.
+   */
+  includeExisting?: boolean;
+  /**
+   * Optional abort signal to stop watching.
+   */
+  signal?: AbortSignal;
+}
+
+/**
+ * Change event emitted by workspace.watch().
+ */
+export interface WorkspaceWatchEvent {
+  added: ThaloEntry[];
+  updated: ThaloEntry[];
+  removed: ThaloEntry[];
+  files: string[];
+}
+
 // ===================
 // Workspace Interface
 // ===================
@@ -517,6 +549,11 @@ export interface ThaloWorkspaceInterface {
    * ```
    */
   visit(visitor: EntryVisitor): void;
+
+  /**
+   * Watch workspace files for changes and yield entry diffs.
+   */
+  watch(options?: WorkspaceWatchOptions): AsyncIterable<WorkspaceWatchEvent>;
 
   // ===================
   // Internal
@@ -792,6 +829,43 @@ class FilteredThaloWorkspace implements ThaloWorkspaceInterface {
           }
         : undefined,
     });
+  }
+
+  watch(options?: WorkspaceWatchOptions): AsyncIterable<WorkspaceWatchEvent> {
+    const base = this.base.watch(options);
+    const entryFilter = this.entryFilter;
+    const instanceFilter = this.instanceFilter;
+
+    return (async function* () {
+      for await (const event of base) {
+        const added = event.added.filter((entry) =>
+          entry.type === "instance"
+            ? instanceFilter(entry as ThaloInstanceEntry)
+            : entryFilter(entry),
+        );
+        const updated = event.updated.filter((entry) =>
+          entry.type === "instance"
+            ? instanceFilter(entry as ThaloInstanceEntry)
+            : entryFilter(entry),
+        );
+        const removed = event.removed.filter((entry) =>
+          entry.type === "instance"
+            ? instanceFilter(entry as ThaloInstanceEntry)
+            : entryFilter(entry),
+        );
+
+        if (added.length === 0 && updated.length === 0 && removed.length === 0) {
+          continue;
+        }
+
+        yield {
+          added,
+          updated,
+          removed,
+          files: event.files,
+        };
+      }
+    })();
   }
 }
 
@@ -1110,6 +1184,18 @@ class ThaloWorkspace implements ThaloWorkspaceInterface {
         }
       }
     }
+  }
+
+  watch(options?: WorkspaceWatchOptions): AsyncIterable<WorkspaceWatchEvent> {
+    return (async function* (
+      workspace: ThaloWorkspace,
+      opts?: WorkspaceWatchOptions,
+    ): AsyncIterable<WorkspaceWatchEvent> {
+      const { watchWorkspace } = await import("./watch.js");
+      for await (const event of watchWorkspace(workspace, opts)) {
+        yield event;
+      }
+    })(this, options);
   }
 }
 

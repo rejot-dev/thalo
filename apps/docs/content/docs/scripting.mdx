@@ -239,6 +239,41 @@ for (const entry of sinceGit.entries()) {
   checkpoints if you need all entry types filtered by time.
 </Callout>
 
+## Watching for Changes
+
+Use `workspace.watch()` to listen for new, updated, or removed entries. It returns an async iterator
+that yields change events as files change.
+
+```typescript
+import { loadThalo } from "@rejot-dev/thalo/api";
+
+const workspace = await loadThalo(".");
+const controller = new AbortController();
+
+// Emit an initial event with all current entries
+const changes = workspace.watch({
+  includeExisting: true,
+  signal: controller.signal,
+});
+
+for await (const change of changes) {
+  for (const entry of change.added) {
+    console.log(`Added: ${entry.title}`);
+  }
+  for (const entry of change.updated) {
+    console.log(`Updated: ${entry.title}`);
+  }
+  for (const entry of change.removed) {
+    console.log(`Removed: ${entry.title}`);
+  }
+}
+
+// Later: stop watching
+controller.abort();
+```
+
+<Callout>Watching is available in Node.js environments only (uses file system watching).</Callout>
+
 ## Validation
 
 Run the checker to find issues:

@@ -1,9 +1,17 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { createWorkspace } from "./parser.native.js";
-import type { ThaloInstanceEntry, ThaloWorkspaceInterface, EntryVisitor } from "./api.js";
+import type {
+  ThaloInstanceEntry,
+  ThaloWorkspaceInterface,
+  EntryVisitor,
+  WorkspaceWatchEvent,
+} from "./api.js";
 
 // Import the internal class for testing
-import { wrapWorkspace } from "./api.js";
+import { wrapWorkspace, loadThalo } from "./api.js";
 
 /**
  * Create a test workspace from source strings.
@@ -140,6 +148,132 @@ describe("Thalo Scripting API", () => {
       expect(entries[0].entity).toBe("opinion");
       expect(entries[0].directive).toBe("create");
       expect(entries[0].type).toBe("instance");
+    });
+  });
+
+  describe("watch()", () => {
+    const waitForEvent = async (iterator: AsyncIterator<WorkspaceWatchEvent>, timeoutMs = 2000) => {
+      return await Promise.race([
+        iterator.next().then((result) => {
+          if (result.done || !result.value) {
+            throw new Error("watch() iterator ended unexpectedly");
+          }
+          return result.value;
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Timed out waiting for watch event")), timeoutMs),
+        ),
+      ]);
+    };
+
+    it("emits existing entries when includeExisting is true", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-watch-"));
+      const filePath = path.join(tempDir, "entries.thalo");
+      await fs.writeFile(
+        filePath,
+        `2026-01-05T10:00Z create opinion "Initial" ^initial\n  # Claim\n  Starting point.\n`,
+        "utf8",
+      );
+
+      const workspace = await loadThalo(tempDir);
+      const controller = new AbortController();
+      const iterator = workspace
+        .watch({ includeExisting: true, debounceMs: 10, signal: controller.signal })
+        [Symbol.asyncIterator]();
+
+      const event = await waitForEvent(iterator);
+      expect(event.added.length).toBe(1);
+      expect(event.updated.length).toBe(0);
+      expect(event.removed.length).toBe(0);
+
+      controller.abort();
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("emits added entries when new entries appear", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-watch-"));
+      const filePath = path.join(tempDir, "entries.thalo");
+      await fs.writeFile(
+        filePath,
+        `2026-01-05T10:00Z create opinion "Entry 1" ^entry-1\n  # Claim\n  First.\n`,
+        "utf8",
+      );
+
+      const workspace = await loadThalo(tempDir);
+      const controller = new AbortController();
+      const iterator = workspace
+        .watch({ includeExisting: true, debounceMs: 10, signal: controller.signal })
+        [Symbol.asyncIterator]();
+
+      await waitForEvent(iterator);
+
+      await fs.writeFile(
+        filePath,
+        `2026-01-05T10:00Z create opinion "Entry 1" ^entry-1\n  # Claim\n  First.\n\n2026-01-06T09:00Z create opinion "Entry 2" ^entry-2\n  # Claim\n  Second.\n`,
+        "utf8",
+      );
+
+      const event = await waitForEvent(iterator);
+      expect(event.added.some((entry) => entry.title === "Entry 2")).toBe(true);
+
+      controller.abort();
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("emits updated entries when existing entries change", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-watch-"));
+      const filePath = path.join(tempDir, "entries.thalo");
+      await fs.writeFile(
+        filePath,
+        `2026-01-05T10:00Z create opinion "Original" ^entry-1\n  # Claim\n  Original text.\n`,
+        "utf8",
+      );
+
+      const workspace = await loadThalo(tempDir);
+      const controller = new AbortController();
+      const iterator = workspace
+        .watch({ includeExisting: true, debounceMs: 10, signal: controller.signal })
+        [Symbol.asyncIterator]();
+
+      await waitForEvent(iterator);
+
+      await fs.writeFile(
+        filePath,
+        `2026-01-05T10:00Z create opinion "Updated" ^entry-1\n  # Claim\n  Updated text.\n`,
+        "utf8",
+      );
+
+      const event = await waitForEvent(iterator);
+      expect(event.updated.some((entry) => entry.title === "Updated")).toBe(true);
+
+      controller.abort();
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("emits removed entries when files are deleted", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-watch-"));
+      const filePath = path.join(tempDir, "entries.thalo");
+      await fs.writeFile(
+        filePath,
+        `2026-01-05T10:00Z create opinion "To Remove" ^entry-1\n  # Claim\n  Remove me.\n`,
+        "utf8",
+      );
+
+      const workspace = await loadThalo(tempDir);
+      const controller = new AbortController();
+      const iterator = workspace
+        .watch({ includeExisting: true, debounceMs: 10, signal: controller.signal })
+        [Symbol.asyncIterator]();
+
+      await waitForEvent(iterator);
+
+      await fs.rm(filePath, { force: true });
+
+      const event = await waitForEvent(iterator);
+      expect(event.removed.some((entry) => entry.title === "To Remove")).toBe(true);
+
+      controller.abort();
+      await fs.rm(tempDir, { recursive: true, force: true });
     });
   });
 
