@@ -106,6 +106,7 @@ export function HomeFooter() {
   const footerLinks = {
     product: [
       { label: "Docs", href: "/docs", internal: true },
+      { label: "Blog", href: "/blog", internal: true },
       { label: "Demo", href: "/demo", internal: true },
       { label: "Playground", href: "/playground", internal: true },
       { label: "Rules", href: "/rules", internal: true },
