@@ -9,6 +9,7 @@ import { TwitterXLogo } from "@/components/logos/twitter-x";
 import type { ComponentPropsWithoutRef } from "react";
 import browserCollections from "fumadocs-mdx:collections/browser";
 import { getMDXComponents } from "@/lib/mdx-components";
+import { BlogCodeProvider, BlogCode, BlogChecker } from "@/components/blog";
 
 export async function loader({ params }: Route.LoaderArgs) {
   const page = blogSource.getPage([params.slug]);
@@ -25,6 +26,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const publishDateDisplay = publishDateFormatter.format(publishDate);
 
   const heroImage = "image" in page.data ? page.data.image : undefined;
+  const ogImage = "ogImage" in page.data ? page.data.ogImage : undefined;
   const author = "author" in page.data ? page.data.author : undefined;
 
   return {
@@ -35,6 +37,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     publishDateIso,
     publishDateDisplay,
     heroImage,
+    ogImage,
     author,
   };
 }
@@ -44,7 +47,16 @@ export function meta({ data }: Route.MetaArgs) {
     return [{ title: "Not Found" }];
   }
 
-  const imageUrl = data.heroImage ? `/${data.heroImage}` : "/social.webp";
+  // Use ogImage for social sharing, fall back to heroImage (header), then default
+  // Supports both local paths (e.g., "social.webp") and external URLs (e.g., "https://...")
+  const rawImage = data.ogImage ?? data.heroImage;
+  const imageUrl = rawImage
+    ? rawImage.startsWith("http://") || rawImage.startsWith("https://")
+      ? rawImage
+      : rawImage.startsWith("/")
+        ? rawImage
+        : `/${rawImage}`
+    : "/social.webp";
 
   return [
     { title: `${data.title} | Thalo Blog` },
@@ -81,7 +93,7 @@ function CustomTOC({ items }: { items: TocItem[] }) {
   const getIndentClass = (depth: number) => {
     switch (depth) {
       case 1:
-        return "-pl-4"; // We don't typically use h1
+        return "";
       case 2:
         return "";
       case 3:
@@ -114,13 +126,13 @@ function CustomTOC({ items }: { items: TocItem[] }) {
             <li key={`${href}${label}`}>
               <a
                 href={href}
-                className={`group relative inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white ${indentClass}`}
+                className={`group relative inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground ${indentClass}`}
               >
-                <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
-                  <span className="absolute inset-0 rounded-sm border border-gray-300 dark:border-gray-600" />
-                  <span className="h-2 w-2 rotate-45 rounded-sm bg-gray-300 transition-colors group-hover:bg-gray-900 dark:bg-gray-600 dark:group-hover:bg-white" />
+                <span className="relative inline-flex size-4 shrink-0 items-center justify-center">
+                  <span className="absolute inset-0 rounded-sm border border-border" />
+                  <span className="size-2 rotate-45 rounded-sm bg-muted-foreground/30 transition-colors group-hover:bg-primary" />
                 </span>
-                <span className="whitespace-normal break-words leading-snug">{label}</span>
+                <span className="whitespace-normal wrap-break-word leading-snug">{label}</span>
               </a>
               {node.items && node.items.length > 0 ? renderItems(node.items) : null}
             </li>
@@ -168,15 +180,13 @@ function Control({ url, author }: { url: string; author?: string }) {
   }, [author]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {authorXUrl ? (
         <a
           href={authorXUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-700/50 dark:hover:text-gray-100",
-          )}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-border/60 bg-card px-4 py-3 text-sm font-medium text-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5"
         >
           <TwitterXLogo className="size-4" />
           Follow
@@ -186,9 +196,9 @@ function Control({ url, author }: { url: string; author?: string }) {
       <button
         type="button"
         className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-700",
+          "flex w-full items-center justify-center gap-2 rounded-lg border-2 border-border/60 bg-card px-4 py-3 text-sm font-medium text-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5",
           isChecked &&
-            "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400",
+            "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
         )}
         onClick={onCopy}
       >
@@ -229,9 +239,9 @@ const clientLoader = browserCollections.blog.createClientLoader({
     }, []);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-stone-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-stone-950">
+      <div className="min-h-screen">
         {/* Hero Section */}
-        <div className="relative mb-4 overflow-hidden">
+        <div className="relative mb-8 overflow-hidden border-b border-border/50">
           {/* Hero Image Background (if provided) */}
           {heroImage ? (
             <>
@@ -241,33 +251,23 @@ const clientLoader = browserCollections.blog.createClientLoader({
                 className="absolute inset-0 h-full w-full object-cover"
               />
               {/* Dark overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70 dark:from-black/70 dark:via-black/60 dark:to-black/80" />
+              <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/50 to-black/70 dark:from-black/70 dark:via-black/60 dark:to-black/80" />
             </>
           ) : (
             <>
-              {/* Decorative background (fallback when no image) */}
-              <div className="absolute inset-0 bg-gradient-to-r from-zinc-500/10 via-neutral-500/10 to-stone-500/10 dark:from-zinc-400/5 dark:via-neutral-400/5 dark:to-stone-400/5" />
-              <div
-                className="absolute inset-0 opacity-30"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                }}
-              />
-              {/* Subtle diagonal stripes */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-20 mix-blend-multiply dark:opacity-10"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(120deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.05) 75%, transparent 75%, transparent)",
-                  backgroundSize: "24px 24px",
-                }}
-              />
+              {/* Decorative background matching site aesthetic */}
+              <div className="absolute inset-0 bg-muted/20" />
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -left-32 -top-32 size-96 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute -bottom-32 -right-32 size-96 rounded-full bg-amber-500/5 blur-3xl" />
+              </div>
               {/* Geometric accents */}
-              <div className="pointer-events-none absolute -right-8 top-8 h-24 w-24 rotate-12 rounded-xl border border-gray-300/60 dark:border-white/10" />
+              <div className="pointer-events-none absolute -right-8 top-16 size-24 rotate-12 rounded-xl border border-border/30" />
+              <div className="pointer-events-none absolute left-1/4 bottom-8 size-16 rounded-full border border-border/20" />
             </>
           )}
 
-          <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="relative mx-auto max-w-6xl px-6 py-12 md:px-8 md:py-16">
             {/* Back Button */}
             <Link
               to="/blog"
@@ -275,19 +275,27 @@ const clientLoader = browserCollections.blog.createClientLoader({
                 "group mb-8 inline-flex items-center gap-2 text-sm font-medium transition-colors",
                 heroImage
                   ? "text-white/90 hover:text-white"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
               Back to blog
             </Link>
 
             {/* Article Header */}
-            <header className="mb-10">
+            <header>
+              <span
+                className={cn(
+                  "mb-4 inline-block font-mono text-sm tracking-wider",
+                  heroImage ? "text-white/70" : "text-primary",
+                )}
+              >
+                — ARTICLE
+              </span>
               <h1
                 className={cn(
-                  "mb-5 max-w-prose text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl",
-                  heroImage ? "text-white" : "text-gray-900 dark:text-white",
+                  "mb-5 max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl",
+                  heroImage ? "text-white" : "text-foreground",
                 )}
               >
                 {frontmatter.title}
@@ -296,8 +304,8 @@ const clientLoader = browserCollections.blog.createClientLoader({
               {frontmatter.description && (
                 <p
                   className={cn(
-                    "mb-6 max-w-prose text-xl leading-relaxed",
-                    heroImage ? "text-white/95" : "text-gray-600 dark:text-gray-300",
+                    "mb-6 max-w-2xl text-lg leading-relaxed md:text-xl",
+                    heroImage ? "text-white/90" : "text-muted-foreground",
                   )}
                 >
                   {frontmatter.description}
@@ -308,17 +316,17 @@ const clientLoader = browserCollections.blog.createClientLoader({
               <div
                 className={cn(
                   "flex flex-wrap items-center gap-5 text-sm",
-                  heroImage ? "text-white/80" : "text-gray-500 dark:text-gray-400",
+                  heroImage ? "text-white/70" : "text-muted-foreground",
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="size-4" />
                   <time dateTime={publishDateIso}>{publishDateDisplay}</time>
                 </div>
 
                 {frontmatter.author && (
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                    <User className="size-4" />
                     <span>{frontmatter.author}</span>
                   </div>
                 )}
@@ -328,11 +336,11 @@ const clientLoader = browserCollections.blog.createClientLoader({
         </div>
 
         {/* Article Content */}
-        <article className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8">
+        <article className="mx-auto max-w-6xl px-6 pb-16 md:px-8">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px]">
             {/* Main Content */}
             <div className="min-w-0 flex-1">
-              <div className="prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-a:text-gray-900 prose-a:no-underline dark:prose-a:text-gray-100 prose-pre:bg-gray-900 prose-pre:text-gray-100 dark:prose-pre:bg-gray-800 dark:prose-pre:text-gray-200 prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm dark:prose-code:bg-gray-800 max-w-none">
+              <div className="prose prose-lg dark:prose-invert prose-headings:font-bold prose-headings:tracking-tight prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-a:text-primary prose-a:no-underline prose-a:hover:underline prose-pre:bg-zinc-900 prose-pre:text-zinc-100 prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none max-w-none">
                 <Mdx
                   components={getMDXComponents({
                     a: (props: ComponentPropsWithoutRef<"a">) => {
@@ -341,12 +349,16 @@ const clientLoader = browserCollections.blog.createClientLoader({
                         <a
                           {...rest}
                           className={cn(
-                            "rounded-sm no-underline decoration-gray-300 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 dark:decoration-gray-600 dark:focus-visible:ring-gray-700",
+                            "rounded-sm no-underline underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             className,
                           )}
                         />
                       );
                     },
+                    // Blog-specific components
+                    BlogCodeProvider,
+                    BlogCode,
+                    BlogChecker,
                   })}
                 />
               </div>
@@ -354,49 +366,46 @@ const clientLoader = browserCollections.blog.createClientLoader({
 
             {/* Sidebar */}
             <aside className="lg:w-auto">
-              <div className="sticky top-16 space-y-6">
+              <div className="sticky top-20 space-y-6">
                 {/* Table of Contents */}
                 {toc.length > 0 && (
-                  <div className="card-shell relative overflow-hidden rounded-2xl border border-black/5 bg-white/70 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-gray-900/40">
-                    <div className="pointer-events-none absolute right-4 top-4 h-6 w-6 rotate-45 border border-gray-200/60 dark:border-white/10" />
-                    <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-200">
+                  <div className="relative overflow-hidden rounded-xl border-2 border-border/60 bg-card p-6 shadow-lg">
+                    <div className="pointer-events-none absolute right-4 top-4 size-6 rotate-45 border border-border/30" />
+                    <h3 className="mb-4 font-mono text-xs font-semibold uppercase tracking-wider text-primary">
                       Table of contents
                     </h3>
                     <div className="max-h-[40vh] overflow-y-auto pr-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      {/* The content source TOC matches TocItem shape */}
                       <CustomTOC items={toc as unknown as TocItem[]} />
                     </div>
                   </div>
                 )}
 
                 {frontmatter.author ? (
-                  <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-gray-800/60">
-                    <div className="pointer-events-none absolute -left-6 -top-6 h-16 w-16 rounded-full border border-gray-200/60 dark:border-white/10" />
-                    <div className="pointer-events-none absolute bottom-0 right-6 h-10 w-10 rotate-12 border-b border-r border-gray-200/60 dark:border-white/10" />
-                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-white">
+                  <div className="relative overflow-hidden rounded-xl border-2 border-border/60 bg-card p-6 shadow-lg">
+                    <div className="pointer-events-none absolute -left-6 -top-6 size-16 rounded-full border border-border/30" />
+                    <div className="pointer-events-none absolute bottom-0 right-6 size-10 rotate-12 border-b border-r border-border/30" />
+                    <h3 className="mb-4 font-mono text-xs font-semibold uppercase tracking-wider text-primary">
                       Stay connected
                     </h3>
                     <div className="mb-4 flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-300 bg-white text-sm font-semibold text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200">
+                      <div className="flex size-12 items-center justify-center rounded-full border-2 border-border/60 bg-muted text-sm font-semibold text-foreground">
                         {frontmatter.author
                           .split(" ")
                           .map((part) => part.charAt(0).toUpperCase())
                           .join("")}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {frontmatter.author}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Thalo Team</p>
+                        <p className="font-medium text-foreground">{frontmatter.author}</p>
+                        <p className="text-xs text-muted-foreground">Author</p>
                       </div>
                     </div>
                     <Control url={postUrl} author={frontmatter.author} />
                   </div>
                 ) : (
-                  <div className="relative overflow-hidden rounded-2xl border border-black/5 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-white/10 dark:bg-gray-800/60">
-                    <div className="pointer-events-none absolute -left-6 -top-6 h-16 w-16 rounded-full border border-gray-200/60 dark:border-white/10" />
-                    <div className="pointer-events-none absolute bottom-0 right-6 h-10 w-10 rotate-12 border-b border-r border-gray-200/60 dark:border-white/10" />
-                    <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-900 dark:text-white">
+                  <div className="relative overflow-hidden rounded-xl border-2 border-border/60 bg-card p-6 shadow-lg">
+                    <div className="pointer-events-none absolute -left-6 -top-6 size-16 rounded-full border border-border/30" />
+                    <div className="pointer-events-none absolute bottom-0 right-6 size-10 rotate-12 border-b border-r border-border/30" />
+                    <h3 className="mb-4 font-mono text-xs font-semibold uppercase tracking-wider text-primary">
                       Share
                     </h3>
                     <Control url={postUrl} />

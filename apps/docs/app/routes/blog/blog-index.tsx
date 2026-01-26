@@ -1,12 +1,12 @@
 import type { Route } from "./+types/blog-index";
 import { Link } from "react-router";
 import { blogSource } from "@/lib/source";
-import { Calendar, User, ArrowRight } from "lucide-react";
+import { Calendar, User, ArrowRight, BookOpen } from "lucide-react";
 
 export function meta() {
   return [
-    { title: "Thalo Blog" },
-    { name: "description", content: "Keep up with the Thalo ecosystem." },
+    { title: "Blog | Thalo" },
+    { name: "description", content: "News, updates, and insights from the Thalo team." },
   ];
 }
 
@@ -29,114 +29,107 @@ export default function BlogPage({ loaderData }: Route.ComponentProps) {
   const { posts } = loaderData;
 
   return (
-    <main className="container flex min-h-screen flex-1 flex-col items-center py-12">
-      <div className="w-full max-w-6xl">
-        <header className="relative mb-10 overflow-hidden rounded-3xl border border-black/5 bg-white/70 px-6 py-10 shadow-sm backdrop-blur sm:px-10 dark:border-white/10 dark:bg-slate-950/50">
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-            <div className="bg-linear-to-br absolute -left-12 -top-16 h-48 w-72 rounded-full from-blue-500/15 via-sky-400/10 to-transparent blur-3xl" />
-            <div className="bg-linear-to-br from-purple-500/14 absolute -bottom-24 -right-16 h-56 w-72 rounded-full via-fuchsia-400/10 to-transparent blur-3xl" />
-          </div>
+    <main className="flex min-h-screen flex-1 flex-col">
+      {/* Hero section */}
+      <section className="relative overflow-hidden border-b border-border/50 bg-muted/20 py-16 md:py-24">
+        {/* Decorative background */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-32 -top-32 size-96 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute -bottom-32 -right-32 size-96 rounded-full bg-amber-500/5 blur-3xl" />
+        </div>
 
-          <p className="text-fd-muted-foreground text-sm font-medium">News & updates</p>
-          <h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">Thalo Blog</h1>
-          <p className="text-fd-muted-foreground mt-3 max-w-2xl text-lg">
-            Keep up with the Thalo ecosystem.
+        <div className="relative mx-auto max-w-6xl px-6 md:px-8">
+          <span className="mb-4 inline-block font-mono text-sm tracking-wider text-primary">
+            — NEWS & UPDATES
+          </span>
+          <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+            Thalo <span className="italic text-primary">Blog</span>
+          </h1>
+          <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+            Insights, tutorials, and updates from the team building the future of personal knowledge
+            management.
           </p>
-        </header>
+        </div>
+      </section>
 
-        {posts.length === 0 ? (
-          <div className="mx-auto max-w-2xl">
-            <div className="rounded-2xl bg-white/90 p-10 text-center shadow-sm ring-1 ring-black/5 dark:bg-slate-950/60 dark:ring-white/10">
-              <div className="bg-fd-border mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl">
-                <svg
-                  className="text-fd-muted-foreground h-10 w-10"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
-                  />
-                </svg>
+      {/* Posts section */}
+      <section className="py-12 md:py-16">
+        <div className="mx-auto max-w-6xl px-6 md:px-8">
+          {posts.length === 0 ? (
+            <div className="mx-auto max-w-lg">
+              <div className="rounded-2xl border-2 border-border/60 bg-card p-10 text-center shadow-lg">
+                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-muted">
+                  <BookOpen className="size-8 text-muted-foreground" />
+                </div>
+                <h2 className="mb-2 text-xl font-semibold tracking-tight">No articles yet</h2>
+                <p className="text-muted-foreground">
+                  We're working on some great content. Check back soon!
+                </p>
               </div>
-              <h2 className="text-fd-foreground text-xl font-semibold">No articles yet</h2>
-              <p className="text-fd-muted-foreground mt-2">Check back soon for new content.</p>
             </div>
-          </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <article key={post.url}>
-                <Link
-                  to={post.url}
-                  className="group relative block h-full overflow-hidden rounded-2xl bg-white/90 shadow-sm ring-1 ring-black/5 transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-slate-950/60 dark:ring-white/10"
-                >
-                  <span className="absolute inset-x-6 -top-16 h-28 rounded-full bg-blue-600/10 opacity-0 blur-3xl transition-opacity group-hover:opacity-80 dark:bg-blue-600/15" />
+          ) : (
+            <div className="flex flex-col gap-6">
+              {posts.map((post) => (
+                <article key={post.url}>
+                  <Link
+                    to={post.url}
+                    className="group relative block overflow-hidden rounded-xl border-2 border-border/60 bg-card shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
+                  >
+                    {/* Hover glow */}
+                    <div className="pointer-events-none absolute inset-x-4 -top-16 h-32 rounded-full bg-primary/10 opacity-0 blur-3xl transition-opacity duration-300 group-hover:opacity-100" />
 
-                  <div className="relative">
-                    {post.image ? (
-                      <div className="relative aspect-[16/9] w-full overflow-hidden">
-                        <img
-                          src={`/${post.image}`}
-                          alt={post.title}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div
-                          aria-hidden
-                          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                        />
-                      </div>
-                    ) : (
-                      <div className="bg-linear-to-br relative aspect-[16/9] w-full overflow-hidden from-blue-500/10 via-transparent to-purple-500/10 dark:from-blue-500/15 dark:to-purple-500/15">
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.18),transparent_55%)]" />
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,rgba(168,85,247,0.14),transparent_55%)]" />
-                      </div>
-                    )}
+                    {/* Content */}
+                    <div className="relative p-6 md:p-8">
+                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-8">
+                        <div className="flex-1">
+                          {/* Title */}
+                          <h2 className="mb-2 text-xl font-bold tracking-tight text-foreground transition-colors group-hover:text-primary md:text-2xl">
+                            {post.title}
+                          </h2>
 
-                    <div className="p-6">
-                      <div className="text-fd-muted-foreground mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                        <div className="inline-flex items-center gap-1.5">
-                          <Calendar className="size-4 opacity-70" />
-                          <time dateTime={new Date(post.date).toISOString()}>
-                            {new Date(post.date).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </time>
+                          {/* Description */}
+                          <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+                            {post.description}
+                          </p>
                         </div>
 
-                        {post.author ? (
-                          <div className="inline-flex items-center gap-1.5">
-                            <User className="size-4 opacity-70" />
-                            <span>{post.author}</span>
+                        {/* Meta & CTA */}
+                        <div className="flex flex-wrap items-center gap-4 md:flex-col md:items-end md:gap-2 md:text-right">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                            <div className="inline-flex items-center gap-1.5">
+                              <Calendar className="size-4 opacity-70" />
+                              <time dateTime={new Date(post.date).toISOString()}>
+                                {new Date(post.date).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </time>
+                            </div>
+
+                            {post.author ? (
+                              <div className="inline-flex items-center gap-1.5">
+                                <User className="size-4 opacity-70" />
+                                <span>{post.author}</span>
+                              </div>
+                            ) : null}
                           </div>
-                        ) : null}
-                      </div>
 
-                      <h2 className="text-fd-foreground mb-2 line-clamp-2 text-xl font-semibold tracking-tight">
-                        {post.title}
-                      </h2>
-
-                      <p className="text-fd-muted-foreground mb-4 line-clamp-3 text-sm leading-relaxed">
-                        {post.description}
-                      </p>
-
-                      <div className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition-colors group-hover:text-blue-800 dark:text-blue-400 dark:group-hover:text-blue-300">
-                        <span>Read article</span>
-                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                          {/* CTA */}
+                          <div className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+                            <span>Read article</span>
+                            <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </main>
   );
 }

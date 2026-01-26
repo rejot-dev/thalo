@@ -28,7 +28,10 @@ export const blog = defineCollections({
   schema: frontmatterSchema.extend({
     author: z.string(),
     date: z.coerce.date(),
+    /** Header image displayed at top of blog post */
     image: z.string().optional(),
+    /** OG image for social sharing (falls back to image, then default) */
+    ogImage: z.string().optional(),
   }),
 });
 

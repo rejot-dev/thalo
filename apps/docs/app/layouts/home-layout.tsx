@@ -6,7 +6,7 @@ import { Search } from "fumadocs-ui/internal/icons";
 import type { ReactNode } from "react";
 import { HomeFooter, DocsFooter, GitHubIcon, DiscordIcon } from "@/components/footer";
 
-function SearchBar() {
+function SearchButton() {
   const { enabled, hotKey, setOpenSearch } = useSearchContext();
   if (!enabled) {
     return null;
@@ -18,13 +18,13 @@ function SearchBar() {
     <button
       type="button"
       onClick={() => setOpenSearch(true)}
-      className="fixed left-1/2 z-50 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-sm text-foreground/80 shadow-lg shadow-primary/10 backdrop-blur-md transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-sm text-foreground/80 shadow-sm transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       aria-label="Open Search"
       data-search
     >
       <Search className="size-4" />
-      <span className="hidden sm:inline text-muted-foreground">Search Docs</span>
-      <kbd className="inline-flex items-center rounded-full border border-border/60 bg-muted/60 px-2 py-0.5 text-[12px] font-medium leading-none text-muted-foreground">
+      <span className="hidden lg:inline text-muted-foreground">Search</span>
+      <kbd className="hidden sm:inline-flex items-center rounded-full border border-border/60 bg-muted/60 px-2 py-0.5 text-[12px] font-medium leading-none text-muted-foreground">
         {hotkeyParts.map((k, idx) => (
           <span key={typeof k.key === "string" ? k.key : "mod"} className={idx === 0 ? "" : "ms-1"}>
             {k.display}
@@ -55,9 +55,7 @@ export function HomeLayoutWithFooter({
     <HomeLayout
       {...options}
       searchToggle={{
-        components: {
-          lg: <SearchBar />,
-        },
+        enabled: false,
       }}
       themeSwitch={{
         enabled: false,
@@ -103,6 +101,12 @@ export function HomeLayoutWithFooter({
         {
           type: "main",
           on: "all",
+          url: "/blog",
+          text: "Blog",
+        },
+        {
+          type: "main",
+          on: "all",
           url: "/demo",
           text: "Demo",
         },
@@ -123,7 +127,10 @@ export function HomeLayoutWithFooter({
           on: "nav",
           secondary: true,
           children: (
-            <div className="flex items-center gap-1 pe-2 max-sm:hidden">
+            <div className="flex items-center gap-2 pe-2 max-sm:hidden">
+              <SearchButton />
+              {/* Subtle separator */}
+              <div className="mx-1 h-5 w-px bg-border/50" />
               <a
                 href="https://github.com/rejot-dev/thalo"
                 target="_blank"
@@ -144,8 +151,6 @@ export function HomeLayoutWithFooter({
                 <div className="absolute inset-0 rounded-full bg-primary/0 transition-all duration-200 group-hover/nav:bg-primary/10" />
                 <DiscordIcon className="relative size-5 transition-transform duration-200 group-hover/nav:scale-110" />
               </a>
-              {/* Subtle separator */}
-              <div className="mx-2 h-5 w-px bg-border/50" />
             </div>
           ),
         },

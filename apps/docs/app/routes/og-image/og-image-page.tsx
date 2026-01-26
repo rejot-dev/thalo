@@ -1,13 +1,42 @@
 import { ThemeToggle } from "fumadocs-ui/components/layout/theme-toggle";
 import { useState } from "react";
-import { Check, Image, Sparkles, FileText, BookOpen, Layers } from "lucide-react";
+import { Check, Image, Sparkles, FileText, BookOpen, Layers, ChevronDown } from "lucide-react";
+import { blogSource } from "@/lib/source";
+import type { Route } from "./+types/og-image-page";
+
+interface BlogPostInfo {
+  slug: string;
+  title: string;
+  description: string;
+  author?: string;
+  date: string;
+}
 
 export function loader() {
   // Only allow access in development mode
   if (import.meta.env.MODE !== "development") {
     throw new Response("Not Found", { status: 404 });
   }
-  return null;
+
+  // Get all blog posts
+  const pages = blogSource.getPages();
+  const blogPosts: BlogPostInfo[] = pages.map((page) => {
+    const dateSource = "date" in page.data ? page.data.date : new Date();
+    const date = new Date(dateSource);
+    return {
+      slug: page.slugs[0] ?? "",
+      title: page.data.title,
+      description: page.data.description ?? "",
+      author: "author" in page.data ? (page.data.author as string) : undefined,
+      date: date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    };
+  });
+
+  return { blogPosts };
 }
 
 type ImageVariant = "main" | "docs" | "blog" | "playground";
@@ -228,7 +257,11 @@ function DocsOgImage() {
 }
 
 /** Blog OG Image */
-function BlogOgImage() {
+function BlogOgImage({ post }: { post?: BlogPostInfo }) {
+  const title = post?.title ?? "Thoughts on Knowledge, Technology & the Art of Remembering";
+  const author = post?.author;
+  const date = post?.date;
+
   return (
     <div className="relative flex h-[630px] w-[1200px] flex-col overflow-hidden bg-[#faf3e6] dark:bg-[oklch(0.14_0.015_50)]">
       {/* Background texture */}
@@ -262,21 +295,32 @@ function BlogOgImage() {
             </span>
           </div>
 
-          {/* Sample blog title */}
+          {/* Blog title */}
           <h1
             className="mb-6 max-w-4xl text-6xl font-bold leading-tight tracking-tight text-[oklch(0.22_0.03_50)] dark:text-[oklch(0.92_0.02_85)]"
             style={{ fontFamily: "Lora, Georgia, serif" }}
           >
-            Thoughts on Knowledge, Technology & the Art of Remembering
+            {title}
           </h1>
 
           {/* Meta */}
           <div className="flex items-center gap-6 text-lg text-[oklch(0.5_0.03_50)] dark:text-[oklch(0.65_0.02_85)]">
-            <span style={{ fontFamily: "Lora, Georgia, serif" }}>Updates & Insights</span>
-            <span className="text-amber-600/50 dark:text-amber-400/50">•</span>
-            <span className="italic" style={{ fontFamily: "Lora, Georgia, serif" }}>
-              Plain text, forever
-            </span>
+            {author && <span style={{ fontFamily: "Lora, Georgia, serif" }}>{author}</span>}
+            {author && date && <span className="text-amber-600/50 dark:text-amber-400/50">•</span>}
+            {date && (
+              <span className="italic" style={{ fontFamily: "Lora, Georgia, serif" }}>
+                {date}
+              </span>
+            )}
+            {!author && !date && (
+              <>
+                <span style={{ fontFamily: "Lora, Georgia, serif" }}>Updates & Insights</span>
+                <span className="text-amber-600/50 dark:text-amber-400/50">•</span>
+                <span className="italic" style={{ fontFamily: "Lora, Georgia, serif" }}>
+                  Plain text, forever
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -407,16 +451,27 @@ function PlaygroundOgImage() {
   );
 }
 
-const imageComponents: Record<ImageVariant, () => React.JSX.Element> = {
-  main: MainOgImage,
-  docs: DocsOgImage,
-  blog: BlogOgImage,
-  playground: PlaygroundOgImage,
-};
-
-export default function OgImagePage() {
+export default function OgImagePage({ loaderData }: Route.ComponentProps) {
+  const { blogPosts } = loaderData;
   const [imageType, setImageType] = useState<ImageVariant>("main");
-  const ImageComponent = imageComponents[imageType];
+  const [selectedBlogSlug, setSelectedBlogSlug] = useState<string | null>(
+    blogPosts[0]?.slug ?? null,
+  );
+
+  const selectedBlogPost = blogPosts.find((p) => p.slug === selectedBlogSlug);
+
+  const renderImage = () => {
+    switch (imageType) {
+      case "main":
+        return <MainOgImage />;
+      case "docs":
+        return <DocsOgImage />;
+      case "blog":
+        return <BlogOgImage post={selectedBlogPost} />;
+      case "playground":
+        return <PlaygroundOgImage />;
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-linear-to-br from-stone-100 via-amber-50/30 to-stone-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
@@ -494,6 +549,27 @@ export default function OgImagePage() {
           })}
         </div>
 
+        {/* Blog post selector (shown when blog variant is selected) */}
+        {imageType === "blog" && blogPosts.length > 0 && (
+          <div className="mb-10 flex justify-center">
+            <div className="relative">
+              <select
+                value={selectedBlogSlug ?? ""}
+                onChange={(e) => setSelectedBlogSlug(e.target.value || null)}
+                className="appearance-none rounded-xl border border-amber-800/20 bg-white/80 py-3 pl-5 pr-12 text-sm font-medium text-[oklch(0.35_0.03_50)] shadow-md backdrop-blur-sm transition-all hover:border-amber-600/30 focus:border-amber-600/40 focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:border-amber-400/20 dark:bg-zinc-800/80 dark:text-[oklch(0.85_0.02_85)] dark:hover:border-amber-400/30 dark:focus:border-amber-400/40 dark:focus:ring-amber-400/20"
+                style={{ fontFamily: "Lora, Georgia, serif" }}
+              >
+                {blogPosts.map((post) => (
+                  <option key={post.slug} value={post.slug}>
+                    {post.title}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-amber-600/60 dark:text-amber-400/60" />
+            </div>
+          </div>
+        )}
+
         {/* Image preview container */}
         <div className="flex justify-center">
           <div className="relative">
@@ -503,7 +579,7 @@ export default function OgImagePage() {
 
             {/* Image frame */}
             <div className="relative overflow-hidden rounded-xl border-2 border-amber-800/15 shadow-2xl shadow-amber-900/10 dark:border-amber-400/15 dark:shadow-amber-400/5">
-              <ImageComponent />
+              {renderImage()}
             </div>
           </div>
         </div>
