@@ -1,5 +1,13 @@
 # @rejot-dev/thalo
 
+## 0.2.5
+
+### Patch Changes
+
+- a909cfb: feat: add filteredSince and schema-aware change tracking
+- ac9c4c6: feat: add workspace.watch async iterator for change events
+  - @rejot-dev/tree-sitter-thalo@0.2.5
+
 ## 0.2.4
 
 ### Patch Changes
