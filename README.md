@@ -10,7 +10,7 @@ Built for AI collaboration.**
 <br>
 
 [Documentation](https://thalo.rejot.dev/docs) · [Playground](https://thalo.rejot.dev/playground) ·
-[Demo](https://thalo.rejot.dev/demo) · [Discord](https://discord.gg/jdXZxyGCnC)
+[Demo](https://thalo.rejot.dev/demo) · [Discord](https://discord.gg/QsuEKWwqKV)
 
 </div>
 

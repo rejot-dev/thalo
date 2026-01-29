@@ -72,7 +72,7 @@ export function SocialIcons() {
       <SocialIconButton href="https://github.com/rejot-dev/thalo" label="GitHub">
         <GitHubIcon className="size-4" />
       </SocialIconButton>
-      <SocialIconButton href="https://discord.gg/jdXZxyGCnC" label="Discord">
+      <SocialIconButton href="https://discord.gg/QsuEKWwqKV" label="Discord">
         <DiscordIcon className="size-4" />
       </SocialIconButton>
       <SocialIconButton href="mailto:thalo@rejot.dev" label="Email">
@@ -113,7 +113,7 @@ export function HomeFooter() {
     ],
     developer: [
       { label: "GitHub", href: "https://github.com/rejot-dev/thalo" },
-      { label: "Discord", href: "https://discord.gg/jdXZxyGCnC" },
+      { label: "Discord", href: "https://discord.gg/QsuEKWwqKV" },
     ],
     company: [
       { label: "ReJot", href: "https://rejot.dev" },
@@ -265,7 +265,7 @@ export function DocsFooter() {
               <span className="hidden sm:inline">GitHub</span>
             </a>
             <a
-              href="https://discord.gg/jdXZxyGCnC"
+              href="https://discord.gg/QsuEKWwqKV"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"

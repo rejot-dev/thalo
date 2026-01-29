@@ -142,7 +142,7 @@ export function HomeLayoutWithFooter({
                 <GitHubIcon className="relative size-5 transition-transform duration-200 group-hover/nav:scale-110" />
               </a>
               <a
-                href="https://discord.gg/jdXZxyGCnC"
+                href="https://discord.gg/QsuEKWwqKV"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Discord"
@@ -165,7 +165,7 @@ export function HomeLayoutWithFooter({
         },
         {
           type: "icon",
-          url: "https://discord.gg/jdXZxyGCnC",
+          url: "https://discord.gg/QsuEKWwqKV",
           text: "Discord",
           label: "Discord",
           icon: <DiscordIcon className="size-4" />,
