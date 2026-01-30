@@ -37,8 +37,8 @@ The `thalo format` command requires the optional `@rejot-dev/thalo-prettier` plu
 npm install @rejot-dev/thalo-prettier
 ```
 
-Note: `thalo-prettier` requires native tree-sitter bindings. If compilation fails on Node.js 24+,
-use Node.js 22 LTS for formatting. All other CLI commands work on Node.js 24+ via WASM fallback.
+Note: `thalo-prettier` prefers native tree-sitter bindings but will fall back to WASM if native
+bindings are unavailable. All other CLI commands work on Node.js 24+ via WASM fallback.
 
 ## Usage
 

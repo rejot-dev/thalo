@@ -461,6 +461,9 @@ importers:
       tree-sitter:
         specifier: 'catalog:'
         version: 0.25.0
+      web-tree-sitter:
+        specifier: 'catalog:'
+        version: 0.25.10(patch_hash=c35b0a0c6fb8d018f279f0f307240fc083bb7278dca75c113b83567ee15c526b)
     devDependencies:
       '@rejot-private/typescript-config':
         specifier: workspace:*

@@ -16,15 +16,8 @@ Welcome to Thalo! This guide will help you get up and running with your first kn
 
 Thalo is distributed as a CLI tool. Install it globally using your preferred package manager:
 
-```bash
-# Using pnpm (recommended)
-pnpm add -g @rejot-dev/thalo-cli
-
-# Using npm
+```npm
 npm install -g @rejot-dev/thalo-cli
-
-# Using yarn
-yarn global add @rejot-dev/thalo-cli
 ```
 
 Verify the installation:
@@ -33,21 +26,26 @@ Verify the installation:
 thalo --version
 ```
 
+## Or: use the skill
+
+```npm
+npx skills add https://github.com/rejot-dev/thalo
+```
+
+Next, ask your agent to initialize a project.
+
 ## Initialize Your Knowledge Base
 
 Create a new directory for your knowledge base and initialize it:
 
 ```bash
-mkdir my-knowledge
-cd my-knowledge
-thalo init
+thalo init my-knowledge && cd my-knowledge
 ```
 
 This creates:
 
 - `entities.thalo` - Entity schema definitions
-- `entries.thalo` - Your knowledge entries
-- `syntheses.thalo` - Query definitions for synthesizing knowledge
+- `references.thalo` - Starter reference entry
 
 ## Your First Entry
 

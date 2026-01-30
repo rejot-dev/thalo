@@ -375,17 +375,10 @@ thalo query "lore where ^my-topic" --format raw
 ### Setting Up a New Knowledge Base
 
 ```bash
-# 1. Create directory
-mkdir my-knowledge
-cd my-knowledge
+# Initialize your knowledge base and cd into it
+thalo init my-knowledge && cd my-knowledge
 
-# 2. Initialize
-thalo init
-
-# 3. Setup merge driver for better git merges
-thalo setup-merge-driver
-
-# 4. Edit entries and validate
+# Edit entries and validate
 thalo check
 ```
 

@@ -120,8 +120,11 @@ async function createPrettierFormatter(): Promise<
     console.error();
     console.error(pc.cyan("  npm install @rejot-dev/thalo-prettier"));
     console.error();
-    console.error(pc.dim("Note: thalo-prettier requires native tree-sitter bindings."));
-    console.error(pc.dim("If compilation fails on Node.js 24+, use Node.js 22 LTS instead."));
+    console.error(
+      pc.dim(
+        "Note: thalo-prettier prefers native tree-sitter bindings but will fall back to WASM if needed.",
+      ),
+    );
     process.exit(1);
   }
 

@@ -22,7 +22,8 @@
     "test:watch": "vitest --watch",
     "pr-review": "tsx src/pr-review.ts",
     "pr-reply": "tsx src/pr-reply.ts",
-    "test:wasm-fallback": "tsx src/test-wasm-fallback.ts"
+    "test:wasm-fallback": "tsx src/test-wasm-fallback.ts",
+    "test:prettier-wasm-fallback": "tsx src/test-prettier-wasm-fallback.ts"
   },
   "dependencies": {
     "@mariozechner/pi-agent-core": "^0.47.0",

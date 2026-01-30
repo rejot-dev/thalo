@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLoaderData } from "react-router";
 import { GitHub } from "@/components/logos/github";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { ThaloCodeRenderer, type HighlightedLine } from "@/components/thalo-code
 import { getParser } from "@/lib/thalo-parser.server";
 import { getParser as getClientParser } from "@/lib/thalo-parser.client";
 import { highlightToTokens } from "@/lib/thalo-highlighter";
-import { ArrowRight, Check, Link2, Sparkles, FileCode, Terminal, Wand2 } from "lucide-react";
+import { ArrowRight, Check, Link2, Sparkles, FileCode, Terminal, Wand2, Copy } from "lucide-react";
 import { WorkflowLoop } from "@/components/workflow-loop";
 import { ToolingExplorer } from "@/components/tooling-explorer";
 
@@ -47,6 +48,19 @@ export function meta() {
 }
 
 function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
+  const [copied, setCopied] = useState(false);
+  const installCommand = "npx skills add https://github.com/rejot-dev/thalo";
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(installCommand);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Silent fail
+    }
+  };
+
   return (
     <section className="relative w-full min-h-[90vh] flex items-center overflow-hidden">
       {/* Mobile: Tree as background with content overlapping */}
@@ -97,23 +111,57 @@ function Hero({ highlightedLines }: { highlightedLines: HighlightedLine[] }) {
               usable data. Human-readable, versionable, and LLMs love to work with it.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-row gap-3 sm:gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="h-12 rounded-full px-8 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+            {/* CTA: Terminal Command + Secondary Button */}
+            <div className="flex flex-col gap-4">
+              {/* Primary CTA: Terminal Command - matches entries.thalo style */}
+              <button
+                onClick={handleCopy}
+                className="group relative flex w-fit items-center gap-3 overflow-hidden rounded-xl border border-amber-900/20 bg-amber-50 px-4 py-3 text-left font-mono text-sm shadow-lg transition-all hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/95 sm:px-5 sm:py-3.5"
               >
-                <Link to="/docs/getting-started">Get Started</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="h-12 rounded-full border-2 px-8 text-base font-semibold transition-all hover:bg-muted/50"
-              >
-                <Link to="/demo">View Demo</Link>
-              </Button>
+                {/* Terminal prompt */}
+                <span className="shrink-0 text-emerald-600 dark:text-emerald-400">$</span>
+
+                {/* Command text */}
+                <span className="whitespace-nowrap text-amber-950 dark:text-zinc-100">
+                  {installCommand}
+                </span>
+
+                {/* Copy icon */}
+                <span className="flex shrink-0 items-center text-amber-700/60 transition-colors group-hover:text-amber-900 dark:text-zinc-400 dark:group-hover:text-zinc-200">
+                  {copied ? (
+                    <Check className="size-4 text-emerald-600 dark:text-emerald-400" />
+                  ) : (
+                    <Copy className="size-4" />
+                  )}
+                </span>
+              </button>
+
+              {/* Note + Get Started link */}
+              <div className="flex items-center gap-3 text-sm">
+                {/* Note */}
+                <span className="flex items-center gap-1.5 italic text-muted-foreground">
+                  <Sparkles className="size-3.5 text-primary/60" />
+                  <span>Ask your agent to init a Thalo project</span>
+                </span>
+
+                {/* Separator */}
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-border">•</span>
+                  <span className="text-muted-foreground">or</span>
+                </span>
+
+                {/* Get Started link */}
+                <Link
+                  to="/docs/getting-started"
+                  className="group inline-flex items-center gap-1 font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  <span className="relative">
+                    Get Started
+                    <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-primary/60 transition-all duration-300 group-hover:w-full" />
+                  </span>
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -625,15 +673,15 @@ function GetStarted() {
               </div>
               <pre className="overflow-x-auto p-6 text-sm md:text-base">
                 <code className="font-mono leading-relaxed">
-                  <span className="text-muted-foreground"># Install the CLI (or use npm/yarn)</span>
+                  <span className="text-muted-foreground"># Install the CLI (or use pnpm/bun)</span>
                   {"\n"}
-                  <span className="text-primary">pnpm</span>
-                  {" add -g @rejot-dev/thalo-cli"}
+                  <span className="text-primary">npm</span>
+                  {" install -g @rejot-dev/thalo-cli"}
                   {"\n\n"}
                   <span className="text-muted-foreground"># Initialize your knowledge base</span>
                   {"\n"}
                   <span className="text-primary">thalo</span>
-                  {" init\n\n"}
+                  {" init my-knowledge && cd my-knowledge\n\n"}
                   <span className="text-muted-foreground"># Validate your entries</span>
                   {"\n"}
                   <span className="text-primary">thalo</span>

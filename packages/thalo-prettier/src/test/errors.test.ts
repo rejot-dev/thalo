@@ -12,12 +12,12 @@ const format = async (code: string): Promise<string> => {
 
 describe("parse error handling", () => {
   describe("formatParseErrors", () => {
-    it("should report error location with line and column", () => {
+    it("should report error location with line and column", async () => {
       // Missing timestamp causes a parse error
       const source = `create lore "Title"
   type: "fact"`;
-      const tree = parseThalo(source);
-      const errorNodes = findErrorNodes(tree.rootNode);
+      const tree = await parseThalo(source);
+      const errorNodes = findErrorNodes(tree.rootNode as import("tree-sitter").SyntaxNode);
 
       const message = formatParseErrors(source, errorNodes);
 
@@ -25,12 +25,12 @@ describe("parse error handling", () => {
       expect(message).toContain("column");
     });
 
-    it("should show context line with pointer", () => {
+    it("should show context line with pointer", async () => {
       // Invalid directive causes a parse error
       const source = `2026-01-05T15:30Z invalid lore "Title"
   type: "fact"`;
-      const tree = parseThalo(source);
-      const errorNodes = findErrorNodes(tree.rootNode);
+      const tree = await parseThalo(source);
+      const errorNodes = findErrorNodes(tree.rootNode as import("tree-sitter").SyntaxNode);
 
       const message = formatParseErrors(source, errorNodes);
 
@@ -38,10 +38,10 @@ describe("parse error handling", () => {
       expect(message).toContain("^");
     });
 
-    it("should deduplicate errors on same line", () => {
+    it("should deduplicate errors on same line", async () => {
       const source = `create lore "Title"`;
-      const tree = parseThalo(source);
-      const errorNodes = findErrorNodes(tree.rootNode);
+      const tree = await parseThalo(source);
+      const errorNodes = findErrorNodes(tree.rootNode as import("tree-sitter").SyntaxNode);
 
       // Even if there are nested ERROR nodes, we should deduplicate by line
       const message = formatParseErrors(source, errorNodes);
@@ -50,10 +50,10 @@ describe("parse error handling", () => {
       expect(message).toMatch(/Parse error at line \d+/);
     });
 
-    it("should include helpful hints", () => {
+    it("should include helpful hints", async () => {
       const source = `create lore "Title"`;
-      const tree = parseThalo(source);
-      const errorNodes = findErrorNodes(tree.rootNode);
+      const tree = await parseThalo(source);
+      const errorNodes = findErrorNodes(tree.rootNode as import("tree-sitter").SyntaxNode);
 
       const message = formatParseErrors(source, errorNodes);
 
