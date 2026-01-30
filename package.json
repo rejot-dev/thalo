@@ -20,7 +20,7 @@
     "dev": "turbo watch --ui tui dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:changed": "prettier -u --write $(git ls-files --others --exclude-standard && git diff --name-only --diff-filter=d HEAD | sort -u | xargs)",
+    "format:changed": "prettier -u --write $( (git ls-files --others --exclude-standard -z | xargs -0 -I{} sh -c '[ -L \"{}\" ] || printf \"%s\\0\" \"{}\"'; git diff --name-only --diff-filter=d -z HEAD) | xargs -0 | sort -u | xargs )",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "build": "turbo run build",

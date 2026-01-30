@@ -43,7 +43,7 @@ const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   # Metadata
   type: "fact" | "insight" ; "fact = verifiable info, insight = learned wisdom"
   subject: string | link ; "Subject name/slug (use ^self for personal lore)"
-  date?: date-range ; "Relevant date or date range"
+  date?: daterange ; "Relevant date or date range"
   # Sections
   Description ; "The lore content"
 
@@ -52,74 +52,18 @@ const ENTITIES_THALO = `{{TIMESTAMP}} define-entity journal "Personal thoughts, 
   Bio ; "Need at least one section"
 `;
 
-const AGENTS_MD = `# THALO - Thought And Lore Language
+const REFERENCES_THALO = `{{TIMESTAMP}} create reference "A knowledge management system inspired by plain-text accounting" ^ref-thalo-intro #thalo
+  url: "https://thalo.rejot.dev/blog/plain-text-knowledge-management"
+  ref-type: "article"
+  author: "Wilco Kruijer"
+  published: 2026-01-26
+  status: "unread"
 
-Entity schemas are defined in \`entities.thalo\`.
-
-## Entry Syntax
-
-\`\`\`
-{timestamp} {directive} {entity} "Title" [^link-id] [#tags...]
-  {key}: {value}
-  ...
-
-  # Section
-  {content}
-
-\`\`\`
-
-- **timestamp**: ISO 8601 local time with timezone (\`2026-01-05T15:30Z\`)
-- **directive**: \`create\` or \`update\`
-- **entity**: \`journal\`, \`opinion\`, \`reference\`, or \`lore\`
-- **^link-id**: Optional explicit ID for cross-referencing
-- **#tag**: Optional categorization tags
-
-## Metadata
-
-Metadata fields are indented key-value pairs. See \`entities.thalo\` for required/optional
-fields per entity. Values can be:
-
-- Strings: \`author: "Jane Doe"\` or unquoted \`author: Jane Doe\`
-- Links: \`subject: ^self\` or \`related: ^my-other-entry\`
-- Dates: \`published: 2023-03-16\`
-- Date ranges: \`date: 2020 ~ 2021\`
-
-## Sections
-
-Content sections start with \`# SectionName\` (indented). **All content must be within a section.**
-Each entity type defines which sections are required/optional in \`entities.thalo\`.
-
-## Example
-
-\`\`\`thalo
-2026-01-05T16:00Z create opinion "TypeScript enums should be avoided" ^opinion-ts-enums #typescript
-  confidence: "high"
-
-  # Claim
-  TypeScript enums should be replaced with \`as const\` objects.
-
-  # Reasoning
-  - Enums generate runtime code
-  - \`as const\` provides the same type safety with zero overhead
-
-\`\`\`
-
-## Tips
-
-- Run \`date -u +"%Y-%m-%dT%H:%MZ"\` to get the current timestamp
-- Use \`thalo check\` to validate entries against schemas
-`;
-
-const PERSONAL_BIO_MD = `\`\`\`thalo
-{{TIMESTAMP}} define-synthesis "Personal Bio" ^bio-synthesis #profile
-  sources: lore where subject = ^self
-
-  # Prompt
-  Write a narrative bio from the collected facts and insights.
-  Keep it professional but personable.
-\`\`\`
-
-# Personal Bio
+  # Summary
+  Blog post introducing Thalo, a structured plain-text language for knowledge management inspired by
+  plain-text accounting (Beancount/Ledger). Argues that vibe note-taking lacks the feedback loops
+  that make agentic coding effective, and proposes treating knowledge bases like codebases: both are
+  folders of text files with relationships that compound when structured well.
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -149,8 +93,10 @@ function initAction(ctx: CommandContext): void {
 
   const files = [
     { path: "entities.thalo", content: ENTITIES_THALO.replace(/\{\{TIMESTAMP\}\}/g, timestamp) },
-    { path: "AGENTS.md", content: AGENTS_MD },
-    { path: "personal-bio.md", content: PERSONAL_BIO_MD.replace(/\{\{TIMESTAMP\}\}/g, timestamp) },
+    {
+      path: "references.thalo",
+      content: REFERENCES_THALO.replace(/\{\{TIMESTAMP\}\}/g, timestamp),
+    },
   ];
 
   let createdCount = 0;
@@ -199,7 +145,7 @@ function initAction(ctx: CommandContext): void {
 
 export const initCommand: CommandDef = {
   name: "init",
-  description: "Initialize THALO with entity definitions and documentation",
+  description: "Initialize THALO with entity definitions and starter references",
   args: {
     name: "directory",
     description: "Target directory (defaults to current directory)",
