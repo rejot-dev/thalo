@@ -1,0 +1,24 @@
+2026-01-07T10:18Z create reference "Clean Code by Robert C. Martin" ^clean-code #programming #books
+  ref-type: "book"
+  author: "Robert C. Martin"
+  published: 2008-08-01
+  status: "read"
+
+  # Summary
+  A handbook of agile software craftsmanship focused on readable, maintainable code.
+
+  # Key Takeaways
+  - Functions should do one thing and do it well
+  - Names should reveal intent
+  - Boy Scout Rule: Leave the code cleaner than you found it
+
+2026-01-07T10:18Z create opinion "Premature abstraction is worse than duplication" ^opinion-premature-abstraction #programming #architecture
+  confidence: "high"
+  related: ^no-abstraction, ^pragmatic-programmer
+
+  # Claim
+  Abstracting too early creates rigid, hard-to-change code.
+
+  # Reasoning
+  - Early abstractions encode the wrong assumptions
+  - Changing a wrong abstraction is harder than merging duplicated code
