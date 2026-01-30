@@ -1,5 +1,12 @@
 # @rejot-dev/thalo-prettier
 
+## 0.2.5
+
+### Patch Changes
+
+- 0f78ac0: fix: fallback to WASM build in Prettier plugin if Tree-Sitter binary cannot be built
+  - @rejot-dev/tree-sitter-thalo@0.2.5
+
 ## 0.2.4
 
 ### Patch Changes
