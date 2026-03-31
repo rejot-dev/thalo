@@ -47,6 +47,7 @@ import type { SemanticModel } from "./semantic/analyzer.js";
 import type { SourceMap } from "./source-map.js";
 import { toFileLocation } from "./source-map.js";
 import { loadWorkspaceFromDirectory, loadWorkspaceFromFiles } from "./files.js";
+import { createInitializedWorkspace } from "./parser.node.js";
 import { Workspace } from "./model/workspace.js";
 import { findDefinition as findDefinitionService } from "./services/definition.js";
 import { findReferences as findReferencesService } from "./services/references.js";
@@ -1272,8 +1273,7 @@ export async function loadThaloFiles(files: string[]): Promise<ThaloWorkspaceInt
  * ```
  */
 export async function createThaloWorkspace(): Promise<ThaloWorkspaceInterface> {
-  const { createWorkspace } = await import("./parser.native.js");
-  return new ThaloWorkspace(createWorkspace());
+  return new ThaloWorkspace(await createInitializedWorkspace());
 }
 
 /**

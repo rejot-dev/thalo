@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import fs from "node:fs";
 import path from "node:path";
-import { DEFAULT_EXTENSIONS } from "./files.js";
+import { DEFAULT_EXTENSIONS, shouldIgnoreWorkspaceRelativePath } from "./files.js";
 import type { ThaloWorkspaceInterface, WorkspaceWatchOptions, WorkspaceWatchEvent } from "./api.js";
 import type { Entry } from "./ast/ast-types.js";
 import { getEntryIdentity, serializeIdentity } from "./merge/entry-matcher.js";
@@ -20,6 +20,18 @@ function normalizeExtensions(extensions?: string[]): string[] {
 
 function isWatchedFile(file: string, extensions: string[]): boolean {
   return extensions.some((ext) => file.endsWith(ext));
+}
+
+function isIgnoredWatchedPath(file: string, roots: string[]): boolean {
+  for (const root of roots) {
+    const relativePath = path.relative(root, file);
+    if (relativePath === "" || relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+      continue;
+    }
+    return shouldIgnoreWorkspaceRelativePath(relativePath);
+  }
+
+  return false;
 }
 
 function stripForComparison(obj: unknown): unknown {
@@ -120,6 +132,16 @@ export function watchWorkspace(
     fileSnapshots.set(file, buildSnapshotForFile(workspace, file));
   }
 
+  let root = findCommonRoot(files);
+  if (root && files.includes(root)) {
+    root = path.dirname(root);
+  }
+  const rootIsFilesystemRoot = root ? root === path.parse(root).root : false;
+  const watchDirs =
+    root && !rootIsFilesystemRoot
+      ? [root]
+      : Array.from(new Set(files.map((file) => path.dirname(file))));
+
   const eventQueue: WorkspaceWatchEvent[] = [];
   let pendingResolve: ((event: WorkspaceWatchEvent | null) => void) | null = null;
   let closed = false;
@@ -184,6 +206,9 @@ export function watchWorkspace(
 
     for (const file of changedFiles) {
       if (!isWatchedFile(file, extensions)) {
+        continue;
+      }
+      if (!knownFiles.has(file) && isIgnoredWatchedPath(file, watchDirs)) {
         continue;
       }
 
@@ -254,16 +279,6 @@ export function watchWorkspace(
     }, debounceMs);
   };
 
-  let root = findCommonRoot(files);
-  if (root && files.includes(root)) {
-    root = path.dirname(root);
-  }
-  const rootIsFilesystemRoot = root ? root === path.parse(root).root : false;
-  const watchDirs =
-    root && !rootIsFilesystemRoot
-      ? [root]
-      : Array.from(new Set(files.map((file) => path.dirname(file))));
-
   for (const dir of watchDirs) {
     const watcher = fs.watch(dir, { recursive: true }, (_eventType, filename) => {
       if (!filename) {
@@ -271,6 +286,9 @@ export function watchWorkspace(
       }
       const resolved = path.isAbsolute(filename) ? filename : path.resolve(dir, filename);
       if (!isWatchedFile(resolved, extensions)) {
+        return;
+      }
+      if (!knownFiles.has(resolved) && isIgnoredWatchedPath(resolved, watchDirs)) {
         return;
       }
       pendingFiles.add(resolved);

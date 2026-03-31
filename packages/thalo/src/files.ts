@@ -8,18 +8,26 @@
  */
 
 import { readdir, readFile, stat } from "node:fs/promises";
-import { join, resolve } from "node:path";
-import { createWorkspace, type Workspace } from "./parser.native.js";
+import { join, resolve, sep } from "node:path";
+import { createInitializedWorkspace, type Workspace } from "./parser.node.js";
 
 /**
  * Default file extensions for thalo files.
  */
 export const DEFAULT_EXTENSIONS = [".thalo", ".md"];
 
+function isIgnoredWorkspaceSegment(segment: string): boolean {
+  return segment === "node_modules" || segment.startsWith(".");
+}
+
+export function shouldIgnoreWorkspaceRelativePath(relativePath: string): boolean {
+  return relativePath.split(sep).filter(Boolean).some(isIgnoredWorkspaceSegment);
+}
+
 /**
  * Collect all thalo files from a directory recursively.
  *
- * Skips hidden directories (starting with .) and node_modules.
+ * Skips hidden files/directories (starting with .) and node_modules.
  *
  * @param dir - Directory to search
  * @param extensions - File extensions to include (default: .thalo, .md)
@@ -41,12 +49,14 @@ export async function collectThaloFiles(
 
     for (const entry of entries) {
       const fullPath = join(currentDir, entry.name);
+      const relativePath = fullPath.slice(dir.length + 1);
+
+      if (shouldIgnoreWorkspaceRelativePath(relativePath)) {
+        continue;
+      }
 
       if (entry.isDirectory()) {
-        // Skip hidden directories and node_modules
-        if (!entry.name.startsWith(".") && entry.name !== "node_modules") {
-          await walk(fullPath);
-        }
+        await walk(fullPath);
       } else if (entry.isFile()) {
         if (extensions.some((ext) => entry.name.endsWith(ext))) {
           files.push(fullPath);
@@ -64,6 +74,9 @@ export async function collectThaloFiles(
  *
  * Discovers all .thalo and .md files in the directory and loads them
  * into a new Workspace instance.
+ *
+ * This initializes the Node parser on demand, using the native parser when
+ * available and falling back to WASM otherwise.
  *
  * @param cwd - Working directory to load files from
  * @param extensions - File extensions to include (default: .thalo, .md)
@@ -104,7 +117,7 @@ export async function loadWorkspaceFromDirectory(
   }
 
   // Create workspace and add documents
-  const workspace = createWorkspace();
+  const workspace = await createInitializedWorkspace();
 
   for (const file of files) {
     const source = await readFile(file, "utf-8");
@@ -131,7 +144,7 @@ export async function loadWorkspaceFromDirectory(
  * ```
  */
 export async function loadWorkspaceFromFiles(files: string[]): Promise<Workspace> {
-  const workspace = createWorkspace();
+  const workspace = await createInitializedWorkspace();
 
   for (const file of files) {
     const resolvedPath = resolve(file);

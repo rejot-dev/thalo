@@ -26,6 +26,20 @@ describe("Node Parser (native with WASM fallback)", () => {
     expect(workspace.getModel("test.thalo")).toBeDefined();
   });
 
+  it("can create a workspace while initializing on demand", async () => {
+    const { createInitializedWorkspace, isInitialized } = await import("./parser.node.js");
+
+    expect(isInitialized()).toBe(false);
+
+    const workspace = await createInitializedWorkspace();
+    workspace.addDocument(`2026-01-01T00:00Z create lore "Initialized workspace"`, {
+      filename: "initialized.thalo",
+    });
+
+    expect(isInitialized()).toBe(true);
+    expect(workspace.getModel("initialized.thalo")).toBeDefined();
+  });
+
   it("falls back to WASM when native bindings are unavailable", async () => {
     vi.doMock("tree-sitter", () => {
       throw new Error("native bindings unavailable");

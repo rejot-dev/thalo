@@ -166,6 +166,22 @@ describe("Thalo Scripting API", () => {
       ]);
     };
 
+    const waitForNoEvent = async (
+      iterator: AsyncIterator<WorkspaceWatchEvent>,
+      timeoutMs = 250,
+    ): Promise<void> => {
+      const result = await Promise.race([
+        iterator.next().then((value) => ({ type: "event" as const, value })),
+        new Promise<{ type: "timeout" }>((resolve) =>
+          setTimeout(() => resolve({ type: "timeout" }), timeoutMs),
+        ),
+      ]);
+
+      if (result.type === "event") {
+        throw new Error(`Expected no watch event, but received ${JSON.stringify(result.value)}`);
+      }
+    };
+
     it("emits existing entries when includeExisting is true", async () => {
       const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-watch-"));
       const filePath = path.join(tempDir, "entries.thalo");
@@ -245,6 +261,45 @@ describe("Thalo Scripting API", () => {
 
       const event = await waitForEvent(iterator);
       expect(event.updated.some((entry) => entry.title === "Updated")).toBe(true);
+
+      controller.abort();
+      await fs.rm(tempDir, { recursive: true, force: true });
+    });
+
+    it("ignores hidden files that were excluded during initial workspace discovery", async () => {
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-watch-"));
+      const visibleFile = path.join(tempDir, "entries.thalo");
+      const hiddenFile = path.join(tempDir, ".draft.thalo");
+
+      await fs.writeFile(
+        visibleFile,
+        `2026-01-05T10:00Z create opinion "Visible" ^visible\n  # Claim\n  Starting point.\n`,
+        "utf8",
+      );
+      await fs.writeFile(
+        hiddenFile,
+        `2026-01-05T10:00Z create opinion "Hidden" ^hidden\n  # Claim\n  Hidden draft.\n`,
+        "utf8",
+      );
+
+      const workspace = await loadThalo(tempDir);
+      expect(workspace.files()).not.toContain(hiddenFile);
+
+      const controller = new AbortController();
+      const iterator = workspace
+        .watch({ includeExisting: true, debounceMs: 10, signal: controller.signal })
+        [Symbol.asyncIterator]();
+
+      await waitForEvent(iterator);
+
+      await fs.writeFile(
+        hiddenFile,
+        `2026-01-06T10:00Z create opinion "Hidden" ^hidden\n  # Claim\n  Hidden draft changed.\n`,
+        "utf8",
+      );
+
+      await waitForNoEvent(iterator);
+      expect(workspace.files()).not.toContain(hiddenFile);
 
       controller.abort();
       await fs.rm(tempDir, { recursive: true, force: true });

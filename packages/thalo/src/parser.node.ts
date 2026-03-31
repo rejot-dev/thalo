@@ -193,6 +193,17 @@ export function createWorkspace(): Workspace {
 }
 
 /**
+ * Initialize the parser if needed, then create a Workspace.
+ *
+ * This is useful for higher-level Node.js helpers that should transparently
+ * support the native parser when available and fall back to WASM otherwise.
+ */
+export async function createInitializedWorkspace(): Promise<Workspace> {
+  await initParser();
+  return createWorkspace();
+}
+
+/**
  * Parse a document using the initialized parser.
  *
  * Note: `initParser()` must be called first.
