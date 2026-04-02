@@ -6,6 +6,7 @@
     "change-tracking",
     "cli",
     "scripting",
+    "vfs",
     "examples"
   ]
 }

@@ -163,19 +163,85 @@ if (match) {
 }
 ```
 
+### Virtual Filesystem (VFS)
+
+Use `@rejot-dev/thalo/vfs/node` for the Node-only wrapped loaders such as
+`loadThaloFromFileSystem()`, or use the core `@rejot-dev/thalo/vfs` entrypoint when you want the
+lower-level browser-safe VFS helpers like `loadWorkspaceFromFileSystem()`.
+
+```typescript
+import { ReadWriteFs } from "just-bash";
+import { loadThaloFromFileSystem } from "@rejot-dev/thalo/vfs/node";
+
+const fs = new ReadWriteFs({
+  root: "/Users/me/my-kb",
+  allowSymlinks: true,
+});
+
+const workspace = await loadThaloFromFileSystem(fs, "/");
+```
+
+For browser or in-memory usage, create the workspace yourself so you can provide the web parser:
+
+```typescript
+import { InMemoryFs } from "just-bash";
+import { Workspace } from "@rejot-dev/thalo";
+import { createParser } from "@rejot-dev/thalo/web";
+import { loadWorkspaceFromFileSystem } from "@rejot-dev/thalo/vfs";
+
+const [treeSitterWasm, languageWasm] = await Promise.all([
+  fetch("/wasm/tree-sitter.wasm")
+    .then((response) => response.arrayBuffer())
+    .then((buffer) => new Uint8Array(buffer)),
+  fetch("/wasm/tree-sitter-thalo.wasm")
+    .then((response) => response.arrayBuffer())
+    .then((buffer) => new Uint8Array(buffer)),
+]);
+
+const parser = await createParser({ treeSitterWasm, languageWasm });
+const workspace = new Workspace(parser);
+
+const fs = new InMemoryFs({
+  "/kb/schema.thalo": `2026-01-01T00:00Z define-entity note "Note"
+  # Sections
+  Content
+`,
+});
+
+await loadWorkspaceFromFileSystem(fs, "/kb", { workspace });
+```
+
+The core VFS export provides `loadWorkspaceFromFileSystem()`, `loadWorkspaceFilesFromFileSystem()`,
+`applyWorkspaceFileChange()`, `readFileRevision()`, `writeWorkspaceDocument()`,
+`FileRevisionConflictError`, and `IFileSystem`.
+
+Use `@rejot-dev/thalo/vfs/node` for the Node-only wrapped loaders `loadThaloFromFileSystem()`,
+`loadThaloFilesFromFileSystem()`, and `createNodeHostFileSystem()`.
+
 ## Module Exports
 
-| Export                      | Description                                                |
-| --------------------------- | ---------------------------------------------------------- |
-| `@rejot-dev/thalo`          | Main entry (parser, workspace, checker, services, types)   |
-| `@rejot-dev/thalo/native`   | Native parser factory (`createParser`)                     |
-| `@rejot-dev/thalo/web`      | WASM parser factory (`createParser`) for browsers          |
-| `@rejot-dev/thalo/ast`      | AST types, builder, visitor, extraction                    |
-| `@rejot-dev/thalo/model`    | Workspace, Document, LineIndex, model types                |
-| `@rejot-dev/thalo/semantic` | SemanticModel, analyzer, link index types                  |
-| `@rejot-dev/thalo/schema`   | SchemaRegistry, EntitySchema types                         |
-| `@rejot-dev/thalo/checker`  | Validation rules, visitor pattern, check functions         |
-| `@rejot-dev/thalo/services` | Definition, references, hover, query execution, entity nav |
+| Export                                      | Description                                                                    |
+| ------------------------------------------- | ------------------------------------------------------------------------------ |
+| `@rejot-dev/thalo`                          | Main entry for core types, workspace, checker, and APIs                        |
+| `@rejot-dev/thalo/native`                   | Native parser factory                                                          |
+| `@rejot-dev/thalo/web`                      | WASM parser factory for browsers                                               |
+| `@rejot-dev/thalo/node`                     | Node parser with native/WASM fallback                                          |
+| `@rejot-dev/thalo/api`                      | High-level scripting and workspace loading APIs                                |
+| `@rejot-dev/thalo/vfs`                      | Cross-runtime filesystem abstraction, workspace loaders, sync, and OCC helpers |
+| `@rejot-dev/thalo/vfs/node`                 | Node-only wrapped loaders and host filesystem adapters                         |
+| `@rejot-dev/thalo/vfs/workspace`            | Alias of the core VFS export                                                   |
+| `@rejot-dev/thalo/files`                    | Node-oriented file loading helpers                                             |
+| `@rejot-dev/thalo/formatters`               | Diagnostic and query result formatting utilities                               |
+| `@rejot-dev/thalo/commands/check`           | Programmatic check command                                                     |
+| `@rejot-dev/thalo/commands/format`          | Programmatic format command                                                    |
+| `@rejot-dev/thalo/commands/query`           | Programmatic query command                                                     |
+| `@rejot-dev/thalo/commands/actualize`       | Programmatic actualize command                                                 |
+| `@rejot-dev/thalo/services/definition`      | Definition lookup service                                                      |
+| `@rejot-dev/thalo/services/references`      | References lookup service                                                      |
+| `@rejot-dev/thalo/services/hover`           | Hover service                                                                  |
+| `@rejot-dev/thalo/services/semantic-tokens` | Semantic token extraction service                                              |
+| `@rejot-dev/thalo/change-tracker`           | Browser-safe checkpoint parsing and change-tracker types                       |
+| `@rejot-dev/thalo/change-tracker/node`      | Node change-tracker creation helpers                                           |
 
 ## Parser API
 

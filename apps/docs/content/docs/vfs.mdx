@@ -1,0 +1,269 @@
+---
+title: Virtual Filesystem (VFS)
+description: Load, sync, and persist Thalo workspaces through custom filesystem implementations
+---
+
+# Virtual Filesystem (VFS)
+
+Thalo exposes a cross-runtime virtual filesystem layer at `@rejot-dev/thalo/vfs`.
+
+Use it when your Thalo files live in:
+
+- an in-memory filesystem
+- a browser sandbox
+- a mounted or overlay filesystem
+- a custom backend that implements Thalo's `IFileSystem`
+- a Node environment where you want direct control over loading and persistence
+
+The VFS layer keeps `Workspace` as the in-memory engine, while filesystem traversal, syncing, and
+persistence happen through a filesystem abstraction.
+
+## Installation
+
+For Node and in-memory filesystem implementations, install `just-bash` alongside Thalo:
+
+```bash
+pnpm add @rejot-dev/thalo just-bash
+```
+
+## Public API
+
+The core cross-runtime filesystem API lives at `@rejot-dev/thalo/vfs`:
+
+```typescript
+import {
+  type IFileSystem,
+  type LoadFromFileSystemOptions,
+  type LoadFilesFromFileSystemOptions,
+  type WorkspaceFileChange,
+  type FileRevision,
+  DEFAULT_WORKSPACE_EXTENSIONS,
+  loadWorkspaceFromFileSystem,
+  loadWorkspaceFilesFromFileSystem,
+  applyWorkspaceFileChange,
+  readFileRevision,
+  writeWorkspaceDocument,
+  FileRevisionConflictError,
+} from "@rejot-dev/thalo/vfs";
+```
+
+The Node convenience wrappers that create and wrap a workspace for you live at
+`@rejot-dev/thalo/vfs/node`:
+
+```typescript
+import {
+  loadThaloFromFileSystem,
+  loadThaloFilesFromFileSystem,
+  createNodeHostFileSystem,
+} from "@rejot-dev/thalo/vfs/node";
+```
+
+## Loading a workspace
+
+### Node with `ReadWriteFs`
+
+Use `ReadWriteFs` when you want to load from disk through the VFS interface directly.
+
+```typescript
+import { ReadWriteFs } from "just-bash";
+import { loadThaloFromFileSystem } from "@rejot-dev/thalo/vfs/node";
+
+const fs = new ReadWriteFs({
+  root: "/Users/me/my-kb",
+  allowSymlinks: true,
+});
+
+const workspace = await loadThaloFromFileSystem(fs, "/");
+```
+
+Because `ReadWriteFs` treats its configured root as the filesystem root, `"/"` refers to the root of
+that mounted filesystem, not your OS filesystem root.
+
+### Browser or tests with `InMemoryFs`
+
+In browser-style usage, create the `Workspace` yourself so you can provide the web parser, then use
+the core VFS loader directly.
+
+```typescript
+import { InMemoryFs } from "just-bash";
+import { Workspace } from "@rejot-dev/thalo";
+import { createParser } from "@rejot-dev/thalo/web";
+import { loadWorkspaceFromFileSystem } from "@rejot-dev/thalo/vfs";
+
+const parser = await createParser({ treeSitterWasm, languageWasm });
+const workspace = new Workspace(parser);
+
+const fs = new InMemoryFs({
+  "/kb/schema.thalo": `2026-01-01T00:00Z define-entity note "Note"
+  # Sections
+  Content
+`,
+  "/kb/entry.thalo": `2026-01-02T00:00Z create note "Hello" ^hello
+  # Content
+  From memory
+`,
+});
+
+await loadWorkspaceFromFileSystem(fs, "/kb", { workspace });
+```
+
+### Loading specific files
+
+```typescript
+import { loadThaloFilesFromFileSystem } from "@rejot-dev/thalo/vfs/node";
+
+const workspace = await loadThaloFilesFromFileSystem(fs, ["/kb/schema.thalo", "/kb/entry.thalo"]);
+```
+
+## Loader behavior
+
+By default, recursive loading:
+
+- loads `.thalo` and `.md` files
+- ignores any path segment equal to `node_modules`
+- ignores any path segment that starts with `.`
+- skips symlinked files and symlinked directories during discovery
+
+You can customize file extensions and ignore behavior:
+
+```typescript
+const workspace = new Workspace(parser);
+
+await loadWorkspaceFromFileSystem(fs, "/kb", {
+  workspace,
+  extensions: [".thalo"],
+  ignore(path) {
+    return path.includes("/generated/");
+  },
+});
+```
+
+<Callout>
+  The loader uses the resolved logical VFS path as the workspace filename. It does not call
+  `realpath()` by default.
+</Callout>
+
+## Syncing external file changes
+
+The base filesystem abstraction does not include watching. Instead, watcher code should emit file
+change events into `applyWorkspaceFileChange()`.
+
+This helper operates on the raw `Workspace`, so pair it with the core VFS loader when you are
+building your own runtime integration.
+
+```typescript
+import { Workspace } from "@rejot-dev/thalo";
+import { applyWorkspaceFileChange } from "@rejot-dev/thalo/vfs";
+import { loadWorkspaceFromFileSystem } from "@rejot-dev/thalo/vfs";
+
+const workspace = new Workspace(parser);
+await loadWorkspaceFromFileSystem(fs, "/kb", { workspace });
+
+await applyWorkspaceFileChange(workspace, fs, {
+  path: "/kb/entry.thalo",
+  kind: "updated",
+});
+```
+
+Supported change kinds:
+
+```typescript
+interface WorkspaceFileChange {
+  path: string;
+  kind: "created" | "updated" | "deleted";
+}
+```
+
+Example:
+
+```typescript
+await fs.writeFile(
+  "/kb/entry.thalo",
+  `2026-01-02T00:00Z create note "Updated" ^hello
+  # Content
+  Changed text
+`,
+  "utf8",
+);
+
+await applyWorkspaceFileChange(workspace, fs, {
+  path: "/kb/entry.thalo",
+  kind: "updated",
+});
+```
+
+## Persistence and optimistic concurrency control
+
+Thalo's persistence helpers use content-derived revision tokens rather than relying only on file
+mtime.
+
+### Read a revision
+
+```typescript
+import { readFileRevision } from "@rejot-dev/thalo/vfs";
+
+const revision = await readFileRevision(fs, "/kb/entry.thalo");
+console.log(revision.token);
+```
+
+### Write with OCC
+
+```typescript
+import {
+  readFileRevision,
+  writeWorkspaceDocument,
+  FileRevisionConflictError,
+} from "@rejot-dev/thalo/vfs";
+
+const revision = await readFileRevision(fs, "/kb/entry.thalo");
+
+try {
+  await writeWorkspaceDocument(
+    fs,
+    "/kb/entry.thalo",
+    `2026-01-02T00:00Z create note "Updated" ^hello
+  # Content
+  Saved safely
+`,
+    revision,
+  );
+} catch (error) {
+  if (error instanceof FileRevisionConflictError) {
+    console.error("The file changed before the write completed.");
+  } else {
+    throw error;
+  }
+}
+```
+
+## Implementing your own filesystem
+
+Your filesystem only needs to satisfy Thalo's `IFileSystem` interface.
+
+```typescript
+import type { IFileSystem } from "@rejot-dev/thalo/vfs";
+```
+
+Thalo intentionally keeps this interface structurally compatible with `just-bash`, so existing
+`just-bash` filesystems are assignable.
+
+## When to use which API
+
+Use `@rejot-dev/thalo/api` when:
+
+- you're in Node
+- your files live on disk
+- you want the simplest loading experience
+
+Use `@rejot-dev/thalo/vfs` when:
+
+- you need a custom filesystem implementation
+- you want browser or in-memory loading
+- you need low-level file sync and persistence helpers
+- you are wiring Thalo into another runtime or editor environment
+
+Use `@rejot-dev/thalo/vfs/node` when:
+
+- you're in Node and want a wrapped `ThaloWorkspaceInterface`
+- you want Node parser initialization handled for you
+- you need a host filesystem adapter for one or more absolute roots

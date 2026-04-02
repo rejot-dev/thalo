@@ -98,6 +98,21 @@
       "development": "./src/api.ts",
       "types": "./dist/api.d.ts",
       "default": "./dist/api.js"
+    },
+    "./vfs": {
+      "development": "./src/vfs.ts",
+      "types": "./dist/vfs.d.ts",
+      "default": "./dist/vfs.js"
+    },
+    "./vfs/node": {
+      "development": "./src/vfs/node.ts",
+      "types": "./dist/vfs/node.d.ts",
+      "default": "./dist/vfs/node.js"
+    },
+    "./vfs/workspace": {
+      "development": "./src/vfs-workspace.ts",
+      "types": "./dist/vfs-workspace.d.ts",
+      "default": "./dist/vfs-workspace.js"
     }
   },
   "main": "./dist/mod.js",
@@ -110,7 +125,8 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
-    "@rejot-dev/tree-sitter-thalo": "workspace:*"
+    "@rejot-dev/tree-sitter-thalo": "workspace:*",
+    "just-bash": "^2.14.0"
   },
   "peerDependencies": {
     "web-tree-sitter": "catalog:"

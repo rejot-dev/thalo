@@ -7,21 +7,29 @@
  * @module @rejot-dev/thalo/files
  */
 
-import { readdir, readFile, stat } from "node:fs/promises";
-import { join, resolve, sep } from "node:path";
-import { createInitializedWorkspace, type Workspace } from "./parser.node.js";
+import path from "node:path";
+import { createInitializedWorkspace } from "./parser.node.js";
+import type { Workspace } from "./model/workspace.js";
+import {
+  DEFAULT_WORKSPACE_EXTENSIONS,
+  collectThaloFilesFromFileSystem,
+  loadWorkspaceFilesFromFileSystem,
+  loadWorkspaceFromFileSystem,
+  shouldIgnoreWorkspacePath,
+} from "./vfs/loader.js";
+import { createNodeHostFileSystem } from "./vfs/node-host-fs.js";
 
 /**
  * Default file extensions for thalo files.
  */
-export const DEFAULT_EXTENSIONS = [".thalo", ".md"];
+export const DEFAULT_EXTENSIONS = DEFAULT_WORKSPACE_EXTENSIONS;
 
-function isIgnoredWorkspaceSegment(segment: string): boolean {
-  return segment === "node_modules" || segment.startsWith(".");
+function createNodeFileSystem(root: string | string[]) {
+  return createNodeHostFileSystem(root);
 }
 
 export function shouldIgnoreWorkspaceRelativePath(relativePath: string): boolean {
-  return relativePath.split(sep).filter(Boolean).some(isIgnoredWorkspaceSegment);
+  return shouldIgnoreWorkspacePath(relativePath.replaceAll(path.sep, "/"));
 }
 
 /**
@@ -37,36 +45,9 @@ export async function collectThaloFiles(
   dir: string,
   extensions: string[] = DEFAULT_EXTENSIONS,
 ): Promise<string[]> {
-  const files: string[] = [];
-
-  async function walk(currentDir: string): Promise<void> {
-    let entries;
-    try {
-      entries = await readdir(currentDir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-
-    for (const entry of entries) {
-      const fullPath = join(currentDir, entry.name);
-      const relativePath = fullPath.slice(dir.length + 1);
-
-      if (shouldIgnoreWorkspaceRelativePath(relativePath)) {
-        continue;
-      }
-
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else if (entry.isFile()) {
-        if (extensions.some((ext) => entry.name.endsWith(ext))) {
-          files.push(fullPath);
-        }
-      }
-    }
-  }
-
-  await walk(dir);
-  return files;
+  const resolvedDir = path.resolve(dir);
+  const fs = createNodeFileSystem(resolvedDir);
+  return await collectThaloFilesFromFileSystem(fs, resolvedDir, { extensions });
 }
 
 /**
@@ -94,37 +75,12 @@ export async function loadWorkspaceFromDirectory(
   cwd: string,
   extensions: string[] = DEFAULT_EXTENSIONS,
 ): Promise<Workspace> {
-  const resolvedCwd = resolve(cwd);
-
-  // Check if directory exists
-  try {
-    const dirStat = await stat(resolvedCwd);
-    if (!dirStat.isDirectory()) {
-      throw new Error(`Path is not a directory: ${cwd}`);
-    }
-  } catch (err) {
-    if (err instanceof Error && "code" in err && err.code === "ENOENT") {
-      throw new Error(`Directory not found: ${cwd}`);
-    }
-    throw err;
-  }
-
-  // Collect all thalo files
-  const files = await collectThaloFiles(resolvedCwd, extensions);
-
-  if (files.length === 0) {
-    throw new Error(`No ${extensions.join(" or ")} files found in ${cwd}`);
-  }
-
-  // Create workspace and add documents
-  const workspace = await createInitializedWorkspace();
-
-  for (const file of files) {
-    const source = await readFile(file, "utf-8");
-    workspace.addDocument(source, { filename: file });
-  }
-
-  return workspace;
+  const resolvedCwd = path.resolve(cwd);
+  const fs = createNodeFileSystem(resolvedCwd);
+  return await loadWorkspaceFromFileSystem(fs, resolvedCwd, {
+    createWorkspace: createInitializedWorkspace,
+    extensions,
+  });
 }
 
 /**
@@ -144,13 +100,13 @@ export async function loadWorkspaceFromDirectory(
  * ```
  */
 export async function loadWorkspaceFromFiles(files: string[]): Promise<Workspace> {
-  const workspace = await createInitializedWorkspace();
-
-  for (const file of files) {
-    const resolvedPath = resolve(file);
-    const source = await readFile(resolvedPath, "utf-8");
-    workspace.addDocument(source, { filename: resolvedPath });
+  const resolvedFiles = files.map((file) => path.resolve(file));
+  if (resolvedFiles.length === 0) {
+    return await createInitializedWorkspace();
   }
 
-  return workspace;
+  const fs = createNodeFileSystem(resolvedFiles.map((file) => path.dirname(file)));
+  return await loadWorkspaceFilesFromFileSystem(fs, resolvedFiles, {
+    createWorkspace: createInitializedWorkspace,
+  });
 }

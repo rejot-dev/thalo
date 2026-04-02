@@ -298,11 +298,12 @@ export class Workspace {
    * Remove a document from the workspace
    */
   removeDocument(file: string): void {
-    if (!this.models.has(file)) {
+    const hadModel = this.models.delete(file);
+    this.documents.delete(file);
+
+    if (!hadModel) {
       return;
     }
-
-    this.models.delete(file);
 
     // Rebuild schema registry and link index
     this.rebuild();

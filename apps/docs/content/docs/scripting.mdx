@@ -34,7 +34,7 @@ for (const entry of workspace.entries()) {
 const codingOpinions = workspace.query("opinion where #coding");
 
 // Find all references to a link (^my-important-note)
-const refs = workspace.findReferences("my-important-note");
+const refs = workspace.findReferences("^my-important-note");
 ```
 
 ## Loading a Workspace
@@ -63,6 +63,49 @@ import { loadThaloFiles } from "@rejot-dev/thalo/api";
 
 const workspace = await loadThaloFiles(["./entries.thalo", "./syntheses.thalo"]);
 ```
+
+### From a Custom Filesystem
+
+If your files do not live directly on the Node filesystem, use the VFS API instead of the high-level
+Node wrappers.
+
+```typescript
+import { InMemoryFs } from "just-bash";
+import { Workspace } from "@rejot-dev/thalo";
+import { createParser } from "@rejot-dev/thalo/web";
+import { loadWorkspaceFromFileSystem } from "@rejot-dev/thalo/vfs";
+
+const [treeSitterWasm, languageWasm] = await Promise.all([
+  fetch("/wasm/tree-sitter.wasm")
+    .then((response) => response.arrayBuffer())
+    .then((buffer) => new Uint8Array(buffer)),
+  fetch("/wasm/tree-sitter-thalo.wasm")
+    .then((response) => response.arrayBuffer())
+    .then((buffer) => new Uint8Array(buffer)),
+]);
+
+const parser = await createParser({ treeSitterWasm, languageWasm });
+const workspace = new Workspace(parser);
+
+const fs = new InMemoryFs({
+  "/kb/schema.thalo": `2026-01-01T00:00Z define-entity note "Note"
+  # Sections
+  Content
+`,
+  "/kb/entry.thalo": `2026-01-02T00:00Z create note "Hello" ^hello
+  # Content
+  From memory
+`,
+});
+
+await loadWorkspaceFromFileSystem(fs, "/kb", { workspace });
+```
+
+`createParser()` expects both `treeSitterWasm` and `languageWasm` to be either raw WASM bytes
+(`Uint8Array`) or pre-compiled `WebAssembly.Module` values.
+
+See the dedicated [VFS guide](/docs/vfs) for the full API, browser-safe workspace loading, watch
+syncing, and optimistic concurrency control.
 
 ## Iterating Over Entries
 

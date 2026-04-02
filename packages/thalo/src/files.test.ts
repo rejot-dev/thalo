@@ -70,4 +70,40 @@ describe("files", () => {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
   });
+
+  it("loads specific files from unrelated directories", async () => {
+    vi.doMock("tree-sitter", () => {
+      throw new Error("native bindings unavailable");
+    });
+
+    const { loadWorkspaceFromFiles } = await import("./files.js");
+
+    const firstDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-files-a-"));
+    const secondDir = await fs.mkdtemp(path.join(os.tmpdir(), "thalo-files-b-"));
+
+    try {
+      const firstFile = path.join(firstDir, "schema.thalo");
+      const secondFile = path.join(secondDir, "entries.thalo");
+
+      await fs.writeFile(
+        firstFile,
+        '2026-01-01T00:00Z define-entity lore "Lore"\n  # Sections\n  Summary\n',
+        "utf8",
+      );
+      await fs.writeFile(
+        secondFile,
+        '2026-01-02T00:00Z create lore "Across roots" ^cross-root\n  # Summary\n  Works.\n',
+        "utf8",
+      );
+
+      const workspace = await loadWorkspaceFromFiles([firstFile, secondFile]);
+
+      expect(workspace.hasDocument(firstFile)).toBe(true);
+      expect(workspace.hasDocument(secondFile)).toBe(true);
+      expect(workspace.files().sort()).toEqual([firstFile, secondFile].sort());
+    } finally {
+      await fs.rm(firstDir, { recursive: true, force: true });
+      await fs.rm(secondDir, { recursive: true, force: true });
+    }
+  });
 });
