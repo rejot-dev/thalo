@@ -63,4 +63,21 @@ describe("Main export doesn't require native tree-sitter at import time", () => 
     expect(mod.isInitialized).toBeDefined();
     expect(mod.isUsingNative).toBeDefined();
   });
+
+  it("@rejot-dev/thalo/vfs can be imported without Node-only filesystem adapters", async () => {
+    vi.doMock("just-bash", () => {
+      throw new Error("Node-only module should not be loaded");
+    });
+
+    vi.doMock("node:path", () => {
+      throw new Error("Node-only module should not be loaded");
+    });
+
+    const mod = await import("./vfs.js");
+
+    expect(mod.loadWorkspaceFromFileSystem).toBeDefined();
+    expect(mod.loadWorkspaceFilesFromFileSystem).toBeDefined();
+    expect(mod.applyWorkspaceFileChange).toBeDefined();
+    expect("loadThaloFromFileSystem" in mod).toBe(false);
+  });
 });

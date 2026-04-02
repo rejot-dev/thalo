@@ -101,20 +101,22 @@ describe("Workspace", () => {
     expect(ws.linkIndex.references.size).toBe(0);
   });
 
-  it("should remove model when removing document", () => {
+  it("should remove model and cached document when removing document", () => {
     const ws = createWorkspace();
-    ws.addDocument(
+    ws.updateDocument(
+      "test.thalo",
       `2026-01-05T10:00Z create lore "Test" ^my-entry
 `,
-      { filename: "test.thalo" },
     );
 
     expect(ws.getModel("test.thalo")).toBeDefined();
+    expect(ws.getDocument("test.thalo")).toBeDefined();
     expect(ws.linkIndex.definitions.has("my-entry")).toBe(true);
 
     ws.removeDocument("test.thalo");
 
     expect(ws.getModel("test.thalo")).toBeUndefined();
+    expect(ws.getDocument("test.thalo")).toBeUndefined();
     expect(ws.linkIndex.definitions.has("my-entry")).toBe(false);
   });
 

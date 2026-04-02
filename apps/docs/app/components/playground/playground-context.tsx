@@ -3,11 +3,13 @@
 /**
  * PlaygroundContext - Shared state for the Thalo playground.
  *
- * Manages editor content for all three panels (entities, entries, synthesis)
- * and tracks the active tab for small screen layouts.
+ * Manages editor content for all three panels (entities, entries, synthesis),
+ * tracks the active tab for small screen layouts, and exposes a browser-safe
+ * virtual filesystem snapshot for the command runner.
  */
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
+import { createInMemorySnapshot, type InMemorySnapshot } from "./in-memory-fs";
 
 export type PanelType = "entities" | "entries" | "synthesis";
 
@@ -18,13 +20,23 @@ export interface PlaygroundState {
   activeTab: PanelType;
 }
 
+export interface PlaygroundVirtualFile {
+  panel: PanelType;
+  filename: string;
+  path: string;
+  content: string;
+}
+
 export interface PlaygroundContextValue extends PlaygroundState {
+  vfs: InMemorySnapshot;
   setContent: (panel: PanelType, content: string) => void;
   setActiveTab: (tab: PanelType) => void;
   resetToDefaults: () => void;
 }
 
 const PlaygroundContext = createContext<PlaygroundContextValue | null>(null);
+
+const PLAYGROUND_ROOT = "/playground";
 
 // Default content for each panel
 const DEFAULT_ENTITIES = `2026-01-12T10:00Z define-entity opinion "Formed stances on topics"
@@ -111,8 +123,39 @@ export function PlaygroundProvider({ children, initialState }: PlaygroundProvide
     setState(DEFAULT_STATE);
   }, []);
 
+  const virtualFiles = useMemo<Record<PanelType, PlaygroundVirtualFile>>(
+    () => ({
+      entities: {
+        panel: "entities",
+        filename: "entities.thalo",
+        path: `${PLAYGROUND_ROOT}/entities.thalo`,
+        content: state.entities,
+      },
+      entries: {
+        panel: "entries",
+        filename: "entries.thalo",
+        path: `${PLAYGROUND_ROOT}/entries.thalo`,
+        content: state.entries,
+      },
+      synthesis: {
+        panel: "synthesis",
+        filename: "syntheses.thalo",
+        path: `${PLAYGROUND_ROOT}/syntheses.thalo`,
+        content: state.synthesis,
+      },
+    }),
+    [state.entities, state.entries, state.synthesis],
+  );
+
+  const vfs = useMemo<InMemorySnapshot>(() => {
+    const files = Object.values(virtualFiles).filter((file) => file.content.trim());
+
+    return createInMemorySnapshot(files);
+  }, [virtualFiles]);
+
   const value: PlaygroundContextValue = {
     ...state,
+    vfs,
     setContent,
     setActiveTab,
     resetToDefaults,
@@ -138,6 +181,7 @@ export function getPanelMeta(panel: PanelType) {
       return {
         title: "Entities",
         filename: "entities.thalo",
+        path: `${PLAYGROUND_ROOT}/entities.thalo`,
         iconColor: "text-amber-500",
         description: "Define the structure of your knowledge",
       };
@@ -145,6 +189,7 @@ export function getPanelMeta(panel: PanelType) {
       return {
         title: "Entries",
         filename: "entries.thalo",
+        path: `${PLAYGROUND_ROOT}/entries.thalo`,
         iconColor: "text-blue-500",
         description: "Create typed entries with metadata",
       };
@@ -152,6 +197,7 @@ export function getPanelMeta(panel: PanelType) {
       return {
         title: "Synthesis",
         filename: "syntheses.thalo",
+        path: `${PLAYGROUND_ROOT}/syntheses.thalo`,
         iconColor: "text-violet-500",
         description: "Query and synthesize your knowledge",
       };

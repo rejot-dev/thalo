@@ -19,14 +19,13 @@ import {
   runActualize as runActualizeCommand,
   type ActualizeResult,
 } from "@rejot-dev/thalo/commands/actualize";
+import {
+  applyWorkspaceFileChange,
+  loadWorkspaceFilesFromFileSystem,
+  type WorkspaceFileChange,
+} from "@rejot-dev/thalo/vfs";
 import { getParser } from "@/lib/thalo-parser.client";
-
-// Virtual filenames for the playground
-const FILES = {
-  entities: "entities.thalo",
-  entries: "entries.thalo",
-  synthesis: "syntheses.thalo",
-} as const;
+import type { InMemorySnapshot } from "./in-memory-fs";
 
 // ===================
 // Types
@@ -44,35 +43,101 @@ export interface CommandResult {
   lines: TerminalLine[];
 }
 
-export interface PlaygroundContent {
-  entities: string;
-  entries: string;
-  synthesis: string;
-}
-
 // ===================
 // Workspace Creation
 // ===================
 
+async function readSnapshotContents(input: InMemorySnapshot): Promise<Map<string, string>> {
+  const entries = await Promise.all(
+    input.filePaths.map(
+      async (path) => [path, await input.fileSystem.readFile(path, "utf8")] as const,
+    ),
+  );
+
+  return new Map(entries);
+}
+
+class PlaygroundWorkspaceRuntime {
+  private workspace: Workspace | null = null;
+  private syncedFiles = new Map<string, string>();
+
+  async getWorkspace(input: InMemorySnapshot): Promise<Workspace> {
+    const currentFiles = await readSnapshotContents(input);
+
+    if (!this.workspace) {
+      return this.initializeWorkspace(input, currentFiles);
+    }
+
+    try {
+      await this.syncWorkspace(input, currentFiles);
+      return this.workspace;
+    } catch {
+      return this.initializeWorkspace(input, currentFiles);
+    }
+  }
+
+  private async initializeWorkspace(
+    input: InMemorySnapshot,
+    currentFiles: Map<string, string>,
+  ): Promise<Workspace> {
+    const parser = await getParser();
+    const workspace = new Workspace(parser);
+
+    if (input.filePaths.length > 0) {
+      await loadWorkspaceFilesFromFileSystem(input.fileSystem, input.filePaths, {
+        workspace,
+      });
+    }
+
+    this.workspace = workspace;
+    this.syncedFiles = currentFiles;
+    return workspace;
+  }
+
+  private async syncWorkspace(
+    input: InMemorySnapshot,
+    currentFiles: Map<string, string>,
+  ): Promise<void> {
+    if (!this.workspace) {
+      return;
+    }
+
+    const changes: WorkspaceFileChange[] = [];
+
+    for (const path of this.syncedFiles.keys()) {
+      if (!currentFiles.has(path)) {
+        changes.push({ path, kind: "deleted" });
+      }
+    }
+
+    for (const [path, content] of currentFiles) {
+      const previousContent = this.syncedFiles.get(path);
+
+      if (previousContent === undefined) {
+        changes.push({ path, kind: "created" });
+        continue;
+      }
+
+      if (previousContent !== content) {
+        changes.push({ path, kind: "updated" });
+      }
+    }
+
+    for (const change of changes) {
+      await applyWorkspaceFileChange(this.workspace, input.fileSystem, change);
+    }
+
+    this.syncedFiles = currentFiles;
+  }
+}
+
+const runtime = new PlaygroundWorkspaceRuntime();
+
 /**
- * Create a workspace with the web parser and add playground documents.
+ * Reuse a long-lived workspace and incrementally sync editor changes into it.
  */
-async function createPlaygroundWorkspace(content: PlaygroundContent): Promise<Workspace> {
-  const parser = await getParser();
-  const workspace = new Workspace(parser);
-
-  // Add all documents
-  if (content.entities.trim()) {
-    workspace.addDocument(content.entities, { filename: FILES.entities });
-  }
-  if (content.entries.trim()) {
-    workspace.addDocument(content.entries, { filename: FILES.entries });
-  }
-  if (content.synthesis.trim()) {
-    workspace.addDocument(content.synthesis, { filename: FILES.synthesis });
-  }
-
-  return workspace;
+async function createPlaygroundWorkspace(input: InMemorySnapshot): Promise<Workspace> {
+  return runtime.getWorkspace(input);
 }
 
 // ===================
@@ -231,8 +296,8 @@ function formatActualizeResultLines(result: ActualizeResult): TerminalLine[] {
 // Command Runners
 // ===================
 
-async function runCheck(content: PlaygroundContent): Promise<CommandResult> {
-  const workspace = await createPlaygroundWorkspace(content);
+async function runCheck(input: InMemorySnapshot): Promise<CommandResult> {
+  const workspace = await createPlaygroundWorkspace(input);
   const result = runCheckCommand(workspace);
   return {
     command: "thalo check",
@@ -240,8 +305,8 @@ async function runCheck(content: PlaygroundContent): Promise<CommandResult> {
   };
 }
 
-async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<CommandResult> {
-  const workspace = await createPlaygroundWorkspace(content);
+async function runQuery(input: InMemorySnapshot, queryStr?: string): Promise<CommandResult> {
+  const workspace = await createPlaygroundWorkspace(input);
 
   // Default query if none provided
   const query = queryStr || "opinion";
@@ -289,8 +354,8 @@ async function runQuery(content: PlaygroundContent, queryStr?: string): Promise<
   };
 }
 
-async function runActualize(content: PlaygroundContent): Promise<CommandResult> {
-  const workspace = await createPlaygroundWorkspace(content);
+async function runActualize(input: InMemorySnapshot): Promise<CommandResult> {
+  const workspace = await createPlaygroundWorkspace(input);
   const result = await runActualizeCommand(workspace);
   return {
     command: "thalo actualize",
@@ -304,15 +369,15 @@ async function runActualize(content: PlaygroundContent): Promise<CommandResult> 
 
 export async function runCommand(
   command: CommandType,
-  content: PlaygroundContent,
+  input: InMemorySnapshot,
   queryStr?: string,
 ): Promise<CommandResult> {
   switch (command) {
     case "check":
-      return runCheck(content);
+      return runCheck(input);
     case "query":
-      return runQuery(content, queryStr);
+      return runQuery(input, queryStr);
     case "actualize":
-      return runActualize(content);
+      return runActualize(input);
   }
 }

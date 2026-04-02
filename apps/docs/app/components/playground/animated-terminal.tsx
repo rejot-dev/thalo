@@ -91,7 +91,7 @@ export interface AnimatedTerminalProps {
 }
 
 export function AnimatedTerminal({ className }: AnimatedTerminalProps) {
-  const { entities, entries, synthesis } = usePlayground();
+  const { vfs } = usePlayground();
   const [inputValue, setInputValue] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -177,15 +177,7 @@ export function AnimatedTerminal({ className }: AnimatedTerminalProps) {
       setIsRunning(true);
 
       try {
-        const result = await runCommand(
-          parsed.type,
-          {
-            entities,
-            entries,
-            synthesis,
-          },
-          parsed.query,
-        );
+        const result = await runCommand(parsed.type, vfs, parsed.query);
 
         setHistory((prev) => [...prev, { command: commandStr, result }]);
       } catch (error) {
@@ -203,7 +195,7 @@ export function AnimatedTerminal({ className }: AnimatedTerminalProps) {
         setIsRunning(false);
       }
     },
-    [entities, entries, synthesis],
+    [vfs],
   );
 
   const handleKeyDown = useCallback(

@@ -46,8 +46,6 @@ import type {
 import type { SemanticModel } from "./semantic/analyzer.js";
 import type { SourceMap } from "./source-map.js";
 import { toFileLocation } from "./source-map.js";
-import { loadWorkspaceFromDirectory, loadWorkspaceFromFiles } from "./files.js";
-import { createInitializedWorkspace } from "./parser.node.js";
 import { Workspace } from "./model/workspace.js";
 import { findDefinition as findDefinitionService } from "./services/definition.js";
 import { findReferences as findReferencesService } from "./services/references.js";
@@ -1192,7 +1190,7 @@ class ThaloWorkspace implements ThaloWorkspaceInterface {
       workspace: ThaloWorkspace,
       opts?: WorkspaceWatchOptions,
     ): AsyncIterable<WorkspaceWatchEvent> {
-      const { watchWorkspace } = await import("./watch.js");
+      const { watchWorkspace } = await import("./watch.node.js");
       for await (const event of watchWorkspace(workspace, opts)) {
         yield event;
       }
@@ -1234,6 +1232,7 @@ export async function loadThalo(
   options: LoadOptions = {},
 ): Promise<ThaloWorkspaceInterface> {
   const extensions = options.extensions ?? [".thalo", ".md"];
+  const { loadWorkspaceFromDirectory } = await import("./files.js");
   const workspace = await loadWorkspaceFromDirectory(path, extensions);
   return new ThaloWorkspace(workspace);
 }
@@ -1255,6 +1254,7 @@ export async function loadThalo(
  * ```
  */
 export async function loadThaloFiles(files: string[]): Promise<ThaloWorkspaceInterface> {
+  const { loadWorkspaceFromFiles } = await import("./files.js");
   const workspace = await loadWorkspaceFromFiles(files);
   return new ThaloWorkspace(workspace);
 }
@@ -1273,6 +1273,7 @@ export async function loadThaloFiles(files: string[]): Promise<ThaloWorkspaceInt
  * ```
  */
 export async function createThaloWorkspace(): Promise<ThaloWorkspaceInterface> {
+  const { createInitializedWorkspace } = await import("./parser.node.js");
   return new ThaloWorkspace(await createInitializedWorkspace());
 }
 
