@@ -1,5 +1,7 @@
 # @rejot-dev/tree-sitter-thalo
 
+## 0.3.0
+
 ## 0.2.5
 
 ## 0.2.4

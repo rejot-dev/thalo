@@ -1,5 +1,11 @@
 # @rejot-dev/thalo-prettier
 
+## 0.3.0
+
+### Patch Changes
+
+- @rejot-dev/tree-sitter-thalo@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes
