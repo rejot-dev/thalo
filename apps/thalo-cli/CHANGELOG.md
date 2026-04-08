@@ -1,5 +1,17 @@
 # @rejot-dev/thalo-cli
 
+## 0.3.0
+
+### Patch Changes
+
+- cdb9aae: fix CLI runtime bundling so `thalo lsp` works from linked workspaces even when
+  `packages/thalo/dist` has not been built.
+- Updated dependencies [0b3b42c]
+- Updated dependencies [9813489]
+  - @rejot-dev/thalo@0.3.0
+  - @rejot-dev/thalo-lsp@0.3.0
+  - @rejot-dev/tree-sitter-thalo@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes

@@ -1,5 +1,23 @@
 # @rejot-dev/thalo
 
+## 0.3.0
+
+### Minor Changes
+
+- 0b3b42c: Add a new `@rejot-dev/thalo/vfs` public API for loading Thalo workspaces from custom
+  filesystem implementations, applying workspace file changes, and writing files with optimistic
+  concurrency control. Also add `@rejot-dev/thalo/vfs/workspace` for browser-safe loading into a raw
+  `Workspace`. Documentation now includes a dedicated VFS guide and updated scripting/README
+  examples.
+
+### Patch Changes
+
+- 9813489: Fix `loadWorkspaceFromDirectory` so importing `@rejot-dev/thalo/files` does not require
+  native parser dependencies like `tree-sitter` at runtime. This avoids `ERR_MODULE_NOT_FOUND`
+  failures for consumers that only need workspace file loading, while keeping recursive scans
+  practical by skipping hidden paths and `node_modules`.
+  - @rejot-dev/tree-sitter-thalo@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes

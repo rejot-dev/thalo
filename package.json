@@ -5,14 +5,14 @@
   "packageManager": "pnpm@10.18.2",
   "type": "module",
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
+    "@changesets/cli": "^2.30.0",
     "@rejot-dev/thalo-prettier": "workspace:*",
     "lefthook": "^1.13.6",
-    "oxlint": "^1.42.0",
+    "oxlint": "^1.59.0",
     "prettier": "3.6.2",
     "tsdown": "catalog:",
     "tsx": "^4.21.0",
-    "turbo": "^2.8.0",
+    "turbo": "^2.9.5",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
