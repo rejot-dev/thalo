@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { isInitialized, isUsingNative } from "@rejot-dev/thalo/node";
 
 const execAsync = promisify(exec);
 
@@ -54,11 +53,18 @@ async function isGitDirty(): Promise<boolean> {
 /**
  * Get the parser backend being used (native, wasm, or unknown if not initialized)
  */
-function getParserBackend(): "native" | "wasm" | "unknown" {
-  if (!isInitialized()) {
+async function getParserBackend(): Promise<"native" | "wasm" | "unknown"> {
+  try {
+    const { isInitialized, isUsingNative } = await import("@rejot-dev/thalo/node");
+
+    if (!isInitialized()) {
+      return "unknown";
+    }
+
+    return isUsingNative() ? "native" : "wasm";
+  } catch {
     return "unknown";
   }
-  return isUsingNative() ? "native" : "wasm";
 }
 
 /**
@@ -75,17 +81,18 @@ export interface VersionInfo {
  * Get all version information
  */
 export async function getVersionInfo(): Promise<VersionInfo> {
-  const [version, gitHash, gitDirty] = await Promise.all([
+  const [version, gitHash, gitDirty, parserBackend] = await Promise.all([
     getPackageVersion(),
     getGitHash(),
     isGitDirty(),
+    getParserBackend(),
   ]);
 
   return {
     version,
     gitHash,
     gitDirty,
-    parserBackend: getParserBackend(),
+    parserBackend,
   };
 }
 

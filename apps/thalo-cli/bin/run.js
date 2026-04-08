@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import "../dist/mod.js";
+import "../dist/mod.bundled.js";
